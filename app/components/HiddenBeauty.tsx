@@ -72,13 +72,9 @@ const HiddenBeauty = () => {
     <div className="container mx-auto relative text-center home-page-category py-12 px-4 overflow-hidden font-[family-name:var(--font-montserrat)]">
       <div className="row g-0">
         <div className="col-lg-12 mb-8">
-        <div className="flex items-center gap-10">
-          <div className="h-[1px] bg-[#68400f] flex-1"></div>
             <h2 className="text-[1.5rem] lg:text-[40px] font-medium text-[#5d4112] mb-2 whitespace-nowrap">
               Bring Out The Hidden Beauty
             </h2>
-            <div className="h-[1px] bg-[#68400f] flex-1"></div>
-          </div>
           <div className="m-auto max-w-2xl">
             <p className="text-[16px] lg:text-[18px] font-semibold font-[family-name:var(--font-montserrat)]">
               Designer pieces that blend traditional charm with modern silhouettes for every occasion.

@@ -1,10 +1,8 @@
 body{
   font-family: "Montserrat", serif;
   color: #000; overflow-x: hidden; font-size: 15px;  
-  background-image: url(../img/bg.jpg);
   background-position: center;
   background-repeat: repeat;
-  
 }
 
 html {
@@ -45,7 +43,6 @@ h6,
     font-size: 4.5rem; color: #000;
 }
 .bg-tringle {
-    background: url(../img/p-bg.jpg) 0 0 no-repeat;
     background-size: cover;
 }
 .back-to-top {
@@ -536,7 +533,6 @@ table.xhpjwmuqca tr:nth-child(2) td {
 /*** Navbar ***/
 .navbar .dropdown-toggle::after {
     border: none;
-    content: "\f107";
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     vertical-align: middle;
@@ -558,7 +554,6 @@ a.wapp-icon-bottom img#style-9 {
 .navbar .navbar-nav .nav-link {
     margin-right: 0px;
     padding: 8px 0;
-    color: var(--dark);
     font-weight: 500;
     text-transform: capitalize;
     outline: none;
@@ -634,7 +629,6 @@ a.wapp-icon-bottom img#style-9 {
     display: inline-block;
     font-weight: 500;
     font-size: 21px;
-    color: #000;
     text-align: left;
     padding: 15px 20px;
     position: relative;
@@ -663,7 +657,6 @@ a.wapp-icon-bottom img#style-9 {
     width: 30px;
     height: 72px;
     cursor: pointer;
-    background-image: url(../img/icons/menu-ham.png)  !important;
 }
 .txt-i-w {
     position: relative;
@@ -711,7 +704,6 @@ a.wapp-icon-bottom img#style-9 {
     text-indent: -9999px;
     width: 44px;
     height: 44px;
-    background: url(../img/left-arrow.png) 0 0 no-repeat;
 }
 
 
@@ -728,7 +720,6 @@ a.wapp-icon-bottom img#style-9 {
     text-indent: -9999px;
     width: 44px;
     height: 44px;
-    background: url(../img/right-arrow.png) 0 0 no-repeat;
 }
 .elementplate {
     position: absolute;
@@ -817,7 +808,6 @@ img.main-img.hover {
     position: absolute;
     top: 43%;
     left: -50px;
-    background: url(../img/left-image.png);
     text-indent: -9999px;
     width: 44px;
     height: 44px;
@@ -826,7 +816,6 @@ img.main-img.hover {
     position: absolute;
     top: 43%;
     right: -50px;
-    background: url(../img/right-image.png);
     text-indent: -9999px;
     width: 44px;
     height: 44px;
@@ -836,7 +825,6 @@ img.main-img.hover {
     position: absolute;
     top: 35%;
     left: -50px;
-    background: url(../img/left-arrow.png);
     text-indent: -9999px;
     width: 19px;
     height: 42px;
@@ -845,7 +833,6 @@ img.main-img.hover {
     position: absolute;
     top: 35%;
     right: -50px;
-    background: url(../img/right-arrow.png);
     text-indent: -9999px;
     width: 19px;
     height: 42px;
@@ -1117,7 +1104,6 @@ ul.home-gift li {
 }
 
 .page-header {
-    background: linear-gradient(rgba(0, 0, 0, .5), rgba(0, 0, 0, .5)), url(../img/carousel-1.jpg) center center no-repeat;
     background-size: cover;
 }
 
@@ -1220,7 +1206,6 @@ div#pp-detail {
     overflow: auto;
 }
 .upload-design {
-    background: url(../img/upload-bg.jpg) 0 0 no-repeat;
     background-size: cover;
     padding: 5% 20% 3%;
 }
@@ -1490,7 +1475,6 @@ div#pp-detail {
     opacity: 1;
 }
 .testi-bg {
-    background: url(../img/testimonial-bg.jpg) center 100% no-repeat;
     background-size: contain;
     padding: 0 88px 45px;
 }
@@ -1499,7 +1483,6 @@ div#pp-detail {
     position: absolute;
     top: 35%;
     left: -65px;
-    background: url(../img/icons/t-a-left.png);
     text-indent: -9999px;
     width: 47px;
     height: 47px;
@@ -1508,7 +1491,6 @@ div#pp-detail {
     position: absolute;
     top: 35%;
     right: -65px;
-    background: url(../img/icons/t-a-right.png);
     text-indent: -9999px;
     width: 47px;
     height: 47px;
@@ -1627,7 +1609,6 @@ div#pp-detail {
     position: absolute;
     top: 35%;
     left: -65px;
-    background: url(../img/icons/left-arrow.png);
     text-indent: -9999px;
     width: 19px;
     height: 42px;
@@ -1636,7 +1617,6 @@ div#pp-detail {
     position: absolute;
     top: 35%;
     right: -65px;
-    background: url(../img/icons/right-arrow.png);
     text-indent: -9999px;
     width: 19px;
     height: 42px;
@@ -2019,7 +1999,6 @@ body::-webkit-scrollbar-thumb {
     left: -68px;
 }
 .aa-bg {
-    background: #efefef url(../img/whete-bg.png) center center no-repeat;
     text-align: center;
     padding: 80px 0;
     margin-bottom: 70px;
@@ -2048,7 +2027,6 @@ body::-webkit-scrollbar-thumb {
 }
 
 .divider-b:after {
-    background: url(../img/divider-b.png) 0 0 no-repeat;
     width: 100%;
     content: '';
     height: 50px;
@@ -2061,9 +2039,6 @@ body::-webkit-scrollbar-thumb {
 }
 h2.divider-b {
     margin-bottom: 60px !important;
-}
-.about-us .divider-b::after {
-    background: url(../img/divider-b.png) center 0 no-repeat;
 }
 
 h4.one-liner {
@@ -2328,7 +2303,6 @@ a.add-wish.kvmbqowqqo {
     position: absolute;
     top: 35%;
     left: -10px;
-    background: #fff url(../img/icons/left-arrow.png) center center no-repeat;
     text-indent: -9999px;
     width: 19px;
     height: 42px;
@@ -2339,7 +2313,6 @@ a.add-wish.kvmbqowqqo {
     position: absolute;
     top: 35%;
     right: -10px;
-    background: #fff url(../img/icons/right-arrow.png) center center no-repeat;
     text-indent: -9999px;
     width: 19px;
     height: 42px;
@@ -2488,7 +2461,6 @@ a.wishlist-ic {
     transform: scale(1);
 }
 .bg-foo {
-    background: #292d35 url('../img/footer-bg.png') 0 -190px no-repeat;
     padding: 60px 55px 0px;
     background-size: cover;
 }
@@ -2500,7 +2472,6 @@ a.color-green {
 }
 .footer {
     
-    background: url(../img/footer-bg.jpg) center center repeat;
     border-top: 1px dashed #fafef7;
     padding: 30px 0 0 0;
     margin-top: 50px;
@@ -3059,7 +3030,6 @@ table.responsive-table.my-order-page tbody td:last-child {
 .navbar .nav-item .dropdown-menu {
     display: none;
     top: 0;
-    background: #000;
     
 }
 .navbar-nav .dropdown-menu {
@@ -3197,9 +3167,6 @@ a.dd-menu.open-subb::after {
     font-size: 18px;
     transition: .5s;
     white-space: normal;
-}
-.navbar-nav .dropdown-menu a.dropdown-item:hover{
-    color:#000;
 }
 
 .col-lg-6.payment-dd {
@@ -3363,9 +3330,6 @@ a.authentication {
 
 .all-brand label:hover .brnad-list {
     display: block !important;
-}
-div#navbarCollapse.open {
-    /*transform: translateX( 0% ); display: block !important;*/
 }
 
 .currentZoomImageSrc{
@@ -4009,7 +3973,6 @@ a.kvmbqowqqo {
     position: absolute;
     top: 43%;
     right: -50px;
-    background: url(../img/right-image.png);
     text-indent: -9999px;
     width: 44px;
     height: 44px;
@@ -4038,7 +4001,6 @@ a.kvmbqowqqo {
     position: absolute;
     top: 43%;
     left: -50px;
-    background: url(../img/left-image.png);
     text-indent: -9999px;
     width: 44px;
     height: 44px;
@@ -4679,7 +4641,6 @@ li.no-qantity {
 div#pp-detail .enquire-form {
     border-radius: 1500px;
     padding: 25px 146px;
-    background: url(../img/popup-bg.jpg);
     position: relative;
     text-align: center;
     border: 5px solid #ffa624;
@@ -4817,9 +4778,7 @@ body::-webkit-scrollbar-thumb {
 div#navbarCollapse::-webkit-scrollbar {
   width: 3px;
 }
-div#navbarCollapse::-webkit-scrollbar-track {
-  /*box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);*/
-}
+
 div#navbarCollapse::-webkit-scrollbar-thumb {
   background-color: #cbcbcb;
   outline: 1px solid #cbcbcb;
@@ -5124,9 +5083,6 @@ img {
 }
 .pb-8 {
     padding-bottom: 80px !important;
-}
-.usps {
-    background: url(../img/green-bg-pattern.jpg) repeat 0 0;
 }
 
 .usps .usp-ele-top {
@@ -6262,9 +6218,7 @@ p.font-weight-bold {
         display: inline-block;
         margin: 0 4%;
     }
-    .bg-foo {
-        background: #292d35 url(../img/footer-bg.png) 0 -100px no-repeat;
-    }
+
     .container-fluid.footer-top.p-0 {
         margin: -35px 0 0 0px; 
     }
@@ -6628,8 +6582,7 @@ p.font-weight-bold {
         margin-bottom: 10px;
         padding-bottom: 10px;
         padding-left: 0;
-        color: #f7eeb1d1;
-                display: block;
+        display: block;
     }
     .dd-menu-lv-two:last-child a.mega-mm {
         border: 0;
@@ -6698,7 +6651,6 @@ p.font-weight-bold {
     }
     
     .testi-bg {
-        background: url(../img/testimonial-bg.jpg) center 100% no-repeat;
         background-size: cover;
         padding: 0;
         width: 100%;
@@ -8249,7 +8201,6 @@ p.font-weight-bold {
         text-align: center;
     }
     .footer {
-        background: url(../img/footer-bg.jpg) center center repeat;
         border-top: 1px dashed #fafef7;
         padding: 25px 0 0 0;
         margin-top: 0px;

@@ -7,6 +7,7 @@ import HiddenBeauty from "./components/HiddenBeauty";
 import TrendingThisWeek from "./components/TrendingThisWeek";
 import NewArrivals from "./components/NewArrivals";
 import Collections from "./components/Collections";
+import Footer from "./components/Footer";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
       <TrendingThisWeek />
       <NewArrivals />
       <Collections/>
+      <Footer />
     </>
     );
 }

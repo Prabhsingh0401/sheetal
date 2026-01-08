@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Montserrat, Outfit } from "next/font/google";
 import "./globals.css";
 import './styles/bootstrap.min.css';
+import './styles/style.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,8 +44,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link href="/frontend/assets/css/bootstrap.min.css" rel="stylesheet" />
-        <link href="/frontend/assets/css/style.css?v=5721631444" rel="stylesheet" />
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet" />
       </head>
