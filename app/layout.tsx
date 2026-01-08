@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Montserrat, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -25,6 +25,13 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Studio By Sheetal",
   description: "Made by Prableen Singh",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
