@@ -74,7 +74,7 @@ const HiddenBeauty = () => {
         <div className="col-lg-12 mb-8">
         <div className="flex items-center gap-10">
           <div className="h-[1px] bg-[#68400f] flex-1"></div>
-            <h2 className="text-[2rem] lg:text-[40px] font-medium text-[#5d4112] mb-2 whitespace-nowrap">
+            <h2 className="text-[1.5rem] lg:text-[40px] font-medium text-[#5d4112] mb-2 whitespace-nowrap">
               Bring Out The Hidden Beauty
             </h2>
             <div className="h-[1px] bg-[#68400f] flex-1"></div>
