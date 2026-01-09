@@ -6,15 +6,22 @@ const Footer = () => {
   return (
     <>
       {/* MAIN FOOTER */}
-      <footer className="w-full bg-[#082722] text-[#f1e4a3] font-[family-name:var(--font-montserrat)]">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+      <footer 
+        className="w-full text-[#f8f0b4] font-[family-name:var(--font-montserrat)]"
+        style={{ 
+          backgroundImage: "url('/assets/footer-bg.jpg')", 
+          backgroundPosition: 'center center', 
+          backgroundRepeat: 'repeat' 
+        }}
+      >
+        <div className="container mx-auto px-6 py-12">
 
           {/* TOP GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 text-left">
 
             {/* LOGO + SOCIAL */}
-            <div className="text-center lg:text-left">
-              <Link href="/">
+            <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
+              <Link href="/" className="mb-4">
                 <Image
                   src="/assets/625030871.png"
                   alt="Studio By Sheetal"
@@ -24,63 +31,67 @@ const Footer = () => {
                 />
               </Link>
 
-              <div className="flex justify-center lg:justify-start gap-4 mt-4 text-[#b3a660]">
-                <a href="#" target="_blank">Fb</a>
-                <a href="#" target="_blank">In</a>
-                <a href="#" target="_blank">Pi</a>
-                <a href="#" target="_blank">Yt</a>
+              <div className="flex justify-center lg:justify-start gap-4 text-[#f8f0b6]">
+                <a href="#" target="_blank" className="hover:text-white transition-colors">Fb</a>
+                <a href="#" target="_blank" className="hover:text-white transition-colors">In</a>
+                <a href="#" target="_blank" className="hover:text-white transition-colors">Pi</a>
+                <a href="#" target="_blank" className="hover:text-white transition-colors">Yt</a>
               </div>
             </div>
 
             {/* INFORMATION */}
             <div>
-              <h3 className="text-[#b3a660] text-xl font-medium mb-6 uppercase tracking-wider">
+              <h3 className="text-[#f8f0b4] text-[22px] font-normal mb-6">
                 Information
               </h3>
 
-              <div className="grid grid-cols-2 gap-y-2 text-[#b3a660]">
-                <Link href="/about-us" className="hover:text-white">Our Story</Link>
-                <Link href="/my-account" className="hover:text-white">My Account</Link>
-                <Link href="/blogs" className="hover:text-white">Blog</Link>
-                <Link href="/track-order" className="hover:text-white">Track Order</Link>
-                <Link href="/faq" className="hover:text-white">FAQ's</Link>
-                <Link href="/return-order" className="hover:text-white">Return Order</Link>
-                <Link href="/contact-us" className="hover:text-white">Contact Us</Link>
-                <Link href="/sitemap" className="hover:text-white">Sitemap</Link>
+              <div className="flex flex-wrap text-[#f8f0b6]">
+                <div className="w-1/2 flex flex-col gap-2">
+                    <Link href="/about-us" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Our Story</Link>
+                    <Link href="/blogs" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Blog</Link>
+                    <Link href="/faq" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">FAQ's</Link>
+                    <Link href="/contact-us" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Contact us</Link>
+                </div>
+                <div className="w-1/2 flex flex-col gap-2">
+                    <Link href="/my-account" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">My Account</Link>
+                    <Link href="/track-order" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Track Order</Link>
+                    <Link href="/return-order" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Return Order</Link>
+                    <Link href="/sitemap" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Sitemap</Link>
+                </div>
               </div>
             </div>
 
             {/* QUICK LINKS */}
             <div>
-              <h3 className="text-[#b3a660] text-xl font-medium mb-6 uppercase tracking-wider">
+              <h3 className="text-[#f8f0b4] text-[22px] font-normal mb-6">
                 Quick Links
               </h3>
 
-              <div className="flex flex-col gap-2 text-[#b3a660]">
-                <Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link>
-                <Link href="/returne-policy" className="hover:text-white">Return & Exchange Policy</Link>
-                <Link href="/shipping-policy" className="hover:text-white">Shipping Policy</Link>
-                <Link href="/terms-conditions" className="hover:text-white">Terms of Use</Link>
+              <div className="flex flex-col gap-2 text-[#f8f0b6]">
+                <Link href="/privacy-policy" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Privacy Policy</Link>
+                <Link href="/returne-policy" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Return & Exchange Policy</Link>
+                <Link href="/shipping-policy" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Shipping Policy</Link>
+                <Link href="/terms-conditions" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Terms of Use</Link>
               </div>
             </div>
 
             {/* NEWSLETTER */}
             <div>
-              <h3 className="text-[#b3a660] text-xl font-medium mb-6 uppercase tracking-wider">
+              <h3 className="text-[#f8f0b4] text-[22px] font-normal mb-6">
                 Subscribe to our newsletter
               </h3>
 
-              <p className="mb-4">
+              <p className="mb-4 text-[#f8f0b6] font-light">
                 Subscribe to get special offers, new products and sales deals.
               </p>
 
-              <div className="relative border-b border-[#f2bf42] pb-2">
+              <div className="relative border-b border-[#777] pb-2">
                 <input
                   type="email"
                   placeholder="Your e-mail"
-                  className="bg-transparent w-full outline-none text-[#b3a660] placeholder-[#f2bf42]"
+                  className="bg-transparent w-full outline-none text-[#f8f0b6] placeholder-[#f8f0b4] font-light"
                 />
-                <button className="absolute right-0 bottom-2 text-[#b3a660] uppercase text-sm hover:text-white transition-colors">
+                <button className="absolute right-0 bottom-2 text-[#f8f0b6] uppercase text-sm hover:text-white transition-colors">
                   Subscribe
                 </button>
               </div>
@@ -88,7 +99,7 @@ const Footer = () => {
           </div>
 
           {/* SECURITY / PAYMENTS */}
-          <div className="mt-10 pt-6 border-t border-[#f1e4a3] flex flex-col lg:flex-row items-center justify-center gap-6 text-sm">
+          <div className="mt-10 pt-6 border-t border-[#f1e4a3]/30 flex flex-col lg:flex-row items-center justify-center gap-6 text-sm text-[#f1e4a3]">
             <div className="flex items-center gap-2">
               <Image src="/assets/icons/security.svg" alt="Security" width={22} height={22} />
               100% Secure Payments
@@ -96,14 +107,15 @@ const Footer = () => {
 
             <div className="hidden lg:block h-4 w-px bg-[#f1e4a3]" />
 
-            <Image
-              src="/assets/icons/payment-partners.svg"
-              alt="Payment Partners"
-              width={260}
-              height={32}
-            />
-
-            <div className="hidden lg:block h-4 w-px bg-[#f1e4a3]" />
+            <div className="flex items-center px-4 border-l border-r border-[#f1e4a3] lg:border-none">
+                 <Image
+                  src="/assets/icons/payment-partners.svg"
+                  alt="Payment Partners"
+                  width={250}
+                  height={30}
+                  className="lg:border-r border-[#f1e4a3] pr-8 mr-4"
+                />
+            </div>
 
             <div className="flex items-center gap-2">
               <Image src="/assets/icons/ssl.svg" alt="SSL" width={22} height={22} />
@@ -114,7 +126,7 @@ const Footer = () => {
 
         {/* COPYRIGHT */}
         <div className="bg-[#faf8fc0d] border-t border-dashed border-[#2c2c2c] py-3">
-          <div className="max-w-7xl mx-auto px-6 text-[#f8f0b4] text-sm">
+          <div className="container mx-auto px-6 text-[#f8f0b4] text-sm text-left">
             Copyright 2026 © Studio By Sheetal, All Rights Reserved.
           </div>
         </div>

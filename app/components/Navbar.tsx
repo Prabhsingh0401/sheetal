@@ -40,23 +40,28 @@ const Navbar = () => {
   return (
     <>
       {/* Floating Animating Logo */}
-      <div 
-        className={`flex fixed w-full z-[90] transition-all duration-500 pointer-events-none text-[#f2bf42] items-center${
-          scrolled ? 'justify-start px-4 md:px-3 -mt-5 h-[70px] md:h-[70px]' : 'top-[120px] md:top-[120px] justify-center'
-        }`}
-      >
-        <Link href="/" className="pointer-events-auto inline-block flex items-center h-full">
-          <Image 
-            src="/assets/625030871.png" 
-            alt="Studio By Sheetal" 
-            width={300} 
-            height={100} 
-            className={`transition-all duration-500 w-auto ${
-              scrolled ? 'h-[40px] md:h-[70px]' : 'h-[200px] md:h-[250px]'
-            }`}
-          />
-        </Link>
-      </div>
+      <div
+  className={`flex fixed w-full z-[90] transition-all duration-500 pointer-events-none
+    text-[#f2bf42] items-center
+    ${
+      scrolled
+        ? 'top-[8px] justify-start px-4 h-[70px]'
+        : 'top-[120px] md:top-[100px] justify-center'
+    }
+  `}
+>
+  <Link href="/" className="pointer-events-auto inline-block flex items-center h-full">
+    <Image
+      src="/assets/625030871.png"
+      alt="Studio By Sheetal"
+      width={300}
+      height={100}
+      className={`transition-all duration-500 w-auto ${
+        scrolled ? '-mt-5 h-[40px] md:h-[70px]' : 'h-[200px] md:h-[250px]'
+      }`}
+    />
+  </Link>
+</div>
 
       {/* Top Header (Desktop) - Links & Icons */}
       <div 
