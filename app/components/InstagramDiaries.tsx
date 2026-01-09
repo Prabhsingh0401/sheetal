@@ -2,49 +2,14 @@
 
 import React from "react";
 import Image from "next/image";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import useEmblaCarousel from "embla-carousel-react";
 
 const InstagramDiaries = () => {
-  const settings = {
-    dots: false,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    arrows: false,
-    responsive: [
-      {
-        breakpoint: 1280,
-        settings: {
-          slidesToShow: 4,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 3,
-        },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 2,
-        },
-      },
-      {
-        breakpoint: 480,
-        settings: {
-          slidesToShow: 1,
-          centerMode: true,
-          centerPadding: "40px",
-        },
-      },
-    ],
-  };
+  const [emblaRef] = useEmblaCarousel({
+    loop: true,
+    align: "start",
+    skipSnaps: false,
+  });
 
   const images = [
     "/assets/i1.webp",
@@ -80,10 +45,18 @@ const InstagramDiaries = () => {
         </div>
 
         {/* Carousel Section */}
-        <div className="instagram-slider">
-          <Slider {...settings}>
+        <div ref={emblaRef} className="overflow-hidden">
+          <div className="flex gap-4">
             {images.map((src, index) => (
-              <div key={index} className="px-3 md:px-4 outline-none">
+              <div
+                key={index}
+                className="
+                  flex-shrink-0
+                  w-[85%]
+                  sm:w-[45%]
+                  lg:w-[20%]
+                "
+              >
                 <div className="relative overflow-hidden rounded-xl shadow-md group cursor-pointer aspect-[3/4]">
                   <Image
                     src={src}
@@ -91,17 +64,17 @@ const InstagramDiaries = () => {
                     fill
                     className="object-cover transform group-hover:scale-105 transition-transform duration-500 ease-in-out"
                   />
-                  {/* Overlay on hover (optional, similar to HiddenBeauty's style) */}
+                  {/* Overlay on hover */}
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300"></div>
                   
-                  {/* Instagram Icon Overlay (Optional enhancement) */}
+                  {/* Instagram Icon Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <i className="fab fa-instagram text-white text-3xl drop-shadow-lg"></i>
                   </div>
                 </div>
               </div>
             ))}
-          </Slider>
+          </div>
         </div>
       </div>
     </div>
