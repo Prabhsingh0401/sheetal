@@ -52,6 +52,9 @@ const optima = localFont({
 export const metadata: Metadata = {
   title: "Studio By Sheetal",
   description: "Made by Prableen Singh",
+  icons: {
+    icon: "/assets/335014072.png",
+  },
 };
 
 export const viewport: Viewport = {
