@@ -1,39 +1,16 @@
 'use client';
+
 import React from 'react';
-import Slider from 'react-slick';
+import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 
 const NewArrivals = () => {
-  const settings = {
-    dots: false,
-    infinite: true,
-    speed: 1000,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    autoplay: false,
-    arrows: true,
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        }
-      },
-      {
-        breakpoint: 600,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          arrows: false,
-          dots: true
-        }
-      }
-    ]
-  };
+  const [emblaRef] = useEmblaCarousel({
+    loop: true,
+    align: 'start',
+    skipSnaps: false,
+  });
 
   const products = [
     {
@@ -46,7 +23,7 @@ const NewArrivals = () => {
       discount: '7% OFF',
       size: 'L',
       soldOut: true,
-      link: '/product-detail'
+      link: '/product-detail',
     },
     {
       id: 2,
@@ -58,7 +35,7 @@ const NewArrivals = () => {
       discount: '7% OFF',
       size: 'L',
       soldOut: false,
-      link: '/product-detail'
+      link: '/product-detail',
     },
     {
       id: 3,
@@ -70,7 +47,7 @@ const NewArrivals = () => {
       discount: '7% OFF',
       size: 'L',
       soldOut: false,
-      link: '/product-detail'
+      link: '/product-detail',
     },
     {
       id: 4,
@@ -82,108 +59,135 @@ const NewArrivals = () => {
       discount: '7% OFF',
       size: 'L',
       soldOut: false,
-      link: '/product-detail'
-    }
+      link: '/product-detail',
+    },
   ];
 
   return (
-    <div 
-      className="container-fluid py-16 font-[family-name:var(--font-montserrat)]">
+    <div className="container-fluid py-16 font-[family-name:var(--font-montserrat)]">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
-          {/* Left Text Content */}
+
+          {/* LEFT CONTENT */}
           <div className="lg:col-span-4 text-left">
-            <div className="prod-text-left">
-              <h2 className="text-[2.5rem] lg:text-[45px] font-medium text-[#68400f] mb-4 font-[family-name:var(--font-outfit)] leading-tight">
-                New Arrivals
-              </h2>
-              <div className="mb-8">
-                <p className="text-[#555] text-lg lg:text-xl leading-relaxed">
-                  Pick your beauty products today. 50% OFF on the new brands. Order all classy products today!
-                </p>
-              </div>
-              <div className="mb-8">
-              </div>
-              <Link 
-                href="/about-us" 
-                className="inline-block border-y border-black text-black font-normal py-3 px-10 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px]"
-              >
-                Explore More
-              </Link>
-            </div>
+            <h2 className="text-[2.5rem] lg:text-[45px] font-medium text-[#68400f] mb-4 font-[family-name:var(--font-optima)] leading-tight">
+              New Arrivals
+            </h2>
+
+            <p className="text-[#555] text-lg lg:text-xl leading-relaxed mb-8">
+              Pick your beauty products today. 50% OFF on the new brands. Order all classy products today!
+            </p>
+
+            <Link
+              href="/about-us"
+              className="inline-block border-y border-black text-black py-3 px-10 uppercase transition-all duration-500 hover:tracking-[2px]"
+            >
+              Explore More
+            </Link>
           </div>
 
-          {/* Right Product Slider */}
+          {/* RIGHT – EMBLA CAROUSEL */}
           <div className="lg:col-span-8">
-            <div className="new-arrival">
-              <Slider {...settings} className="prod-carousel-home-new -mx-2">
-                {products.map((product) => (
-                  <div key={product.id} className="px-2">
-                    <div className="rounded-xl overflow-hidden group">
-                      
-                      {/* Image Container with aspect ratio */}
-                      <div className="relative aspect-[3/4] overflow-hidden">
-                        
-                        {/* SOLD OUT Badge */}
-                        {product.soldOut && (
-                    <div className="absolute -top-1 left-0 z-20">
-                      <span className="bg-red-600 text-white text-[10px] px-2 py-1 uppercase font-bold tracking-wider rounded-br-lg">
-                        SOLD OUT
-                      </span>
-                    </div>
-                  )}
+            <div ref={emblaRef} className="overflow-hidden">
+              <div className="flex gap-4">
 
-                        {/* Heart Icon */}
-                        <div className="absolute top-3 right-3 z-20 cursor-pointer rounded-full p-1.5 transition-all">
-                          <Image src="/assets/icons/heart.svg" width={18} height={18} alt="wishlist"/>
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    className="
+                      flex-shrink-0
+                      w-[85%]
+                      sm:w-[48%]
+                      lg:w-[33.333%]
+                    "
+                  >
+                    <div className="rounded-xl overflow-hidden group">
+
+                      {/* IMAGE */}
+                      <div className="relative aspect-[3/4] overflow-hidden">
+
+                        {/* SOLD OUT */}
+                        {product.soldOut && (
+                          <div className="absolute -top-1 left-0 z-20">
+                            <span className="bg-red-600 text-white text-[10px] px-2 py-1 uppercase font-bold rounded-br-lg">
+                              SOLD OUT
+                            </span>
+                          </div>
+                        )}
+
+                        {/* HEART */}
+                        <div className="absolute top-3 right-3 z-20 cursor-pointer rounded-full p-1.5">
+                          <Image
+                            src="/assets/icons/heart.svg"
+                            width={18}
+                            height={18}
+                            alt="wishlist"
+                          />
                         </div>
 
-                        {/* Product Images */}
-                        <Link href={product.link} className="block h-full w-full">
-                          <Image 
-                            src={product.image} 
-                            alt={product.name} 
-                            width={400} 
-                            height={533} 
-                            className="w-full h-full object-cover transition-opacity duration-700 group-hover:opacity-0"
+                        {/* PRODUCT IMAGES */}
+                        <Link href={product.link} className="block h-full w-full relative">
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            width={400}
+                            height={533}
+                            className="w-full h-full object-cover rounded-xl transition-opacity duration-700 group-hover:opacity-0"
                           />
-                          <Image 
-                            src={product.hoverImage} 
-                            alt={product.name} 
-                            width={400} 
-                            height={533} 
-                            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+                          <Image
+                            src={product.hoverImage}
+                            alt={product.name}
+                            width={400}
+                            height={533}
+                            className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-0 transition-opacity duration-700 group-hover:opacity-100"
                           />
                         </Link>
                       </div>
 
-                      {/* Product Info */}
+                      {/* INFO */}
                       <div className="p-4 text-center">
                         <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
-                          <Link href={product.link} className="text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2 leading-tight">
+                          <Link
+                            href={product.link}
+                            className="text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2"
+                          >
                             {product.name}
                           </Link>
                         </h6>
-                        
+
                         <div className="flex flex-col items-center gap-1 mb-3">
-                          <div className="text-xs text-gray-600 font-medium">
+                          <div className="text-xs text-gray-600">
                             <span className="font-bold text-black">Size:</span> {product.size}
                           </div>
                           <div className="flex gap-0.5">
-                            {[1,2,3,4,5].map(i => (
-                              <Image key={i} src="/assets/gray-star.png" alt="star" width={24} height={24} />
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <Image
+                                key={i}
+                                src="/assets/gray-star.png"
+                                alt="star"
+                                width={20}
+                                height={20}
+                              />
                             ))}
                           </div>
                         </div>
 
                         <div className="flex justify-center items-center gap-2 mb-4">
-                          <span className="text-lg text-[#281b00] font-bold">{product.price}</span>
-                          <span className="text-xs text-gray-400 line-through">{product.mrp}</span>
-                          <span className="text-xs text-[#B78D65] font-bold">{product.discount}</span>
+                          <span className="text-lg text-[#281b00] font-bold">
+                            {product.price}
+                          </span>
+                          <span className="text-xs text-gray-400 line-through">
+                            {product.mrp}
+                          </span>
+                          <span className="text-xs text-[#B78D65] font-bold">
+                            {product.discount}
+                          </span>
                         </div>
 
-                        <Link href={product.link} className="inline-block border-y border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:tracking-[1px]">
+                        <Link
+                          href={product.link}
+                          className="inline-block border-y border-black text-black py-2 px-8 uppercase transition-all duration-500 hover:tracking-[1px]"
+                        >
                           View Product
                         </Link>
                       </div>
@@ -191,7 +195,8 @@ const NewArrivals = () => {
                     </div>
                   </div>
                 ))}
-              </Slider>
+
+              </div>
             </div>
           </div>
 

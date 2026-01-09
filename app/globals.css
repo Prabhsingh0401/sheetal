@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
+@theme {
+  --font-optima: var(--font-optima);
+}
+
 :root {
   background-color: #f9f9f9;
   overflow-x:hidden;
 }
+

@@ -7,6 +7,10 @@ import HiddenBeauty from "./components/HiddenBeauty";
 import TrendingThisWeek from "./components/TrendingThisWeek";
 import NewArrivals from "./components/NewArrivals";
 import Collections from "./components/Collections";
+import TimelessWomenCollection from "./components/TimelessWomenCollection";
+import InstagramDiaries from "./components/InstagramDiaries";
+import Testimonials from "./components/Testimonials";
+import Blogs from "./components/Blogs";
 import Footer from "./components/Footer";
 
 export default function Home() {
@@ -20,6 +24,10 @@ export default function Home() {
       <TrendingThisWeek />
       <NewArrivals />
       <Collections/>
+      <TimelessWomenCollection />
+      <InstagramDiaries />
+      <Testimonials />
+      <Blogs />
       <Footer />
     </>
     );

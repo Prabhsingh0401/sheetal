@@ -10,7 +10,7 @@ const AboutSBS = () => {
         <div className="lg:col-span-1">
           <div className="h-full flex flex-col justify-center items-center lg:items-start">
             <div className="flex items-center gap-4 mb-2 w-full">
-              <h2 className="text-[1.5rem] md:text-[2rem] lg:text-[40px] font-light text-[#68400f] font-[family-name:var(--font-outfit)] whitespace-nowrap">About SBS</h2>
+              <h2 className="text-[1.5rem] md:text-[2rem] lg:text-[40px] font-light text-[#68400f] font-[family-name:var(--font-optima)] whitespace-nowrap">About SBS</h2>
             </div>
             <h3 className="text-[1.25rem] md:text-[1.75rem] lg:text-[28px] font-medium text-[#916e44] font-[family-name:var(--font-outfit)] text-center lg:text-left">Innovate the Outfit</h3>
           </div>

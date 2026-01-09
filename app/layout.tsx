@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Montserrat, Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
-import './styles/bootstrap.min.css';
-import './styles/style.css';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +21,32 @@ const montserrat = Montserrat({
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
+});
+
+const optima = localFont({
+  src: [
+    {
+      path: "../public/assets/fonts/OPTIMA.woff",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/assets/fonts/OPTIMA_B.woff",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/assets/fonts/Optima Medium.woff",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/assets/fonts/Optima_Italic.woff",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+  variable: "--font-optima",
 });
 
 export const metadata: Metadata = {
@@ -48,7 +73,7 @@ export default function RootLayout({
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${outfit.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${outfit.variable} ${optima.variable} antialiased`}
       >
         {children}
       </body>

@@ -41,11 +41,11 @@ const Navbar = () => {
     <>
       {/* Floating Animating Logo */}
       <div 
-        className={`flex fixed w-full z-[10000] transition-all duration-500 pointer-events-none text-[#f2bf42]${
-          scrolled ? '!top-[5px] justify-start px-4 md:px-8' : 'top-[120px] md:top-[120px] justify-center'
+        className={`flex fixed w-full z-[90] transition-all duration-500 pointer-events-none text-[#f2bf42] items-center${
+          scrolled ? 'justify-start px-4 md:px-3 -mt-5 h-[70px] md:h-[70px]' : 'top-[120px] md:top-[120px] justify-center'
         }`}
       >
-        <Link href="/" className="pointer-events-auto inline-block">
+        <Link href="/" className="pointer-events-auto inline-block flex items-center h-full">
           <Image 
             src="/assets/625030871.png" 
             alt="Studio By Sheetal" 
@@ -60,7 +60,7 @@ const Navbar = () => {
 
       {/* Top Header (Desktop) - Links & Icons */}
       <div 
-        className={`hidden md:block fixed w-full z-[9999] transition-all duration-500 bg-[#082722]/90 backdrop-blur-sm py-[25px] font-[family-name:var(--font-montserrat)] ${
+        className={`hidden md:block fixed w-full z-[80] transition-all duration-500 bg-[#082722]/90 backdrop-blur-sm py-[25px] font-[family-name:var(--font-montserrat)] ${
           scrolled ? 'top-0 shadow-lg' : 'top-[24px]'
         }`}
       >
@@ -73,7 +73,7 @@ const Navbar = () => {
                 <li className="relative">
                   <Link 
                     href="/" 
-                    className="inline-block px-[19px] !text-[#f2bf42] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors"
+                    className="inline-block px-[19px] !text-[#b3a660] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors"
                   >
                     Home
                   </Link>
@@ -87,7 +87,7 @@ const Navbar = () => {
                 >
                   <Link 
                     href="#" 
-                    className="inline-block px-[19px] !text-[#f2bf42] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-1"
+                    className="inline-block px-[19px] !text-[#b3a660] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-1"
                   >
                     Shop <span className="text-[10px] transform rotate-180">▼</span>
                   </Link>
@@ -98,35 +98,35 @@ const Navbar = () => {
                   >
                     <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
                       <li className="border-b border-white/20">
-                        <Link href="/product-list" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a] transition-colors">Sarees</Link>
+                        <Link href="/product-list" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors">Sarees</Link>
                       </li>
                       <li className="border-b border-white/20">
-                        <Link href="/product-list" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a] transition-colors">Salwar Suits</Link>
+                        <Link href="/product-list" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors">Salwar Suits</Link>
                       </li>
                       <li className="relative group/lehenga border-b border-white/20">
-                         <Link href="#" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a] transition-colors flex justify-between items-center">
+                         <Link href="#" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex justify-between items-center">
                             Lehengas <span className="-rotate-90 text-[8px]">▼</span>
                          </Link>
                          {/* Level 2 Submenu */}
-                         <ul className="absolute left-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/lehenga:block">
-                            <li className="border-b border-white/20"><Link href="#" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a]">2nd level dropdown</Link></li>
-                            <li className="border-b border-white/20"><Link href="#" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a]">2nd level dropdown</Link></li>
+                         <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/lehenga:block z-[999]">
+                            <li className="border-b border-white/20"><Link href="#" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">2nd level dropdown</Link></li>
+                            <li className="border-b border-white/20"><Link href="#" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">2nd level dropdown</Link></li>
                             
                             {/* Level 3 Submenu Trigger */}
                             <li className="relative group/subsub border-b border-white/20">
-                                <Link href="#" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a] flex justify-between items-center">
+                                <Link href="#" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] flex justify-between items-center">
                                     Sub Sub Category <span className="-rotate-90 text-[8px]">▼</span>
                                 </Link>
                                 {/* Level 3 Submenu */}
-                                <ul className="absolute left-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/subsub:block">
-                                    <li className="border-b border-white/20"><Link href="#" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a]">3rd level dropdown</Link></li>
-                                    <li className="border-b border-white/20"><Link href="#" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a]">3rd level dropdown</Link></li>
+                                <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/subsub:block">
+                                    <li className="border-b border-white/20"><Link href="#" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">3rd level dropdown</Link></li>
+                                    <li className="border-b border-white/20"><Link href="#" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">3rd level dropdown</Link></li>
                                 </ul>
                             </li>
                          </ul>
                       </li>
                       <li>
-                        <Link href="/product-list" className="block py-2 !text-[#f2bf42] hover:text-[#aa8c6a] transition-colors">Suits</Link>
+                        <Link href="/product-list" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors">Suits</Link>
                       </li>
                     </ul>
                   </div>
@@ -135,7 +135,7 @@ const Navbar = () => {
                 <li className="relative">
                   <Link 
                     href="/about-us" 
-                    className="inline-block px-[19px] !text-[#f2bf42] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors"
+                    className="inline-block px-[19px] !text-[#b3a660] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors"
                   >
                     Our Story
                   </Link>
@@ -211,30 +211,30 @@ const Navbar = () => {
       <div className={`fixed inset-0 z-[10000] bg-black/50 transition-opacity duration-300 md:hidden ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
          <nav className={`absolute right-0 top-0 h-full w-[80%] max-w-[300px] bg-white shadow-2xl transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="p-4 flex justify-end">
-                <button onClick={toggleMobileMenu} className="text-2xl !text-[#f2bf42]">✕</button>
+                <button onClick={toggleMobileMenu} className="text-2xl !text-[#b3a660]">✕</button>
             </div>
             <div className="p-6 flex flex-col gap-4 overflow-y-auto h-full pb-20">
-               <Link href="/" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#f2bf42]">Home</Link>
-               <Link href="/about-us" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#f2bf42]">OUR STORY</Link>
+               <Link href="/" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">Home</Link>
+               <Link href="/about-us" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">OUR STORY</Link>
                
                {/* Mobile Dropdown */}
                <div>
                   <button 
-                    className="w-full flex justify-between items-center text-lg font-medium border-b border-gray-100 py-2 !text-[#f2bf42]"
+                    className="w-full flex justify-between items-center text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]"
                     onClick={toggleMobileShopDropdown}
                   >
                     Shop <span className={`transition-transform duration-200 ${mobileShopDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
                   </button>
                   <div className={`pl-4 bg-gray-50 overflow-hidden transition-all duration-300 ${mobileShopDropdownOpen ? 'max-h-[500px] py-2' : 'max-h-0'}`}>
-                     <Link href="/product-list" className="block py-2 !text-[#f2bf42]">Sarees</Link>
-                     <Link href="/product-list" className="block py-2 !text-[#f2bf42]">Salwar Suits</Link>
-                     <Link href="#" className="block py-2 !text-[#f2bf42]">Lehengas</Link>
-                     <Link href="/product-list" className="block py-2 !text-[#f2bf42]">Suits</Link>
+                     <Link href="/product-list" className="block py-2 !text-[#b3a660]">Sarees</Link>
+                     <Link href="/product-list" className="block py-2 !text-[#b3a660]">Salwar Suits</Link>
+                     <Link href="#" className="block py-2 !text-[#b3a660]">Lehengas</Link>
+                     <Link href="/product-list" className="block py-2 !text-[#b3a660]">Suits</Link>
                   </div>
                </div>
 
-               <Link href="/blogs" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#f2bf42]">Blog</Link>
-               <Link href="/contact-us" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#f2bf42]">Contact Us</Link>
+               <Link href="/blogs" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">Blog</Link>
+               <Link href="/contact-us" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">Contact Us</Link>
             </div>
          </nav>
       </div>
