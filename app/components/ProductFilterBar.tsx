@@ -124,10 +124,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                    {/* Sort Dropdown */}
                    <div className={`absolute right-0 top-full mt-2 w-48 bg-white shadow-xl border border-gray-100 z-50 py-2 transition-all duration-300 ${sortByOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
                       <ul>
-                         <li><button className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#bd9951]">Price: Low to High</button></li>
-                         <li><button className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#bd9951]">Price: High to Low</button></li>
-                         <li><button className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#bd9951]">New Arrivals</button></li>
-                         <li><button className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#bd9951]">Popularity</button></li>
+                         <li><button className="block w-full text-left px-4 py-2 text-sm cursor-pointer">Price: Low to High</button></li>
+                         <li><button className="block w-full text-left px-4 py-2 text-sm cursor-pointer">Price: High to Low</button></li>
+                         <li><button className="block w-full text-left px-4 py-2 text-sm cursor-pointer ">New Arrivals</button></li>
+                         <li><button className="block w-full text-left px-4 py-2 text-sm cursor-pointer ">Popularity</button></li>
                       </ul>
                    </div>
                 </div>
@@ -200,7 +200,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                             className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                           >
                               {category.label}
-                              <span className={`text-xl font-light transition-transform duration-200 ${openSections.includes(category.id) ? 'rotate-180' : ''}`}>
+                              <span className={`text-xl transition-transform duration-200 ${openSections.includes(category.id) ? 'rotate-180' : ''}`}>
                                   {openSections.includes(category.id) ? '−' : '+'}
                               </span>
                           </button>
