@@ -215,7 +215,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                                   return (
                                       <div key={idx} className="flex items-center gap-3 group cursor-pointer">
                                           <input type="checkbox" id={`f-${category.id}-${idx}`} className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer" />
-                                          <label htmlFor={`f-${category.id}-${idx}`} className="text-sm text-gray-600 font-light cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors">
+                                          <label htmlFor={`f-${category.id}-${idx}`} className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors">
                                               {isColor && (
                                                   <span className="w-4 h-4 rounded-full border border-gray-200 shadow-sm" style={{backgroundColor: colorValue}}></span>
                                               )}
