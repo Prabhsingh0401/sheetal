@@ -45,8 +45,8 @@ const Navbar = () => {
     text-[#f2bf42] items-center
     ${
       scrolled
-        ? 'top-[8px] justify-start px-4 h-[70px]'
-        : 'top-[120px] md:top-[100px] justify-center'
+        ? 'top-[25px] justify-start px-4 h-[70px]'
+        : 'top-[120px] md:top-[120px] justify-center'
     }
   `}
 >
