@@ -1,5 +1,5 @@
-import React from 'react';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
 
 interface EnquireModalProps {
   isOpen: boolean;
@@ -7,28 +7,88 @@ interface EnquireModalProps {
   productTitle: string;
 }
 
-const EnquireModal: React.FC<EnquireModalProps> = ({ isOpen, onClose, productTitle }) => {
+const EnquireModal: React.FC<EnquireModalProps> = ({
+  isOpen,
+  onClose,
+  productTitle,
+}) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4">
-        <div className="bg-white w-full max-w-md rounded-lg overflow-hidden relative animate-scale-in">
-            <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl">×</button>
-            <div className="p-6">
-                <h4 className="text-xl font-bold mb-4 font-[family-name:var(--font-optima)]">Enquire Form</h4>
-                <p className="text-sm text-gray-500 mb-4">Product: {productTitle}</p>
-                <form className="space-y-4">
-                    <input type="text" placeholder="Name" className="w-full border border-gray-300 p-3 rounded text-sm focus:border-[#bd9951] outline-none" />
-                    <input type="email" placeholder="Email" className="w-full border border-gray-300 p-3 rounded text-sm focus:border-[#bd9951] outline-none" />
-                    <input type="tel" placeholder="Phone Number" className="w-full border border-gray-300 p-3 rounded text-sm focus:border-[#bd9951] outline-none" />
-                    <textarea placeholder="Message" rows={3} className="w-full border border-gray-300 p-3 rounded text-sm focus:border-[#bd9951] outline-none"></textarea>
-                    <button className="w-full bg-[#bd9951] text-white py-3 rounded font-bold uppercase tracking-wider hover:bg-[#a68545]">Enquire Now</button>
-                </form>
-            </div>
-            <div className="bg-gray-50 p-4 flex justify-center">
-               <Image src="/assets/popu-element-img.png" width={150} height={50} alt="decor" className="opacity-50"/>
-            </div>
+    <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center">
+      
+      {/* Circular Modal */}
+      <div className="relative w-[520px] h-[520px] rounded-full bg-[#f7f3ee] border-[3px] border-[#f5a623] flex flex-col items-center justify-center px-20">
+
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute -top-4 -right-4 w-10 h-10 bg-white rounded-full shadow flex items-center justify-center text-xl text-[#fe5722]"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        {/* Title */}
+        <h3 className="text-2xl font-medium mb-2 font-[family-name:var(--font-optima)]">
+          Enquire Form
+        </h3>
+        <div className="w-24 h-px bg-gray-400 mb-4" />
+
+        {/* Form */}
+        <form className="w-full space-y-3 text-sm">
+          <input
+            type="text"
+            value={productTitle}
+            disabled
+            className="w-full rounded-full border border-gray-700 px-4 py-2 bg-transparent text-center text-xs"
+          />
+
+          <input
+            type="text"
+            placeholder="Name"
+            className="w-full rounded-full border border-gray-700 px-4 py-2 bg-transparent"
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full rounded-full border border-gray-700 px-4 py-2 bg-transparent"
+          />
+
+          <input
+            type="text"
+            placeholder="Phone Number"
+            maxLength={10}
+            className="w-full rounded-full border border-gray-700 px-4 py-2 bg-transparent"
+          />
+
+          <textarea
+            placeholder="Message"
+            rows={2}
+            className="w-full rounded-full border border-gray-700 px-4 py-2 bg-transparent resize-none"
+          />
+          {/* Button */}
+          <button
+            type="submit"
+            className="mx-auto mt-3 block w-40 py-2 text-sm font-medium border-y border-black text-black font-normal uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-sm"
+            >
+            Enquire Now
+        </button>
+
+        </form>
+
+        {/* Decorative Saree Image */}
+        <div className="absolute -bottom-2 -left-15">
+          <Image
+            src="/assets/popu-element-img.png"
+            alt="Saree"
+            width={260}
+            height={360}
+            className="object-contain"
+          />
         </div>
+      </div>
     </div>
   );
 };

@@ -31,13 +31,13 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ similarProducts }) =>
     <>
       {/* Similar Products */}
       <div className="container mx-auto px-4 py-12 border-t border-gray-200">
-          <h3 className="text-2xl font-bold mb-8 font-[family-name:var(--font-optima)]">Similar Products</h3>
+          <h3 className="text-4xl text-[#653f1b] mb-8 font-[family-name:var(--font-optima)]">Similar Products</h3>
           <EmblaSlider products={similarProducts} />
       </div>
 
       {/* Recently Viewed */}
       <div className="container mx-auto px-4 py-12 border-t border-gray-200 mb-12">
-          <h3 className="text-2xl font-bold mb-8 font-[family-name:var(--font-optima)]">Recently Viewed</h3>
+          <h3 className="text-4xl text-[#653f1b] mb-8 font-[family-name:var(--font-optima)]">Recently Viewed</h3>
           <EmblaSlider products={similarProducts.slice(0, 3)} />
       </div>
     </>

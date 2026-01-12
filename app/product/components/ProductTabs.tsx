@@ -7,24 +7,24 @@ interface ProductTabsProps {
 
 const ProductTabs: React.FC<ProductTabsProps> = ({ activeTab, setActiveTab }) => {
   return (
-    <div className="py-4 border-t border-gray-200">
+    <div className="border-t border-gray-200">
        <div className="container mx-auto px-4">
            <div className="flex justify-center mb-8 border-b border-gray-200">
                <button 
                  onClick={() => setActiveTab('description')}
-                 className={`px-8 py-4 font-semibold text-lg border-b-2 transition-colors ${activeTab === 'description' ? 'border-[#bd9951] text-[#bd9951]' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
+                 className={`px-8 py-4 font-semibold text-lg border-b-2 transition-colors ${activeTab === 'description' ? 'border-[#fe5722] text-[#fe5722] bg-[#fe5722] text-white' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
                >
                   Description
                </button>
                <button 
                  onClick={() => setActiveTab('material')}
-                 className={`px-8 py-4 font-semibold text-lg border-b-2 transition-colors ${activeTab === 'material' ? 'border-[#bd9951] text-[#bd9951]' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
+                 className={`px-8 py-4 font-semibold text-lg border-b-2 transition-colors ${activeTab === 'material' ? 'border-[#fe5722] text-[#fe5722] bg-[#fe5722] text-white' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
                >
                   Material & Care
                </button>
            </div>
            
-           <div className="max-w-4xl mx-auto text-gray-600 leading-relaxed">
+           <div className="max-w-full mx-auto text-gray-600 leading-relaxed">
                {activeTab === 'description' && (
                    <div className="animate-fade-in">
                        <p className="mb-4">Embrace the calming charm of this soft blue suit set – a beautiful blend of comfort and everyday elegance. Ideal for casual outings and relaxed daytime gatherings, this three-piece ensemble features a delicately printed straight kurta, matching palazzos, and a coordinated dupatta.</p>
