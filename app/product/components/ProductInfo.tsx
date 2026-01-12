@@ -49,7 +49,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
       <div className="mb-6">
         <div className="flex items-end gap-3 mb-1">
-          <span className="text-3xl font-bold text-[#bd9951]">
+          <span className="text-3xl font-medium">
             ₹ {product.price.toFixed(2)}
           </span>
           <span className="text-lg text-gray-400 line-through mb-1">
