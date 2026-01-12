@@ -36,12 +36,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode }) => {
               ${viewMode === 'grid' ? 'mb-5 aspect-[3/4] w-full' : 'w-[40%] aspect-[3/4]'}
           `}>
             {product.soldOut && (
-              <div className="absolute top-4 left-0 z-10 bg-[#bd9951] text-white text-[9px] px-4 py-1.5 tracking-[0.2em] font-bold uppercase rounded-r-sm">
+              <div className="absolute top-0 left-0 z-10 bg-red-600 text-white text-[9px] px-4 py-1.5 tracking-[0.2em] font-bold uppercase rounded-r-sm">
                 Sold Out
               </div>
             )}
             
-            <Link href="/product-detail" className="block w-full h-full relative overflow-hidden rounded-lg">
+            <Link href={`/product/${product.id}`} className="block w-full h-full relative overflow-hidden rounded-lg">
               <Image
                 src={product.image}
                 alt={product.name}
@@ -76,7 +76,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode }) => {
           {/* Info Container */}
           <div className={`flex flex-col flex-grow px-1 ${viewMode === 'grid' ? 'text-center' : 'text-left items-start pl-4'}`}>
             <h3 className={`font-medium text-[#2c2c2c] leading-snug line-clamp-2 h-10 mb-3 ${viewMode === 'grid' ? 'text-[14px]' : 'text-[18px]'}`}>
-              <Link href="/product-detail" className="hover:text-[#bd9951] transition-colors uppercase tracking-tight">
+              <Link href={`/product/${product.id}`} className="hover:text-[#bd9951] transition-colors uppercase tracking-tight">
                 {product.name}
               </Link>
             </h3>
@@ -107,7 +107,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode }) => {
             
             <div className={`mt-auto flex ${viewMode === 'grid' ? 'justify-center' : 'justify-start'}`}>
               <Link 
-                href="/product-detail" 
+                href={`/product/${product.id}`} 
                 className="inline-block border-y border-black text-black py-2 px-8 uppercase text-[12px] font-medium transition-all duration-500 hover:tracking-[1px]"
               >
                 View Detail

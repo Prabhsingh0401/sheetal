@@ -14,7 +14,7 @@ const NewArrivals = () => {
 
   const products = [
     {
-      id: 1,
+      id: 29950464,
       name: 'Rama Green Zariwork Soft Silk Saree',
       image: '/assets/494291571.webp',
       hoverImage: '/assets/487339289.webp',
@@ -23,7 +23,6 @@ const NewArrivals = () => {
       discount: '7% OFF',
       size: 'L',
       soldOut: true,
-      link: '/product-detail',
     },
     {
       id: 2,
@@ -35,7 +34,6 @@ const NewArrivals = () => {
       discount: '7% OFF',
       size: 'L',
       soldOut: false,
-      link: '/product-detail',
     },
     {
       id: 3,
@@ -47,7 +45,6 @@ const NewArrivals = () => {
       discount: '7% OFF',
       size: 'L',
       soldOut: false,
-      link: '/product-detail',
     },
     {
       id: 4,
@@ -59,7 +56,6 @@ const NewArrivals = () => {
       discount: '7% OFF',
       size: 'L',
       soldOut: false,
-      link: '/product-detail',
     },
   ];
 
@@ -79,7 +75,7 @@ const NewArrivals = () => {
             </p>
 
             <Link
-              href="/about-us"
+              href="/category/new-arrivals"
               className="inline-block border-y border-black text-black py-3 px-10 uppercase transition-all duration-500 hover:tracking-[2px]"
             >
               Explore More
@@ -126,7 +122,7 @@ const NewArrivals = () => {
                         </div>
 
                         {/* PRODUCT IMAGES */}
-                        <Link href={product.link} className="block h-full w-full relative">
+                        <Link href={`/product/${product.id}`} className="block h-full w-full relative">
                           <Image
                             src={product.image}
                             alt={product.name}
@@ -148,7 +144,7 @@ const NewArrivals = () => {
                       <div className="p-4 text-center">
                         <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
                           <Link
-                            href={product.link}
+                            href={`/product/${product.id}`}
                             className="text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2"
                           >
                             {product.name}
@@ -185,7 +181,7 @@ const NewArrivals = () => {
                         </div>
 
                         <Link
-                          href={product.link}
+                          href={`/product/${product.id}`}
                           className="inline-block border-y border-black text-black py-2 px-8 uppercase transition-all duration-500 hover:tracking-[1px]"
                         >
                           View Product

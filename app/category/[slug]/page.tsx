@@ -1,11 +1,11 @@
 'use client';
-import React, { useState } from 'react';
-import TopInfo from '../components/TopInfo';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import ProductListBanner from './components/ProductListBanner';
-import ProductFilterBar from './components/ProductFilterBar';
-import ProductGrid from './components/ProductGrid';
+import React, { useState, use } from 'react';
+import TopInfo from '../../components/TopInfo';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
+import ProductListBanner from '../../product-list/components/ProductListBanner';
+import ProductFilterBar from '../../product-list/components/ProductFilterBar';
+import ProductGrid from '../../product-list/components/ProductGrid';
 
 const products = [
   {
@@ -118,7 +118,20 @@ const products = [
   }
 ];
 
-const ProductList = () => {
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+const CategoryPage = ({ params }: PageProps) => {
+  const resolvedParams = use(params);
+  const slug = resolvedParams.slug;
+  
+  // Format slug for display (e.g. "salwar-suits" -> "Salwar Suits")
+  const title = slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortByOpen, setSortByOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -143,7 +156,7 @@ const ProductList = () => {
       <TopInfo />
       <Navbar />
 
-      <ProductListBanner />
+      <ProductListBanner title={title} />
 
       <div className="container mx-auto px-4 py-8">
         <div className="w-full">
@@ -168,4 +181,4 @@ const ProductList = () => {
   );
 };
 
-export default ProductList;
+export default CategoryPage;

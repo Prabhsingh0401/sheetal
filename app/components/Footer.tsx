@@ -48,7 +48,7 @@ const Footer = () => {
               <div className="flex flex-wrap text-[#f8f0b6]">
                 <div className="w-1/2 flex flex-col gap-2">
                     <Link href="/about-us" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Our Story</Link>
-                    <Link href="/blogs" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Blog</Link>
+                    <Link href="/blog" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Blog</Link>
                     <Link href="/faq" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">FAQ's</Link>
                     <Link href="/contact-us" className="hover:text-white transition-colors text-[16px] font-light tracking-wide">Contact us</Link>
                 </div>

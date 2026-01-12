@@ -22,20 +22,24 @@ const Blogs = () => {
           <div className="flex flex-col">
             <div className="relative w-full h-[300px] md:h-[400px] lg:h-[500px] overflow-hidden rounded-lg mb-6 group">
               {/* Using Image component instead of background for better performance */}
-              <Image
-                src="/assets/484942625.jpg"
-                alt="Banarasi Saree"
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+              <Link href="/blog/banarasi-saree-guide">
+                <Image
+                  src="/assets/484942625.jpg"
+                  alt="Banarasi Saree"
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </Link>
             </div>
             <div className="text-left">
               <div className="text-sm text-gray-500 mb-2 font-medium">December 31, 2024</div>
               <h3 className="text-xl lg:text-2xl font-medium text-[#333] mb-4 font-[family-name:var(--font-optima)] leading-tight">
-                What to Look for When Buying a Banarasi Saree Online
+                <Link href="/blog/banarasi-saree-guide" className="hover:text-[#d18702] transition-colors">
+                  What to Look for When Buying a Banarasi Saree Online
+                </Link>
               </h3>
               <Link
-                href="#"
+                href="/blog/banarasi-saree-guide"
                 className="inline-block border-y border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-sm"
               >
                 Explore More
@@ -50,7 +54,7 @@ const Blogs = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               <div className="md:col-span-7">
                  <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg group">
-                    <Link href="#">
+                    <Link href="/blog/wedding-wardrobe-magic">
                       <Image
                         src="/assets/823107476.jpg"
                         alt="Wedding Wardrobe"
@@ -63,10 +67,12 @@ const Blogs = () => {
               <div className="md:col-span-5">
                 <div className="text-sm text-gray-500 mb-2 font-medium">December 31, 2024</div>
                 <h4 className="text-lg font-medium text-[#333] mb-4 font-[family-name:var(--font-optima)] leading-tight">
-                  How SBS Brings Banarasi Magic to Your Wedding Wardrobe
+                  <Link href="/blog/wedding-wardrobe-magic" className="hover:text-[#d18702] transition-colors">
+                    How SBS Brings Banarasi Magic to Your Wedding Wardrobe
+                  </Link>
                 </h4>
                 <Link
-                  href="#"
+                  href="/blog/wedding-wardrobe-magic"
                   className="inline-block border-y border-black text-black font-normal py-1 px-4 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-xs"
                 >
                   Explore more
@@ -78,7 +84,7 @@ const Blogs = () => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
               <div className="md:col-span-7">
                  <div className="relative w-full aspect-[4/3] overflow-hidden rounded-lg group">
-                    <Link href="#">
+                    <Link href="/blog/colour-trends-2025">
                       <Image
                         src="/assets/410718746.jpg"
                         alt="Colour Trends"
@@ -91,10 +97,12 @@ const Blogs = () => {
               <div className="md:col-span-5">
                 <div className="text-sm text-gray-500 mb-2 font-medium">December 31, 2024</div>
                 <h4 className="text-lg font-medium text-[#333] mb-4 font-[family-name:var(--font-optima)] leading-tight">
-                  Colour Trends in Sarees for 2025: Jewel Tones from Studio by Sheetal’s Festive Collection
+                  <Link href="/blog/colour-trends-2025" className="hover:text-[#d18702] transition-colors">
+                    Colour Trends in Sarees for 2025: Jewel Tones from Studio by Sheetal’s Festive Collection
+                  </Link>
                 </h4>
                 <Link
-                  href="#"
+                  href="/blog/colour-trends-2025"
                   className="inline-block border-y border-black text-black font-normal py-1 px-4 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-xs"
                 >
                   Explore more
@@ -111,3 +119,4 @@ const Blogs = () => {
 };
 
 export default Blogs;
+

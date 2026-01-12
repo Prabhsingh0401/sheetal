@@ -13,11 +13,11 @@ const HiddenBeauty = () => {
   });
 
   const categories = [
-    { id: 1, name: 'Sarees', image: '/assets/962929746.jpg', link: '/product-list' },
-    { id: 2, name: 'Salwar Suits', image: '/assets/719585197.jpg', link: '/product-list' },
-    { id: 3, name: 'Lehengas', image: '/assets/949994952.jpg', link: '/product-list' },
-    { id: 4, name: 'Sarees', image: '/assets/962929746.jpg', link: '/product-list' },
-    { id: 5, name: 'Salwar Suits', image: '/assets/719585197.jpg', link: '/product-list' },
+    { id: 1, name: 'Sarees', image: '/assets/962929746.jpg', link: '/category/sarees' },
+    { id: 2, name: 'Salwar Suits', image: '/assets/719585197.jpg', link: '/category/salwar-suits' },
+    { id: 3, name: 'Lehengas', image: '/assets/949994952.jpg', link: '/category/lehengas' },
+    { id: 4, name: 'Sarees', image: '/assets/962929746.jpg', link: '/category/sarees' },
+    { id: 5, name: 'Salwar Suits', image: '/assets/719585197.jpg', link: '/category/salwar-suits' },
   ];
 
   return (
