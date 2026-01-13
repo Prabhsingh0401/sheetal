@@ -88,7 +88,7 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({ isOpen, onClose }) => {
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl z-10"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-xl z-10 border px-2"
         >
           ×
         </button>
@@ -239,14 +239,14 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({ isOpen, onClose }) => {
           )}
 
           <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500 mb-4">
+            <p className="text-lg text-gray-500 mb-4 flex flex-col items-center justify-center">
               *These measurements are indicative. Actual Size may differ.
             </p>
-            <div className="flex flex-row gap-3">
-              <button className="w-full px-6 py-3 bg-[#fe5722] text-white rounded font-bold hover:bg-[#a68545] uppercase tracking-wide">
+            <div className="flex flex-row gap-3 w-full justify-center">
+              <button className="w-40 text-sm px-2 py-1 bg-[#fe5722] text-white rounded hover:bg-[#a68545] uppercase tracking-wide">
                 Add to Cart
               </button>
-              <button className="w-full px-6 py-3 bg-white border border-[#fe5722] text-[#fe5722] rounded font-bold hover:bg-gray-50 uppercase tracking-wide">
+              <button className="w-40 text-sm px-2 py-1 bg-white border border-[#fe5722] text-[#fe5722] rounded hover:bg-gray-50 uppercase tracking-wide">
                 Add to Wishlist
               </button>
             </div>

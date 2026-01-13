@@ -41,7 +41,7 @@ const Navbar = () => {
     <>
       {/* Floating Animating Logo */}
       <div
-  className={`flex fixed w-full z-[90] transition-all duration-500 pointer-events-none
+  className={`flex fixed w-full ${scrolled ? 'z-[1004]' : 'z-[1002]'} transition-all duration-500 pointer-events-none
     text-[#f2bf42] items-center
     ${
       scrolled
@@ -65,7 +65,7 @@ const Navbar = () => {
 
       {/* Top Header (Desktop) - Links & Icons */}
       <div 
-        className={`hidden md:block fixed w-full z-[80] transition-all duration-500 bg-[#082722]/90 backdrop-blur-sm py-[25px] font-[family-name:var(--font-montserrat)] ${
+        className={`hidden md:block fixed w-full z-[1003] transition-all duration-500 bg-[#082722]/90 backdrop-blur-sm py-[25px] font-[family-name:var(--font-montserrat)] ${
           scrolled ? 'top-0 shadow-lg' : 'top-[24px]'
         }`}
       >
@@ -99,7 +99,7 @@ const Navbar = () => {
                   
                   {/* Dropdown Menu */}
                   <div 
-                    className={`absolute left-0 top-full pt-4 w-[200px] text-left transition-all duration-300 ${shopDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+                    className={`absolute left-0 top-full pt-4 w-[280px] text-left transition-all duration-300 ${shopDropdownOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
                   >
                     <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
                       <li className="border-b border-white/20">
@@ -109,12 +109,22 @@ const Navbar = () => {
                         <Link href="/category/salwar-suits" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors">Salwar Suits</Link>
                       </li>
                       <li className="relative group/lehenga border-b border-white/20">
-                         <Link href="/category/lehengas" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex justify-between items-center">
-                            Lehengas <span className="-rotate-90 text-[8px]">▼</span>
+                         <Link href="/category/lehengas" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex items-center gap-2">
+                            <span className="-rotate-90 text-[8px]">▼</span> Lehengas
                          </Link>
                          {/* Level 2 Submenu */}
                          <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/lehenga:block z-[999]">
-                            <li className="border-b border-white/20"><Link href="/category/bridal-lehengas" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">Bridal Lehengas</Link></li>
+                            <li className="relative group/bridal border-b border-white/20">
+                               <Link href="/category/bridal-lehengas" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] flex items-center gap-2">
+                                  <span className="-rotate-90 text-[8px]">▼</span> Bridal Lehengas
+                               </Link>
+                               {/* Level 3 Submenu */}
+                               <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/bridal:block z-[999]">
+                                  <li className="border-b border-white/20"><Link href="/category/heavy-bridal" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">Heavy Bridal</Link></li>
+                                  <li className="border-b border-white/20"><Link href="/category/light-bridal" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">Light Bridal</Link></li>
+                                  <li className="border-b border-white/20"><Link href="/category/designer-bridal" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">Designer Bridal</Link></li>
+                               </ul>
+                            </li>
                             <li className="border-b border-white/20"><Link href="/category/party-wear-lehengas" className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]">Party Wear</Link></li>
                          </ul>
                       </li>
@@ -136,7 +146,7 @@ const Navbar = () => {
 
                 {/* Icons */}
                 <li className="flex items-center gap-4 pl-5">
-                    <button onClick={toggleSearch} className="hover:opacity-80 transition-opacity">
+                    <button onClick={toggleSearch} className="hover:opacity-80 transition-opacity cursor-pointer">
                         <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-7 h-7" />
                     </button>
                     <Link href="/my-account" className="hover:opacity-80 transition-opacity">

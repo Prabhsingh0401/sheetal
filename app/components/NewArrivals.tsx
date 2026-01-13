@@ -1,16 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 const NewArrivals = () => {
-  const [emblaRef] = useEmblaCarousel({
+  const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: 'start',
     skipSnaps: false,
   });
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
   const products = [
     {
@@ -83,7 +91,7 @@ const NewArrivals = () => {
           </div>
 
           {/* RIGHT – EMBLA CAROUSEL */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8 relative group/slider">
             <div ref={emblaRef} className="overflow-hidden">
               <div className="flex gap-4">
 
@@ -97,7 +105,7 @@ const NewArrivals = () => {
                       lg:w-[33.333%]
                     "
                   >
-                    <div className="rounded-xl overflow-hidden group">
+                    <div className="rounded-xl overflow-hidden group ml-2">
 
                       {/* IMAGE */}
                       <div className="relative aspect-[3/4] overflow-hidden">
@@ -194,6 +202,24 @@ const NewArrivals = () => {
 
               </div>
             </div>
+
+            {/* Nav Buttons */}
+            <button
+              onClick={scrollPrev}
+              className="absolute left-[-15px] top-[30%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+            <button
+              onClick={scrollNext}
+              className="absolute right-[-15px] top-[30%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
           </div>
 
         </div>

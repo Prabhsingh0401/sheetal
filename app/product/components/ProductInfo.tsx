@@ -43,19 +43,19 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </span>
       </div>
 
-      <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+      <p className="text-sm mb-6 leading-relaxed">
         {product.description}
       </p>
 
       <div className="mb-6">
-        <div className="flex items-end gap-3 mb-1">
+        <div className="flex items-end gap-3">
           <span className="text-3xl font-medium">
             ₹ {product.price.toFixed(2)}
           </span>
-          <span className="text-lg text-gray-400 line-through mb-1">
+          <span className="text-lg text-gray-400 line-through">
             ₹ {product.originalPrice.toFixed(2)}
           </span>
-          <span className="text-sm text-green-600 font-semibold mb-1">
+          <span className="text-lg text-green-600 font-semibold">
             Save {product.discount}
           </span>
         </div>
@@ -98,7 +98,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           </label>
           <button
             onClick={onSizeChartOpen}
-            className="flex items-center text-md text-red-500 font-semibold hover:underline"
+            className="flex items-center text-md text-red-500 font-semibold hover:underline cursor-pointer"
           >
             <Image
               src="/assets/icons/measurement.svg"
@@ -175,7 +175,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
       {/* Delivery */}
       <div className="mb-6 border-t border-gray-100 pt-6">
-        <label className="flex items-center text-sm font-semibold text-gray-800 mb-3">
+        <label className="flex items-center text-sm font-semibold mb-3">
           Delivery Options{" "}
           <Image
             src="/assets/icons/delivery-truck.svg"
@@ -195,7 +195,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           />
           <button
             onClick={checkPincode}
-            className="absolute right-0 bg-gray-100 border border-gray-300 top-0 h-10 px-4 text-[#fe5722] font-semibold text-sm hover:bg-gray-50"
+            className="absolute right-0 bg-gray-100 border border-gray-300 top-0 h-10 px-4 text-[#fe5722] font-semibold text-sm hover:bg-gray-50 cursor-pointer"
           >
             Check
           </button>
@@ -213,7 +213,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         )}
 
         <div className="mt-4 space-y-2">
-          <div className="flex items-center text-xs text-gray-600">
+          <div className="flex items-center text-xs">
             <div className="w-6">
               <Image
                 src="/assets/icons/delivery-truck.svg"
@@ -224,7 +224,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             </div>
             <span>Get it by Tue, Jan 06</span>
           </div>
-          <div className="flex items-center text-xs text-gray-600">
+          <div className="flex items-center text-xs">
             <div className="w-6">
               <Image
                 src="/assets/icons/cash-on-delivery.svg"
@@ -235,7 +235,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             </div>
             <span>Pay on delivery available</span>
           </div>
-          <div className="flex items-center text-xs text-gray-600">
+          <div className="flex items-center text-xs">
             <div className="w-6">
               <Image
                 src="/assets/icons/product-return.svg"
@@ -254,7 +254,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   
   {/* Specifications — OPEN BY DEFAULT */}
   <details open className="group border-b border-gray-200">
-    <summary className="flex justify-between items-center text-[#fc5823] p-4 cursor-pointer font-medium hover:bg-gray-50 list-none">
+    <summary className="flex justify-between items-center text-[#fc5823] p-4 cursor-pointer font-medium hover:bg-gray-300 list-none bg-gray-200 transition-colors">
       Specifications
 
       {/* Plus / Minus Toggle */}
@@ -264,27 +264,31 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       </span>
     </summary>
 
-    <div className="p-4 bg-gray-50 text-sm text-gray-600">
-      <ul className="space-y-2">
-        <li className="flex">
-          <span className="w-1/2 font-semibold">Neckline:</span> V-Neck
+    <div className="p-4 bg-gray-50 text-sm">
+      <ul className="space-y-2 space-x-20 flex flex-col">
+      <div className="flex space-x-40 border-b border-gray-200 py-3">
+        <li className="flex flex-col">
+          <span className="font-semibold">Neckline</span> V-Neck
         </li>
-        <li className="flex">
-          <span className="w-1/2 font-semibold">Pattern:</span> Printed
+        <li className="flex flex-col">
+          <span className="font-semibold">Pattern</span> Printed
         </li>
-        <li className="flex">
-          <span className="w-1/2 font-semibold">Fabric:</span> Viscose Rayon
+      </div>
+      <div className="flex space-x-30 border-b border-gray-200 py-3">
+        <li className="flex flex-col">
+          <span className="font-semibold">Fabric</span> Viscose Rayon
         </li>
-        <li className="flex">
-          <span className="w-1/2 font-semibold">Fit:</span> Straight
+        <li className="flex flex-col">
+          <span className="w-1/2 font-semibold">Fit</span> Straight
         </li>
+      </div>
       </ul>
     </div>
   </details>
 
   {/* Delivery & Returns — CLOSED BY DEFAULT */}
   <details className="group">
-    <summary className="flex justify-between items-center p-4 cursor-pointer font-medium text-[#fc5823] hover:bg-gray-50 list-none">
+    <summary className="flex justify-between items-center p-4 cursor-pointer font-medium text-[#fc5823] hover:bg-gray-300 list-none bg-gray-200 transition-colors">
       Delivery & Returns
 
       {/* Plus / Minus Toggle */}
@@ -294,23 +298,79 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       </span>
     </summary>
 
-    <div className="p-4 bg-gray-50 text-sm text-gray-600">
-      <p className="mb-2">
-        Free Shipping on All Orders (Pre-paid & COD).
-      </p>
-      <p>Easy 7 days return & exchange available.</p>
-    </div>
+    <div className="p-4 bg-gray-50 text-sm text-gray-700 border border-gray-200">
+  {/* Heading */}
+  <h3 className="font-semibold text-gray-900 mb-2">
+    Available Shipping Methods
+  </h3>
+
+  {/* Table Header */}
+  <div className="grid grid-cols-3 font-medium text-gray-900 border-b border-gray-300 pb-1 mb-2">
+    <span>Shipping Method</span>
+    <span>Shipping To</span>
+    <span>Shipping Charge</span>
+  </div>
+
+  {/* Row 1 */}
+  <div className="grid grid-cols-3 py-2 border-b border-gray-200">
+    <span>Pre-Paid</span>
+    <span>All over India</span>
+    <span>Free Shipping on All Orders</span>
+  </div>
+
+  {/* Row 2 */}
+  <div className="grid grid-cols-3 py-2">
+    <span>COD Charges</span>
+    <span>All over India</span>
+    <span>Free Shipping on All Orders</span>
+  </div>
+
+  {/* Shipping Policy Link */}
+  <p className="mt-3">
+    For more details please read{" "}
+    <a
+      href="/shipping-policy"
+      className="underline text-gray-900 hover:text-black"
+    >
+      Shipping Policy
+    </a>.
+  </p>
+
+  {/* Return Policy */}
+  <h3 className="font-semibold text-gray-900 mt-4 mb-1">
+    Return Policy
+  </h3>
+
+  <p className="leading-relaxed">
+    Your satisfaction is our top priority. If you're not completely
+    satisfied with the product, we offer a hassle-free, no questions
+    asked 7 days return and refund. We believe in making your shopping
+    experience risk-free and enjoyable.
+  </p>
+
+  {/* Return Policy Link */}
+  <p className="mt-2">
+    For more details please read{" "}
+    <a
+      href="/return-and-cancellation-policy"
+      className="underline text-gray-900 hover:text-black"
+    >
+      Return and Cancellation Policy
+    </a>.
+  </p>
+</div>
+
   </details>
 
 </div>
 
       {/* Contact */}
-      <div className="mt-6 p-4 bg-blue-50 rounded text-center">
-        <h4 className="font-semibold text-gray-800 mb-2">Have a question?</h4>
-        <div className="flex flex-col md:flex-row justify-center gap-4 text-sm">
+      <div className="mt-6 p-4 bg-blue-50 rounded">
+        <h4 className="font-semibold text-gray-800 mb-2">Have a question? We are here to help!</h4>
+        <div className="flex flex-col justify-center gap-4 text-sm">
           <a
             href="mailto:info@studiobysheetal.com"
-            className="flex items-center justify-center text-blue-600 hover:underline"
+            className="flex text-blue-600 hover:underline"
           >
             <Image
               src="/assets/icons/email.svg"
@@ -319,11 +379,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               alt="email"
               className="mr-2"
             />{" "}
-            Email Us
+             Email us at info@studiobysheetal.com
           </a>
           <a
             href="https://wa.me/919958813913"
-            className="flex items-center justify-center text-green-600 hover:underline"
+            className="flex text-green-600 hover:underline border w-35 p-2"
           >
             <Image
               src="/assets/icons/whatsapp.svg"
@@ -332,7 +392,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               alt="wa"
               className="mr-2"
             />{" "}
-            Chat on WhatsApp
+            Click to chat
           </a>
         </div>
       </div>
