@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import StarRating from "./StarRating";
 
 interface Review {
@@ -18,6 +18,9 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   overallRating,
   totalReviews,
 }) => {
+  const [showForm, setShowForm] = useState(false);
+  const [rating, setRating] = useState(0);
+
   return (
     <section className="max-w-6xl mx-auto px-4 py-20">
       {/* Heading */}
@@ -36,10 +39,57 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
           </p>
         </div>
 
-        {/* Write Review Button */}
-        <button className="bg-black text-white px-10 py-3 text-sm tracking-widest hover:bg-gray-900 transition cursor-pointer">
-          WRITE A REVIEW
-        </button>
+        {/* Write Review Area */}
+        <div className=" md:w-auto overflow-hidden">
+          {!showForm ? (
+            <button
+              onClick={() => setShowForm(true)}
+              className="bg-black text-white px-10 py-3 text-sm tracking-widest hover:bg-gray-900 transition cursor-pointer"
+            >
+              WRITE A REVIEW
+            </button>
+          ) : (
+            <div
+              className="
+                transition-all duration-500 ease-out
+                max-h-[500px] opacity-100 translate-y-0
+              "
+            >
+              {/* Review Form */}
+              <div className="border border-gray-300 p-4 relative flex flex-col justify-between w-100 items-center">
+                <div className="mb-4 flex justify-between items-center border-b pb-4 w-full">
+                <h4 className="text-lg">Write a review</h4>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="text-3xl text-gray-500 hover:text-black"
+                >
+                  ×
+                </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  className="w-full border border-dashed border-gray-300 rounded-full px-4 py-2 mb-4 focus:outline-none"
+                />
+ 
+                <div className="mb-4 flex justify-between w-full">
+                  <p className="text-sm mb-1">Rating(s):</p>
+                  <StarRating rating={rating} />
+                </div>
+
+                <textarea
+                  placeholder="Write your comment"
+                  className="w-full border border-dashed border-gray-300 rounded-xl px-4 py-3 mb-6 focus:outline-none resize-none"
+                  rows={4}
+                />
+
+                <button className="border border-black px-10 py-2 text-sm hover:bg-black hover:text-white transition">
+                  Submit
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="border-t border-gray-300 mb-12" />
@@ -48,7 +98,6 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {reviews.map((review, i) => (
           <div key={i}>
-            {/* User + Rating */}
             <div className="flex items-center gap-3 mb-3">
               <div className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-sm font-semibold">
                 {review.user.charAt(0)}
@@ -58,7 +107,6 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
 
             <StarRating rating={review.rating} />
 
-            {/* Comment */}
             <p className="text-md mt-3 leading-relaxed">
               {review.comment}
             </p>

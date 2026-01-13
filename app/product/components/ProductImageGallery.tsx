@@ -88,27 +88,30 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
       </div>
 
       {/* Main Image Container */}
-      <div className="flex-1 relative bg-white border border-gray-100">
+      <div className="flex-1 relative">
         
-        {/* Mobile Carousel */}
-        <div className="md:hidden overflow-hidden" ref={emblaRef}>
-          <div className="flex">
-            {images.map((img, idx) => (
-              <div key={idx} className="flex-[0_0_100%] min-w-0 relative aspect-[3/4]">
-                <Image 
-                  src={img} 
-                  alt={`${title}-${idx}`} 
-                  fill 
-                  className="object-cover"
-                  priority={idx === 0}
-                />
-              </div>
-            ))}
+        {/* Mobile Carousel Wrapper */}
+        <div className="md:hidden">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex">
+              {images.map((img, idx) => (
+                <div key={idx} className="flex-[0_0_100%] min-w-0 relative aspect-[3/4]">
+                  <Image 
+                    src={img} 
+                    alt={`${title}-${idx}`} 
+                    fill 
+                    className="object-cover"
+                    priority={idx === 0}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
           
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 pointer-events-none">
+          {/* Mobile Dots - Now below the image */}
+          <div className="flex justify-center gap-2 py-4">
               {images.map((_, i) => (
-                  <div key={i} className={`w-2 h-2 rounded-full ${selectedImage === images[i] ? 'bg-[#bd9951]' : 'bg-white/50'}`}></div>
+                  <div key={i} className={`w-2 h-2 rounded-full transition-colors duration-300 ${selectedImage === images[i] ? 'bg-[#bd9951]' : 'bg-gray-300'}`}></div>
               ))}
           </div>
         </div>
@@ -144,33 +147,15 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
         </div>
 
         {/* Floating Icons */}
-        <div className="absolute top-4 right-4 flex flex-col gap-3 z-10 pointer-events-none">
-            <button className="bg-white p-2 rounded-full shadow hover:bg-gray-100 hover:text-white transition-colors text-gray-600 pointer-events-auto">
+        <div className="absolute top-4 right-0 bg-white flex flex-col gap-3 z-10 pointer-events-none rounded-md">
+            <button className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto">
               <Image src="/assets/icons/heart-pink.svg" width={20} height={20} alt="wishlist" />
             </button>
-            <button className="bg-white p-2 rounded-full shadow hover:bg-gray-100 hover:text-white transition-colors text-gray-600 pointer-events-auto">
+            <button className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto">
               <Image src="/assets/icons/view-similar.png" width={20} height={20} alt="similar" />
             </button>
         </div>
       </div>
-
-       {/* Mobile Thumbnails Row */}
-       <div className="md:hidden mt-4 px-2">
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {images.map((img, idx) => (
-                  <div 
-                      key={idx} 
-                      className={`w-16 h-20 flex-shrink-0 border-2 rounded transition-all ${selectedImage === img ? 'border-[#bd9951]' : 'border-gray-200'}`} 
-                      onClick={() => {
-                          onImageChange(img);
-                          if (emblaApi) emblaApi.scrollTo(idx);
-                      }}
-                  >
-                      <Image src={img} alt="thumb" width={64} height={80} className="w-full h-full object-cover"/>
-                  </div>
-              ))}
-            </div>
-       </div>
     </div>
   );
 };

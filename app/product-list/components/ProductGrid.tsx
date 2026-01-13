@@ -23,7 +23,7 @@ interface ProductGridProps {
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode }) => {
   return (
-    <div className={`grid gap-8 xl:gap-10 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 lg:grid-cols-2'}`}>
+    <div className={`grid gap-4 xl:gap-10 grid-cols-2 ${viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-4' : 'lg:grid-cols-2'}`}>
       {products.map((product) => (
         <div 
           key={product.id} 

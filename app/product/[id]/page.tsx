@@ -11,6 +11,7 @@ import ProductReviews from '../components/ProductReviews';
 import RelatedProducts from '../components/RelatedProducts';
 import EnquireModal from '../components/EnquireModal';
 import SizeChartModal from '../components/SizeChartModal';
+import StarRating from '../components/StarRating';
 
 // --- Data (Mocking fetching by ID) ---
 
@@ -217,7 +218,17 @@ const ProductDetail = ({ params }: PageProps) => {
       <Breadcrumb title={product.title} />
 
       <div className="container mx-auto px-4 pb-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+        {/* Mobile Title & Rating */}
+        <div className="lg:hidden mb-4 mt-2">
+             <h1 className="text-2xl font-medium text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
+                {product.title}
+             </h1>
+             <div className="flex items-center gap-4">
+                <StarRating rating={product.rating} />
+             </div>
+        </div>
+
+        <div className="flex flex-col lg:flex-row md:gap-8">
           
           <div className="lg:w-7/12">
              <ProductImageGallery 

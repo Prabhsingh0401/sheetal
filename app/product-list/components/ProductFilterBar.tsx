@@ -97,7 +97,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
   return (
     <>
        {/* Top Filter Bar */}
-       <div className="border-t border-b border-gray-200 py-4 mb-6 relative">
+       <div className="border-t border-b border-gray-200 py-4 mb-6 relative hidden lg:block">
           <div className="flex flex-wrap justify-between items-center">
              {/* Left: Filters Toggle */}
              <div className="w-full md:w-auto mb-4 md:mb-0">
@@ -157,7 +157,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
        ></div>
 
        {/* Sidebar Panel */}
-       <div className={`fixed top-0 left-0 h-full w-[300px] bg-white z-[9999] shadow-2xl transform transition-transform duration-300 overflow-y-auto ${filtersOpen ? 'translate-x-0' : '-translate-x-full'} 
+       <div className={`fixed top-0 left-0 h-full w-full md:w-[300px] bg-white z-[9999] shadow-2xl transform transition-transform duration-300 overflow-y-auto ${filtersOpen ? 'translate-x-0' : '-translate-x-full'} 
          [scrollbar-width:thin]
          [scrollbar-color:#bd9951_transparent]
          [&::-webkit-scrollbar]:w-1.5

@@ -88,7 +88,7 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({ isOpen, onClose }) => {
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-xl z-10 border px-2"
+          className="absolute top-4 right-4 hover:text-gray-800 text-2xl z-10 border px-2 cursor-pointer"
         >
           ×
         </button>
@@ -96,7 +96,7 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({ isOpen, onClose }) => {
           <h3 className="text-4xl text-[#bd9951] font-medium mb-2 font-[family-name:var(--font-optima)] text-center">
             Size Chart
           </h3>
-          <p className="text-center text-gray-500 mb-6 text-sm">
+          <p className="text-center mb-6 text-lg">
             Our Sizes fit the best for mentioned body measurements (not garment
             measurements)*
             <br />
@@ -104,7 +104,7 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({ isOpen, onClose }) => {
           </p>
 
           {/* Tabs */}
-          <div className="flex justify-center mb-6 border-b border-gray-200">
+          <div className="flex justify-center mb-6 border-b border-t border-gray-200">
             <button
               className={`px-6 py-3 font-semibold text-sm text-[#fe5722] transition-all border-b-2 ${
                 activeTab === "sizechart"
@@ -129,12 +129,12 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({ isOpen, onClose }) => {
 
           {activeTab === "sizechart" && (
             <div className="animate-fade-in">
-              <div className="flex justify-start mb-4">
-                <div className="bg-gray-100 p-1 rounded flex">
+              <div className="flex justify-end mb-4">
+                <div className="p-1 rounded flex">
                   <button
-                    className={`px-4 py-1 rounded text-xs font-bold transition-all ${
+                    className={`px-2 py-1 rounded text-md font-bold transition-all cursor-pointer ${
                       unit === "in"
-                        ? "bg-white shadow text-black"
+                        ? "bg-orange-500 shadow text-white"
                         : "text-gray-500 hover:text-gray-700"
                     }`}
                     onClick={() => setUnit("in")}
@@ -142,9 +142,9 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({ isOpen, onClose }) => {
                     IN
                   </button>
                   <button
-                    className={`px-4 py-1 rounded text-xs font-bold transition-all ${
+                    className={`px-2 py-1 rounded text-md font-bold transition-all cursor-pointer ${
                       unit === "cm"
-                        ? "bg-white shadow text-black"
+                        ? "bg-orange-500 shadow text-white"
                         : "text-gray-500 hover:text-gray-700"
                     }`}
                     onClick={() => setUnit("cm")}
@@ -239,14 +239,14 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({ isOpen, onClose }) => {
           )}
 
           <div className="mt-8 text-center">
-            <p className="text-lg text-gray-500 mb-4 flex flex-col items-center justify-center">
+            <p className="text-lg mb-4 flex flex-col items-center justify-center">
               *These measurements are indicative. Actual Size may differ.
             </p>
             <div className="flex flex-row gap-3 w-full justify-center">
-              <button className="w-40 text-sm px-2 py-1 bg-[#fe5722] text-white rounded hover:bg-[#a68545] uppercase tracking-wide">
+              <button className="w-40 text-sm px-2 py-3 bg-[#fe5722] text-white rounded hover:bg-[#a68545] uppercase tracking-wide">
                 Add to Cart
               </button>
-              <button className="w-40 text-sm px-2 py-1 bg-white border border-[#fe5722] text-[#fe5722] rounded hover:bg-gray-50 uppercase tracking-wide">
+              <button className="w-40 text-sm px-2 py-3 bg-white border border-[#fe5722] text-[#fe5722] rounded hover:bg-gray-50 uppercase tracking-wide">
                 Add to Wishlist
               </button>
             </div>

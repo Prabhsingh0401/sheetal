@@ -31,21 +31,19 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 }) => {
   return (
     <div className="p-6 md:p-8">
-      <h1 className="text-2xl md:text-3xl font-medium text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
-        {product.title}
-      </h1>
+      <div className="hidden lg:block">
+        <h1 className="text-2xl md:text-3xl font-medium text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
+          {product.title}
+        </h1>
 
-      <div className="flex items-center gap-4 mb-4">
-        <StarRating rating={product.rating} />
-        <span className="text-gray-400 text-sm">|</span>
-        <span className="text-gray-500 text-sm">
-          Product Code: {product.sku}
-        </span>
+        <div className="flex items-center gap-4 mb-4">
+          <StarRating rating={product.rating} />
+        </div>
       </div>
 
-      <p className="text-sm mb-6 leading-relaxed">
+      {/* <p className="text-sm mb-6 leading-relaxed">
         {product.description}
-      </p>
+      </p> */}
 
       <div className="mb-6">
         <div className="flex items-end gap-3">
@@ -143,8 +141,27 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </div>
       </div>
 
+      {/* Mobile-Only Quantity & Notify (After Size) */}
+      <div className="flex flex-col lg:hidden mb-6 border-b border-gray-100 pb-6 space-y-3">
+          <button 
+            onClick={onEnquire}
+            className="text-[#bd9951] border border-[#bd9951] px-4 py-2 text-sm font-medium rounded-sm hover:bg-[#bd9951] hover:text-white transition-colors w-30"
+          >
+            Notify Me
+          </button>
+        <div className="">
+            <input
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
+            />
+          </div>
+      </div>
+
       {/* Actions */}
-      <div className="mb-8">
+      <div className="mb-8 hidden lg:block">
         <div className="mb-4">
           <button
             onClick={onEnquire}
@@ -170,6 +187,22 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           <button className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
             Buy Now
           </button>
+        </div>
+      </div>
+
+      {/* Mobile Sticky Footer */}
+      <div className="fixed bottom-0 left-0 w-full bg-white z-[100] border-t border-gray-200 p-3 lg:hidden flex gap-3 items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="flex space-x-2">
+           <span className="text-xl font-bold">₹ {product.price.toFixed(2)}</span>
+           <span className="text-lg text-gray-400 line-through">₹ {product.originalPrice.toFixed(2)}</span>
+        </div>
+        <div className="flex gap-2 flex-1 justify-end ml-20">
+           <button className="flex-1 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
+             Add to Cart
+           </button>
+           {/* <button className="flex-1 bg-[#fe5722] text-white border border-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
+             Buy Now
+           </button> */}
         </div>
       </div>
 
@@ -213,34 +246,34 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         )}
 
         <div className="mt-4 space-y-2">
-          <div className="flex items-center text-xs">
-            <div className="w-6">
+          <div className="flex items-center text-md">
+            <div className="w-10">
               <Image
                 src="/assets/icons/delivery-truck.svg"
-                width={16}
-                height={16}
+                width={30}
+                height={30}
                 alt="truck"
               />
             </div>
             <span>Get it by Tue, Jan 06</span>
           </div>
-          <div className="flex items-center text-xs">
-            <div className="w-6">
+          <div className="flex items-center text-md">
+            <div className="w-10">
               <Image
                 src="/assets/icons/cash-on-delivery.svg"
-                width={16}
-                height={16}
+                width={30}
+                height={30}
                 alt="cod"
               />
             </div>
             <span>Pay on delivery available</span>
           </div>
-          <div className="flex items-center text-xs">
-            <div className="w-6">
+          <div className="flex items-center text-md">
+            <div className="w-10">
               <Image
                 src="/assets/icons/product-return.svg"
-                width={16}
-                height={16}
+                width={30}
+                height={30}
                 alt="return"
               />
             </div>
@@ -250,11 +283,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       </div>
 
       {/* Accordion Info */}
-      <div className="border border-gray-200 rounded">
+      <div className="rounded">
   
   {/* Specifications — OPEN BY DEFAULT */}
   <details open className="group border-b border-gray-200">
-    <summary className="flex justify-between items-center text-[#fc5823] p-4 cursor-pointer font-medium hover:bg-gray-300 list-none bg-gray-200 transition-colors">
+    <summary className="flex justify-between items-center text-[#fc5823] px-1 cursor-pointer font-bold hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase">
       Specifications
 
       {/* Plus / Minus Toggle */}
@@ -288,7 +321,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
   {/* Delivery & Returns — CLOSED BY DEFAULT */}
   <details className="group">
-    <summary className="flex justify-between items-center p-4 cursor-pointer font-medium text-[#fc5823] hover:bg-gray-300 list-none bg-gray-200 transition-colors">
+    <summary className="flex justify-between items-center px-1 cursor-pointer font-bold text-[#fc5823] hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase">
       Delivery & Returns
 
       {/* Plus / Minus Toggle */}
@@ -298,35 +331,35 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       </span>
     </summary>
 
-    <div className="p-4 bg-gray-50 text-sm text-gray-700 border border-gray-200">
+    <div className="p-4 bg-gray-50 text-sm">
   {/* Heading */}
-  <h3 className="font-semibold text-gray-900 mb-2">
+  <h3 className="font-semibold text-gray-900 mb-5">
     Available Shipping Methods
   </h3>
 
   {/* Table Header */}
-  <div className="grid grid-cols-3 font-medium text-gray-900 border-b border-gray-300 pb-1 mb-2">
+  <div className="grid grid-cols-3 font-bold border-b pb-1 mb-2">
     <span>Shipping Method</span>
     <span>Shipping To</span>
     <span>Shipping Charge</span>
   </div>
 
   {/* Row 1 */}
-  <div className="grid grid-cols-3 py-2 border-b border-gray-200">
+  <div className="grid grid-cols-3 py-2 border-b">
     <span>Pre-Paid</span>
     <span>All over India</span>
     <span>Free Shipping on All Orders</span>
   </div>
 
   {/* Row 2 */}
-  <div className="grid grid-cols-3 py-2">
+  <div className="grid grid-cols-3 py-2 border-b">
     <span>COD Charges</span>
     <span>All over India</span>
     <span>Free Shipping on All Orders</span>
   </div>
 
   {/* Shipping Policy Link */}
-  <p className="mt-3">
+  <p className="mt-3 font-semibold">
     For more details please read{" "}
     <a
       href="/shipping-policy"
@@ -365,12 +398,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 </div>
 
       {/* Contact */}
-      <div className="mt-6 p-4 bg-blue-50 rounded">
+      <div className="mt-6 p-8 border">
         <h4 className="font-semibold text-gray-800 mb-2">Have a question? We are here to help!</h4>
         <div className="flex flex-col justify-center gap-4 text-sm">
           <a
             href="mailto:info@studiobysheetal.com"
-            className="flex text-blue-600 hover:underline"
+            className="flex hover:text-[#5f3c20]"
           >
             <Image
               src="/assets/icons/email.svg"
@@ -383,7 +416,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           </a>
           <a
             href="https://wa.me/919958813913"
-            className="flex text-green-600 hover:underline border w-35 p-2"
+            className="flex hover:text-[#5f3c20] border w-35 p-2 font-semibold text-sm"
           >
             <Image
               src="/assets/icons/whatsapp.svg"
@@ -391,7 +424,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               height={16}
               alt="wa"
               className="mr-2"
-            />{" "}
+            />{" "} 
             Click to chat
           </a>
         </div>

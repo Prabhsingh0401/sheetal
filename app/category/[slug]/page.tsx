@@ -6,6 +6,8 @@ import Footer from '../../components/Footer';
 import ProductListBanner from '../../product-list/components/ProductListBanner';
 import ProductFilterBar from '../../product-list/components/ProductFilterBar';
 import ProductGrid from '../../product-list/components/ProductGrid';
+import FilterSortMobile from '../../product-list/components/FilterSortMobile';
+import MobileSortSheet from '../../product-list/components/MobileSortSheet';
 
 const products = [
   {
@@ -134,6 +136,7 @@ const CategoryPage = ({ params }: PageProps) => {
 
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortByOpen, setSortByOpen] = useState(false);
+  const [mobileSortOpen, setMobileSortOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeFilters, setActiveFilters] = useState([
     { label: "Size: 28", type: "Size" },
@@ -149,6 +152,12 @@ const CategoryPage = ({ params }: PageProps) => {
   
   const clearFilters = () => {
     setActiveFilters([]);
+  };
+
+  const handleMobileSort = (option: string) => {
+    console.log("Sorting by:", option);
+    // Add logic here to actually sort products
+    setMobileSortOpen(false);
   };
 
   return (
@@ -177,6 +186,18 @@ const CategoryPage = ({ params }: PageProps) => {
       </div>
 
       <Footer />
+      
+      {/* Mobile Sticky Filter/Sort Footer */}
+      <FilterSortMobile 
+        onFilterClick={toggleFilters} 
+        onSortClick={() => setMobileSortOpen(true)} 
+      />
+
+      <MobileSortSheet 
+        isOpen={mobileSortOpen} 
+        onClose={() => setMobileSortOpen(false)} 
+        onSelect={handleMobileSort} 
+      />
     </div>
   );
 };

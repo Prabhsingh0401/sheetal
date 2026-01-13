@@ -1,170 +1,83 @@
 'use client';
 import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import FilterSortMobile from './components/FilterSortMobile';
+import MobileSortSheet from './components/MobileSortSheet';
 import TopInfo from '../components/TopInfo';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import ProductListBanner from './components/ProductListBanner';
-import ProductFilterBar from './components/ProductFilterBar';
-import ProductGrid from './components/ProductGrid';
-
-const products = [
-  {
-    id: 1,
-    name: "Rama Green Zariwork Soft Silk Saree",
-    image: "/assets/494291571.webp",
-    hoverImage: "/assets/487339289.webp",
-    price: 2365.50,
-    mrp: 2490.00,
-    discount: "5% OFF",
-    size: "XL",
-    rating: 4,
-    soldOut: true
-  },
-  {
-    id: 2,
-    name: "Mustard Zariwork Organza Fabric Readymade Salwar Suit",
-    image: "/assets/590900458.webp",
-    hoverImage: "/assets/789323917.webp",
-    price: 790.50,
-    mrp: 850.00,
-    discount: "7% OFF",
-    size: "L",
-    rating: 0,
-    soldOut: false
-  },
-  {
-    id: 3,
-    name: "Onion Pink Zariwork Tissue Saree",
-    image: "/assets/670149944.webp",
-    hoverImage: "/assets/882872675.webp",
-    price: 391.02,
-    mrp: 399.00,
-    discount: "2% OFF",
-    size: "L",
-    rating: 0,
-    soldOut: false
-  },
-  {
-    id: 4,
-    name: "Sky Blue Threadwork Semi Crepe Readymade Salwar Suit",
-    image: "/assets/229013918.webp",
-    hoverImage: "/assets/493323435.webp",
-    price: 790.50,
-    mrp: 850.00,
-    discount: "7% OFF",
-    size: "L",
-    rating: 0,
-    soldOut: false
-  },
-  {
-    id: 5,
-    name: "Mustard Zariwork Organza Fabric Readymade Salwar Suit",
-    image: "/assets/590900458.webp",
-    hoverImage: "/assets/789323917.webp",
-    price: 790.50,
-    mrp: 850.00,
-    discount: "7% OFF",
-    size: "L",
-    rating: 0,
-    soldOut: false
-  },
-  {
-    id: 6,
-    name: "Sky Blue Threadwork Semi Crepe Readymade Salwar Suit",
-    image: "/assets/229013918.webp",
-    hoverImage: "/assets/493323435.webp",
-    price: 790.50,
-    mrp: 850.00,
-    discount: "7% OFF",
-    size: "L",
-    rating: 0,
-    soldOut: false
-  },
-  {
-    id: 7,
-    name: "Mustard Zariwork Organza Fabric Readymade Salwar Suit",
-    image: "/assets/590900458.webp",
-    hoverImage: "/assets/789323917.webp",
-    price: 790.50,
-    mrp: 850.00,
-    discount: "7% OFF",
-    size: "L",
-    rating: 0,
-    soldOut: false
-  },
-  {
-    id: 8,
-    name: "Sky Blue Threadwork Semi Crepe Readymade Salwar Suit",
-    image: "/assets/229013918.webp",
-    hoverImage: "/assets/493323435.webp",
-    price: 790.50,
-    mrp: 850.00,
-    discount: "7% OFF",
-    size: "L",
-    rating: 0,
-    soldOut: false
-  },
-  {
-    id: 9,
-    name: "Mustard Zariwork Organza Fabric Readymade Salwar Suit",
-    image: "/assets/590900458.webp",
-    hoverImage: "/assets/789323917.webp",
-    price: 790.50,
-    mrp: 850.00,
-    discount: "7% OFF",
-    size: "L",
-    rating: 0,
-    soldOut: false
-  }
-];
 
 const ProductList = () => {
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [sortByOpen, setSortByOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [activeFilters, setActiveFilters] = useState([
-    { label: "Size: 28", type: "Size" },
-    { label: "Fabric: Pure Silk", type: "Fabric" }
-  ]);
+  const [mobileSortOpen, setMobileSortOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false); // Placeholder for now if bar is added later
 
-  const toggleFilters = () => setFiltersOpen(!filtersOpen);
-  const toggleSortBy = () => setSortByOpen(!sortByOpen);
-
-  const removeFilter = (label: string) => {
-    setActiveFilters(activeFilters.filter(f => f.label !== label));
-  };
-  
-  const clearFilters = () => {
-    setActiveFilters([]);
+  const handleMobileSort = (option: string) => {
+    console.log("Sorting by:", option);
+    setMobileSortOpen(false);
   };
 
   return (
-    <div className="min-h-screen bg-white font-[family-name:var(--font-montserrat)]">
+    <>
       <TopInfo />
       <Navbar />
+      
+      {/* Banner */}
+      <div className="relative mt-[87px] mb-[65px] text-center">
+         <div className="relative h-[200px] md:h-[360px] w-full">
+            <Image 
+               src="/assets/254852228.jpg" 
+               alt="Category Banner" 
+               fill
+               className="object-cover"
+            />
+         </div>
+         <div className="absolute bottom-0 w-full border-b border-[#ffcf8c] pb-2 bg-white/80 md:bg-transparent">
+            <h1 className="font-[family-name:var(--font-optima)] text-[35px] text-[#6a3f07] font-normal">Saree</h1>
+            <div className="text-[#6a3f07] text-sm">
+               <Link href="/" className="hover:text-[#9c6000]">Home</Link> / Saree
+            </div>
+         </div>
+      </div>
 
-      <ProductListBanner />
+      {/* Main Content */}
+      <div className="container mx-auto px-4 pb-20">
+         <div className="text-center mb-10">
+            <h2 className="font-[family-name:var(--font-optima)] text-[30px] md:text-[39px] text-[#6a3f07] mb-4 relative inline-block">
+               The Best of Luxury
+            </h2>
+            <p className="text-gray-600">Get styled with the high-fashion products and transform yourself. Trending Trending Products</p>
+         </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="w-full">
-           <ProductFilterBar 
-             filtersOpen={filtersOpen}
-             toggleFilters={toggleFilters}
-             sortByOpen={sortByOpen}
-             toggleSortBy={toggleSortBy}
-             activeFilters={activeFilters}
-             removeFilter={removeFilter}
-             clearFilters={clearFilters}
-             viewMode={viewMode}
-             setViewMode={setViewMode}
-           />
-
-          <ProductGrid products={products} viewMode={viewMode} />
-        </div>
+         {/* Products Grid - Placeholder for now */}
+         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {/* ... Products will go here ... */}
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+               <div key={item} className="border border-gray-100 rounded-lg p-4">
+                  <div className="relative aspect-[3/4] bg-gray-100 mb-4">
+                     {/* Product Image Placeholder */}
+                  </div>
+                  <h3 className="font-medium text-sm mb-2">Product Name {item}</h3>
+                  <p className="font-bold">₹ 1,299</p>
+               </div>
+            ))}
+         </div>
       </div>
 
       <Footer />
-    </div>
+      
+      {/* Mobile Sticky Filter/Sort Footer */}
+      <FilterSortMobile 
+        onFilterClick={() => setFiltersOpen(true)} // Placeholder action
+        onSortClick={() => setMobileSortOpen(true)} 
+      />
+
+      <MobileSortSheet 
+        isOpen={mobileSortOpen} 
+        onClose={() => setMobileSortOpen(false)} 
+        onSelect={handleMobileSort} 
+      />
+    </>
   );
 };
 
