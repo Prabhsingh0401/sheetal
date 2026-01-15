@@ -14,6 +14,7 @@ interface ProductInfoProps {
   setPincode: (pin: string) => void;
   pincodeMessage: string;
   checkPincode: () => void;
+  hasSizeChart?: boolean;
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({
@@ -28,6 +29,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   setPincode,
   pincodeMessage,
   checkPincode,
+  hasSizeChart = false,
 }) => {
   return (
     <div className="p-6 md:p-8">
@@ -94,19 +96,21 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           <label className="block text-sm font-semibold text-gray-800">
             Select Size:
           </label>
-          <button
-            onClick={onSizeChartOpen}
-            className="flex items-center text-md text-red-500 font-semibold hover:underline cursor-pointer"
-          >
-            <Image
-              src="/assets/icons/measurement.svg"
-              width={16}
-              height={16}
-              alt="ruler"
-              className="mr-1"
-            />{" "}
-            Size Chart{" > "}
-          </button>
+          {hasSizeChart && (
+            <button
+              onClick={onSizeChartOpen}
+              className="flex items-center text-md text-red-500 font-semibold hover:underline cursor-pointer"
+            >
+              <Image
+                src="/assets/icons/measurement.svg"
+                width={16}
+                height={16}
+                alt="ruler"
+                className="mr-1"
+              />{" "}
+              Size Chart{" > "}
+            </button>
+          )}
         </div>
         <div className="flex flex-wrap gap-3">
           {product.sizes.map((size: any) => (
@@ -298,24 +302,18 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
     </summary>
 
     <div className="p-4 bg-gray-50 text-sm">
-      <ul className="space-y-2 space-x-20 flex flex-col">
-      <div className="flex space-x-40 border-b border-gray-200 py-3">
-        <li className="flex flex-col">
-          <span className="font-semibold">Neckline</span> V-Neck
-        </li>
-        <li className="flex flex-col">
-          <span className="font-semibold">Pattern</span> Printed
-        </li>
-      </div>
-      <div className="flex space-x-30 border-b border-gray-200 py-3">
-        <li className="flex flex-col">
-          <span className="font-semibold">Fabric</span> Viscose Rayon
-        </li>
-        <li className="flex flex-col">
-          <span className="w-1/2 font-semibold">Fit</span> Straight
-        </li>
-      </div>
-      </ul>
+      {product.specifications && product.specifications.length > 0 ? (
+        <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+           {product.specifications.map((spec: any, idx: number) => (
+               <div key={idx} className="flex flex-col border-b border-gray-200 pb-2">
+                   <span className="font-semibold text-gray-700">{spec.key}</span>
+                   <span className="text-gray-900">{spec.value}</span>
+               </div>
+           ))}
+        </div>
+      ) : (
+          <p className="text-gray-500 italic">No specifications available.</p>
+      )}
     </div>
   </details>
 

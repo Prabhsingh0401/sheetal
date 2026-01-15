@@ -1,74 +1,137 @@
 'use client';
-import React, { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import FilterSortMobile from './components/FilterSortMobile';
 import MobileSortSheet from './components/MobileSortSheet';
 import TopInfo from '../components/TopInfo';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ProductListBanner from './components/ProductListBanner';
+import ProductFilterBar from './components/ProductFilterBar';
+import ProductGrid from './components/ProductGrid';
+import { getProductImageUrl } from '../services/productService';
+import { fetchCategoryBySlug } from '../services/categoryService';
+import { getApiImageUrl } from '../services/api';
+import { useProducts } from '../hooks/useProducts';
 
 const ProductList = () => {
+  const searchParams = useSearchParams();
+  const categorySlug = searchParams.get('category');
+  
+  const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
+  const [isResolvingCategory, setIsResolvingCategory] = useState(!!categorySlug);
+
+  // UI State
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false); // Placeholder for now if bar is added later
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortByOpen, setSortByOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [activeFilters, setActiveFilters] = useState<{ label: string; type: string }[]>([]);
+
+  // Resolve Category Slug to ID
+  useEffect(() => {
+    const resolveCategory = async () => {
+      if (!categorySlug) {
+        setCategoryId(undefined);
+        setIsResolvingCategory(false);
+        return;
+      }
+      
+      setIsResolvingCategory(true);
+      try {
+        const category = await fetchCategoryBySlug(categorySlug);
+        if (category) {
+          setCategoryId(category._id);
+        } else {
+          console.warn('Category not found:', categorySlug);
+        }
+      } catch (error) {
+        console.error('Error resolving category:', error);
+      } finally {
+        setIsResolvingCategory(false);
+      }
+    };
+
+    resolveCategory();
+  }, [categorySlug]);
+
+  
+  const { products, loading: productsLoading, error } = useProducts({ 
+    category: categoryId,
+    limit: 50
+  });
+
+  const loading = isResolvingCategory || productsLoading;
 
   const handleMobileSort = (option: string) => {
     console.log("Sorting by:", option);
     setMobileSortOpen(false);
   };
+  
+  // Transform data for Grid Component
+  const gridProducts = products.map(p => {
+      const mrp = p.price;
+      const price = p.discountPrice && p.discountPrice > 0 ? p.discountPrice : p.price;
+      const discountPercent = p.discountPrice && p.discountPrice < p.price
+        ? Math.round(((p.price - p.discountPrice) / p.price) * 100)
+        : 0;
+      
+      return {
+          id: p._id,
+          name: p.name,
+          image: getProductImageUrl(p),
+          hoverImage: p.hoverImage?.url ? getApiImageUrl(p.hoverImage.url) : getProductImageUrl(p),
+          price: price,
+          mrp: mrp,
+          discount: discountPercent > 0 ? `${discountPercent}% OFF` : '',
+          size: p.variants?.[0]?.size || 'One Size',
+          rating: p.averageRating || 0,
+          soldOut: p.stock <= 0
+      };
+  });
 
   return (
     <>
       <TopInfo />
       <Navbar />
       
-      {/* Banner */}
-      <div className="relative mt-[87px] mb-[65px] text-center">
-         <div className="relative h-[200px] md:h-[360px] w-full">
-            <Image 
-               src="/assets/254852228.jpg" 
-               alt="Category Banner" 
-               fill
-               className="object-cover"
-            />
-         </div>
-         <div className="absolute bottom-0 w-full border-b border-[#ffcf8c] pb-2 bg-white/80 md:bg-transparent">
-            <h1 className="font-[family-name:var(--font-optima)] text-[35px] text-[#6a3f07] font-normal">Saree</h1>
-            <div className="text-[#6a3f07] text-sm">
-               <Link href="/" className="hover:text-[#9c6000]">Home</Link> / Saree
+      <ProductListBanner categorySlug={categorySlug || undefined} />
+
+      <div className="container mx-auto px-4 pb-20 mt-8">
+        
+        <ProductFilterBar 
+            filtersOpen={filtersOpen}
+            toggleFilters={() => setFiltersOpen(!filtersOpen)}
+            sortByOpen={sortByOpen}
+            toggleSortBy={() => setSortByOpen(!sortByOpen)}
+            activeFilters={activeFilters}
+            removeFilter={(label) => setActiveFilters(activeFilters.filter(f => f.label !== label))}
+            clearFilters={() => setActiveFilters([])}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+        />
+
+        {loading ? (
+            <div className="flex justify-center py-20">
+                <p className="text-gray-500">Loading products...</p>
             </div>
-         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pb-20">
-         <div className="text-center mb-10">
-            <h2 className="font-[family-name:var(--font-optima)] text-[30px] md:text-[39px] text-[#6a3f07] mb-4 relative inline-block">
-               The Best of Luxury
-            </h2>
-            <p className="text-gray-600">Get styled with the high-fashion products and transform yourself. Trending Trending Products</p>
-         </div>
-
-         {/* Products Grid - Placeholder for now */}
-         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {/* ... Products will go here ... */}
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-               <div key={item} className="border border-gray-100 rounded-lg p-4">
-                  <div className="relative aspect-[3/4] bg-gray-100 mb-4">
-                     {/* Product Image Placeholder */}
-                  </div>
-                  <h3 className="font-medium text-sm mb-2">Product Name {item}</h3>
-                  <p className="font-bold">₹ 1,299</p>
-               </div>
-            ))}
-         </div>
+         ) : error ? (
+            <div className="flex justify-center py-20">
+                <p className="text-red-500">{error}</p>
+            </div>
+         ) : products.length === 0 ? (
+            <div className="flex justify-center py-20">
+                <p className="text-gray-500">No products found.</p>
+            </div>
+         ) : (
+            <ProductGrid products={gridProducts} viewMode={viewMode} />
+         )}
       </div>
 
       <Footer />
       
-      {/* Mobile Sticky Filter/Sort Footer */}
       <FilterSortMobile 
-        onFilterClick={() => setFiltersOpen(true)} // Placeholder action
+        onFilterClick={() => setFiltersOpen(true)}
         onSortClick={() => setMobileSortOpen(true)} 
       />
 

@@ -2,9 +2,15 @@ import React, { useState } from "react";
 import StarRating from "./StarRating";
 
 interface Review {
-  user: string;
+  _id: string;
+  user: {
+    _id: string;
+    name: string;
+    profileImage?: string;
+  } | string;
   rating: number;
   comment: string;
+  createdAt?: string;
 }
 
 interface ProductReviewsProps {
@@ -74,7 +80,10 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
  
                 <div className="mb-4 flex justify-between w-full">
                   <p className="text-sm mb-1">Rating(s):</p>
-                  <StarRating rating={rating} />
+                  <StarRating rating={rating} /> 
+                  {/* Note: StarRating component needs to support onChange if we want to setRating interactively, 
+                      or we use a different input for rating in form. 
+                      For now restoring UI as it was. */}
                 </div>
 
                 <textarea
@@ -96,22 +105,31 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
 
       {/* Reviews Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-        {reviews.map((review, i) => (
-          <div key={i}>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-sm font-semibold">
-                {review.user.charAt(0)}
+        {reviews.length > 0 ? (
+           reviews.map((review, i) => {
+             const userName = typeof review.user === 'object' ? review.user.name : 'Anonymous';
+             const userInitial = userName.charAt(0);
+             
+             return (
+              <div key={i}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-sm font-semibold uppercase">
+                    {userInitial}
+                  </div>
+                  <span className="text-sm font-medium">{userName}</span>
+                </div>
+
+                <StarRating rating={review.rating} />
+
+                <p className="text-md mt-3 leading-relaxed">
+                  {review.comment}
+                </p>
               </div>
-              <span className="text-sm font-medium">{review.user}</span>
-            </div>
-
-            <StarRating rating={review.rating} />
-
-            <p className="text-md mt-3 leading-relaxed">
-              {review.comment}
-            </p>
-          </div>
-        ))}
+            );
+          })
+        ) : (
+            <p className="text-gray-500 text-center col-span-2">No reviews yet. Be the first to review!</p>
+        )}
       </div>
     </section>
   );
