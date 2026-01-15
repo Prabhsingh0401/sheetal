@@ -19,7 +19,7 @@ export const useProducts = (initialParams: ProductQueryParams = {}): UseProducts
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
 
-  const loadProducts = useCallback(async (params: ProductQueryParams) => {
+  const loadProducts = useCallback(async (params: ProductQueryParams = {}) => {
     setLoading(true);
     setError(null);
     try {
