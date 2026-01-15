@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import FilterSortMobile from './components/FilterSortMobile';
 import MobileSortSheet from './components/MobileSortSheet';
@@ -14,7 +14,7 @@ import { fetchCategoryBySlug } from '../services/categoryService';
 import { getApiImageUrl } from '../services/api';
 import { useProducts } from '../hooks/useProducts';
 
-const ProductList = () => {
+const ProductListContent = () => {
   const searchParams = useSearchParams();
   const categorySlug = searchParams.get('category');
   
@@ -113,7 +113,7 @@ const ProductList = () => {
 
         {loading ? (
             <div className="flex justify-center py-20">
-                <p className="text-gray-500">Loading products...</p>
+                <div className="w-12 h-12 border-4 border-gray-200 border-t-[#bd9951] rounded-full animate-spin"></div>
             </div>
          ) : error ? (
             <div className="flex justify-center py-20">
@@ -141,6 +141,18 @@ const ProductList = () => {
         onSelect={handleMobileSort} 
       />
     </>
+  );
+};
+
+const ProductList = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="w-12 h-12 border-4 border-gray-200 border-t-[#bd9951] rounded-full animate-spin"></div>
+      </div>
+    }>
+      <ProductListContent />
+    </Suspense>
   );
 };
 
