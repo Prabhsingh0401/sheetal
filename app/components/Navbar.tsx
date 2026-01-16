@@ -149,7 +149,7 @@ const Navbar = () => {
                     <button onClick={toggleSearch} className="hover:opacity-80 transition-opacity cursor-pointer">
                         <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-7 h-7" />
                     </button>
-                    <Link href="/my-account" className="hover:opacity-80 transition-opacity">
+                    <Link href="/login" className="hover:opacity-80 transition-opacity">
                         <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
                     </Link>
                     <Link href="/wishlist" className="relative hover:opacity-80 transition-opacity">
@@ -174,7 +174,7 @@ const Navbar = () => {
                   <button onClick={toggleSearch}>
                       <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-6 h-6" />
                   </button>
-                  <Link href="/my-account">
+                  <Link href="/login">
                       <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
                   </Link>                  
                   <Link href="/cart" className="relative">

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import TopInfo from '../../components/TopInfo';
 import Footer from '../../components/Footer';
 import NavbarInner from '../../components/NavbarInner';
@@ -19,7 +19,7 @@ interface PageProps {
 }
 
 const ProductDetail = ({ params }: PageProps) => {
-  const resolvedParams = use(params);
+  const resolvedParams = React.use(params);
   const slug = resolvedParams.id;
   
   const [product, setProduct] = useState<Product | null>(null);
