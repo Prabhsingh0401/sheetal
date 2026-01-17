@@ -11,7 +11,8 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
-  image?: CategoryImage;
+  mainImage?: CategoryImage;
+  bannerImage?: CategoryImage;
   categoryBanner?: string;
   parentCategory?: string | null;
   isFeatured?: boolean;
@@ -70,6 +71,21 @@ export const getCategoryImageUrl = (
 ): string => {
   if (!category) return fallback;
   
-  const imageUrl = category.categoryBanner || category.image?.url;
+  // Prioritize mainImage for general category listings
+  const imageUrl = category.mainImage?.url;
+  return getApiImageUrl(imageUrl, fallback);
+};
+
+/**
+ * Get category banner image URL with fallback
+ */
+export const getCategoryBannerUrl = (
+  category: Category | undefined,
+  fallback: string = '/assets/254852228.jpg' // Default banner
+): string => {
+  if (!category) return fallback;
+
+  // Prioritize bannerImage for category banners
+  const imageUrl = category.bannerImage?.url;
   return getApiImageUrl(imageUrl, fallback);
 };

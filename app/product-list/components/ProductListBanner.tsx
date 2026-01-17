@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Category, fetchCategoryBySlug, getCategoryImageUrl } from '../../services/categoryService';
+import { Category, fetchCategoryBySlug, getCategoryBannerUrl } from '../../services/categoryService';
 
 interface ProductListBannerProps {
   categorySlug?: string;
@@ -44,7 +44,7 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({ categorySlug }) =
   // Use category data if available, otherwise fallback to defaults
   const title = category?.name || 'Collection';
   const description = category?.description || `Explore our exclusive ${title.toLowerCase()} collection. Get styled with the high-fashion products and transform yourself.`;
-  const bannerImage = category ? getCategoryImageUrl(category, '/assets/254852228.jpg') : '/assets/254852228.jpg';
+  const bannerImage = getCategoryBannerUrl(category || undefined); 
 
   if (loading) {
     return (
