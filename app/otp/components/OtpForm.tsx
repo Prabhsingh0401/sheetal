@@ -2,48 +2,52 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ConfirmationResult } from 'firebase/auth';
+import { verifyIdToken, login } from '../../services/authService';
+import toast from 'react-hot-toast';
 
 const OtpForm = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [otp, setOtp] = useState('');
-  const [verificationId, setVerificationId] = useState('');
+  const [loading, setLoading] = useState(false);
 
+  // This effect can be removed if not used, but good for debugging
   useEffect(() => {
-    const id = searchParams.get('verificationId');
-    if (id) {
-      setVerificationId(id);
+    if (!window.confirmationResult) {
+      console.warn("No confirmation result found, redirecting to login.");
+      toast.error("Something went wrong. Please try signing in again.");
+      router.replace('/login');
     }
-  }, [searchParams]);
+  }, [router]);
 
   const handleVerifyOtp = async () => {
+    if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+      return toast.error('Please enter a valid 6-digit OTP.');
+    }
+
+    setLoading(true);
+
     try {
       const confirmationResult = window.confirmationResult as ConfirmationResult;
       const userCredential = await confirmationResult.confirm(otp);
       const idToken = await userCredential.user.getIdToken();
 
-      // Send the idToken to your backend for verification and session management
-      const response = await fetch('/api/v1/client/auth/verify-id-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
-        },
-      });
+      const data = await verifyIdToken(idToken);
 
-      const data = await response.json();
-
-      if (data.success) {
-        // Handle successful login from your backend, e.g., store token and redirect
-        console.log('Backend login successful:', data);
-        router.push('/');
+      if (data.success && data.token) {
+        login(data.token); // Set the authentication token in cookies
+        toast.success('Logged in successfully!');
+        router.push('/'); // Redirect to homepage or dashboard
       } else {
+        toast.error(data.message || 'Backend login failed.');
         console.error('Backend login failed:', data.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error verifying OTP:', error);
+      toast.error(error.message || 'Failed to verify OTP. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -107,8 +111,9 @@ const OtpForm = () => {
               <button
                 className="w-full bg-[#6b4a1f] text-white py-3 text-md tracking-wide hover:bg-green-400 transition mb-6 cursor-pointer"
                 onClick={handleVerifyOtp}
+                disabled={loading}
               >
-                Verify OTP
+                {loading ? 'Verifying...' : 'Verify OTP'}
               </button>
 
               {/* Trouble getting OTP */}
@@ -126,5 +131,6 @@ const OtpForm = () => {
     </div>
   );
 };
+
 
 export default OtpForm;

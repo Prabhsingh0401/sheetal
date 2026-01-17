@@ -1,3 +1,5 @@
+import Cookies from 'js-cookie';
+
 /**
  * Central API configuration and base fetcher
  */
@@ -11,17 +13,27 @@ export const handleResponse = async (res: Response) => {
 };
 
 /**
- * Common fetcher to be used across all services
+ * Common fetcher to be used across all services.
+ * Automatically adds the Authorization header if a token is present in cookies.
  */
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const token = Cookies.get('token');
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   });
+
   return handleResponse(res);
 };
 

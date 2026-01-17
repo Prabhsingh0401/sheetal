@@ -13,6 +13,7 @@ import { getProductImageUrl } from '../services/productService';
 import { fetchCategoryBySlug } from '../services/categoryService';
 import { getApiImageUrl } from '../services/api';
 import { useProducts } from '../hooks/useProducts';
+import { useWishlist } from '../hooks/useWishlist'; // Import useWishlist hook
 
 const ProductListContent = () => {
   const searchParams = useSearchParams();
@@ -27,6 +28,9 @@ const ProductListContent = () => {
   const [sortByOpen, setSortByOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeFilters, setActiveFilters] = useState<{ label: string; type: string }[]>([]);
+
+  // Wishlist Hook
+  const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
 
   // Resolve Category Slug to ID
   useEffect(() => {
@@ -86,7 +90,8 @@ const ProductListContent = () => {
           discount: discountPercent > 0 ? `${discountPercent}% OFF` : '',
           size: p.variants?.[0]?.size || 'One Size',
           rating: p.averageRating || 0,
-          soldOut: p.stock <= 0
+          soldOut: p.stock <= 0,
+          isWishlisted: isProductInWishlist(p._id), // Use the new function
       };
   });
 
@@ -124,7 +129,7 @@ const ProductListContent = () => {
                 <p className="text-gray-500">No products found.</p>
             </div>
          ) : (
-            <ProductGrid products={gridProducts} viewMode={viewMode} />
+            <ProductGrid products={gridProducts} viewMode={viewMode} onToggleWishlist={toggleProductInWishlist} />
          )}
       </div>
 

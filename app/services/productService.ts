@@ -1,5 +1,19 @@
 import { apiFetch, getApiImageUrl } from './api';
 
+export const fetchWishlist = async (): Promise<{ success: boolean; data: string[] }> => {
+    return apiFetch('/users/wishlist');
+};
+
+export const toggleWishlist = async (productId: string) => {
+    return apiFetch('/users/wishlist', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId }),
+    });
+};
+
 export interface ProductImage {
   url: string;
   alt: string;

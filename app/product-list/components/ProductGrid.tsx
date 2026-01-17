@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 interface Product {
-  id: string | number;
+  id: string; // Changed to string as product IDs are typically strings
   name: string;
   image: string;
   hoverImage: string;
@@ -14,14 +14,16 @@ interface Product {
   size: string;
   rating: number;
   soldOut: boolean;
+  isWishlisted: boolean; // Add this new property
 }
 
 interface ProductGridProps {
   products: Product[];
   viewMode: 'grid' | 'list';
+  onToggleWishlist: (productId: string) => void; // Add this new prop
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleWishlist }) => {
   return (
     <div className={`grid gap-4 xl:gap-10 grid-cols-2 ${viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-4' : 'lg:grid-cols-2'}`}>
       {products.map((product) => (
@@ -61,9 +63,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode }) => {
             </Link>
             
             {/* Action Icons (Grid Mode Only usually, but let's keep for both or hide in list if preferred. Keeping for now) */}
-            <div className="absolute top-4 right-4 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
-              <button className="w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:bg-[#bd9951] hover:text-white transition-all group/icon">
-                <Image src="/assets/icons/heart.svg" alt="Wishlist" width={18} height={18} className="group-hover/icon:brightness-0 group-hover/icon:invert" />
+            <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
+              <button 
+                className="w-10 h-10 rounded-full flex items-center justify-cente group/icon"
+                onClick={() => onToggleWishlist(product.id)} // Add onClick handler
+              >
+                <Image 
+                  src={product.isWishlisted ? "/assets/icons/heart-solid.svg" : "/assets/icons/heart.svg"} // Conditional heart icon
+                  alt="Wishlist" 
+                  width={18} 
+                  height={18} 
+                  className={product.isWishlisted ? "" : "group-hover/icon:brightness-0 group-hover/icon:invert"} // No invert for filled heart
+                />
               </button>
             </div>
             
@@ -74,17 +85,17 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode }) => {
           </div>
 
           {/* Info Container */}
-          <div className={`flex flex-col flex-grow px-1 ${viewMode === 'grid' ? 'text-center' : 'text-left items-start pl-4'}`}>
-            <h3 className={`font-medium text-[#2c2c2c] leading-snug line-clamp-2 h-10 mb-3 ${viewMode === 'grid' ? 'text-[14px]' : 'text-[18px]'}`}>
+          <div className={`flex flex-col flex-grow px-1 font-[family-name:var(--font-montserrat)]${viewMode === 'grid' ? 'text-left' : 'text-left items-start pl-4'}`}>
+            <h3 className={`text-lg leading-snug line-clamp-2 h-10 ${viewMode === 'grid' ? 'text-lg' : 'text-[18px]'}`}>
               <Link href={`/product/${product.id}`} className="hover:text-[#bd9951] transition-colors uppercase tracking-tight">
                 {product.name}
               </Link>
             </h3>
             
             {/* Size and Rating */}
-            <div className={`flex flex-col gap-1 mb-3 ${viewMode === 'grid' ? 'items-center' : 'items-start'}`}>
-               <span className="text-[12px] text-gray-500 font-light">
-                 <span className="font-medium text-gray-900">Size:</span> {product.size}
+            <div className={`flex flex-col gap-1 mb-3 ${viewMode === 'grid' ? 'items-start' : 'items-start'}`}>
+               <span className="text-md font-light">
+                 <span className="font-medium">Size:</span> {product.size}
                </span>
                <div className="flex items-center gap-0.5">
                  {[...Array(5)].map((_, i) => (
@@ -99,16 +110,16 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode }) => {
                </div>
             </div>
 
-            <div className={`flex gap-3 mb-6 ${viewMode === 'grid' ? 'justify-center items-center' : 'justify-start items-center'}`}>
-              <span className="text-lg font-bold text-[#bd9951]">₹{product.price.toLocaleString()}</span>
-              <span className="text-xs text-gray-400 line-through">₹{product.mrp.toLocaleString()}</span>
-              <span className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-1 uppercase tracking-tighter">{product.discount}</span>
+            <div className={`flex gap-3 mb-3 ${viewMode === 'grid' ? 'justify-start items-center' : 'justify-start items-center'}`}>
+              <span className="text-lg font-medium">₹{product.price.toLocaleString()}</span>
+              <span className="text-lg text-gray-500 line-through">₹{product.mrp.toLocaleString()}</span>
+              <span className="text-lg text-[#6a3f0e] px-2 py-1 uppercase tracking-tighter">{product.discount}</span>
             </div>
             
-            <div className={`mt-auto flex ${viewMode === 'grid' ? 'justify-center' : 'justify-start'}`}>
+            <div className={`mt-auto flex ${viewMode === 'grid' ? 'justify-start' : 'justify-start'}`}>
               <Link 
                 href={`/product/${product.id}`} 
-                className="inline-block border-y border-black text-black py-2 px-8 uppercase text-[12px] font-medium transition-all duration-500 hover:tracking-[1px]"
+                className="inline-block border-b border-black text-black py-2 pr-8 uppercase text-[14px] transition-all duration-500 hover:tracking-[1px]"
               >
                 View Detail
               </Link>

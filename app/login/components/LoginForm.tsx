@@ -4,13 +4,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import { auth } from '../../services/firebase';
 
 declare global {
   interface Window {
     recaptchaVerifier?: RecaptchaVerifier;
-    confirmationResult?: any;
+    confirmationResult?: ConfirmationResult;
   }
 }
 
