@@ -20,18 +20,32 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   const token = Cookies.get('token');
 
-  const headers: HeadersInit = {
+  const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
   };
 
+  // Merge existing headers from options
+  if (options.headers) {
+    if (options.headers instanceof Headers) {
+      options.headers.forEach((value, key) => {
+        requestHeaders[key] = value;
+      });
+    } else if (Array.isArray(options.headers)) {
+      options.headers.forEach(([key, value]) => {
+        requestHeaders[key] = value;
+      });
+    } else { // Assume Record<string, string>
+      Object.assign(requestHeaders, options.headers);
+    }
+  }
+
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    requestHeaders['Authorization'] = `Bearer ${token}`;
   }
 
   const res = await fetch(url, {
     ...options,
-    headers,
+    headers: requestHeaders,
   });
 
   return handleResponse(res);
