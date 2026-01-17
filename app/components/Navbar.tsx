@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useWishlist } from '../hooks/useWishlist'; // Import the hook
 
 const Navbar = () => {
-  const { wishlist } = useWishlist(); // Use the hook to get wishlist items
+  const { wishlist } = useWishlist(); 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
   const [mobileShopDropdownOpen, setMobileShopDropdownOpen] = useState(false);

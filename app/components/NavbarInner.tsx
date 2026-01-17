@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useWishlist } from '../hooks/useWishlist'; 
 
 const NavbarInner = () => {
+  const { wishlist } = useWishlist();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
   const [mobileShopDropdownOpen, setMobileShopDropdownOpen] = useState(false);
@@ -131,8 +133,8 @@ const NavbarInner = () => {
                         <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
                     </Link>
                     <Link href="/wishlist" className="relative hover:opacity-80 transition-opacity">
-                        <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
-                        <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">0</span>
+                      <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
+                      <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlist.length}</span>
                     </Link>
                     <Link href="/cart" className="relative hover:opacity-80 transition-opacity">
                         <Image src="/assets/icons/shopping-bag.png" alt="Cart" width={24} height={24} className="w-7 h-7" />

@@ -1,6 +1,6 @@
 import { apiFetch, getApiImageUrl } from './api';
 
-export const fetchWishlist = async (): Promise<{ success: boolean; data: string[] }> => {
+export const fetchWishlist = async (): Promise<{ success: boolean; data: Product[] }> => {
     return apiFetch('/users/wishlist');
 };
 
