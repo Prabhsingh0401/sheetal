@@ -3,11 +3,23 @@ import Image from "next/image";
 import StarRating from "./StarRating";
 
 interface ProductInfoProps {
-  product: any;
+  product: {
+    title: string;
+    rating: number;
+    mainDescription: string;
+    price: number;
+    originalPrice: number;
+    discount: string;
+    description: string;
+    colors: { name: string; image: string; }[];
+    allSizes: { name: string; available: boolean; left: number; }[]; 
+    colorToAvailableSizesMap: { [colorName: string]: string[] };
+    specifications: any[]; 
+  };
   selectedSize: string;
   setSelectedSize: (size: string) => void;
   selectedColor: string;
-  onColorChange: (color: any) => void;
+  onColorChange: (color: { name: string; image: string }) => void; 
   quantity: number;
   setQuantity: (qty: number) => void;
   onEnquire: () => void;
@@ -87,7 +99,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </label>
         <div className="flex gap-3">
           {Array.isArray(product?.colors) &&
-            product.colors.map((color: any, i: number) => (
+            product.colors.map((color, i: number) => (
             <div
               key={i}
               className={`w-12 h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative ${selectedColor === color.name ? 'border-[#bd9951]' : 'border-gray-200'}`}
@@ -127,37 +139,40 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           )}
         </div>
         <div className="flex flex-wrap gap-3">
-          {Array.isArray(product?.sizes) &&
-            product.sizes.map((size: any) => (
-            <div key={size.name} className="flex flex-col items-center">
-              <button
-                disabled={!size.available}
-                onClick={() => setSelectedSize(size.name)}
-                className={`w-10 h-10 flex items-center justify-center border rounded-full text-sm font-medium transition-colors relative
-          ${
-            !size.available
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : ""
-          }
-          ${
-            selectedSize === size.name
-              ? "border-[#bd9951]"
-              : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-          }
-        `}
-              >
-                {size.name}
-                {!size.available && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
-              </button> 
+          {Array.isArray(product?.allSizes) &&
+            product.allSizes.map((size: { name: string; available: boolean; left: number }) => {
+                const isAvailableForSelectedColor = product.colorToAvailableSizesMap[selectedColor]?.includes(size.name);
+                const isDisabled = !isAvailableForSelectedColor; // Disable if not available for selected color
 
-              {/* Availability text BELOW each size */}
-              {size.available && size.left <= 2 && (
-                <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
-                  {size.left} left
-                </span>
-              )}
-            </div>
-          ))}
+                return (
+                    <div key={size.name} className="flex flex-col items-center">
+                        <button
+                            disabled={isDisabled}
+                            onClick={() => setSelectedSize(size.name)}
+                            className={`w-10 h-10 flex items-center justify-center border rounded-full text-sm font-medium transition-colors relative
+                                ${isDisabled
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    : ""
+                                }
+                                ${selectedSize === size.name && !isDisabled
+                                    ? "border-[#bd9951]"
+                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+                                }
+                            `}
+                        >
+                            {size.name}
+                            {/* Show strike-through if disabled (not available for selected color) */}
+                            {isDisabled && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
+                        </button>
+                        {/* Only show 'X left' if available for selected color and stock is low */}
+                        {isAvailableForSelectedColor && size.left <= 2 && (
+                            <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
+                                {size.left} left
+                            </span>
+                        )}
+                    </div>
+                );
+            })}
         </div>
       </div>
 

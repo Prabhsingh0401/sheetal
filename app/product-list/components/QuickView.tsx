@@ -27,18 +27,22 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                 setLoading(true);
                 try {
                     const response = await fetchProductBySlug(productSlug);
-                    if (response.success) {
+                    if (response.success && response.data) {
                         setProduct(response.data);
                         const mainImg = getProductImageUrl(response.data);
                         setSelectedImage(mainImg);
 
-                        // Default size logic: find first available size
-                        const firstAvailableSize = response.data.variants?.find((v: any) => v.stock > 0);
-                        if (firstAvailableSize) setSelectedSize(firstAvailableSize.size || "");
-
-                        // Default color logic: find first available color
-                        const firstAvailableColor = response.data.variants?.find((v: any) => v.color?.name);
-                        if (firstAvailableColor && firstAvailableColor.color) setSelectedColor(firstAvailableColor.color.name);
+                        // Default size and color logic: find first available variant, its color, and its size
+                        const firstAvailableVariant = response.data.variants?.find((v: any) => Array.isArray(v.sizes) && v.sizes.length > 0 && v.sizes.some((s: any) => s.stock > 0));
+                        if (firstAvailableVariant) {
+                            if (firstAvailableVariant.color?.name) {
+                                setSelectedColor(firstAvailableVariant.color.name);
+                            }
+                            const firstAvailableSize = firstAvailableVariant.sizes.find((s: any) => s.stock > 0);
+                            if (firstAvailableSize) {
+                                setSelectedSize(firstAvailableSize.name);
+                            }
+                        }
                     }
                 } catch (error) {
                     console.error("Failed to fetch product", error);
@@ -63,39 +67,68 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
         ...(product?.images?.map(img => getApiImageUrl(img.url)) || [])
     ].filter(Boolean) as string[];
 
-    // Unique colors from variants
-    const colorsMap = new Map();
+    // Derive all unique colors, all unique sizes, and a map of color to available sizes
+    const allUniqueColors: { name: string; image: string; }[] = [];
+    const allUniqueSizeNames = new Set<string>();
+    const colorToAvailableSizesMap = new Map<string, Set<string>>(); // Map: colorName -> Set<sizeName>
+
+    // To store overall stock for each size for `allUniqueSizes`
+    const sizeOverallStockMap = new Map<string, { totalStock: number, minLeft: number }>();
+
     product?.variants?.forEach(v => {
-        if (v.color && v.color.name) {
-            if (!colorsMap.has(v.color.name)) {
-                colorsMap.set(v.color.name, {
-                    name: v.color.name,
-                    image: v.v_image ? getApiImageUrl(v.v_image) : getProductImageUrl(product) 
-                });
-            }
+        // Collect unique colors
+        if (v.color && typeof v.color === 'object' && v.color.name && !allUniqueColors.some(c => c.name === v.color!.name)) {
+            allUniqueColors.push({
+                name: v.color!.name,
+                image: v.v_image ? getApiImageUrl(v.v_image) : getProductImageUrl(product)
+            });
+        }
+
+        if (Array.isArray(v.sizes)) {
+            v.sizes.forEach(s => {
+                if (s?.name) {
+                    allUniqueSizeNames.add(s.name); // Collect all unique size names across all variants
+
+                    const currentStock = sizeOverallStockMap.get(s.name) || { totalStock: 0, minLeft: Infinity };
+                    currentStock.totalStock += s.stock || 0;
+                    currentStock.minLeft = Math.min(currentStock.minLeft, s.stock || 0);
+                    sizeOverallStockMap.set(s.name, currentStock);
+
+                    // Populate colorToAvailableSizesMap
+                    if (v.color && typeof v.color === 'object' && v.color.name && s.stock > 0) {
+                        if (!colorToAvailableSizesMap.has(v.color!.name)) {
+                            colorToAvailableSizesMap.set(v.color!.name, new Set<string>());
+                        }
+                        colorToAvailableSizesMap.get(v.color!.name)?.add(s.name);
+                    }
+                }
+            });
         }
     });
-    const displayColors = Array.from(colorsMap.values());
 
-    // Unique sizes from variants
-    const sizesMap = new Map();
-    product?.variants?.forEach(v => {
-      if (v.color && v.color.name === selectedColor) {
-        v.sizes.forEach(s => {
-            if (s.name) {
-                const existing = sizesMap.get(s.name) || { name: s.name, stock: 0 };
-                existing.stock += (s.stock || 0);
-                sizesMap.set(s.name, existing);
-            }
-        });
-      }
-  });
-    
-    const displaySizes = Array.from(sizesMap.values()).map((s: any) => ({
-        name: s.name,
-        available: s.stock > 0,
-        left: s.stock
-    }));
+    const allSizesForDisplay = Array.from(allUniqueSizeNames).map(sizeName => {
+        const stockInfo = sizeOverallStockMap.get(sizeName);
+        return {
+            name: sizeName,
+            available: stockInfo ? stockInfo.totalStock > 0 : false,
+            left: stockInfo ? stockInfo.minLeft : 0
+        };
+    });
+
+    const handleColorChange = (color: { name: string; image: string }) => {
+        setSelectedColor(color.name);
+        setSelectedImage(color.image);
+
+        // Check if previously selected size is available for the new color
+        const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
+        if (selectedSize && availableSizesForNewColor && !availableSizesForNewColor.has(selectedSize)) {
+            setSelectedSize(""); // Reset if not available
+        }
+        // Optionally, auto-select the first available size for the new color if no size is selected
+        if (!selectedSize && availableSizesForNewColor && availableSizesForNewColor.size > 0) {
+            setSelectedSize(Array.from(availableSizesForNewColor)[0]);
+        }
+    };
 
 
     return (
@@ -149,14 +182,13 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                     Select Color:
                                     </label>
                                     <div className="flex gap-3">
-                                    {Array.isArray(displayColors) &&
-                                        displayColors.map((color: any, i: number) => (
+                                    {Array.isArray(allUniqueColors) &&
+                                        allUniqueColors.map((color: any, i: number) => (
                                         <div
                                             key={i}
                                             className={`w-12 h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative ${selectedColor === color.name ? 'border-[#bd9951]' : 'border-gray-200'}`}
                                             onClick={() => {
-                                                setSelectedColor(color.name);
-                                                setSelectedImage(color.image);
+                                                handleColorChange(color);
                                             }}
                                         >
                                             <Image
@@ -177,36 +209,41 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                         </label>
                                     </div>
                                     <div className="flex flex-wrap gap-3">
-                                        {Array.isArray(displaySizes) &&
-                                            displaySizes.map((size: any) => (
-                                            <div key={size.name} className="flex flex-col items-center">
-                                                <button
-                                                    disabled={!size.available}
-                                                    onClick={() => setSelectedSize(size.name)}
-                                                    className={`w-10 h-10 flex items-center justify-center border rounded-full text-sm font-medium transition-colors
-                                                ${
-                                                    !size.available
-                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                    : ""
-                                                }
-                                                ${
-                                                    selectedSize === size.name
-                                                    ? "border-[#bd9951]"
-                                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-                                                }
-                                                `}
-                                                >
-                                                    {size.name}
-                                                </button> 
+                                        {Array.isArray(allSizesForDisplay) &&
+                                            allSizesForDisplay.map((size: { name: string; available: boolean; left: number }) => {
+                                                const isAvailableForSelectedColor = colorToAvailableSizesMap.get(selectedColor)?.has(size.name);
+                                                const isDisabled = !isAvailableForSelectedColor; 
+                                                
+                                                return (
+                                                    <div key={size.name} className="flex flex-col items-center">
+                                                        <button
+                                                            disabled={isDisabled}
+                                                            onClick={() => setSelectedSize(size.name)}
+                                                            className={`w-10 h-10 flex items-center justify-center border rounded-full text-sm font-medium transition-colors relative overflow-hidden
+                                                        ${
+                                                            isDisabled
+                                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                            : ""
+                                                        }
+                                                        ${
+                                                            selectedSize === size.name && !isDisabled
+                                                            ? "border-[#bd9951]"
+                                                            : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+                                                        }
+                                                        `}
+                                                        >
+                                                            {size.name}
+                                                            {isDisabled && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
+                                                        </button> 
 
-                                                {/* Availability text BELOW each size */}
-                                                {size.available && size.left <= 2 && (
-                                                    <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
-                                                        {size.left} left
-                                                    </span>
-                                                )}
-                                            </div>
-                                        ))}
+                                                        {isAvailableForSelectedColor && size.left <= 2 && (
+                                                            <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
+                                                                {size.left} left
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
                                     </div>
                                 </div>
                                 <div className="mb-8 hidden lg:block">

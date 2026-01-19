@@ -57,8 +57,16 @@ const ProductDetail = ({ params }: PageProps) => {
                 setSelectedImage(mainImg);
 
                 // Default size logic: find first available size
-                const firstAvailable = res.data.variants?.find((v: any) => v.stock > 0);
-                if (firstAvailable) setSelectedSize(firstAvailable.size || "");
+                const firstAvailableVariant = res.data.variants?.find((v: any) => Array.isArray(v.sizes) && v.sizes.length > 0 && v.sizes.some((s: any) => s.stock > 0));
+                if (firstAvailableVariant) {
+                    if (firstAvailableVariant.color?.name) {
+                        setSelectedColor(firstAvailableVariant.color.name);
+                    }
+                    const firstAvailableSize = firstAvailableVariant.sizes.find((s: any) => s.stock > 0);
+                    if (firstAvailableSize) {
+                        setSelectedSize(firstAvailableSize.name);
+                    }
+                }
 
                 // Fetch reviews
                 if (res.data._id) {
@@ -92,11 +100,6 @@ const ProductDetail = ({ params }: PageProps) => {
 
   const handleImageChange = (img: string) => {
     setSelectedImage(img);
-  };
-
-  const handleColorChange = (color: any) => {
-    setSelectedColor(color.name);
-    setSelectedImage(color.image);
   };
   
   const checkPincode = () => {
@@ -139,39 +142,68 @@ const ProductDetail = ({ params }: PageProps) => {
       ...(product.images?.map(img => getApiImageUrl(img.url)) || [])
   ].filter(Boolean);
 
-  // Unique colors from variants
-  const colorsMap = new Map();
-  product.variants?.forEach(v => {
-      if (v.color && v.color.name) {
-          if (!colorsMap.has(v.color.name)) {
-             colorsMap.set(v.color.name, {
-                 name: v.color.name,
-                 image: v.v_image ? getApiImageUrl(v.v_image) : getProductImageUrl(product) 
-             });
-          }
-      }
-  });
-  const displayColors = Array.from(colorsMap.values());
+  // Derive all unique colors, all unique sizes, and a map of color to available sizes
+  const allUniqueColors: { name: string; image: string; }[] = [];
+  const allUniqueSizeNames = new Set<string>();
+  const colorToAvailableSizesMap = new Map<string, Set<string>>(); // Map: colorName -> Set<sizeName>
 
-  // Unique sizes from variants
-  const sizesMap = new Map();
+  // To store overall stock for each size for `allUniqueSizes`
+  const sizeOverallStockMap = new Map<string, { totalStock: number, minLeft: number }>();
+
   product.variants?.forEach(v => {
-      if (v.color && v.color.name === selectedColor) {
-        v.sizes.forEach(s => {
-            if (s.name) {
-                const existing = sizesMap.get(s.name) || { name: s.name, stock: 0 };
-                existing.stock += (s.stock || 0);
-                sizesMap.set(s.name, existing);
-            }
-        });
+      // Collect unique colors
+      if (v.color && typeof v.color === 'object' && v.color.name && !allUniqueColors.some(c => c.name === v.color!.name)) {
+          allUniqueColors.push({
+              name: v.color!.name,
+              image: v.v_image ? getApiImageUrl(v.v_image) : getProductImageUrl(product)
+          });
+      }
+
+      if (Array.isArray(v.sizes)) {
+          v.sizes.forEach(s => {
+              if (s?.name) {
+                  allUniqueSizeNames.add(s.name); // Collect all unique size names across all variants
+
+                  const currentStock = sizeOverallStockMap.get(s.name) || { totalStock: 0, minLeft: Infinity };
+                  currentStock.totalStock += s.stock || 0;
+                  currentStock.minLeft = Math.min(currentStock.minLeft, s.stock || 0); // Keep track of min stock if we want to show 'X left' based on variant
+                  sizeOverallStockMap.set(s.name, currentStock);
+
+                  // Populate colorToAvailableSizesMap
+                  if (v.color && typeof v.color === 'object' && v.color.name && s.stock > 0) { // Only add to map if in stock for this variant
+                      if (!colorToAvailableSizesMap.has(v.color!.name)) {
+                          colorToAvailableSizesMap.set(v.color!.name, new Set<string>());
+                      }
+                      colorToAvailableSizesMap.get(v.color!.name)?.add(s.name);
+                  }
+              }
+          });
       }
   });
-  
-  const displaySizes = Array.from(sizesMap.values()).map((s: any) => ({
-      name: s.name,
-      available: s.stock > 0,
-      left: s.stock
-  }));
+
+  const allSizesForDisplay = Array.from(allUniqueSizeNames).map(sizeName => {
+      const stockInfo = sizeOverallStockMap.get(sizeName);
+      return {
+          name: sizeName,
+          available: stockInfo ? stockInfo.totalStock > 0 : false,
+          left: stockInfo ? stockInfo.minLeft : 0 // Or consider totalStock for overall 'left'
+      };
+  });
+
+  const handleColorChange = (color: { name: string; image: string }) => {
+    setSelectedColor(color.name);
+    setSelectedImage(color.image);
+
+    // Check if previously selected size is available for the new color
+    const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
+    if (selectedSize && availableSizesForNewColor && !availableSizesForNewColor.has(selectedSize)) {
+        setSelectedSize(""); // Reset if not available
+    }
+    // Optionally, auto-select the first available size for the new color if no size is selected
+    if (!selectedSize && availableSizesForNewColor && availableSizesForNewColor.size > 0) {
+        setSelectedSize(Array.from(availableSizesForNewColor)[0]);
+    }
+  };
 
   // Transformed Product Object for ProductInfo
   const productInfoData = {
@@ -180,12 +212,13 @@ const ProductDetail = ({ params }: PageProps) => {
       mainDescription: product.shortDescription || "",
       price: product.discountPrice && product.discountPrice > 0 ? product.discountPrice : product.price,
       originalPrice: product.price,
-      discount: product.discountPrice && product.discountPrice < product.price 
-        ? `${Math.round(((product.price - product.discountPrice)/product.price)*100)}` 
+      discount: product.discountPrice && product.discountPrice < product.price
+        ? `${Math.round(((product.price - product.discountPrice)/product.price)*100)}`
         : "0",
       description: product.description,
-      colors: displayColors,
-      sizes: displaySizes,
+      colors: allUniqueColors, // Pass all unique colors
+      allSizes: allSizesForDisplay, // Pass all unique sizes with overall availability
+      colorToAvailableSizesMap: Object.fromEntries(Array.from(colorToAvailableSizesMap.entries()).map(([color, sizesSet]) => [color, Array.from(sizesSet)])), // Convert Map to plain object for props
       specifications: product.specifications || []
   };
 
