@@ -42,6 +42,7 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({ categorySlug }) =
   }, [categorySlug]);
 
   // Use category data if available, otherwise fallback to defaults
+  const bannertext = category?.categoryBanner || '';
   const title = category?.name || 'Collection';
   const description = category?.description || `Explore our exclusive ${title.toLowerCase()} collection. Get styled with the high-fashion products and transform yourself.`;
   const bannerImage = getCategoryBannerUrl(category || undefined); 
@@ -81,7 +82,7 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({ categorySlug }) =
       {/* Category Description */}
       <div className="container mx-auto px-4 pt-16 pb-8">
         <div className="text-center mb-8 max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-light mb-6 text-[#1a1a1a] font-[family-name:var(--font-outfit)] uppercase tracking-[0.2em]">The Best of Luxury</h2>
+          <h2 className="text-3xl md:text-4xl font-light mb-6 text-[#1a1a1a] font-[family-name:var(--font-outfit)] uppercase tracking-[0.2em]">{bannertext}</h2>
           <div className="w-20 h-px bg-[#bd9951] mx-auto mb-6"></div>
           <p className="text-gray-500 font-light leading-relaxed text-lg">
             {description}

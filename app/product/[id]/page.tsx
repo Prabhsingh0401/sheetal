@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import TopInfo from '../../components/TopInfo';
 import Footer from '../../components/Footer';
 import NavbarInner from '../../components/NavbarInner';
@@ -12,7 +13,10 @@ import RelatedProducts from '../components/RelatedProducts';
 import EnquireModal from '../components/EnquireModal';
 import SizeChartModal from '../components/SizeChartModal';
 import { fetchProductBySlug, fetchProductReviews, fetchProducts, Product, getProductImageUrl } from '../../services/productService';
+import { addToCart } from '../../services/cartService';
 import { getApiImageUrl } from '../../services/api';
+import { useWishlist } from '../../hooks/useWishlist';
+import Cookies from 'js-cookie';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -21,6 +25,7 @@ interface PageProps {
 const ProductDetail = ({ params }: PageProps) => {
   const resolvedParams = React.use(params);
   const slug = resolvedParams.id;
+  const router = useRouter();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState([]);
@@ -30,12 +35,14 @@ const ProductDetail = ({ params }: PageProps) => {
 
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [enquireModalOpen, setEnquireModalOpen] = useState(false);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [pincode, setPincode] = useState("");
-  const [pincodeMessage, setPincodeMessage] = useState("");
+  const [pincodeMessage, setPincodeCheckMessage] = useState("");
+  const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -86,13 +93,41 @@ const ProductDetail = ({ params }: PageProps) => {
   const handleImageChange = (img: string) => {
     setSelectedImage(img);
   };
+
+  const handleColorChange = (color: any) => {
+    setSelectedColor(color.name);
+    setSelectedImage(color.image);
+  };
   
   const checkPincode = () => {
       if(pincode.length === 6) {
-          setPincodeMessage("Delivery by Tue, Jan 06");
+          setPincodeCheckMessage("Delivery by Tue, Jan 06");
       } else {
-          setPincodeMessage("Please enter a valid 6-digit pincode");
+          setPincodeCheckMessage("Please enter a valid 6-digit pincode");
       }
+  };
+
+  const checkLoginStatus = () => {
+    const token = Cookies.get('token'); 
+    return !!token; 
+  };
+
+  const handleAddToCart = async () => {
+    if (!checkLoginStatus()) {
+      sessionStorage.setItem('redirect', `/product/${slug}`);
+      router.push(`/login`);
+      return;
+    }
+
+    if (product) {
+      try {
+        await addToCart(product._id, quantity, selectedSize, selectedColor);
+        router.push('/cart');
+      } catch (error) {
+        console.error("Failed to add to cart", error);
+        // Optionally, show a toast or message to the user
+      }
+    }
   };
 
   if (loading) return <div className="min-h-screen flex justify-center items-center text-xl font-medium text-gray-500">Loading...</div>;
@@ -121,10 +156,14 @@ const ProductDetail = ({ params }: PageProps) => {
   // Unique sizes from variants
   const sizesMap = new Map();
   product.variants?.forEach(v => {
-      if (v.size) {
-          const existing = sizesMap.get(v.size) || { name: v.size, stock: 0 };
-          existing.stock += (v.stock || 0);
-          sizesMap.set(v.size, existing);
+      if (v.color && v.color.name === selectedColor) {
+        v.sizes.forEach(s => {
+            if (s.name) {
+                const existing = sizesMap.get(s.name) || { name: s.name, stock: 0 };
+                existing.stock += (s.stock || 0);
+                sizesMap.set(s.name, existing);
+            }
+        });
       }
   });
   
@@ -138,11 +177,12 @@ const ProductDetail = ({ params }: PageProps) => {
   const productInfoData = {
       title: product.name,
       rating: product.averageRating || 0,
+      mainDescription: product.shortDescription || "",
       price: product.discountPrice && product.discountPrice > 0 ? product.discountPrice : product.price,
       originalPrice: product.price,
       discount: product.discountPrice && product.discountPrice < product.price 
-        ? `${Math.round(((product.price - product.discountPrice)/product.price)*100)}%` 
-        : "0%",
+        ? `${Math.round(((product.price - product.discountPrice)/product.price)*100)}` 
+        : "0",
       description: product.description,
       colors: displayColors,
       sizes: displaySizes,
@@ -176,6 +216,8 @@ const ProductDetail = ({ params }: PageProps) => {
                 selectedImage={selectedImage || galleryImages[0]} 
                 onImageChange={handleImageChange} 
                 title={product.name}
+                isWishlisted={isProductInWishlist(product._id)}
+                onToggleWishlist={() => toggleProductInWishlist(product._id)}
              />
           </div>
 
@@ -184,10 +226,13 @@ const ProductDetail = ({ params }: PageProps) => {
                 product={productInfoData}
                 selectedSize={selectedSize}
                 setSelectedSize={setSelectedSize}
+                selectedColor={selectedColor}
+                onColorChange={handleColorChange}
                 quantity={quantity}
                 setQuantity={setQuantity}
                 onEnquire={() => setEnquireModalOpen(true)}
                 onSizeChartOpen={() => setSizeChartOpen(true)}
+                onAddToCart={handleAddToCart}
                 pincode={pincode}
                 setPincode={setPincode}
                 pincodeMessage={pincodeMessage}

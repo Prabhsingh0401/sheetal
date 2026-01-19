@@ -9,9 +9,11 @@ interface ProductImageGalleryProps {
   selectedImage: string;
   onImageChange: (img: string) => void;
   title: string;
+  isWishlisted: boolean;
+  onToggleWishlist: () => void;
 }
 
-const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selectedImage, onImageChange, title }) => {
+const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selectedImage, onImageChange, title, isWishlisted, onToggleWishlist }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -148,8 +150,11 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
 
         {/* Floating Icons */}
         <div className="absolute top-4 right-0 bg-white flex flex-col gap-3 z-10 pointer-events-none rounded-md">
-            <button className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto">
-              <Image src="/assets/icons/heart-pink.svg" width={20} height={20} alt="wishlist" />
+            <button 
+              className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto"
+              onClick={onToggleWishlist}
+            >
+              <Image src={isWishlisted ? "/assets/icons/heart-solid.svg" : "/assets/icons/heart-pink.svg"} width={20} height={20} alt="wishlist" />
             </button>
             <button className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto">
               <Image src="/assets/icons/view-similar.png" width={20} height={20} alt="similar" />

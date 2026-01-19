@@ -31,9 +31,7 @@ const ProductTabs: React.FC<ProductTabsProps> = ({ activeTab, setActiveTab, desc
                    <div className="animate-fade-in text-gray-700" dangerouslySetInnerHTML={{ __html: description }} />
                )}
                {activeTab === 'material' && (
-                   <div className="animate-fade-in text-gray-700 whitespace-pre-line">
-                       {materialCare}
-                   </div>
+                   <div className="animate-fade-in text-gray-700" dangerouslySetInnerHTML={{ __html: materialCare }} />
                )}
            </div>
        </div>

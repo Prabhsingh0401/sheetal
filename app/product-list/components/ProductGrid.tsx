@@ -3,32 +3,19 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-interface Product {
-  id: string; // Changed to string as product IDs are typically strings
-  name: string;
-  image: string;
-  hoverImage: string;
-  price: number;
-  mrp: number;
-  discount: string;
-  size: string;
-  rating: number;
-  soldOut: boolean;
-  isWishlisted: boolean; // Add this new property
-}
-
 interface ProductGridProps {
   products: Product[];
   viewMode: 'grid' | 'list';
-  onToggleWishlist: (productId: string) => void; // Add this new prop
+  onToggleWishlist: (productId: string) => void;
+  onQuickView: (productSlug: string) => void;
 }
 
-const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleWishlist }) => {
+const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleWishlist, onQuickView }) => {
   return (
     <div className={`grid gap-4 xl:gap-10 grid-cols-2 ${viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-4' : 'lg:grid-cols-2'}`}>
       {products.map((product) => (
         <div 
-          key={product.id} 
+          key={product._id} 
           className={`group flex transition-all rounded-xl p-2 
             ${viewMode === 'grid' ? 'flex-col h-full' : 'flex-row h-full items-center gap-4'}
           `}
@@ -43,7 +30,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleW
               </div>
             )}
             
-            <Link href={`/product/${product.id}`} className="block w-full h-full relative overflow-hidden rounded-lg">
+            <Link href={`/product/${product.slug}`} className="block w-full h-full relative overflow-hidden rounded-lg">
               <Image
                 src={product.image}
                 alt={product.name}
@@ -66,7 +53,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleW
             <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
               <button 
                 className="w-10 h-10 rounded-full flex items-center justify-cente group/icon"
-                onClick={() => onToggleWishlist(product.id)} // Add onClick handler
+                onClick={() => onToggleWishlist(product._id)} // Add onClick handler
               >
                 <Image 
                   src={product.isWishlisted ? "/assets/icons/heart-solid.svg" : "/assets/icons/heart.svg"} // Conditional heart icon
@@ -79,21 +66,24 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleW
             </div>
             
             {/* Quick View Button (Grid Mode Only usually) */}
-            <button className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm py-4 text-[11px] font-bold uppercase tracking-[0.2em] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 hover:bg-[#bd9951] hover:text-white">
+            <button 
+              onClick={() => onQuickView(product.slug)}
+              className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm py-4 text-[11px] font-bold uppercase tracking-[0.2em] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 hover:bg-[#bd9951] hover:text-white cursor-pointer"
+            >
               Quick View
             </button>
           </div>
 
           {/* Info Container */}
-          <div className={`flex flex-col flex-grow px-1 font-[family-name:var(--font-montserrat)]${viewMode === 'grid' ? 'text-left' : 'text-left items-start pl-4'}`}>
-            <h3 className={`text-lg leading-snug line-clamp-2 h-10 ${viewMode === 'grid' ? 'text-lg' : 'text-[18px]'}`}>
-              <Link href={`/product/${product.id}`} className="hover:text-[#bd9951] transition-colors uppercase tracking-tight">
+          <div className={`flex flex-col flex-grow px-1 font-[family-name:var(--font-montserrat)] mb-3${viewMode === 'grid' ? 'text-left' : 'text-left items-start pl-4'}`}>
+            <h3 className={`text-lg leading-snug line-clamp-2 pb-1 ${viewMode === 'grid' ? 'text-lg' : 'text-[18px]'}`}>
+              <Link href={`/product/${product.slug}`} className="hover:text-[#bd9951] transition-colors uppercase tracking-tight">
                 {product.name}
               </Link>
             </h3>
             
             {/* Size and Rating */}
-            <div className={`flex flex-col gap-1 mb-3 ${viewMode === 'grid' ? 'items-start' : 'items-start'}`}>
+            <div className={`flex flex-col gap-1 mb-3 mt-3 ${viewMode === 'grid' ? 'items-start' : 'items-start'}`}>
                <span className="text-md font-light">
                  <span className="font-medium">Size:</span> {product.size}
                </span>
@@ -118,7 +108,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleW
             
             <div className={`mt-auto flex ${viewMode === 'grid' ? 'justify-start' : 'justify-start'}`}>
               <Link 
-                href={`/product/${product.id}`} 
+                href={`/product/${product.slug}`} 
                 className="inline-block border-b border-black text-black py-2 pr-8 uppercase text-[14px] transition-all duration-500 hover:tracking-[1px]"
               >
                 View Detail
@@ -130,5 +120,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleW
     </div>
   );
 };
-
+interface Product {
+  _id: string;
+  slug: string;
+  name: string;
+  image: string;
+  hoverImage: string;
+  price: number;
+  mrp: number;
+  discount: string;
+  size: string;
+  rating: number;
+  soldOut: boolean;
+  isWishlisted: boolean;
+}
 export default ProductGrid;

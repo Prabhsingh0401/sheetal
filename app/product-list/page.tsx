@@ -14,6 +14,7 @@ import { fetchCategoryBySlug } from '../services/categoryService';
 import { getApiImageUrl } from '../services/api';
 import { useProducts } from '../hooks/useProducts';
 import { useWishlist } from '../hooks/useWishlist'; // Import useWishlist hook
+import QuickView from './components/QuickView';
 
 const ProductListContent = () => {
   const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ const ProductListContent = () => {
   
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [isResolvingCategory, setIsResolvingCategory] = useState(!!categorySlug);
+  const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(null);
 
   // UI State
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
@@ -72,6 +74,10 @@ const ProductListContent = () => {
     setMobileSortOpen(false);
   };
   
+  const handleQuickView = (slug: string) => {
+    setSelectedProductSlug(slug);
+  };
+
   // Transform data for Grid Component
   const gridProducts = products.map(p => {
       const mrp = p.price;
@@ -81,7 +87,8 @@ const ProductListContent = () => {
         : 0;
       
       return {
-          id: p._id,
+          _id: p._id,
+          slug: p.slug,
           name: p.name,
           image: getProductImageUrl(p),
           hoverImage: p.hoverImage?.url ? getApiImageUrl(p.hoverImage.url) : getProductImageUrl(p),
@@ -129,7 +136,7 @@ const ProductListContent = () => {
                 <p className="text-gray-500">No products found.</p>
             </div>
          ) : (
-            <ProductGrid products={gridProducts} viewMode={viewMode} onToggleWishlist={toggleProductInWishlist} />
+            <ProductGrid products={gridProducts} viewMode={viewMode} onToggleWishlist={toggleProductInWishlist} onQuickView={handleQuickView} />
          )}
       </div>
 
@@ -145,6 +152,12 @@ const ProductListContent = () => {
         onClose={() => setMobileSortOpen(false)} 
         onSelect={handleMobileSort} 
       />
+      {selectedProductSlug && (
+        <QuickView
+          productSlug={selectedProductSlug}
+          onClose={() => setSelectedProductSlug(null)}
+        />
+      )}
     </>
   );
 };

@@ -23,7 +23,10 @@ export interface ProductImage {
 export interface ProductVariant {
   _id: string;
   v_sku?: string;
-  size?: string;
+  sizes: {
+    name: string;
+    stock: number;
+  }[];
   color?: {
     name: string;
     code: string;
@@ -31,7 +34,6 @@ export interface ProductVariant {
   };
   v_price?: number;
   v_discountPrice?: number;
-  stock?: number;
   v_image?: string;
 }
 

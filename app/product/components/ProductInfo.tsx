@@ -6,10 +6,13 @@ interface ProductInfoProps {
   product: any;
   selectedSize: string;
   setSelectedSize: (size: string) => void;
+  selectedColor: string;
+  onColorChange: (color: any) => void;
   quantity: number;
   setQuantity: (qty: number) => void;
   onEnquire: () => void;
   onSizeChartOpen: () => void;
+  onAddToCart: () => void;
   pincode: string;
   setPincode: (pin: string) => void;
   pincodeMessage: string;
@@ -21,16 +24,23 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   product,
   selectedSize,
   setSelectedSize,
+  selectedColor,
+  onColorChange,
   quantity,
   setQuantity,
   onEnquire,
   onSizeChartOpen,
+  onAddToCart,
   pincode,
   setPincode,
   pincodeMessage,
   checkPincode,
   hasSizeChart = false,
 }) => {
+  const price = Number(product?.price ?? 0);
+  const originalPrice = Number(product?.originalPrice ?? price);
+  const discountPercentage = originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  
   return (
     <div className="p-6 md:p-8">
       <div className="hidden lg:block">
@@ -43,21 +53,23 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </div>
       </div>
 
-      {/* <p className="text-sm mb-6 leading-relaxed">
-        {product.description}
-      </p> */}
+      <p className="text-sm mb-6 leading-relaxed">
+        {product.mainDescription}
+      </p>
 
       <div className="mb-6">
         <div className="flex items-end gap-3">
           <span className="text-3xl font-medium">
-            ₹ {product.price.toFixed(2)}
+            ₹ {price.toFixed(2)}
           </span>
           <span className="text-lg text-gray-400 line-through">
-            ₹ {product.originalPrice.toFixed(2)}
+            ₹ {originalPrice.toFixed(2)}
           </span>
-          <span className="text-lg text-green-600 font-semibold">
-            Save {product.discount}
-          </span>
+          {discountPercentage > 0 && (
+            <span className="text-lg text-green-600 font-semibold">
+              Save {discountPercentage}%
+            </span>
+          )}
         </div>
         <p className="text-xs text-gray-500">Inclusive of all taxes.</p>
       </div>
@@ -74,10 +86,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           Select Color:
         </label>
         <div className="flex gap-3">
-          {product.colors.map((color: any, i: number) => (
+          {Array.isArray(product?.colors) &&
+            product.colors.map((color: any, i: number) => (
             <div
               key={i}
-              className="w-12 h-16 border border-gray-200 cursor-pointer hover:border-[#bd9951] p-0.5 relative"
+              className={`w-12 h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative ${selectedColor === color.name ? 'border-[#bd9951]' : 'border-gray-200'}`}
+              onClick={() => onColorChange(color)}
             >
               <Image
                 src={color.image}
@@ -113,12 +127,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           )}
         </div>
         <div className="flex flex-wrap gap-3">
-          {product.sizes.map((size: any) => (
+          {Array.isArray(product?.sizes) &&
+            product.sizes.map((size: any) => (
             <div key={size.name} className="flex flex-col items-center">
               <button
                 disabled={!size.available}
                 onClick={() => setSelectedSize(size.name)}
-                className={`w-10 h-10 flex items-center justify-center border rounded-full text-sm font-medium transition-colors
+                className={`w-10 h-10 flex items-center justify-center border rounded-full text-sm font-medium transition-colors relative
           ${
             !size.available
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -132,6 +147,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         `}
               >
                 {size.name}
+                {!size.available && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
               </button> 
 
               {/* Availability text BELOW each size */}
@@ -185,7 +201,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               className="w-full h-12 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
             />
           </div>
-          <button className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors">
+          <button onClick={onAddToCart} className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors">
             Add to Cart
           </button>
           <button className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
@@ -197,11 +213,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       {/* Mobile Sticky Footer */}
       <div className="fixed bottom-0 left-0 w-full bg-white z-[100] border-t border-gray-200 p-3 lg:hidden flex gap-3 items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="flex space-x-2">
-           <span className="text-xl font-bold">₹ {product.price.toFixed(2)}</span>
-           <span className="text-lg text-gray-400 line-through">₹ {product.originalPrice.toFixed(2)}</span>
+           <span className="text-xl font-bold">₹ {price.toFixed(2)}</span>
+           <span className="text-lg text-gray-400 line-through">₹ {originalPrice.toFixed(2)}</span>
         </div>
         <div className="flex gap-2 flex-1 justify-end ml-20">
-           <button className="flex-1 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
+           <button onClick={onAddToCart} className="flex-1 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
              Add to Cart
            </button>
            {/* <button className="flex-1 bg-[#fe5722] text-white border border-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
@@ -209,7 +225,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
            </button> */}
         </div>
       </div>
-
       {/* Delivery */}
       <div className="mb-6 border-t border-gray-100 pt-6">
         <label className="flex items-center text-sm font-semibold mb-3">
@@ -302,7 +317,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
     </summary>
 
     <div className="p-4 bg-gray-50 text-sm">
-      {product.specifications && product.specifications.length > 0 ? (
+      {Array.isArray(product?.specifications) && product.specifications.length > 0 ? (
         <div className="grid grid-cols-2 gap-y-4 gap-x-8">
            {product.specifications.map((spec: any, idx: number) => (
                <div key={idx} className="flex flex-col border-b border-gray-200 pb-2">

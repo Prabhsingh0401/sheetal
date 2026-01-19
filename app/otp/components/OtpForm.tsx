@@ -38,7 +38,13 @@ const OtpForm = () => {
       if (data.success && data.token) {
         login(data.token); // Set the authentication token in cookies
         toast.success('Logged in successfully!');
-        router.push('/'); // Redirect to homepage or dashboard
+        const redirectUrl = sessionStorage.getItem('redirect');
+        if (redirectUrl) {
+          sessionStorage.removeItem('redirect');
+          router.push(redirectUrl);
+        } else {
+          router.push('/'); // Redirect to homepage or dashboard
+        }
       } else {
         toast.error(data.message || 'Backend login failed.');
         console.error('Backend login failed:', data.message);

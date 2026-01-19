@@ -46,7 +46,7 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({ product, onRemove }
                 </Link>
             </div>
             <div className="flex flex-col flex-grow pt-4 text-left font-[family-name:var(--font-montserrat)]">
-                <h6 className="text-lg leading-snug line-clamp-2 h-10">
+                <h6 className="text-lg leading-snug line-clamp-2 pb-1">
                     <Link href={`/product/${product.slug}`} className="hover:text-[#bd9951] transition-colors">
                         {product.name}
                     </Link>
