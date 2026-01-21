@@ -84,9 +84,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleW
             
             {/* Size and Rating */}
             <div className={`flex flex-col gap-1 mb-3 mt-3 ${viewMode === 'grid' ? 'items-start' : 'items-start'}`}>
-               <span className="text-md font-light">
+               {/* <span className="text-md font-light">
                  <span className="font-medium">Size:</span> {product.size}
-               </span>
+               </span> */}
                <div className="flex items-center gap-0.5">
                  {[...Array(5)].map((_, i) => (
                    <Image 

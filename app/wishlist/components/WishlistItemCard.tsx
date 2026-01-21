@@ -32,17 +32,19 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({ product, onRemove }
                         alt={product.name}
                         fill
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                        className="object-cover transition-opacity duration-500 group-hover:opacity-0"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    {product.hoverImage?.url && (
-                        <Image
-                            src={getApiImageUrl(product.hoverImage.url)}
-                            alt={product.name}
-                            fill
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                            className="object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                        />
-                    )}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden rounded-lg">
+                        {product.hoverImage?.url && (
+                            <Image
+                                src={getApiImageUrl(product.hoverImage.url)}
+                                alt={product.name}
+                                fill
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                                className="object-cover"
+                            />
+                        )}
+                    </div>
                 </Link>
             </div>
             <div className="flex flex-col flex-grow pt-4 text-left font-[family-name:var(--font-montserrat)]">

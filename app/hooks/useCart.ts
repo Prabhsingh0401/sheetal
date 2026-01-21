@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { fetchCart, addToCart as addToCartApi, removeFromCart as removeFromCartApi } from '../services/cartService';
-import { Product } from '../services/productService'; 
+import { toggleWishlist as toggleWishlistApi, Product } from '../services/productService'; // Assuming Product is exported from productService
 
 export interface CartItem {
     _id: string;
@@ -22,6 +22,7 @@ interface UseCartReturn {
     error: string | null;
     addToCart: (productId: string, variantId: string, quantity: number, size: string) => Promise<void>;
     removeFromCart: (itemId: string) => Promise<void>;
+    moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
 }
 
 export const useCart = (): UseCartReturn => {
@@ -87,11 +88,33 @@ export const useCart = (): UseCartReturn => {
         }
     }, [loadCart]);
 
+    const moveFromCartToWishlist = useCallback(async (itemId: string, productId: string) => {
+        try {
+            const removeResponse = await removeFromCartApi(itemId);
+            if (removeResponse.success) {
+                toast.success('Item removed from cart!');
+                await loadCart();
+                const wishlistResponse = await toggleWishlistApi(productId);
+                if(wishlistResponse.success) {
+                    toast.success('Item added to wishlist!');
+                } else {
+                    toast.error(wishlistResponse.message || 'Failed to add to wishlist.');
+                }
+            } else {
+                toast.error(removeResponse.message || 'Failed to remove item from cart.');
+            }
+        } catch (err: any) {
+            console.error("Error moving to wishlist:", err);
+            toast.error('Could not move item to wishlist. Please try again.');
+        }
+    }, [loadCart]);
+
     return {
         cart,
         loading,
         error,
         addToCart,
-        removeFromCart
+        removeFromCart,
+        moveFromCartToWishlist,
     };
 };

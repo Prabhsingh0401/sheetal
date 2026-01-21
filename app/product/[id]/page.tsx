@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import TopInfo from '../../components/TopInfo';
 import Footer from '../../components/Footer';
@@ -133,6 +133,10 @@ const ProductDetail = ({ params }: PageProps) => {
     }
   };
 
+  const scrollToSimilarProducts = useCallback(() => {
+    document.getElementById('similar-products-section')?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
   if (loading) return <div className="min-h-screen flex justify-center items-center text-xl font-medium text-gray-500">Loading...</div>;
   if (!product) return <div className="min-h-screen flex justify-center items-center text-xl text-red-500">{error || "Product not found"}</div>;
 
@@ -251,6 +255,7 @@ const ProductDetail = ({ params }: PageProps) => {
                 title={product.name}
                 isWishlisted={isProductInWishlist(product._id)}
                 onToggleWishlist={() => toggleProductInWishlist(product._id)}
+                onScrollToSimilar={scrollToSimilarProducts}
              />
           </div>
 
@@ -271,6 +276,7 @@ const ProductDetail = ({ params }: PageProps) => {
                 pincodeMessage={pincodeMessage}
                 checkPincode={checkPincode}
                 hasSizeChart={!!product.sizeChart}
+                isOutOfStock={product.stock <= 0} // New prop
              />
           </div>
         </div>

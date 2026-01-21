@@ -2,23 +2,31 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "../hooks/useCart"; // Import useCart hook
+import { useCart, CartItem } from "../hooks/useCart"; // Import useCart hook
 import { getApiImageUrl } from "../services/api";
 import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal"; // Import the modal component
 
 const CartPage = () => {
-  const { cart: cartItems, loading, removeFromCart } = useCart(); // Use the useCart hook
+  const { cart: cartItems, loading, removeFromCart, moveFromCartToWishlist } = useCart(); // Use the useCart hook
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [itemToRemove, setItemToRemove] = useState<string | null>(null);
+  const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
 
-  const handleRemoveItem = (itemId: string) => {
-    setItemToRemove(itemId);
+  const handleRemoveItem = (item: CartItem) => {
+    setItemToRemove(item);
     setIsModalOpen(true);
   };
 
   const confirmRemoveItem = async () => {
     if (itemToRemove) {
-      await removeFromCart(itemToRemove);
+      await removeFromCart(itemToRemove._id);
+      setIsModalOpen(false);
+      setItemToRemove(null);
+    }
+  };
+
+  const handleMoveToWishlist = async () => {
+    if (itemToRemove) {
+      await moveFromCartToWishlist(itemToRemove._id, itemToRemove.product._id);
       setIsModalOpen(false);
       setItemToRemove(null);
     }
@@ -60,6 +68,7 @@ const CartPage = () => {
         <DeleteConfirmationModal
           onConfirm={confirmRemoveItem}
           onCancel={cancelRemoveItem}
+          onMoveToWishlist={handleMoveToWishlist}
         />
       )}
       {/* Header */}
@@ -203,23 +212,22 @@ const CartPage = () => {
                       </div>
 
                       {/* Price + Qty */}
-                      <div className="w-[180px] text-right">
-                        <div className="flex justify-end items-center gap-2">
+                      <div className="flex flex-col items-end justify-between flex-shrink-0">
+                        <div className="flex flex-col md:flex-row md:items-end gap-2 text-right">
                           <span className="font-semibold text-[15px]">
                             ₹ {(item.product.discountPrice ?? 0).toFixed(2)}
                           </span>
                           <span className="text-sm text-gray-500 line-through">
                             ₹ {(item.product.price ?? 0).toFixed(2)}
                           </span>
-                          <span className="text-xs text-gray-600">
-                            [
+                          <span className="text-xs text-green-600">
                             {Math.round(
                               (((item.product.price ?? 0) -
                                 (item.product.discountPrice ?? 0)) /
                                 (item.product.price ?? 1)) *
                                 100,
                             )}
-                            %]
+                            % OFF
                           </span>
                         </div>
 
@@ -235,7 +243,7 @@ const CartPage = () => {
                       <div className="pt-1">
                         <button
                           className="text-gray-500 hover:text-red-600"
-                          onClick={() => handleRemoveItem(item._id)}
+                          onClick={() => handleRemoveItem(item)}
                         >
                           <Image
                             src="/assets/icons/delete.svg"

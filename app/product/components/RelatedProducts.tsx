@@ -30,7 +30,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ similarProducts }) =>
   return (
     <>
       {/* Similar Products */}
-      <div className="container mx-auto px-4 py-12 border-t border-gray-200">
+      <div id="similar-products-section" className="container mx-auto px-4 py-12 border-t border-gray-200">
           <h3 className="text-4xl text-[#653f1b] mb-8 font-[family-name:var(--font-optima)]">Similar Products</h3>
           <EmblaSlider products={similarProducts} />
       </div>

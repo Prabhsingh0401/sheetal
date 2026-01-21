@@ -30,6 +30,7 @@ interface ProductInfoProps {
   pincodeMessage: string;
   checkPincode: () => void;
   hasSizeChart?: boolean;
+  isOutOfStock: boolean; // Added prop
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({
@@ -48,6 +49,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   pincodeMessage,
   checkPincode,
   hasSizeChart = false,
+  isOutOfStock, // Destructure new prop
 }) => {
   const price = Number(product?.price ?? 0);
   const originalPrice = Number(product?.originalPrice ?? price);
@@ -88,7 +90,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
       <div className="mb-6">
         <span className="inline-block bg-green-50 text-green-700 text-xs px-2 py-1 rounded border border-green-200">
-          In Stock
+          {isOutOfStock ? "Out of Stock" : "In Stock"}
         </span>
       </div>
 
@@ -142,87 +144,93 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           {Array.isArray(product?.allSizes) &&
             product.allSizes.map((size: { name: string; available: boolean; left: number }) => {
                 const isAvailableForSelectedColor = product.colorToAvailableSizesMap[selectedColor]?.includes(size.name);
-                const isDisabled = !isAvailableForSelectedColor; // Disable if not available for selected color
+                const isDisabled = !isAvailableForSelectedColor || isOutOfStock; // Disable if not available for selected color OR out of stock
 
-                return (
-                    <div key={size.name} className="flex flex-col items-center">
-                        <button
-                            disabled={isDisabled}
-                            onClick={() => setSelectedSize(size.name)}
-                            className={`w-10 h-10 flex items-center justify-center border rounded-full text-sm font-medium transition-colors relative
-                                ${isDisabled
-                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                    : ""
-                                }
-                                ${selectedSize === size.name && !isDisabled
-                                    ? "border-[#bd9951]"
-                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-                                }
-                            `}
-                        >
-                            {size.name}
-                            {/* Show strike-through if disabled (not available for selected color) */}
-                            {isDisabled && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
-                        </button>
-                        {/* Only show 'X left' if available for selected color and stock is low */}
-                        {isAvailableForSelectedColor && size.left <= 2 && (
-                            <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
-                                {size.left} left
-                            </span>
-                        )}
-                    </div>
-                );
-            })}
-        </div>
+                                                                return (
+                                                                    <div key={size.name} className="flex flex-col items-center">
+                                                                        <button
+                                                                            disabled={isDisabled}
+                                                                            onClick={() => setSelectedSize(size.name)}
+                                                                            className={`
+                                                                                ${size.name === 'One Size' ? 'px-3 py-2 rounded-md' : 'w-10 h-10 rounded-full'}
+                                                                                flex items-center justify-center border text-sm font-medium transition-colors relative overflow-hidden
+                                                                                ${isDisabled
+                                                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                                                    : ""
+                                                                                }
+                                                                                ${selectedSize === size.name && !isDisabled
+                                                                                    ? "border-[#bd9951]"
+                                                                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+                                                                                }
+                                                                            `}
+                                                                        >
+                                                                            {size.name}
+                                                                            {/* Show strike-through if disabled (not available for selected color) */}
+                                                                            {isDisabled && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
+                                                                        </button>
+                                                                        {/* Only show 'X left' if available for selected color and stock is low */}
+                                                                        {isAvailableForSelectedColor && size.left <= 2 && (
+                                                                            <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
+                                                                                {size.left} left
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}        </div>
       </div>
 
       {/* Mobile-Only Quantity & Notify (After Size) */}
       <div className="flex flex-col lg:hidden mb-6 border-b border-gray-100 pb-6 space-y-3">
-          <button 
-            onClick={onEnquire}
-            className="text-[#bd9951] border border-[#bd9951] px-4 py-2 text-sm font-medium rounded-sm hover:bg-[#bd9951] hover:text-white transition-colors w-30"
-          >
-            Notify Me
-          </button>
-        <div className="">
-            <input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-              className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
-            />
-          </div>
+          {isOutOfStock ? (
+            <button
+                onClick={onEnquire}
+                className="text-[#bd9951] border border-[#bd9951] px-4 py-2 text-sm font-medium rounded-sm hover:bg-[#bd9951] hover:text-white transition-colors w-full"
+            >
+                Notify Me
+            </button>
+          ) : (
+            <div className="">
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                  className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
+                />
+            </div>
+          )}
       </div>
 
       {/* Actions */}
       <div className="mb-8 hidden lg:block">
-        <div className="mb-4">
-          <button
-            onClick={onEnquire}
-            className="text-[#bd9951] border p-3 text-sm font-medium hover:bg-gray-100 cursor-pointer flex items-center"
-          >
-            Notify Me 
-          </button>
-        </div>
-
-        <div className="flex gap-4 items-center">
-          <div className="w-20">
-            <input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value))}
-              className="w-full h-12 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
-            />
+        {isOutOfStock ? (
+          <div className="mb-4">
+            <button
+                onClick={onEnquire}
+                className="text-[#bd9951] border p-3 text-sm font-medium hover:bg-gray-100 cursor-pointer flex items-center w-full justify-center"
+            >
+                Notify Me
+            </button>
           </div>
-          <button onClick={onAddToCart} className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors">
-            Add to Cart
-          </button>
-          <button className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
-            Buy Now
-          </button>
-        </div>
+        ) : (
+          <div className="flex gap-4 items-center">
+            <div className="w-20">
+              <input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => setQuantity(parseInt(e.target.value))}
+                className="w-full h-12 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
+              />
+            </div>
+            <button onClick={onAddToCart} className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors">
+              Add to Cart
+            </button>
+            <button className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
+              Buy Now
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Mobile Sticky Footer */}
@@ -232,12 +240,18 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
            <span className="text-lg text-gray-400 line-through">₹ {originalPrice.toFixed(2)}</span>
         </div>
         <div className="flex gap-2 flex-1 justify-end ml-20">
-           <button onClick={onAddToCart} className="flex-1 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
-             Add to Cart
-           </button>
-           {/* <button className="flex-1 bg-[#fe5722] text-white border border-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
-             Buy Now
-           </button> */}
+           {isOutOfStock ? (
+             <button
+                 onClick={onEnquire}
+                 className="flex-1 bg-[#bd9951] text-white uppercase font-bold text-xs py-3 rounded-sm hover:bg-[#a38547] transition-colors"
+             >
+                 Notify Me
+             </button>
+           ) : (
+             <button onClick={onAddToCart} className="flex-1 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
+               Add to Cart
+             </button>
+           )}
         </div>
       </div>
       {/* Delivery */}

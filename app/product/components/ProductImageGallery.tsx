@@ -11,9 +11,10 @@ interface ProductImageGalleryProps {
   title: string;
   isWishlisted: boolean;
   onToggleWishlist: () => void;
+  onScrollToSimilar: () => void; // New prop
 }
 
-const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selectedImage, onImageChange, title, isWishlisted, onToggleWishlist }) => {
+const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selectedImage, onImageChange, title, isWishlisted, onToggleWishlist, onScrollToSimilar }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -156,7 +157,10 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
             >
               <Image src={isWishlisted ? "/assets/icons/heart-solid.svg" : "/assets/icons/heart-pink.svg"} width={20} height={20} alt="wishlist" />
             </button>
-            <button className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto">
+            <button 
+              className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto"
+              onClick={onScrollToSimilar} // Attach the scroll function here
+            >
               <Image src="/assets/icons/view-similar.png" width={20} height={20} alt="similar" />
             </button>
         </div>

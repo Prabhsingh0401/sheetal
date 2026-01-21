@@ -164,6 +164,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                     title={product.name}
                                     isWishlisted={isProductInWishlist(product._id)}
                                     onToggleWishlist={() => toggleProductInWishlist(product._id)}
+                                    onScrollToSimilar={() => {}}
                                 />
                             </div>
                             <div className="w-full sm:w-1/2 px-2 text-left relative">
@@ -233,18 +234,20 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                                         <button
                                                             disabled={isDisabled}
                                                             onClick={() => setSelectedSize(size.name)}
-                                                            className={`w-10 h-10 flex items-center justify-center border rounded-full text-sm font-medium transition-colors relative overflow-hidden
-                                                        ${
-                                                            isDisabled
-                                                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                            : ""
-                                                        }
-                                                        ${
-                                                            selectedSize === size.name && !isDisabled
-                                                            ? "border-[#bd9951]"
-                                                            : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-                                                        }
-                                                        `}
+                                                            className={`
+                                                                ${size.name === 'One Size' ? 'px-3 py-2 rounded-md' : 'w-10 h-10 rounded-full'}
+                                                                flex items-center justify-center border text-sm font-medium transition-colors relative overflow-hidden
+                                                                ${
+                                                                    isDisabled
+                                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                                    : ""
+                                                                }
+                                                                ${
+                                                                    selectedSize === size.name && !isDisabled
+                                                                    ? "border-[#bd9951]"
+                                                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+                                                                }
+                                                            `}
                                                         >
                                                             {size.name}
                                                             {isDisabled && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
