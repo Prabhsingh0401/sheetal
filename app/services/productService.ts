@@ -14,6 +14,8 @@ export const toggleWishlist = async (productId: string) => {
     });
 };
 
+
+
 export interface ProductImage {
   url: string;
   alt: string;

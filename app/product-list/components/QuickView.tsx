@@ -6,6 +6,8 @@ import { getApiImageUrl } from '../../services/api';
 import Image from 'next/image';
 import { useWishlist } from '../../hooks/useWishlist';
 
+import { useCart } from '../../hooks/useCart';
+
 interface QuickViewProps {
     productSlug: string | null;
     onClose: () => void;
@@ -19,8 +21,8 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
     const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
+    const { addToCart } = useCart();
     
-
     useEffect(() => {
         if (productSlug) {
             const getProduct = async () => {
@@ -53,6 +55,18 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
             getProduct();
         }
     }, [productSlug]);
+
+    const handleAddToCart = async () => {
+        if (product) {
+            const selectedVariant = product.variants.find(variant => variant.color?.name === selectedColor);
+            if (selectedVariant) {
+                await addToCart(product._id, selectedVariant._id, quantity, selectedSize);
+                onClose();
+            } else {
+                console.error("Selected variant not found");
+            }
+        }
+    };
 
     if (!productSlug) {
         return null;
@@ -257,7 +271,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                                 className="w-full h-12 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
                                             />
                                         </div>
-                                        <button className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors">
+                                        <button onClick={handleAddToCart} className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors">
                                             Add to Cart
                                         </button>
                                         <button className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">

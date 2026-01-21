@@ -13,10 +13,10 @@ import RelatedProducts from '../components/RelatedProducts';
 import EnquireModal from '../components/EnquireModal';
 import SizeChartModal from '../components/SizeChartModal';
 import { fetchProductBySlug, fetchProductReviews, fetchProducts, Product, getProductImageUrl } from '../../services/productService';
-import { addToCart } from '../../services/cartService';
 import { getApiImageUrl } from '../../services/api';
 import { useWishlist } from '../../hooks/useWishlist';
 import Cookies from 'js-cookie';
+import { useCart } from '../../hooks/useCart';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,6 +26,7 @@ const ProductDetail = ({ params }: PageProps) => {
   const resolvedParams = React.use(params);
   const slug = resolvedParams.id;
   const router = useRouter();
+  const { addToCart } = useCart();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState([]);
@@ -123,13 +124,12 @@ const ProductDetail = ({ params }: PageProps) => {
     }
 
     if (product) {
-      try {
-        await addToCart(product._id, quantity, selectedSize, selectedColor);
-        router.push('/cart');
-      } catch (error) {
-        console.error("Failed to add to cart", error);
-        // Optionally, show a toast or message to the user
-      }
+        const selectedVariant = product.variants.find(variant => variant.color?.name === selectedColor);
+        if (selectedVariant) {
+            await addToCart(product._id, selectedVariant._id, quantity, selectedSize);
+        } else {
+            console.error("Selected variant not found");
+        }
     }
   };
 

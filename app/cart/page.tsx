@@ -1,62 +1,51 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { getCart, removeFromCart, CartItem, CartResponse } from "../services/cartService"; // Import CartItem and removeFromCart
-import Cookies from 'js-cookie';
+import { useCart } from "../hooks/useCart"; // Import useCart hook
 import { getApiImageUrl } from "../services/api";
+import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal"; // Import the modal component
 
 const CartPage = () => {
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const router = useRouter();
+  const { cart: cartItems, loading, removeFromCart } = useCart(); // Use the useCart hook
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
-    const checkLoginStatus = () => {
-        const token = Cookies.get('token'); 
-        return !!token; 
-    };
+  const handleRemoveItem = (itemId: string) => {
+    setItemToRemove(itemId);
+    setIsModalOpen(true);
+  };
 
-    useEffect(() => {
-        if (!checkLoginStatus()) {
-            router.push("/login?redirect=/cart");
-        } else {
-            const fetchCart = async () => {
-                try {
-                    const response: CartResponse = await getCart(); // Use CartResponse type
-                    if (response.success && response.data) {
-                        setCartItems(response.data.items);
-                    }
-                } catch (error) {
-                    console.error("Failed to fetch cart", error);
-                }
-            };
-            fetchCart();
-        }
-    }, [router]);
+  const confirmRemoveItem = async () => {
+    if (itemToRemove) {
+      await removeFromCart(itemToRemove);
+      setIsModalOpen(false);
+      setItemToRemove(null);
+    }
+  };
 
-    const handleRemoveItem = async (itemId: string) => {
-        if (confirm("Are you sure you want to remove this item from your cart?")) {
-            try {
-                const response: CartResponse = await removeFromCart(itemId); // Use CartResponse type
-                if (response.success && response.data) {
-                    setCartItems(response.data.items); // Update cart with the returned cart items
-                } else {
-                    // Fallback if backend doesn't return updated cart, filter locally
-                    setCartItems(prevItems => prevItems.filter(item => item._id !== itemId));
-                }
-            } catch (error) {
-                console.error("Failed to remove item from cart", error);
-                // Optionally, show an error message to the user
-            }
-        }
-    };
+  const cancelRemoveItem = () => {
+    setIsModalOpen(false);
+    setItemToRemove(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="w-12 h-12 border-4 border-gray-200 border-t-[#bd9951] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   const totalMrp = cartItems.reduce(
     (acc, item) => acc + (item.product.price ?? 0) * item.quantity,
     0,
   );
   const totalDiscount = cartItems.reduce(
-    (acc, item) => acc + ((item.product.price ?? 0) - (item.product.discountPrice ?? 0)) * item.quantity,
+    (acc, item) =>
+      acc +
+      ((item.product.price ?? 0) - (item.product.discountPrice ?? 0)) *
+        item.quantity,
     0,
   );
   const couponDiscount = 201;
@@ -67,6 +56,12 @@ const CartPage = () => {
 
   return (
     <div className="font-montserrat">
+      {isModalOpen && (
+        <DeleteConfirmationModal
+          onConfirm={confirmRemoveItem}
+          onCancel={cancelRemoveItem}
+        />
+      )}
       {/* Header */}
       <div className="">
         <div className="container mx-auto">
@@ -103,9 +98,16 @@ const CartPage = () => {
       <div className="container mx-auto py-8">
         {cartItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <p className="text-xl font-semibold text-gray-700 mb-4">Your cart is empty!</p>
-            <p className="text-gray-500 mb-8">Looks like you haven't added anything to your cart yet.</p>
-            <Link href="/" className="px-6 py-3 bg-[#6a3f07] text-white rounded-md font-bold hover:bg-[#5a2f00] transition-colors">
+            <p className="text-xl font-semibold text-gray-700 mb-4">
+              Your cart is empty!
+            </p>
+            <p className="text-gray-500 mb-8">
+              Looks like you haven't added anything to your cart yet.
+            </p>
+            <Link
+              href="/"
+              className="px-6 py-3 bg-[#6a3f07] text-white rounded-md font-bold hover:bg-[#5a2f00] transition-colors"
+            >
               Continue Shopping
             </Link>
           </div>
@@ -210,7 +212,14 @@ const CartPage = () => {
                             ₹ {(item.product.price ?? 0).toFixed(2)}
                           </span>
                           <span className="text-xs text-gray-600">
-                            [{Math.round((((item.product.price ?? 0) - (item.product.discountPrice ?? 0)) / (item.product.price ?? 1)) * 100)}%]
+                            [
+                            {Math.round(
+                              (((item.product.price ?? 0) -
+                                (item.product.discountPrice ?? 0)) /
+                                (item.product.price ?? 1)) *
+                                100,
+                            )}
+                            %]
                           </span>
                         </div>
 
@@ -225,8 +234,8 @@ const CartPage = () => {
                       {/* Remove */}
                       <div className="pt-1">
                         <button
-                            className="text-gray-500 hover:text-red-600"
-                            onClick={() => handleRemoveItem(item._id)}
+                          className="text-gray-500 hover:text-red-600"
+                          onClick={() => handleRemoveItem(item._id)}
                         >
                           <Image
                             src="/assets/icons/delete.svg"
@@ -261,7 +270,10 @@ const CartPage = () => {
                   </div>
                   <div className="mt-4">
                     <p className="text-xs text-gray-500">
-                      <Link href="/login" className="text-[#6a3f07] font-semibold">
+                      <Link
+                        href="/login"
+                        className="text-[#6a3f07] font-semibold"
+                      >
                         Login
                       </Link>{" "}
                       to get up to ₹300 OFF on first order

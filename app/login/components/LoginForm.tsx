@@ -108,7 +108,7 @@ const LoginForm = () => {
               </div>
 
               <div className="flex items-start gap-2 text-lg mb-6">
-                <input type="checkbox" className="mt-1 accent-[#6b4a1f]" />
+                <input type="checkbox" required className="mt-1 accent-[#6b4a1f]" />
                 <p>
                   By continuing, I agree to the{' '}
                   <Link href="/terms-of-use" className="underline text-[#6b4a1f]">
