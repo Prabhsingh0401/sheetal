@@ -147,10 +147,6 @@ export const fetchProductBySlug = async (slug: string) => {
   return apiFetch(`/products/${slug}`);
 };
 
-export const fetchProductReviews = async (productId: string) => {
-    return apiFetch(`/products/reviews?id=${productId}`);
-};
-
 export const getProductImageUrl = (product: Product | undefined, fallback: string = '/assets/placeholder-product.jpg') => {
   if (!product) return fallback;
   return getApiImageUrl(product.mainImage?.url, fallback);

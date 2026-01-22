@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,48 +9,123 @@ import toast from 'react-hot-toast';
 
 const OtpForm = () => {
   const router = useRouter();
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // This effect can be removed if not used, but good for debugging
   useEffect(() => {
     if (!window.confirmationResult) {
       console.warn("No confirmation result found, redirecting to login.");
       toast.error("Something went wrong. Please try signing in again.");
       router.replace('/login');
     }
+    inputRefs.current[0]?.focus();
   }, [router]);
 
+  const handleChange = (index: number, value: string) => {
+    if (value && !/^\d$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      if (!otp[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      } else {
+        const newOtp = [...otp];
+        newOtp[index] = '';
+        setOtp(newOtp);
+      }
+    }
+    else if (e.key === 'ArrowLeft' && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+    else if (e.key === 'ArrowRight' && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').trim();
+    
+    if (/^\d{6}$/.test(pastedData)) {
+      const newOtp = pastedData.split('');
+      setOtp(newOtp);
+      inputRefs.current[5]?.focus();
+    }
+  };
+
   const handleVerifyOtp = async () => {
-    if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+    const otpString = otp.join('');
+    
+    if (!otpString || otpString.length !== 6 || !/^\d{6}$/.test(otpString)) {
       return toast.error('Please enter a valid 6-digit OTP.');
     }
 
     setLoading(true);
 
     try {
+      console.log('=== Starting OTP Verification ===');
+      
       const confirmationResult = window.confirmationResult as ConfirmationResult;
-      const userCredential = await confirmationResult.confirm(otp);
-      const idToken = await userCredential.user.getIdToken();
+      console.log('1. Confirmation Result exists:', !!confirmationResult);
+      
+      console.log('2. Confirming OTP with Firebase...');
+      const userCredential = await confirmationResult.confirm(otpString);
+      console.log('3. User Credential received:', !!userCredential);
+      console.log('   - User UID:', userCredential.user.uid);
+      console.log('   - Phone Number:', userCredential.user.phoneNumber);
+      
+      console.log('4. Getting ID Token...');
+      const idToken = await userCredential.user.getIdToken(true); // Force refresh
+      console.log('5. ID Token received:', !!idToken);
+      console.log('   - Token length:', idToken?.length);
+      console.log('   - Token preview (first 50 chars):', idToken?.substring(0, 50));
+      
+      // Decode token to check structure (just for debugging)
+      try {
+        const tokenParts = idToken.split('.');
+        console.log('   - Token has', tokenParts.length, 'parts (should be 3)');
+        if (tokenParts.length === 3) {
+          const header = JSON.parse(atob(tokenParts[0]));
+          console.log('   - Token header:', header);
+        }
+      } catch (e) {
+        console.error('   - Could not decode token:', e);
+      }
 
+      console.log('6. Sending token to backend...');
       const data = await verifyIdToken(idToken);
+      console.log('7. Backend response:', data);
 
       if (data.success && data.token) {
-        login(data.token); // Set the authentication token in cookies
+        login(data.token);
         toast.success('Logged in successfully!');
         const redirectUrl = sessionStorage.getItem('redirect');
         if (redirectUrl) {
           sessionStorage.removeItem('redirect');
           router.push(redirectUrl);
         } else {
-          router.push('/'); // Redirect to homepage or dashboard
+          router.push('/');
         }
       } else {
         toast.error(data.message || 'Backend login failed.');
         console.error('Backend login failed:', data.message);
       }
     } catch (error: any) {
-      console.error('Error verifying OTP:', error);
+      console.error('=== ERROR DETAILS ===');
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      console.error('Error code:', error.code);
+      console.error('Full error:', error);
       toast.error(error.message || 'Failed to verify OTP. Please try again.');
     } finally {
       setLoading(false);
@@ -88,7 +163,7 @@ const OtpForm = () => {
                   Verify with OTP
                 </h1>
                 <p className="text-gray-500 text-sm">
-                  Sent to your phone number.
+                  Sent to your phone number.{' '}
                   <Link href="/login" className="text-[#6b4a1f] hover:underline">
                     Edit
                   </Link>
@@ -97,13 +172,20 @@ const OtpForm = () => {
 
               {/* OTP Input Boxes */}
               <div className="flex gap-2 mb-6">
-                <input
-                  type="text"
-                  maxLength={6}
-                  className="w-full h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#6b4a1f]"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => { inputRefs.current[index] = el; }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    className="w-full h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#6b4a1f]"
+                    value={digit}
+                    onChange={(e) => handleChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={index === 0 ? handlePaste : undefined}
+                  />
+                ))}
               </div>
 
               {/* Resend OTP */}

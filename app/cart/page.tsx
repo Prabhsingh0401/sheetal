@@ -2,14 +2,31 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart, CartItem } from "../hooks/useCart"; // Import useCart hook
+import { useCart, CartItem } from "../hooks/useCart"; 
 import { getApiImageUrl } from "../services/api";
-import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal"; // Import the modal component
+import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal";
 
 const CartPage = () => {
-  const { cart: cartItems, loading, removeFromCart, moveFromCartToWishlist } = useCart(); // Use the useCart hook
+  const {
+    cart: cartItems,
+    loading,
+    removeFromCart,
+    moveFromCartToWishlist,
+    couponDiscount,
+    couponError,
+    totalMrp,
+    totalDiscount,
+    finalAmount,
+    applyCoupon,
+    couponOfferType,
+    bogoMessage,
+    applicableCategory,
+    itemWiseDiscount, 
+    updateCartItemQuantity, 
+  } = useCart(); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
+  const [couponInput, setCouponInput] = useState("");
 
   const handleRemoveItem = (item: CartItem) => {
     setItemToRemove(item);
@@ -37,6 +54,12 @@ const CartPage = () => {
     setItemToRemove(null);
   };
 
+  const handleApplyCoupon = () => {
+    if (couponInput.trim()) {
+      applyCoupon(couponInput.trim());
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -45,23 +68,27 @@ const CartPage = () => {
     );
   }
 
-  const totalMrp = cartItems.reduce(
-    (acc, item) => acc + (item.product.price ?? 0) * item.quantity,
-    0,
-  );
-  const totalDiscount = cartItems.reduce(
-    (acc, item) =>
-      acc +
-      ((item.product.price ?? 0) - (item.product.discountPrice ?? 0)) *
-        item.quantity,
-    0,
-  );
-  const couponDiscount = 201;
   const shippingCharges = 150;
   const platformFee = 23;
-  const totalAmount =
-    totalMrp - totalDiscount - couponDiscount + shippingCharges - platformFee;
+  const totalAmount = finalAmount + shippingCharges - platformFee;
 
+  const cheapestItem =
+    couponOfferType === "BOGO"
+      ? cartItems
+          .filter(item => !applicableCategory || item.product.category._id === applicableCategory)
+          .reduce((cheapest, item) =>
+              (item.product.discountPrice ?? item.product.price) <
+              (cheapest.product.discountPrice ?? cheapest.product.price)
+                ? item
+                : cheapest,
+            cartItems[0],
+          )
+      : null;
+
+  const categoryName = applicableCategory 
+    ? cartItems.find(item => item.product.category._id === applicableCategory)?.product.category.name 
+    : null;
+  
   return (
     <div className="font-montserrat">
       {isModalOpen && (
@@ -149,7 +176,7 @@ const CartPage = () => {
                         alt="Info"
                         width={16}
                         height={16}
-                        className="inline-block mr-2"
+                        className="inline-block mr-2 cursor-pointer"
                       />
                     </div>
                     <div>
@@ -201,11 +228,18 @@ const CartPage = () => {
                         <p className="text-sm text-gray-600 mt-1">
                           Color: {item.color} | Size: {item.size}
                         </p>
+  
+                        {applicableCategory && item.product.category._id === applicableCategory && (
+                            <span className="text-xs text-blue-600 font-medium">Category Coupon Applied</span>
+                        )}
 
                         <div className="flex items-center gap-2 text-sm text-[#bd9951] mt-2">
                           <button className="hover:underline">Edit</button>
                           <span className="text-gray-300">|</span>
-                          <button className="hover:underline">
+                          <button 
+                            className="hover:underline"
+                            onClick={() => moveFromCartToWishlist(item._id, item.product._id)}
+                          >
                             Move to Wishlist
                           </button>
                         </div>
@@ -229,13 +263,34 @@ const CartPage = () => {
                             )}
                             % OFF
                           </span>
+                          {cheapestItem && cheapestItem._id === item._id && (
+                            <span className="text-xs text-white bg-green-600 px-2 py-1 rounded-full">
+                              Free
+                            </span>
+                          )}
+                          {itemWiseDiscount && itemWiseDiscount[item._id] > 0 && couponOfferType !== "BOGO" && (
+                            <span className="text-xs text-green-600 px-2 py-1 rounded-full">
+                              -₹{itemWiseDiscount[item._id].toFixed(2)}
+                            </span>
+                          )}
                         </div>
 
                         {/* Quantity */}
                         <div className="flex justify-end items-center gap-3 mt-3 text-sm">
-                          <button className="px-2">-</button>
+                          <button
+                            className="border border-gray-200 rounded-full cursor-pointer"
+                            onClick={() => updateCartItemQuantity(item._id, item.quantity - 1)}
+                            disabled={item.quantity <= 1}
+                          >
+                            -
+                          </button>
                           <span>{item.quantity}</span>
-                          <button className="px-2">+</button>
+                          <button
+                            className="border border-gray-200 rounded-full cursor-pointer"
+                            onClick={() => updateCartItemQuantity(item._id, item.quantity + 1)}
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
 
@@ -245,11 +300,12 @@ const CartPage = () => {
                           className="text-gray-500 hover:text-red-600"
                           onClick={() => handleRemoveItem(item)}
                         >
-                          <Image
+                          <Image 
                             src="/assets/icons/delete.svg"
                             alt="Remove"
                             width={16}
                             height={16}
+                            className="cursor-pointer"
                           />
                         </button>
                       </div>
@@ -270,14 +326,30 @@ const CartPage = () => {
                         width={20}
                         height={20}
                       />
-                      <span className="ml-2 font-semibold">Apply Coupons</span>
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value)}
+                        placeholder="Enter Coupon Code"
+                        className="ml-2 p-2 border rounded-md w-full"
+                      />
                     </div>
-                    <button className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded-md px-4 py-1 text-sm">
+                    <button
+                      onClick={handleApplyCoupon}
+                      className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded-md px-4 py-1 text-sm"
+                    >
                       APPLY
                     </button>
                   </div>
+                  {couponError && <p className="text-red-500 text-xs mt-2">{couponError}</p>}
+                  {bogoMessage && <p className="text-green-600 text-sm mt-2">{bogoMessage}</p>}
+                  {applicableCategory && categoryName && (
+                    <p className="text-blue-600 text-sm mt-2">
+                      Coupon applied to <strong>{categoryName}</strong>.
+                    </p>
+                  )}
                   <div className="mt-4">
-                    <p className="text-xs text-gray-500">
+                    {/* <p className="text-xs text-gray-500">
                       <Link
                         href="/login"
                         className="text-[#6a3f07] font-semibold"
@@ -285,7 +357,7 @@ const CartPage = () => {
                         Login
                       </Link>{" "}
                       to get up to ₹300 OFF on first order
-                    </p>
+                    </p> */}
                   </div>
                   <h3 className="text-md font-bold mb-4 uppercase mt-5">
                     Price Details ({cartItems.length} Items)

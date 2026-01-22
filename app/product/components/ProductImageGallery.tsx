@@ -11,7 +11,7 @@ interface ProductImageGalleryProps {
   title: string;
   isWishlisted: boolean;
   onToggleWishlist: () => void;
-  onScrollToSimilar: () => void; // New prop
+  onScrollToSimilar: () => void;
 }
 
 const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selectedImage, onImageChange, title, isWishlisted, onToggleWishlist, onScrollToSimilar }) => {
