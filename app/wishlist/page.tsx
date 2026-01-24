@@ -3,7 +3,7 @@ import React, { Suspense } from 'react';
 import TopInfo from '../components/TopInfo';
 import NavbarInner from '../components/NavbarInner';
 import Footer from '../components/Footer';
-import WishlistContent from './components/WishlistContent'; // We will create this component
+import WishlistContent from './components/WishlistContent';
 
 const WishlistPage = () => {
   return (

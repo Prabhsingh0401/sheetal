@@ -103,15 +103,22 @@ const ProductListContent = () => {
      Transform Products for Grid
   ======================= */
   const gridProducts = products.map((p) => {
-    const mrp = p.price;
-    const price =
-      p.discountPrice && p.discountPrice > 0
-        ? p.discountPrice
-        : p.price;
+    let lowestPrice = Infinity;
+    let lowestMrp = Infinity;
+
+    p.variants?.forEach(variant => {
+        variant.sizes?.forEach(size => {
+            const currentPrice = size.discountPrice && size.discountPrice > 0 ? size.discountPrice : size.price;
+            if (currentPrice < lowestPrice) {
+                lowestPrice = currentPrice;
+                lowestMrp = size.price; // The MRP corresponding to this lowest price
+            }
+        });
+    });
 
     const discountPercent =
-      p.discountPrice && p.discountPrice < p.price
-        ? Math.round(((p.price - p.discountPrice) / p.price) * 100)
+      lowestMrp > 0 && lowestPrice < lowestMrp
+        ? Math.round(((lowestMrp - lowestPrice) / lowestMrp) * 100)
         : 0;
 
     /* ---- Derive Sizes from variants[].sizes[] ---- */
@@ -138,8 +145,8 @@ const ProductListContent = () => {
       hoverImage: p.hoverImage?.url
         ? getApiImageUrl(p.hoverImage.url)
         : getProductImageUrl(p),
-      price,
-      mrp,
+      price: lowestPrice,
+      mrp: lowestMrp,    
       discount: discountPercent > 0 ? `${discountPercent}% OFF` : '',
       size: sizeLabel,
       rating: p.averageRating || 0,

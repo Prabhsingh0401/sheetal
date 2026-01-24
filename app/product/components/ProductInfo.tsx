@@ -7,19 +7,19 @@ interface ProductInfoProps {
     title: string;
     rating: number;
     mainDescription: string;
-    price: number;
-    originalPrice: number;
-    discount: string;
+    selectedPrice: number;
+    selectedOriginalPrice: number;
+    selectedDiscount: string;
     description: string;
-    colors: { name: string; image: string; }[];
-    allSizes: { name: string; available: boolean; left: number; }[]; 
+    colors: { name: string; image: string }[];
+    allSizes: { name: string; available: boolean; left: number }[];
     colorToAvailableSizesMap: { [colorName: string]: string[] };
-    specifications: any[]; 
+    specifications: any[];
   };
   selectedSize: string;
   setSelectedSize: (size: string) => void;
   selectedColor: string;
-  onColorChange: (color: { name: string; image: string }) => void; 
+  onColorChange: (color: { name: string; image: string }) => void;
   quantity: number;
   setQuantity: (qty: number) => void;
   onEnquire: () => void;
@@ -51,10 +51,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   hasSizeChart = false,
   isOutOfStock, // Destructure new prop
 }) => {
-  const price = Number(product?.price ?? 0);
-  const originalPrice = Number(product?.originalPrice ?? price);
-  const discountPercentage = originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-  
+  const priceToDisplay = product.selectedPrice;
+  const originalPriceToDisplay = product.selectedOriginalPrice;
+  const discountPercentageToDisplay = product.selectedDiscount
+    ? Number(product.selectedDiscount)
+    : 0;
+
   return (
     <div className="p-6 md:p-8">
       <div className="hidden lg:block">
@@ -67,21 +69,19 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </div>
       </div>
 
-      <p className="text-sm mb-6 leading-relaxed">
-        {product.mainDescription}
-      </p>
+      <p className="text-sm mb-6 leading-relaxed">{product.mainDescription}</p>
 
       <div className="mb-6">
         <div className="flex items-end gap-3">
           <span className="text-3xl font-medium">
-            ₹ {price.toFixed(2)}
+            ₹ {priceToDisplay.toFixed(2)}
           </span>
           <span className="text-lg text-gray-400 line-through">
-            ₹ {originalPrice.toFixed(2)}
+            ₹ {originalPriceToDisplay.toFixed(2)}
           </span>
-          {discountPercentage > 0 && (
+          {discountPercentageToDisplay > 0 && (
             <span className="text-lg text-green-600 font-semibold">
-              Save {discountPercentage}%
+              Save {discountPercentageToDisplay}%
             </span>
           )}
         </div>
@@ -102,19 +102,19 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         <div className="flex gap-3">
           {Array.isArray(product?.colors) &&
             product.colors.map((color, i: number) => (
-            <div
-              key={i}
-              className={`w-12 h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative ${selectedColor === color.name ? 'border-[#bd9951]' : 'border-gray-200'}`}
-              onClick={() => onColorChange(color)}
-            >
-              <Image
-                src={color.image}
-                alt={color.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ))}
+              <div
+                key={i}
+                className={`w-12 h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative ${selectedColor === color.name ? "border-[#bd9951]" : "border-gray-200"}`}
+                onClick={() => onColorChange(color)}
+              >
+                <Image
+                  src={color.image}
+                  alt={color.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ))}
         </div>
       </div>
 
@@ -124,81 +124,91 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           <label className="block text-sm font-semibold text-gray-800">
             Select Size:
           </label>
-          {hasSizeChart && (
-            <button
-              onClick={onSizeChartOpen}
-              className="flex items-center text-md text-red-500 font-semibold hover:underline cursor-pointer"
-            >
-              <Image
-                src="/assets/icons/measurement.svg"
-                width={16}
-                height={16}
-                alt="ruler"
-                className="mr-1"
-              />{" "}
-              Size Chart{" > "}
-            </button>
-          )}
+          <button
+            onClick={onSizeChartOpen}
+            className="flex items-center text-md text-red-500 font-semibold hover:underline cursor-pointer"
+          >
+            <Image
+              src="/assets/icons/measurement.svg"
+              width={16}
+              height={16}
+              alt="ruler"
+              className="mr-1"
+            />{" "}
+            Size Chart{" > "}
+          </button>
         </div>
         <div className="flex flex-wrap gap-3">
           {Array.isArray(product?.allSizes) &&
-            product.allSizes.map((size: { name: string; available: boolean; left: number }) => {
-                const isAvailableForSelectedColor = product.colorToAvailableSizesMap[selectedColor]?.includes(size.name);
+            product.allSizes.map(
+              (size: { name: string; available: boolean; left: number }) => {
+                const isAvailableForSelectedColor =
+                  product.colorToAvailableSizesMap[selectedColor]?.includes(
+                    size.name,
+                  );
                 const isDisabled = !isAvailableForSelectedColor || isOutOfStock; // Disable if not available for selected color OR out of stock
 
-                                                                return (
-                                                                    <div key={size.name} className="flex flex-col items-center">
-                                                                        <button
-                                                                            disabled={isDisabled}
-                                                                            onClick={() => setSelectedSize(size.name)}
-                                                                            className={`
-                                                                                ${size.name === 'One Size' ? 'px-3 py-2 rounded-md' : 'w-10 h-10 rounded-full'}
+                return (
+                  <div key={size.name} className="flex flex-col items-center">
+                    <button
+                      disabled={isDisabled}
+                      onClick={() => setSelectedSize(size.name)}
+                      className={`
+                                                                                ${size.name === "One Size" ? "px-3 py-2 rounded-md" : "w-10 h-10 rounded-full"}
                                                                                 flex items-center justify-center border text-sm font-medium transition-colors relative overflow-hidden
-                                                                                ${isDisabled
+                                                                                ${
+                                                                                  isDisabled
                                                                                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                                                                     : ""
                                                                                 }
-                                                                                ${selectedSize === size.name && !isDisabled
+                                                                                ${
+                                                                                  selectedSize ===
+                                                                                    size.name &&
+                                                                                  !isDisabled
                                                                                     ? "border-[#bd9951]"
                                                                                     : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
                                                                                 }
                                                                             `}
-                                                                        >
-                                                                            {size.name}
-                                                                            {/* Show strike-through if disabled (not available for selected color) */}
-                                                                            {isDisabled && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
-                                                                        </button>
-                                                                        {/* Only show 'X left' if available for selected color and stock is low */}
-                                                                        {isAvailableForSelectedColor && size.left <= 2 && (
-                                                                            <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
-                                                                                {size.left} left
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                );
-                                                            })}        </div>
+                    >
+                      {size.name}
+                      {/* Show strike-through if disabled (not available for selected color) */}
+                      {isDisabled && (
+                        <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>
+                      )}
+                    </button>
+                    {/* Only show 'X left' if available for selected color and stock is low */}
+                    {isAvailableForSelectedColor && size.left <= 2 && (
+                      <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
+                        {size.left} left
+                      </span>
+                    )}
+                  </div>
+                );
+              },
+            )}{" "}
+        </div>
       </div>
 
       {/* Mobile-Only Quantity & Notify (After Size) */}
       <div className="flex flex-col lg:hidden mb-6 border-b border-gray-100 pb-6 space-y-3">
-          {isOutOfStock ? (
-            <button
-                onClick={onEnquire}
-                className="text-[#bd9951] border border-[#bd9951] px-4 py-2 text-sm font-medium rounded-sm hover:bg-[#bd9951] hover:text-white transition-colors w-full"
-            >
-                Notify Me
-            </button>
-          ) : (
-            <div className="">
-                <input
-                  type="number"
-                  min="1"
-                  value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                  className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
-                />
-            </div>
-          )}
+        {isOutOfStock ? (
+          <button
+            onClick={onEnquire}
+            className="text-[#bd9951] border border-[#bd9951] px-4 py-2 text-sm font-medium rounded-sm hover:bg-[#bd9951] hover:text-white transition-colors w-full"
+          >
+            Notify Me
+          </button>
+        ) : (
+          <div className="">
+            <input
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+              className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
+            />
+          </div>
+        )}
       </div>
 
       {/* Actions */}
@@ -206,10 +216,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         {isOutOfStock ? (
           <div className="mb-4">
             <button
-                onClick={onEnquire}
-                className="text-[#bd9951] border p-3 text-sm font-medium hover:bg-gray-100 cursor-pointer flex items-center w-full justify-center"
+              onClick={onEnquire}
+              className="text-[#bd9951] border p-3 text-sm font-medium hover:bg-gray-100 cursor-pointer flex items-center w-full justify-center"
             >
-                Notify Me
+              Notify Me
             </button>
           </div>
         ) : (
@@ -223,7 +233,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                 className="w-full h-12 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
               />
             </div>
-            <button onClick={onAddToCart} className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors">
+            <button
+              onClick={onAddToCart}
+              className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors"
+            >
               Add to Cart
             </button>
             <button className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
@@ -236,22 +249,29 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       {/* Mobile Sticky Footer */}
       <div className="fixed bottom-0 left-0 w-full bg-white z-[100] border-t border-gray-200 p-3 lg:hidden flex gap-3 items-center justify-between shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="flex space-x-2">
-           <span className="text-xl font-bold">₹ {price.toFixed(2)}</span>
-           <span className="text-lg text-gray-400 line-through">₹ {originalPrice.toFixed(2)}</span>
+          <span className="text-xl font-bold">
+            ₹ {priceToDisplay.toFixed(2)}
+          </span>
+          <span className="text-lg text-gray-400 line-through">
+            ₹ {originalPriceToDisplay.toFixed(2)}
+          </span>
         </div>
         <div className="flex gap-2 flex-1 justify-end ml-20">
-           {isOutOfStock ? (
-             <button
-                 onClick={onEnquire}
-                 className="flex-1 bg-[#bd9951] text-white uppercase font-bold text-xs py-3 rounded-sm hover:bg-[#a38547] transition-colors"
-             >
-                 Notify Me
-             </button>
-           ) : (
-             <button onClick={onAddToCart} className="flex-1 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm">
-               Add to Cart
-             </button>
-           )}
+          {isOutOfStock ? (
+            <button
+              onClick={onEnquire}
+              className="flex-1 bg-[#bd9951] text-white uppercase font-bold text-xs py-3 rounded-sm hover:bg-[#a38547] transition-colors"
+            >
+              Notify Me
+            </button>
+          ) : (
+            <button
+              onClick={onAddToCart}
+              className="flex-1 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-bold text-xs py-3 rounded-sm"
+            >
+              Add to Cart
+            </button>
+          )}
         </div>
       </div>
       {/* Delivery */}
@@ -332,116 +352,123 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
       {/* Accordion Info */}
       <div className="rounded">
-  
-  {/* Specifications — OPEN BY DEFAULT */}
-  <details open className="group border-b border-gray-200">
-    <summary className="flex justify-between items-center text-[#fc5823] px-1 cursor-pointer font-bold hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase">
-      Specifications
+        {/* Specifications — OPEN BY DEFAULT */}
+        <details open className="group border-b border-gray-200">
+          <summary className="flex justify-between items-center text-[#fc5823] px-1 cursor-pointer font-bold hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase">
+            Specifications
+            {/* Plus / Minus Toggle */}
+            <span className="text-xl font-semibold">
+              <span className="group-open:hidden">+</span>
+              <span className="hidden group-open:inline">−</span>
+            </span>
+          </summary>
 
-      {/* Plus / Minus Toggle */}
-      <span className="text-xl font-semibold">
-        <span className="group-open:hidden">+</span>
-        <span className="hidden group-open:inline">−</span>
-      </span>
-    </summary>
+          <div className="p-4 bg-gray-50 text-sm">
+            {Array.isArray(product?.specifications) &&
+            product.specifications.length > 0 ? (
+              <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                {product.specifications.map((spec: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col border-b border-gray-200 pb-2"
+                  >
+                    <span className="font-semibold text-gray-700">
+                      {spec.key}
+                    </span>
+                    <span className="text-gray-900">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 italic">
+                No specifications available.
+              </p>
+            )}
+          </div>
+        </details>
 
-    <div className="p-4 bg-gray-50 text-sm">
-      {Array.isArray(product?.specifications) && product.specifications.length > 0 ? (
-        <div className="grid grid-cols-2 gap-y-4 gap-x-8">
-           {product.specifications.map((spec: any, idx: number) => (
-               <div key={idx} className="flex flex-col border-b border-gray-200 pb-2">
-                   <span className="font-semibold text-gray-700">{spec.key}</span>
-                   <span className="text-gray-900">{spec.value}</span>
-               </div>
-           ))}
-        </div>
-      ) : (
-          <p className="text-gray-500 italic">No specifications available.</p>
-      )}
-    </div>
-  </details>
+        {/* Delivery & Returns — CLOSED BY DEFAULT */}
+        <details className="group">
+          <summary className="flex justify-between items-center px-1 cursor-pointer font-bold text-[#fc5823] hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase">
+            Delivery & Returns
+            {/* Plus / Minus Toggle */}
+            <span className="text-xl font-semibold">
+              <span className="group-open:hidden">+</span>
+              <span className="hidden group-open:inline">−</span>
+            </span>
+          </summary>
 
-  {/* Delivery & Returns — CLOSED BY DEFAULT */}
-  <details className="group">
-    <summary className="flex justify-between items-center px-1 cursor-pointer font-bold text-[#fc5823] hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase">
-      Delivery & Returns
+          <div className="p-4 bg-gray-50 text-sm">
+            {/* Heading */}
+            <h3 className="font-semibold text-gray-900 mb-5">
+              Available Shipping Methods
+            </h3>
 
-      {/* Plus / Minus Toggle */}
-      <span className="text-xl font-semibold">
-        <span className="group-open:hidden">+</span>
-        <span className="hidden group-open:inline">−</span>
-      </span>
-    </summary>
+            {/* Table Header */}
+            <div className="grid grid-cols-3 font-bold border-b pb-1 mb-2">
+              <span>Shipping Method</span>
+              <span>Shipping To</span>
+              <span>Shipping Charge</span>
+            </div>
 
-    <div className="p-4 bg-gray-50 text-sm">
-  {/* Heading */}
-  <h3 className="font-semibold text-gray-900 mb-5">
-    Available Shipping Methods
-  </h3>
+            {/* Row 1 */}
+            <div className="grid grid-cols-3 py-2 border-b">
+              <span>Pre-Paid</span>
+              <span>All over India</span>
+              <span>Free Shipping on All Orders</span>
+            </div>
 
-  {/* Table Header */}
-  <div className="grid grid-cols-3 font-bold border-b pb-1 mb-2">
-    <span>Shipping Method</span>
-    <span>Shipping To</span>
-    <span>Shipping Charge</span>
-  </div>
+            {/* Row 2 */}
+            <div className="grid grid-cols-3 py-2 border-b">
+              <span>COD Charges</span>
+              <span>All over India</span>
+              <span>Free Shipping on All Orders</span>
+            </div>
 
-  {/* Row 1 */}
-  <div className="grid grid-cols-3 py-2 border-b">
-    <span>Pre-Paid</span>
-    <span>All over India</span>
-    <span>Free Shipping on All Orders</span>
-  </div>
+            {/* Shipping Policy Link */}
+            <p className="mt-3 font-semibold">
+              For more details please read{" "}
+              <a
+                href="/shipping-policy"
+                className="underline text-gray-900 hover:text-black"
+              >
+                Shipping Policy
+              </a>
+              .
+            </p>
 
-  {/* Row 2 */}
-  <div className="grid grid-cols-3 py-2 border-b">
-    <span>COD Charges</span>
-    <span>All over India</span>
-    <span>Free Shipping on All Orders</span>
-  </div>
+            {/* Return Policy */}
+            <h3 className="font-semibold text-gray-900 mt-4 mb-1">
+              Return Policy
+            </h3>
 
-  {/* Shipping Policy Link */}
-  <p className="mt-3 font-semibold">
-    For more details please read{" "}
-    <a
-      href="/shipping-policy"
-      className="underline text-gray-900 hover:text-black"
-    >
-      Shipping Policy
-    </a>.
-  </p>
+            <p className="leading-relaxed">
+              Your satisfaction is our top priority. If you're not completely
+              satisfied with the product, we offer a hassle-free, no questions
+              asked 7 days return and refund. We believe in making your shopping
+              experience risk-free and enjoyable.
+            </p>
 
-  {/* Return Policy */}
-  <h3 className="font-semibold text-gray-900 mt-4 mb-1">
-    Return Policy
-  </h3>
-
-  <p className="leading-relaxed">
-    Your satisfaction is our top priority. If you're not completely
-    satisfied with the product, we offer a hassle-free, no questions
-    asked 7 days return and refund. We believe in making your shopping
-    experience risk-free and enjoyable.
-  </p>
-
-  {/* Return Policy Link */}
-  <p className="mt-2">
-    For more details please read{" "}
-    <a
-      href="/return-and-cancellation-policy"
-      className="underline text-gray-900 hover:text-black"
-    >
-      Return and Cancellation Policy
-    </a>.
-  </p>
-</div>
-
-  </details>
-
-</div>
+            {/* Return Policy Link */}
+            <p className="mt-2">
+              For more details please read{" "}
+              <a
+                href="/return-and-cancellation-policy"
+                className="underline text-gray-900 hover:text-black"
+              >
+                Return and Cancellation Policy
+              </a>
+              .
+            </p>
+          </div>
+        </details>
+      </div>
 
       {/* Contact */}
       <div className="mt-6 p-8 border">
-        <h4 className="font-semibold text-gray-800 mb-2">Have a question? We are here to help!</h4>
+        <h4 className="font-semibold text-gray-800 mb-2">
+          Have a question? We are here to help!
+        </h4>
         <div className="flex flex-col justify-center gap-4 text-sm">
           <a
             href="mailto:info@studiobysheetal.com"
@@ -454,7 +481,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               alt="email"
               className="mr-2"
             />{" "}
-             Email us at info@studiobysheetal.com
+            Email us at info@studiobysheetal.com
           </a>
           <a
             href="https://wa.me/919958813913"
@@ -466,7 +493,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               height={16}
               alt="wa"
               className="mr-2"
-            />{" "} 
+            />{" "}
             Click to chat
           </a>
         </div>

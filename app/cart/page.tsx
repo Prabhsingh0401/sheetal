@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart, CartItem } from "../hooks/useCart"; 
-import { getApiImageUrl } from "../services/api";
-import DeleteConfirmationModal from "../components/modal/DeleteConfirmationModal";
+import CartItemsList from "./components/CartItemsList";
+import PriceDetails from "./components/PriceDetails";
 
 const CartPage = () => {
   const {
@@ -73,12 +73,12 @@ const CartPage = () => {
   const totalAmount = finalAmount + shippingCharges - platformFee;
 
   const cheapestItem =
-    couponOfferType === "BOGO"
+    couponOfferType === "BOGO" && cartItems.length > 0
       ? cartItems
           .filter(item => !applicableCategory || item.product.category._id === applicableCategory)
           .reduce((cheapest, item) =>
-              (item.product.discountPrice ?? item.product.price) <
-              (cheapest.product.discountPrice ?? cheapest.product.price)
+              (Number(item.discountPrice ?? item.price ?? 0)) <
+              (Number(cheapest.discountPrice ?? cheapest.price ?? 0))
                 ? item
                 : cheapest,
             cartItems[0],
@@ -91,13 +91,7 @@ const CartPage = () => {
   
   return (
     <div className="font-montserrat">
-      {isModalOpen && (
-        <DeleteConfirmationModal
-          onConfirm={confirmRemoveItem}
-          onCancel={cancelRemoveItem}
-          onMoveToWishlist={handleMoveToWishlist}
-        />
-      )}
+
       {/* Header */}
       <div className="">
         <div className="container mx-auto">
@@ -150,269 +144,41 @@ const CartPage = () => {
         ) : (
           <>
             <div className="flex flex-col lg:flex-row gap-8">
-              {/* Left Column - Cart Items */}
-              <div className="w-full lg:w-8/12">
-                {/* Header */}
-                <div className="flex justify-start items-center space-x-5 mb-4">
-                  <h2 className="text-3xl text-[#6a3f07]">
-                    My Cart{" "}
-                    <span className="text-sm font-light">
-                      ({cartItems.length} items)
-                    </span>
-                  </h2>
-                  <div className="flex justfiy-center items-center">
-                    <div>
-                      <Image
-                        src="/assets/icons/share.svg"
-                        alt="Info"
-                        width={16}
-                        height={16}
-                        className="inline-block mr-2"
-                      />
-                    </div>
-                    <div>
-                      <Image
-                        src="/assets/icons/delete.svg"
-                        alt="Info"
-                        width={16}
-                        height={16}
-                        className="inline-block mr-2 cursor-pointer"
-                      />
-                    </div>
-                    <div>
-                      <Image
-                        src="/assets/icons/heart-b.svg"
-                        alt="Info"
-                        width={16}
-                        height={16}
-                        className="inline-block mr-2"
-                      />
-                    </div>
-                  </div>
-                </div>
+              <CartItemsList
+                cartItems={cartItems}
+                cheapestItem={cheapestItem}
+                applicableCategory={applicableCategory}
+                itemWiseDiscount={itemWiseDiscount}
+                couponOfferType={couponOfferType}
+                removeFromCart={removeFromCart}
+                moveFromCartToWishlist={moveFromCartToWishlist}
+                updateCartItemQuantity={updateCartItemQuantity}
+                handleRemoveItem={handleRemoveItem}
+                isModalOpen={isModalOpen}
+                confirmRemoveItem={confirmRemoveItem}
+                cancelRemoveItem={cancelRemoveItem}
+                handleMoveToWishlist={handleMoveToWishlist}
+                cartLength={cartItems.length}
+              />
 
-                {/* Cart List */}
-                <div className="">
-                  {cartItems.map((item, index) => (
-                    <div
-                      key={item._id}
-                      className={`flex items-start px-4 py-5 gap-4 ${
-                        index < cartItems.length - 1 ? "" : ""
-                      }`}
-                    >
-                      {/* Checkbox */}
-                      <div className="pt-2">
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 accent-green-600"
-                        />
-                      </div>
-
-                      {/* Image */}
-                      <div className="w-[90px] shrink-0">
-                        <Image
-                          src={getApiImageUrl(item.product.mainImage?.url)}
-                          alt={item.product.name}
-                          width={90}
-                          height={120}
-                          className="rounded"
-                        />
-                      </div>
-
-                      {/* Product Info */}
-                      <div className="flex-1">
-                        <h3 className="text-[15px] font-semibold leading-snug">
-                          {item.product.name}
-                        </h3>
-
-                        <p className="text-sm text-gray-600 mt-1">
-                          Color: {item.color} | Size: {item.size}
-                        </p>
-  
-                        {applicableCategory && item.product.category._id === applicableCategory && (
-                            <span className="text-xs text-blue-600 font-medium">Category Coupon Applied</span>
-                        )}
-
-                        <div className="flex items-center gap-2 text-sm text-[#bd9951] mt-2">
-                          <button className="hover:underline">Edit</button>
-                          <span className="text-gray-300">|</span>
-                          <button 
-                            className="hover:underline"
-                            onClick={() => moveFromCartToWishlist(item._id, item.product._id)}
-                          >
-                            Move to Wishlist
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Price + Qty */}
-                      <div className="flex flex-col items-end justify-between flex-shrink-0">
-                        <div className="flex flex-col md:flex-row md:items-end gap-2 text-right">
-                          <span className="font-semibold text-[15px]">
-                            ₹ {(item.product.discountPrice ?? 0).toFixed(2)}
-                          </span>
-                          <span className="text-sm text-gray-500 line-through">
-                            ₹ {(item.product.price ?? 0).toFixed(2)}
-                          </span>
-                          <span className="text-xs text-green-600">
-                            {Math.round(
-                              (((item.product.price ?? 0) -
-                                (item.product.discountPrice ?? 0)) /
-                                (item.product.price ?? 1)) *
-                                100,
-                            )}
-                            % OFF
-                          </span>
-                          {cheapestItem && cheapestItem._id === item._id && (
-                            <span className="text-xs text-white bg-green-600 px-2 py-1 rounded-full">
-                              Free
-                            </span>
-                          )}
-                          {itemWiseDiscount && itemWiseDiscount[item._id] > 0 && couponOfferType !== "BOGO" && (
-                            <span className="text-xs text-green-600 px-2 py-1 rounded-full">
-                              -₹{itemWiseDiscount[item._id].toFixed(2)}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Quantity */}
-                        <div className="flex justify-end items-center gap-3 mt-3 text-sm">
-                          <button
-                            className="border border-gray-200 rounded-full cursor-pointer"
-                            onClick={() => updateCartItemQuantity(item._id, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
-                          >
-                            -
-                          </button>
-                          <span>{item.quantity}</span>
-                          <button
-                            className="border border-gray-200 rounded-full cursor-pointer"
-                            onClick={() => updateCartItemQuantity(item._id, item.quantity + 1)}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Remove */}
-                      <div className="pt-1">
-                        <button
-                          className="text-gray-500 hover:text-red-600"
-                          onClick={() => handleRemoveItem(item)}
-                        >
-                          <Image 
-                            src="/assets/icons/delete.svg"
-                            alt="Remove"
-                            width={16}
-                            height={16}
-                            className="cursor-pointer"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right Column - Order Summary */}
-              <div className="w-full lg:w-4/12 mt-5 font-[family-name:var(--font-monterrat)]">
-                <div className="p-4">
-                  <h3 className="text-md font-bold mb-4 uppercase">Coupons</h3>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <Image
-                        src="/assets/icons/tag.svg"
-                        alt="Coupon"
-                        width={20}
-                        height={20}
-                      />
-                      <input
-                        type="text"
-                        value={couponInput}
-                        onChange={(e) => setCouponInput(e.target.value)}
-                        placeholder="Enter Coupon Code"
-                        className="ml-2 p-2 border rounded-md w-full"
-                      />
-                    </div>
-                    <button
-                      onClick={handleApplyCoupon}
-                      className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded-md px-4 py-1 text-sm"
-                    >
-                      APPLY
-                    </button>
-                  </div>
-                  {couponError && <p className="text-red-500 text-xs mt-2">{couponError}</p>}
-                  {bogoMessage && <p className="text-green-600 text-sm mt-2">{bogoMessage}</p>}
-                  {applicableCategory && categoryName && (
-                    <p className="text-blue-600 text-sm mt-2">
-                      Coupon applied to <strong>{categoryName}</strong>.
-                    </p>
-                  )}
-                  <div className="mt-4">
-                    {/* <p className="text-xs text-gray-500">
-                      <Link
-                        href="/login"
-                        className="text-[#6a3f07] font-semibold"
-                      >
-                        Login
-                      </Link>{" "}
-                      to get up to ₹300 OFF on first order
-                    </p> */}
-                  </div>
-                  <h3 className="text-md font-bold mb-4 uppercase mt-5">
-                    Price Details ({cartItems.length} Items)
-                  </h3>
-                  <div className="space-y-5 text-sm">
-                    <div className="flex justify-between">
-                      <span>Total MRP</span>
-                      <span>₹{totalMrp.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Discount on MRP</span>
-                      <span className="text-green-600">
-                        -₹{totalDiscount.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Coupon Discount</span>
-                      <span className="text-green-600">
-                        -₹{couponDiscount.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Shipping Charges</span>
-                      <span>₹{shippingCharges.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>
-                        Platform Fee{" "}
-                        <Link
-                          href="#"
-                          className="text-[#73561e] text-sm underline ml-3"
-                        >
-                          Know More
-                        </Link>
-                      </span>
-                      <span className="text-green-600">
-                        -₹{platformFee.toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="my-4"></div>
-                  <div className="flex justify-between font-bold text-lg mt-3 border-t border-gray-200 pt-3">
-                    <span>Total Amount</span>
-                    <span>₹{totalAmount.toFixed(2)}</span>
-                  </div>
-                  <p className="text-xs text-gray-500 text-right mt-1">
-                    Tax included. Shipping Calculated at checkout.
-                  </p>
-                  <button className="w-full bg-[#6a3f07] text-white py-3 rounded-md mt-6 font-bold uppercase">
-                    Proceed to Buy
-                  </button>
-                </div>
-              </div>
+              <PriceDetails
+                couponInput={couponInput}
+                setCouponInput={setCouponInput}
+                handleApplyCoupon={handleApplyCoupon}
+                couponError={couponError}
+                bogoMessage={bogoMessage}
+                applicableCategory={applicableCategory}
+                categoryName={categoryName}
+                cartLength={cartItems.length}
+                totalMrp={totalMrp}
+                totalDiscount={totalDiscount}
+                couponDiscount={couponDiscount}
+                shippingCharges={shippingCharges}
+                platformFee={platformFee}
+                totalAmount={totalAmount}
+              />
             </div>
-            {/* This div should be outside the conditional and not wrapped in a fragment */}
+            
             <div className="flex justify-around items-center mt-12 py-4">
               <div className="flex items-center text-sm">
                 <Image

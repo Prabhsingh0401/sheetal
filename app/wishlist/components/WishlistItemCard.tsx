@@ -6,15 +6,15 @@ import { Product } from '../../services/productService';
 import { getApiImageUrl } from '../../services/api';
 
 interface WishlistItemCardProps {
-    product: Product;
+    product: Product & { 
+        lowestPrice: number;
+        lowestMrp: number;
+        discountPercent: number;
+    };
     onRemove: (productId: string) => void;
 }
 
 const WishlistItemCard: React.FC<WishlistItemCardProps> = ({ product, onRemove }) => {
-    const price = product.discountPrice && product.discountPrice > 0 ? product.discountPrice : product.price;
-    const mrp = product.price;
-    const discountPercent = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
-
     return (
         <div className="group p-2 flex flex-col">
             <div className="relative overflow-hidden bg-[#f7f7f7] rounded-lg">
@@ -54,11 +54,11 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({ product, onRemove }
                     </Link>
                 </h6>
                 <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-md text-gray-900">&#8377; {price.toLocaleString()}</span>
-                    {discountPercent > 0 && (
+                    <span className="text-md text-gray-900">&#8377; {product.lowestPrice.toLocaleString()}</span>
+                    {product.discountPercent > 0 && (
                         <>
-                            <span className="text-md text-gray-500 line-through">&#8377; {mrp.toLocaleString()}</span>
-                            <span className="text-md text-[#70480c]">{discountPercent}% OFF</span>
+                            <span className="text-md text-gray-500 line-through">&#8377; {product.lowestMrp.toLocaleString()}</span>
+                            <span className="text-md text-[#70480c]">{product.discountPercent}% OFF</span>
                         </>
                     )}
                 </div>

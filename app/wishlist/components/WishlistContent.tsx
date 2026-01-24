@@ -7,6 +7,38 @@ import Link from 'next/link';
 const WishlistContent = () => {
     const { wishlist, loading, toggleProductInWishlist } = useWishlist();
 
+    const processedWishlist = wishlist.map(p => {
+        let lowestPrice = Infinity;
+        let lowestMrp = Infinity;
+
+        p.variants?.forEach(variant => {
+            variant.sizes?.forEach(size => {
+                const currentPrice = size.discountPrice && size.discountPrice > 0 ? size.discountPrice : size.price;
+                if (currentPrice < lowestPrice) {
+                    lowestPrice = currentPrice;
+                    lowestMrp = size.price;
+                }
+            });
+        });
+
+        if (lowestPrice === Infinity) {
+            lowestPrice = 0; 
+            lowestMrp = 0;    
+        }
+
+        const discountPercent =
+          lowestMrp > 0 && lowestPrice < lowestMrp
+            ? Math.round(((lowestMrp - lowestPrice) / lowestMrp) * 100)
+            : 0;
+
+        return {
+            ...p, 
+            lowestPrice,
+            lowestMrp,
+            discountPercent
+        };
+    });
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
@@ -34,7 +66,7 @@ const WishlistContent = () => {
                 <h4 className="text-3xl font-medium font-optima text-[#70480c]">My Wishlist <span className="text-gray-500 font-light text-xl">({wishlist.length} items)</span> </h4>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {wishlist.map(product => (
+                {processedWishlist.map(product => (
                     <WishlistItemCard 
                         key={product._id} 
                         product={product}

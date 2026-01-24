@@ -28,14 +28,14 @@ export interface ProductVariant {
   sizes: {
     name: string;
     stock: number;
+    price: number;
+    discountPrice: number;
   }[];
   color?: {
     name: string;
     code: string;
     swatchImage?: string;
   };
-  v_price?: number;
-  v_discountPrice?: number;
   v_image?: string;
 }
 
@@ -48,8 +48,6 @@ export interface Product {
   description: string;
   materialCare: string;
   
-  price: number;
-  discountPrice?: number;
   gstPercent: number;
 
   mainImage: ProductImage;
@@ -68,23 +66,7 @@ export interface Product {
     name: string;
     slug: string;
   };
-  sizeChart?: {
-    _id: string;
-    name: string;
-    table: {
-      label: string;
-      bust: string;
-      waist: string;
-      hip: string;
-      shoulder: string;
-      length: string;
-    }[];
-    howToMeasure: {
-      guideImage: string;
-      steps: { title: string; desc: string }[];
-    };
-    unit: string;
-  };
+  sizeChart?: string;
   
   status: string;
   stock: number;

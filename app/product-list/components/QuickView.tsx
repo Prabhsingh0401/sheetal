@@ -20,6 +20,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [selectedColor, setSelectedColor] = useState<string>('');
     const [quantity, setQuantity] = useState(1);
+    // Removed lowestPrice and lowestMrp states
     const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
     const { addToCart } = useCart();
     
@@ -56,12 +57,72 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
         }
     }, [productSlug]);
 
+    const { currentPrice, currentOriginalPrice, currentDiscount } = React.useMemo(() => {
+        let price = 0;
+        let originalPrice = 0;
+        let discount = 0;
+
+        if (product && selectedColor && selectedSize) {
+            const selectedVariant = product.variants.find(
+                (v) => v.color?.name === selectedColor,
+            );
+
+            if (selectedVariant) {
+                const selectedSizeInfo = selectedVariant.sizes.find(
+                    (s) => s.name === selectedSize,
+                );
+
+                if (selectedSizeInfo) {
+                    price = selectedSizeInfo.discountPrice && selectedSizeInfo.discountPrice > 0
+                        ? selectedSizeInfo.discountPrice
+                        : selectedSizeInfo.price;
+                    originalPrice = selectedSizeInfo.price;
+                    
+                    if (originalPrice > 0 && price < originalPrice) {
+                        discount = Math.round(((originalPrice - price) / originalPrice) * 100);
+                    }
+                }
+            }
+        } else if (product) {
+            // Fallback to lowest overall price if no selection yet, similar to initial rendering
+            let minPrice = Infinity;
+            let minMrp = Infinity;
+
+            product.variants.forEach(variant => {
+                variant.sizes.forEach(size => {
+                    const variantPrice = size.discountPrice && size.discountPrice > 0 ? size.discountPrice : size.price;
+                    if (variantPrice < minPrice) {
+                        minPrice = variantPrice;
+                        minMrp = size.price;
+                    }
+                });
+            });
+            price = minPrice === Infinity ? 0 : minPrice;
+            originalPrice = minMrp === Infinity ? 0 : minMrp;
+            if (originalPrice > 0 && price < originalPrice) {
+                discount = Math.round(((originalPrice - price) / originalPrice) * 100);
+            }
+        }
+
+        return { currentPrice: price, currentOriginalPrice: originalPrice, currentDiscount: discount };
+    }, [product, selectedColor, selectedSize]);
+
     const handleAddToCart = async () => {
         if (product) {
             const selectedVariant = product.variants.find(variant => variant.color?.name === selectedColor);
             if (selectedVariant) {
-                await addToCart(product._id, selectedVariant._id, quantity, selectedSize);
-                onClose();
+                // Ensure a size is selected for addToCart
+                if (!selectedSize) {
+                    console.error("Please select a size."); // Or show a toast message
+                    return;
+                }
+                const selectedSizeInfo = selectedVariant.sizes.find(s => s.name === selectedSize);
+                if (selectedSizeInfo) {
+                    await addToCart(product._id, selectedVariant._id, quantity, selectedSize, selectedSizeInfo.price, selectedSizeInfo.discountPrice);
+                    onClose();
+                } else {
+                    console.error("Selected size info not found");
+                }
             } else {
                 console.error("Selected variant not found");
             }
@@ -72,9 +133,9 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
         return null;
     }
 
-    const price = Number(product?.discountPrice && product.discountPrice > 0 ? product.discountPrice : product?.price ?? 0);
-    const originalPrice = Number(product?.price ?? 0);
-    const discount = originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+    const displayPrice = currentPrice;
+    const displayOriginalPrice = currentOriginalPrice;
+    const discount = currentDiscount;
 
     const galleryImages = [
         getProductImageUrl(product || undefined),
@@ -176,14 +237,13 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                 </div>
                                 <div className="mb-6">
                                     <div className="flex items-end gap-3">
-                                        <span className="text-3xl font-medium">
-                                            ₹ {price.toFixed(2)}
-                                        </span>
-                                        {/* Removed originalPrice > price condition */}
-                                            <span className="text-lg text-gray-400 line-through">
-                                                ₹ {originalPrice.toFixed(2)}
-                                            </span>
-                                        {discount > 0 &&
+                                                                            <span className="text-3xl font-medium">
+                                                                                ₹ {displayPrice.toFixed(2)}
+                                                                            </span>
+                                                                            {/* Removed originalPrice > price condition */}
+                                                                                <span className="text-lg text-gray-400 line-through">
+                                                                                    ₹ {displayOriginalPrice.toFixed(2)}
+                                                                                </span>                                        {discount > 0 &&
                                             <span className="text-lg text-green-600 font-semibold">
                                                 Save {discount}%
                                             </span>

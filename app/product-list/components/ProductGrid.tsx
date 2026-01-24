@@ -101,9 +101,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, viewMode, onToggleW
             </div>
 
             <div className={`flex gap-3 mb-3 ${viewMode === 'grid' ? 'justify-start items-center' : 'justify-start items-center'}`}>
-              <span className="text-lg font-medium">₹{product.price.toLocaleString()}</span>
-              <span className="text-lg text-gray-500 line-through">₹{product.mrp.toLocaleString()}</span>
-              <span className="text-lg text-[#6a3f0e] px-2 py-1 uppercase tracking-tighter">{product.discount}</span>
+              <span className="text-md font-medium">₹{product.price.toLocaleString()}</span>
+              <span className="text-md text-gray-500 line-through">₹{product.mrp.toLocaleString()}</span>
+              <span className="text-md text-[#6a3f0e] px-2 py-1 uppercase tracking-tighter">{product.discount}</span>
             </div>
             
             <div className={`mt-auto flex ${viewMode === 'grid' ? 'justify-start' : 'justify-start'}`}>
@@ -126,9 +126,9 @@ interface Product {
   name: string;
   image: string;
   hoverImage: string;
-  price: number;
-  mrp: number;
-  discount: string;
+  price: number; 
+  mrp: number;  
+  discount: string; 
   size: string;
   rating: number;
   soldOut: boolean;

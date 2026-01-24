@@ -9,6 +9,8 @@ export interface CartItem {
     quantity: number;
     color: string;
     size: string;
+    price?: number; // Price at the time of adding to cart
+    discountPrice?: number; // Discounted price at the time of adding to cart
 }
 
 interface CartApiResponse {
@@ -30,7 +32,7 @@ interface UseCartReturn {
     totalMrp: number;
     totalDiscount: number;
     finalAmount: number;
-    addToCart: (productId: string, variantId: string, quantity: number, size: string) => Promise<void>;
+    addToCart: (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number) => Promise<void>;
     removeFromCart: (itemId: string) => Promise<void>;
     moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
     applyCoupon: (code: string) => Promise<void>;
@@ -75,9 +77,9 @@ export const useCart = (): UseCartReturn => {
         loadCart();
     }, [loadCart]);
 
-    const addToCart = useCallback(async (productId: string, variantId: string, quantity: number, size: string) => {
+    const addToCart = useCallback(async (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number) => {
         try {
-            const response = await addToCartApi(productId, variantId, quantity, size);
+            const response = await addToCartApi(productId, variantId, quantity, size, price, discountPrice);
             if (response.success) {
                 toast.success(response.message || 'Product added to cart!');
                 await loadCart();
@@ -127,8 +129,16 @@ export const useCart = (): UseCartReturn => {
     }, [loadCart]);
 
     const calculateTotals = useCallback(() => {
-        const newTotalMrp = cart.reduce((acc, item) => acc + (item.product.price ?? 0) * item.quantity, 0);
-        const newTotalDiscount = cart.reduce((acc, item) => acc + ((item.product.price ?? 0) - (item.product.discountPrice ?? 0)) * item.quantity, 0);
+        let newTotalMrp = 0;
+        let newTotalDiscount = 0;
+
+        cart.forEach(item => {
+            const itemPrice = item.price ?? 0;
+            const itemDiscountPrice = item.discountPrice ?? itemPrice;
+                    
+            newTotalMrp += itemPrice * item.quantity;
+            newTotalDiscount += (itemPrice - itemDiscountPrice) * item.quantity;
+        });
 
         setTotalMrp(newTotalMrp);
         setTotalDiscount(newTotalDiscount);
@@ -158,20 +168,29 @@ export const useCart = (): UseCartReturn => {
                 setItemWiseDiscount(response.data.itemWiseDiscount || {}); // Store item-wise discounts
 
                 if (response.data.offerType === 'BOGO') {
-                    // When itemWiseDiscount is available, we can derive bogoMessage from it
-                    const freeItemId = Object.keys(response.data.itemWiseDiscount || {}).find(itemId => response.data.itemWiseDiscount[itemId] > 0);
-                    if (freeItemId) {
-                        const freeItem = cart.find(item => item._id === freeItemId);
-                        if (freeItem) {
-                            setBogoMessage(`Congrats! '${freeItem.product.name}' is free!`);
-                        }
+                    const localCheapestItem = cart
+                        .filter(item => !applicableCategory || item.product.category._id === applicableCategory)
+                        .reduce((cheapest, item) =>
+                            (Number(item.discountPrice ?? item.price ?? 0)) <
+                            (Number(cheapest.discountPrice ?? cheapest.price ?? 0))
+                                ? item
+                                : cheapest,
+                            cart[0] // Assuming cart is not empty if BOGO applies
+                        );
+                    if (localCheapestItem) {
+                        const freeItemPrice = Number(localCheapestItem.discountPrice ?? localCheapestItem.price ?? 0);
+                        setCouponDiscount(freeItemPrice);
+                        setBogoMessage(`Congrats! '${localCheapestItem.product.name}' is free!`);
+                    } else {
+                        setCouponDiscount(0);
+                        setBogoMessage(null);
                     }
-                    setCouponDiscount(response.data.discount ?? 0);
                 } else {
                     setCouponDiscount(response.data.discount ?? 0);
                 }
 
                 toast.success('Coupon applied successfully!');
+                await loadCart();
             } else {
                 setCouponError(response.message || 'Invalid coupon code.');
                 toast.error(response.message || 'Invalid coupon code.');

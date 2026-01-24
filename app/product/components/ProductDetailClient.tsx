@@ -20,10 +20,12 @@ import {
   getProductImageUrl,
   ProductVariant
 } from '../../services/productService';
+import { fetchSizeChart, SizeChartData } from '../../services/sizeChartService';
 import { getApiImageUrl } from '../../services/api';
 import { useWishlist } from '../../hooks/useWishlist';
 import Cookies from 'js-cookie';
 import { useCart } from '../../hooks/useCart';
+import toast from 'react-hot-toast'; // Added toast import
 
 interface ColorOption {
   name: string;
@@ -40,9 +42,12 @@ interface ProductInfoData {
   title: string;
   rating: number;
   mainDescription: string;
-  price: number;
-  originalPrice: number;
-  discount: string;
+  price?: number; // Made optional
+  originalPrice?: number; // Made optional
+  discount?: string; // Made optional
+  selectedPrice: number;
+  selectedOriginalPrice: number;
+  selectedDiscount: string;
   description: string;
   colors: ColorOption[];
   allSizes: SizeOption[];
@@ -74,10 +79,13 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
+  const [selectedVariantData, setSelectedVariantData] = useState<ProductVariant | null>(null);
+  const [selectedSizeObject, setSelectedSizeObject] = useState<any | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [enquireModalOpen, setEnquireModalOpen] = useState(false);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
+  const [sizeChartData, setSizeChartData] = useState<SizeChartData | null>(null); // New state for size chart
   const [pincode, setPincode] = useState("");
   const [pincodeMessage, setPincodeCheckMessage] = useState("");
   const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
@@ -103,12 +111,14 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
                 );
                 
                 if (firstAvailableVariant) {
+                    setSelectedVariantData(firstAvailableVariant); // Set selected variant data
                     if (firstAvailableVariant.color?.name) {
                         setSelectedColor(firstAvailableVariant.color.name);
                     }
-                    const firstAvailableSize = firstAvailableVariant.sizes.find((s: { name: string; stock: number }) => s.stock > 0);
+                    const firstAvailableSize = firstAvailableVariant.sizes.find((s: { name: string; stock: number; price: number; discountPrice: number }) => s.stock > 0);
                     if (firstAvailableSize) {
                         setSelectedSize(firstAvailableSize.name);
+                        setSelectedSizeObject(firstAvailableSize); // Set selected size object
                     }
                 }
 
@@ -135,6 +145,23 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     loadProduct();
   }, [slug]);
 
+  // Fetch Size Chart data
+  useEffect(() => {
+    const loadSizeChart = async () => {
+        try {
+            const res = await fetchSizeChart();
+            if (res.success && res.data && Object.keys(res.data).length > 0) {
+                setSizeChartData(res.data);
+            } else {
+                console.error("Failed to load size chart:", res);
+            }
+        } catch (e) {
+            console.error("Error fetching size chart:", e);
+        }
+    };
+    loadSizeChart();
+  }, []); // Empty dependency array means it runs once on mount
+
   const handleImageChange = (img: string) => {
     setSelectedImage(img);
   };
@@ -159,15 +186,19 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       return;
     }
 
-    if (product) {
+    if (product && selectedVariantData && selectedSizeObject) {
         const selectedVariant = product.variants.find(
           (variant: ProductVariant) => variant.color?.name === selectedColor
         );
         if (selectedVariant) {
-            await addToCart(product._id, selectedVariant._id, quantity, selectedSize);
+            const price = selectedSizeObject.price || 0;
+            const discountPrice = selectedSizeObject.discountPrice || 0;
+            await addToCart(product._id, selectedVariant._id, quantity, selectedSize, price, discountPrice);
         } else {
             console.error("Selected variant not found");
         }
+    } else {
+        toast.error("Please select a size to add to cart.");
     }
   };
 
@@ -236,27 +267,53 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     setSelectedColor(color.name);
     setSelectedImage(color.image);
 
+    // Find the newly selected variant
+    const newlySelectedVariant = product?.variants.find(v => v.color?.name === color.name) || null;
+    setSelectedVariantData(newlySelectedVariant);
+
     // Check if previously selected size is available for the new color
     const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
     if (selectedSize && availableSizesForNewColor && !availableSizesForNewColor.has(selectedSize)) {
         setSelectedSize("");
+        setSelectedSizeObject(null); // Reset selected size object if not available
     }
     // Optionally, auto-select the first available size for the new color if no size is selected
     if (!selectedSize && availableSizesForNewColor && availableSizesForNewColor.size > 0) {
-        setSelectedSize(Array.from(availableSizesForNewColor)[0]);
+        const autoSelectedSizeName = Array.from(availableSizesForNewColor)[0];
+        setSelectedSize(autoSelectedSizeName);
+        // Find the full size object for the auto-selected size
+        if (newlySelectedVariant) {
+            const autoSelectedSizeObject = newlySelectedVariant.sizes.find(s => s.name === autoSelectedSizeName);
+            setSelectedSizeObject(autoSelectedSizeObject || null);
+        }
+    } else if (selectedSize && newlySelectedVariant) {
+        // If selectedSize is still valid, ensure selectedSizeObject is updated for the new variant
+        const currentSelectedSizeObject = newlySelectedVariant.sizes.find(s => s.name === selectedSize);
+        setSelectedSizeObject(currentSelectedSizeObject || null);
     }
   };
 
+  const handleSizeChange = (sizeName: string) => {
+    setSelectedSize(sizeName);
+    if (selectedVariantData) {
+      const foundSize = selectedVariantData.sizes.find(s => s.name === sizeName);
+      setSelectedSizeObject(foundSize || null);
+    }
+  };
   // Transformed Product Object for ProductInfo
+  const currentSelectedPrice = selectedSizeObject?.discountPrice > 0 ? selectedSizeObject.discountPrice : selectedSizeObject?.price || 0;
+  const currentSelectedOriginalPrice = selectedSizeObject?.price || 0;
+  const currentSelectedDiscount = currentSelectedOriginalPrice > 0 && currentSelectedPrice < currentSelectedOriginalPrice
+    ? `${Math.round(((currentSelectedOriginalPrice - currentSelectedPrice) / currentSelectedOriginalPrice) * 100)}`
+    : "0";
+
   const productInfoData: ProductInfoData = {
       title: product.name,
       rating: product.averageRating || 0,
       mainDescription: product.shortDescription || "",
-      price: product.discountPrice && product.discountPrice > 0 ? product.discountPrice : product.price,
-      originalPrice: product.price,
-      discount: product.discountPrice && product.discountPrice < product.price
-        ? `${Math.round(((product.price - product.discountPrice)/product.price)*100)}`
-        : "0",
+      selectedPrice: currentSelectedPrice,
+      selectedOriginalPrice: currentSelectedOriginalPrice,
+      selectedDiscount: currentSelectedDiscount,
       description: product.description,
       colors: allUniqueColors,
       allSizes: allSizesForDisplay,
@@ -266,16 +323,42 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       specifications: product.specifications || []
   };
 
-  const relatedProductsData: RelatedProduct[] = similarProducts.map((p: Product) => ({
-      id: p.slug,
-      name: p.name,
-      image: getProductImageUrl(p),
-      hoverImage: p.hoverImage?.url ? getApiImageUrl(p.hoverImage.url) : getProductImageUrl(p),
-      price: p.discountPrice && p.discountPrice > 0 ? p.discountPrice : p.price,
-      mrp: p.price,
-      discount: p.discountPrice && p.discountPrice < p.price ? `${Math.round(((p.price - p.discountPrice)/p.price)*100)}%` : '',
-      soldOut: p.stock <= 0
-  }));
+  const relatedProductsData: RelatedProduct[] = similarProducts.map((p: Product) => {
+      let minPrice: number = Infinity;
+      let minMRP: number = Infinity;
+
+      p.variants.forEach(variant => {
+          variant.sizes.forEach(size => {
+              if (size.price < minMRP) {
+                  minMRP = size.price;
+              }
+              if (size.discountPrice > 0 && size.discountPrice < minPrice) {
+                  minPrice = size.discountPrice;
+              } else if (size.discountPrice === 0 && size.price < minPrice) {
+                  minPrice = size.price;
+              }
+          });
+      });
+
+      // Handle case where no prices are found (e.g., product has no variants/sizes or all are 0)
+      if (minPrice === Infinity) minPrice = 0;
+      if (minMRP === Infinity) minMRP = 0;
+
+      const currentDiscount = minMRP > 0 && minPrice < minMRP
+        ? `${Math.round(((minMRP - minPrice) / minMRP) * 100)}%`
+        : '0%'; // Default to 0% if no discount
+
+      return {
+          id: p.slug,
+          name: p.name,
+          image: getProductImageUrl(p),
+          hoverImage: p.hoverImage?.url ? getApiImageUrl(p.hoverImage.url) : getProductImageUrl(p),
+          price: minPrice,
+          mrp: minMRP,
+          discount: currentDiscount,
+          soldOut: p.stock <= 0
+      };
+  });
 
   return (
     <div className="font-[family-name:var(--font-montserrat)] bg-[#f9f9f9]">
@@ -314,7 +397,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
              <ProductInfo 
                 product={productInfoData}
                 selectedSize={selectedSize}
-                setSelectedSize={setSelectedSize}
+                setSelectedSize={handleSizeChange}
                 selectedColor={selectedColor}
                 onColorChange={handleColorChange}
                 quantity={quantity}
@@ -326,7 +409,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
                 setPincode={setPincode}
                 pincodeMessage={pincodeMessage}
                 checkPincode={checkPincode}
-                hasSizeChart={!!product.sizeChart}
                 isOutOfStock={product.stock <= 0}
              />
           </div>
@@ -358,7 +440,11 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       <SizeChartModal 
          isOpen={sizeChartOpen} 
          onClose={() => setSizeChartOpen(false)}
-         sizeChart={product.sizeChart}
+         selectedColor={selectedColor}
+         colorToAvailableSizesMap={productInfoData.colorToAvailableSizesMap}
+         selectedSize={selectedSize}
+         setSelectedSize={setSelectedSize}
+         sizeChartData={sizeChartData} // Pass the fetched data
       />
 
     </div>
