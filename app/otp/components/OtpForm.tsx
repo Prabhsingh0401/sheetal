@@ -93,7 +93,7 @@ const OtpForm = () => {
       const data = await verifyIdToken(idToken);
 
       if (data.success && data.token) {
-        login(data.token);
+        login(data.token, data.user);
         toast.success('Logged in successfully!');
         const redirectUrl = sessionStorage.getItem('redirect');
         if (redirectUrl) {

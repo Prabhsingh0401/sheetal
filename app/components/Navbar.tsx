@@ -2,19 +2,29 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useWishlist } from '../hooks/useWishlist'; // Import the hook
+import { useRouter } from 'next/navigation';
+import { useWishlist } from '../hooks/useWishlist';
 import { useCart } from '../hooks/useCart';
+import { isAuthenticated, logout, getUserDetails } from '../services/authService';
+import toast from 'react-hot-toast';
 
 const Navbar = () => {
-  const { wishlist } = useWishlist(); 
+  const router = useRouter();
+  const { wishlist } = useWishlist();
   const { cart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
   const [mobileShopDropdownOpen, setMobileShopDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false); // NEW: Track if we're on client
 
   useEffect(() => {
+    // Mark that we're now on the client
+    setIsClient(true);
+    
     const handleScroll = () => {
       if (window.scrollY > 50) {
         setScrolled(true);
@@ -24,12 +34,30 @@ const Navbar = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
+
+    // Fetch user details when component mounts
+    if (isAuthenticated()) {
+      setCurrentUser(getUserDetails());
+    } else {
+      setCurrentUser(null);
+    }
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Desktop Shop Dropdown handlers
   const handleMouseEnterShop = () => setShopDropdownOpen(true);
   const handleMouseLeaveShop = () => setShopDropdownOpen(false);
+
+  // User Dropdown handlers
+  const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
+  const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
+  const handleLogout = () => {
+    logout();
+    setCurrentUser(null);
+    toast.success('You have been logged out.');
+    router.push('/login');
+  };
 
   // Mobile Menu Toggles
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -41,31 +69,80 @@ const Navbar = () => {
   const toggleSearch = () => setSearchOpen(!searchOpen);
   const closeSearch = () => setSearchOpen(false);
 
+  // Helper to get display name
+  const getDisplayName = () => {
+    if (!currentUser) return 'Guest';
+    if (currentUser.name) return currentUser.name;
+    if (currentUser.phoneNumber) return currentUser.phoneNumber;
+    if (currentUser.email) return currentUser.email;
+    return 'User';
+  };
+
+  // Render a placeholder during SSR to prevent hydration mismatch
+  const UserIcon = () => {
+    if (!isClient) {
+      // During SSR, show login link by default
+      return (
+        <Link href="/login" className="hover:opacity-80 transition-opacity">
+          <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
+        </Link>
+      );
+    }
+
+    // After hydration, show actual auth state
+    if (isAuthenticated()) {
+      return (
+        <div
+          className="relative group"
+          onMouseEnter={handleMouseEnterUser}
+          onMouseLeave={handleMouseLeaveUser}
+        >
+          <Link href="/my-account" className="hover:opacity-80 transition-opacity">
+            <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
+          </Link>
+          {isUserDropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-[#153427]/95 backdrop-blur-md p-3 border border-[#f5de7e] text-[#b3a660] text-sm z-50 shadow-lg">
+              <p className="px-3 py-2 border-b border-white/20">Hello, {getDisplayName()}</p>
+              <Link href="/my-account" className="block px-3 py-2 hover:text-white transition-colors cursor-pointer">My Account</Link>
+              <button onClick={handleLogout} className="w-full text-left px-3 py-2 hover:text-white transition-colors cursor-pointer">Logout</button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Link href="/login" className="hover:opacity-80 transition-opacity">
+        <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
+      </Link>
+    );
+  };
+
   return (
     <>
       {/* Floating Animating Logo */}
       <div
-  className={`flex fixed w-full ${scrolled ? 'z-[1004]' : 'z-[1002]'} transition-all duration-500 pointer-events-none
-    text-[#f2bf42] items-center
-    ${
-      scrolled
-        ? 'top-[25px] justify-start px-4 h-[70px]'
-        : 'top-[120px] md:top-[120px] justify-center'
-    }
-  `}
->
-  <Link href="/" className="pointer-events-auto inline-block flex items-center h-full">
-    <Image
-      src="/assets/625030871.png"
-      alt="Studio By Sheetal"
-      width={300}
-      height={100}
-      className={`transition-all duration-500 w-auto ${
-        scrolled ? '-mt-5 h-[40px] md:h-[70px]' : 'h-[200px] md:h-[250px]'
-      }`}
-    />
-  </Link>
-</div>
+        className={`flex fixed w-full ${scrolled ? 'z-[1004]' : 'z-[1002]'} transition-all duration-500 pointer-events-none
+          text-[#f2bf42] items-center
+          ${
+            scrolled
+              ? 'top-[25px] justify-start px-4 h-[70px]'
+              : 'top-[120px] md:top-[120px] justify-center'
+          }
+        `}
+      >
+        <Link href="/" className="pointer-events-auto inline-block flex items-center h-full">
+          <Image
+            src="/assets/625030871.png"
+            alt="Studio By Sheetal"
+            width={300}
+            height={100}
+            className={`transition-all duration-500 w-auto ${
+              scrolled ? '-mt-5 h-[40px] md:h-[70px]' : 'h-[200px] md:h-[250px]'
+            }`}
+          />
+        </Link>
+      </div>
 
       {/* Top Header (Desktop) - Links & Icons */}
       <div 
@@ -153,9 +230,7 @@ const Navbar = () => {
                     <button onClick={toggleSearch} className="hover:opacity-80 transition-opacity cursor-pointer">
                         <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-7 h-7" />
                     </button>
-                    <Link href="/login" className="hover:opacity-80 transition-opacity">
-                        <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
-                    </Link>
+                    <UserIcon />
                     <Link href="/wishlist" className="relative hover:opacity-80 transition-opacity">
                         <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
                         <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlist.length}</span>
@@ -178,9 +253,7 @@ const Navbar = () => {
                   <button onClick={toggleSearch}>
                       <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-6 h-6" />
                   </button>
-                  <Link href="/login">
-                      <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
-                  </Link>      
+                  <UserIcon />
                   <Link href="/wishlist" className="relative">
                       <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
                       <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlist.length}</span>

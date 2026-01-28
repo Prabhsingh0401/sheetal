@@ -2,11 +2,20 @@ import Cookies from 'js-cookie';
 import { apiFetch } from './api';
 
 const TOKEN_KEY = 'token';
+const USER_KEY = 'user_details';
+
+interface User {
+    id: string;
+    name?: string;
+    phoneNumber?: string;
+    email?: string;
+    role: string;
+}
 
 interface VerifyTokenResponse {
     success: boolean;
     token: string;
-    user: any; 
+    user: User;
     message?: string;
 }
 
@@ -20,22 +29,32 @@ export const verifyIdToken = async (idToken: string): Promise<VerifyTokenRespons
     });
 };
 
-export const login = (token: string) => {
+export const login = (token: string, user: User) => {
     Cookies.set(TOKEN_KEY, token, {
         expires: 7, // 7 days
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
     });
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
 };
 
 export const logout = () => {
     Cookies.remove(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
 };
 
 export const getToken = (): string | undefined => {
     return Cookies.get(TOKEN_KEY);
 };
 
+export const getUserDetails = (): User | null => {
+    if (typeof window === 'undefined') { // Check if running on client side
+        return null;
+    }
+    const userJson = localStorage.getItem(USER_KEY);
+    return userJson ? JSON.parse(userJson) : null;
+};
+
 export const isAuthenticated = (): boolean => {
-    return !!getToken();
+    return !!getToken() && !!getUserDetails();
 };

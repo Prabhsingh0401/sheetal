@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useWishlist } from '../hooks/useWishlist'; 
 import { useCart } from '../hooks/useCart';
+import { isAuthenticated, logout, getUserDetails } from '../services/authService';
+import { useRouter } from 'next/navigation';
 
 const NavbarInner = () => {
   const { wishlist } = useWishlist();
@@ -14,8 +16,14 @@ const NavbarInner = () => {
   const [mobileShopDropdownOpen, setMobileShopDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false); // State for user dropdown
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<any>(null); // State to store user details
+  const [isClient, setIsClient] = useState(false); // State to track if component is mounted on client
 
   useEffect(() => {
+    setIsClient(true); // Mark that we are on the client side
+
     const handleScroll = () => {
       if (window.scrollY > 50) {
         setScrolled(true);
@@ -25,12 +33,78 @@ const NavbarInner = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
+
+    // Fetch user details when component mounts
+    if (isAuthenticated()) {
+      setCurrentUser(getUserDetails());
+    } else {
+      setCurrentUser(null);
+    }
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Desktop Shop Dropdown handlers
   const handleMouseEnterShop = () => setShopDropdownOpen(true);
   const handleMouseLeaveShop = () => setShopDropdownOpen(false);
+
+  // User Dropdown handlers
+  const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
+  const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
+
+  const handleLogout = () => {
+    logout();
+    setCurrentUser(null); // Clear current user on logout
+    router.push('/login');
+  };
+
+  // Helper to get display name
+  const getDisplayName = () => {
+    if (!currentUser) return 'Guest';
+    if (currentUser.name) return currentUser.name;
+    if (currentUser.phoneNumber) return currentUser.phoneNumber;
+    if (currentUser.email) return currentUser.email;
+    return 'User';
+  };
+
+  const UserIcon = () => {
+    if (!isClient) {
+      // During SSR, show login link by default
+      return (
+        <Link href="/login" className="hover:opacity-80 transition-opacity">
+          <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
+        </Link>
+      );
+    }
+
+    // After hydration, show actual auth state
+    if (isAuthenticated()) {
+      return (
+        <div
+          className="relative group"
+          onMouseEnter={handleMouseEnterUser}
+          onMouseLeave={handleMouseLeaveUser}
+        >
+          <Link href="/my-account" className="hover:opacity-80 transition-opacity">
+            <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
+          </Link>
+          {isUserDropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-[#153427]/95 backdrop-blur-md p-3 border border-[#f5de7e] text-[#b3a660] text-sm z-50 shadow-lg">
+              <p className="px-3 py-2 border-b border-white/20">Hello, {getDisplayName()}</p>
+              <Link href="/my-account" className="block px-3 py-2 hover:text-white transition-colors">My Account</Link>
+              <button onClick={handleLogout} className="w-full text-left px-3 py-2 hover:text-white transition-colors">Logout</button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Link href="/login" className="hover:opacity-80 transition-opacity">
+        <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
+      </Link>
+    );
+  };
 
   // Mobile Menu Toggles
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -131,9 +205,7 @@ const NavbarInner = () => {
                     <button onClick={toggleSearch} className="hover:opacity-80 transition-opacity">
                         <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-7 h-7" />
                     </button>
-                    <Link href="/login" className="hover:opacity-80 transition-opacity">
-                        <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
-                    </Link>
+                    <UserIcon />
                     <Link href="/wishlist" className="relative hover:opacity-80 transition-opacity">
                       <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
                       <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlist.length}</span>
@@ -171,9 +243,7 @@ const NavbarInner = () => {
                   <button onClick={toggleSearch}>
                       <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-6 h-6" />
                   </button>
-                  <Link href="/login">
-                      <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
-                  </Link>                  
+                  <UserIcon />                 
                   <Link href="/cart" className="relative">
                      <Image src="/assets/icons/shopping-bag.svg" alt="Cart" width={24} height={24} className="w-6 h-6" />
                      <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{cart.length}</span>
