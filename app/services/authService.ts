@@ -6,7 +6,7 @@ const TOKEN_KEY = 'token';
 interface VerifyTokenResponse {
     success: boolean;
     token: string;
-    user: any; // Define a proper user type later
+    user: any; 
     message?: string;
 }
 

@@ -39,7 +39,7 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     }
   }
 
-  if (token) {
+  if (token && !requestHeaders['Authorization']) {
     requestHeaders['Authorization'] = `Bearer ${token}`;
   }
 
