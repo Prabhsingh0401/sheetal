@@ -73,38 +73,24 @@ const OtpForm = () => {
     setLoading(true);
 
     try {
-      console.log('=== Starting OTP Verification ===');
       
       const confirmationResult = window.confirmationResult as ConfirmationResult;
-      console.log('1. Confirmation Result exists:', !!confirmationResult);
       
-      console.log('2. Confirming OTP with Firebase...');
       const userCredential = await confirmationResult.confirm(otpString);
-      console.log('3. User Credential received:', !!userCredential);
-      console.log('   - User UID:', userCredential.user.uid);
-      console.log('   - Phone Number:', userCredential.user.phoneNumber);
-      
-      console.log('4. Getting ID Token...');
+    
       const idToken = await userCredential.user.getIdToken(true); // Force refresh
-      console.log('5. ID Token received:', !!idToken);
-      console.log('   - Token length:', idToken?.length);
-      console.log('   - Token preview (first 50 chars):', idToken?.substring(0, 50));
       
       // Decode token to check structure (just for debugging)
       try {
         const tokenParts = idToken.split('.');
-        console.log('   - Token has', tokenParts.length, 'parts (should be 3)');
         if (tokenParts.length === 3) {
           const header = JSON.parse(atob(tokenParts[0]));
-          console.log('   - Token header:', header);
         }
       } catch (e) {
         console.error('   - Could not decode token:', e);
       }
 
-      console.log('6. Sending token to backend...');
       const data = await verifyIdToken(idToken);
-      console.log('7. Backend response:', data);
 
       if (data.success && data.token) {
         login(data.token);
