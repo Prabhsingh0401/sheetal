@@ -10,6 +10,10 @@ interface User {
     phoneNumber?: string;
     email?: string;
     role: string;
+    alternativeMobileNumber?: string; // Added
+    gender?: 'Male' | 'Female'; // Added
+    dateOfBirth?: string; // Added (assuming ISO string format from backend)
+    profilePicture?: string; // Added
 }
 
 interface VerifyTokenResponse {
@@ -57,4 +61,8 @@ export const getUserDetails = (): User | null => {
 
 export const isAuthenticated = (): boolean => {
     return !!getToken() && !!getUserDetails();
+};
+
+export const updateUserDetailsInLocalStorage = (user: User) => {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
 };

@@ -73,11 +73,11 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               <li>
                 <Link
                   href={getHref(section.link)}
-                  className={`block py-1 transition-colors
+                  className={`block py-2 transition-colors
   ${
     activeSection === section.link
-      ? "font-semibold text-black"
-      : "text-gray-700 hover:text-[#a97f0f]"
+      ? "font-semibold text-[#a97f0f]"
+      : "text-black font-medium hover:text-[#a97f0f]"
   }
   ${section.link === "overview" ? "text-[#a97f0f]" : ""}
   ${section.isDanger ? "text-red-600 hover:text-red-700" : ""}

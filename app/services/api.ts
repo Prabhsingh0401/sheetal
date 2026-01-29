@@ -20,9 +20,12 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
   const token = Cookies.get('token');
 
-  const requestHeaders: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
+  const requestHeaders: Record<string, string> = {};
+
+  // Initialize with default Content-Type if not provided and not FormData
+  if (!(options.body instanceof FormData)) {
+    requestHeaders['Content-Type'] = 'application/json';
+  }
 
   // Merge existing headers from options
   if (options.headers) {

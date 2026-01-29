@@ -1,44 +1,41 @@
 'use client';
-import React, { useEffect } from 'react'; // Removed useState
-import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
-import { isAuthenticated, getUserDetails } from '../../services/authService';
+import React, { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { isAuthenticated } from '../../services/authService';
+import { getCurrentUser } from '../../services/userService'; // Import getCurrentUser
 import UserInfoCard from './UserInfoCard';
 import DashboardSidebar from './DashboardSidebar';
 import DashboardContent from './DashboardContent';
 
-const UserDashboardLayout: React.FC = () => { // Changed to React.FC to remove children prop as it's not a layout directly
+const UserDashboardLayout: React.FC = () => {
   const router = useRouter();
-  const pathname = usePathname(); // Get current pathname
-  const [currentUser, setCurrentUser] = React.useState<any>(null); // Kept useState for currentUser
+  const pathname = usePathname();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loadingUser, setLoadingUser] = useState(true); // Add loading state
 
-  // Derive activeSection from the pathname
   const getActiveSectionFromPath = (path: string): string => {
-    const parts = path.split('/').filter(Boolean); // Split and remove empty strings
-    // If path is /my-account or /my-account/, default to 'overview'
+    const parts = path.split('/').filter(Boolean);
     if (parts.length === 1 && parts[0] === 'my-account') {
         return 'overview';
     }
-    // If path is /my-account/something, then 'something' is the active section
-    // Handle specific nested routes like /my-account/profile/edit
     if (parts.includes('profile') && parts.includes('edit')) {
         return 'edit-profile';
     }
     if (parts.length >= 2 && parts[0] === 'my-account') {
-        return parts[1]; // e.g., 'orders', 'cards', 'addresses'
+        return parts[1];
     }
-    return 'overview'; // Default fallback
+    return 'overview';
   };
 
   const activeSection = getActiveSectionFromPath(pathname);
 
-  // New onSelectSection that updates the URL
   const onSelectSection = (section: string) => {
     if (section === 'overview') {
       router.push('/my-account');
     } else if (section === 'edit-profile') {
       router.push('/my-account/profile/edit');
     }
-    else if (section === 'profile') { // For the main profile view
+    else if (section === 'profile') {
       router.push('/my-account/profile');
     }
     else {
@@ -47,14 +44,34 @@ const UserDashboardLayout: React.FC = () => { // Changed to React.FC to remove c
   };
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push('/login');
-      return;
-    }
-    setCurrentUser(getUserDetails());
+    const fetchUserData = async () => {
+      if (!isAuthenticated()) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        setLoadingUser(true);
+        const res = await getCurrentUser(); // Fetch from backend
+        if (res.success && res.data) {
+          setCurrentUser(res.data);
+        } else {
+          // Handle error, maybe log out or show a message
+          console.error("Failed to fetch user data:", res.message);
+          router.push('/login'); // Redirect to login on failure
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        router.push('/login'); // Redirect to login on error
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    
+    fetchUserData();
   }, [router]);
 
-  if (!currentUser) {
+  if (loadingUser) { // Show loading spinner while fetching user data
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-white z-[9999]">
         <div 
@@ -65,6 +82,10 @@ const UserDashboardLayout: React.FC = () => { // Changed to React.FC to remove c
         </div>
       </div>
     );
+  }
+
+  if (!currentUser) { // If loading finished but no user, redirect (should be handled by fetchUserData)
+    return null; 
   }
 
   return (

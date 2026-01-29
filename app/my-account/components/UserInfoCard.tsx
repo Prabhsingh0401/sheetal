@@ -1,13 +1,14 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { getApiImageUrl } from '../../services/api'; // Import getApiImageUrl
 
 interface UserInfoCardProps {
   user: {
     name?: string;
     email?: string;
     phoneNumber?: string;
+    profilePicture?: string; // Added
   } | null;
   onSelectSection: (section: string) => void;
 }
@@ -15,12 +16,14 @@ interface UserInfoCardProps {
 const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, onSelectSection }) => {
   if (!user) return null;
 
+  const profileImageSrc = getApiImageUrl(user.profilePicture || "/assets/default-image.png");
+
   return (
     <div className="col-lg-12">
       <div className="flex items-center space-x-4 mb-4">
         <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
           <Image
-            src="/assets/default-image.png"
+            src={profileImageSrc}
             alt="User Pic"
             width={64}
             height={64}
@@ -28,11 +31,11 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, onSelectSection }) =>
           />
         </div>
         <div>
-          <h4 className="text-xl font-semibold text-gray-800">Account</h4>
-          <div className="text-sm text-gray-600 space-x-2">
-            {user.name && <small>{user.name}</small>}
-            {user.email && <small><strong className="font-medium">Email ID:</strong> {user.email}</small>}
-            {user.phoneNumber && <small><strong className="font-medium">Phone No.:</strong> {user.phoneNumber}</small>}
+          <h4 className="text-xl font-semibold uppercase">Account</h4>
+          <div className="flex flex-wrap gap-x-4 text-sm">
+            {user.name && <span>{user.name}</span>}
+            <p className="font-semibold">Phone No:</p>{user.phoneNumber && <span>{user.phoneNumber}</span>}
+            <p className="font-semibold">Email ID:</p>{user.email && <span>{user.email}</span>}
           </div>
           <div className="mt-2">
             <button

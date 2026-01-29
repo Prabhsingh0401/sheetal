@@ -22,7 +22,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({ activeSection }) =>
             <hr className="mb-8 border-gray-200" />
           
             {/* Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl">
               <DashboardLinkCard
                 href="/my-account/orders"
                 icon={ORDERS_ICON_PATH}
