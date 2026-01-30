@@ -193,7 +193,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         if (selectedVariant) {
             const price = selectedSizeObject.price || 0;
             const discountPrice = selectedSizeObject.discountPrice || 0;
-            await addToCart(product._id, selectedVariant._id, quantity, selectedSize, price, discountPrice);
+            const variantImageUrl = selectedVariant.v_image || product.mainImage?.url || '';
+            await addToCart(product._id, selectedVariant._id, quantity, selectedSize, price, discountPrice, selectedColor, variantImageUrl);
         } else {
             console.error("Selected variant not found");
         }
@@ -390,6 +391,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
                 isWishlisted={isProductInWishlist(product._id)}
                 onToggleWishlist={() => toggleProductInWishlist(product._id)}
                 onScrollToSimilar={scrollToSimilarProducts}
+                videoUrl={product.video?.url ? getApiImageUrl(product.video.url) : undefined}
              />
           </div>
 
@@ -410,6 +412,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
                 pincodeMessage={pincodeMessage}
                 checkPincode={checkPincode}
                 isOutOfStock={product.stock <= 0}
+                selectedVariantData={selectedVariantData}
              />
           </div>
         </div>

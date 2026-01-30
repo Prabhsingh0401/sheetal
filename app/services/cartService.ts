@@ -5,13 +5,13 @@ export const fetchCart = async (): Promise<{ success: boolean; data: { items: Ca
     return apiFetch('/cart');
 };
 
-export const addToCart = async (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number) => {
+export const addToCart = async (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number, color: string, variantImage: string) => {
     return apiFetch('/cart/add', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ productId, variantId, quantity, size, price, discountPrice }),
+        body: JSON.stringify({ productId, variantId, quantity, size, price, discountPrice, color, variantImage }),
     });
 };
 

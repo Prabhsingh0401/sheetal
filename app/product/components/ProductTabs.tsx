@@ -28,13 +28,35 @@ const ProductTabs: React.FC<ProductTabsProps> = ({ activeTab, setActiveTab, desc
            
            <div className="max-w-full mx-auto leading-relaxed min-h-[200px] py-8">
                {activeTab === 'description' && (
-                   <div className="animate-fade-in text-gray-700" dangerouslySetInnerHTML={{ __html: description }} />
+                   <div className="prose max-w-none animate-fade-in text-gray-700" dangerouslySetInnerHTML={{ __html: description }} />
                )}
                {activeTab === 'material' && (
-                   <div className="animate-fade-in text-gray-700" dangerouslySetInnerHTML={{ __html: materialCare }} />
+                   <div className="prose max-w-none animate-fade-in text-gray-700" dangerouslySetInnerHTML={{ __html: materialCare }} />
                )}
            </div>
        </div>
+       <style jsx global>{`
+        /* Custom styles for Tiptap editor output to ensure correct rendering */
+        .prose p {
+          margin-bottom: 1em; /* Add space between paragraphs */
+        }
+        .prose ul {
+          list-style-type: disc; /* Ensure bullet points are discs */
+          padding-left: 1.5em; /* Indent bullet points */
+          margin-bottom: 1em;
+        }
+        .prose ol {
+          list-style-type: decimal; /* Ensure ordered list markers are decimals */
+          padding-left: 1.5em; /* Indent ordered list items */
+          margin-bottom: 1em;
+        }
+        .prose li {
+          margin-bottom: 0.5em; /* Space between list items */
+        }
+        .prose li p {
+          margin-bottom: 0; /* Remove extra margin from paragraphs inside list items */
+        }
+      `}</style>
     </div>
   );
 };

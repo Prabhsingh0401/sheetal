@@ -114,7 +114,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                 {/* Image */}
                 <div className="w-[90px] shrink-0">
                   <Image
-                    src={getApiImageUrl(item.product.mainImage?.url)}
+                    src={getApiImageUrl(item.variantImage || item.product.mainImage?.url)}
                     alt={item.product.name}
                     width={90}
                     height={120}

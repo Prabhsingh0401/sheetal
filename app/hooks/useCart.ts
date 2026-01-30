@@ -9,6 +9,7 @@ export interface CartItem {
     quantity: number;
     color: string;
     size: string;
+    variantImage?: string;
     price?: number; // Price at the time of adding to cart
     discountPrice?: number; // Discounted price at the time of adding to cart
 }
@@ -32,7 +33,7 @@ interface UseCartReturn {
     totalMrp: number;
     totalDiscount: number;
     finalAmount: number;
-    addToCart: (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number) => Promise<void>;
+    addToCart: (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number, variantImage: string , color: string) => Promise<void>;
     removeFromCart: (itemId: string) => Promise<void>;
     moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
     applyCoupon: (code: string) => Promise<void>;
@@ -77,9 +78,9 @@ export const useCart = (): UseCartReturn => {
         loadCart();
     }, [loadCart]);
 
-    const addToCart = useCallback(async (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number) => {
+    const addToCart = useCallback(async (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number, variantImage: string, color: string) => {
         try {
-            const response = await addToCartApi(productId, variantId, quantity, size, price, discountPrice);
+            const response = await addToCartApi(productId, variantId, quantity, size, price, discountPrice, variantImage , color);
             if (response.success) {
                 toast.success(response.message || 'Product added to cart!');
                 await loadCart();
@@ -128,7 +129,7 @@ export const useCart = (): UseCartReturn => {
         }
     }, [loadCart]);
 
-    const calculateTotals = useCallback(() => {
+    const calculateTotals = () => {
         let newTotalMrp = 0;
         let newTotalDiscount = 0;
 
@@ -143,21 +144,21 @@ export const useCart = (): UseCartReturn => {
         setTotalMrp(newTotalMrp);
         setTotalDiscount(newTotalDiscount);
         setFinalAmount(newTotalMrp - newTotalDiscount - couponDiscount);
-    }, [cart, couponDiscount]);
+    };
 
     useEffect(() => {
         calculateTotals();
-    }, [calculateTotals]);
+    }, [cart, couponDiscount]);
 
     const applyCoupon = useCallback(async (code: string) => {
         setCouponError(null);
         setBogoMessage(null);
         setCouponOfferType(null);
-        setApplicableCategory(null); // Reset applicable category
-        setItemWiseDiscount(null); // Reset itemWiseDiscount
+        setApplicableCategory(null);
+        setItemWiseDiscount(null); 
 
         try {
-            const currentFinalAmount = totalMrp - totalDiscount;
+            const currentFinalAmount = totalMrp - totalDiscount - couponDiscount;
             const response = await applyCouponApi(code, currentFinalAmount, cart);
             if (response.success) {
                 setCouponCode(response.data.couponCode);
@@ -168,29 +169,12 @@ export const useCart = (): UseCartReturn => {
                 setItemWiseDiscount(response.data.itemWiseDiscount || {}); // Store item-wise discounts
 
                 if (response.data.offerType === 'BOGO') {
-                    const localCheapestItem = cart
-                        .filter(item => !applicableCategory || item.product.category._id === applicableCategory)
-                        .reduce((cheapest, item) =>
-                            (Number(item.discountPrice ?? item.price ?? 0)) <
-                            (Number(cheapest.discountPrice ?? cheapest.price ?? 0))
-                                ? item
-                                : cheapest,
-                            cart[0] // Assuming cart is not empty if BOGO applies
-                        );
-                    if (localCheapestItem) {
-                        const freeItemPrice = Number(localCheapestItem.discountPrice ?? localCheapestItem.price ?? 0);
-                        setCouponDiscount(freeItemPrice);
-                        setBogoMessage(`Congrats! '${localCheapestItem.product.name}' is free!`);
-                    } else {
-                        setCouponDiscount(0);
-                        setBogoMessage(null);
-                    }
+                    setCouponDiscount(response.data.discount ?? 0);
+                    setBogoMessage(`Congrats! Your BOGO offer has been applied.`);
                 } else {
                     setCouponDiscount(response.data.discount ?? 0);
                 }
-
                 toast.success('Coupon applied successfully!');
-                await loadCart();
             } else {
                 setCouponError(response.message || 'Invalid coupon code.');
                 toast.error(response.message || 'Invalid coupon code.');
@@ -207,7 +191,14 @@ export const useCart = (): UseCartReturn => {
             const response = await updateCartItemQuantityApi(itemId, quantity);
             if (response.success) {
                 toast.success(response.message || 'Cart updated!');
-                await loadCart();
+                setCart(prevCart => {
+                    if (quantity <= 0) {
+                        return prevCart.filter(item => item._id !== itemId);
+                    }
+                    return prevCart.map(item =>
+                        item._id === itemId ? { ...item, quantity } : item
+                    );
+                });
             } else {
                 toast.error(response.message || 'Failed to update quantity.');
             }
@@ -215,7 +206,7 @@ export const useCart = (): UseCartReturn => {
             console.error("Error updating cart quantity:", err);
             toast.error('Could not update quantity. Please try again.');
         }
-    }, [loadCart]);
+    }, []);
 
     return {
         cart,

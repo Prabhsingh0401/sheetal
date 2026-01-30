@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const product = res.data;
 
-    const title = product.metaTitle || `${product.name} | Your Store Name`;
+    const title = product.metaTitle ;
     const description = product.metaDescription || product.shortDescription || product.description?.substring(0, 160);
     const keywords = product.metaKeywords || `${product.name}, ${product.category?.name}, buy ${product.name}`;
     
@@ -35,9 +35,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     const canonicalUrl = product.canonicalUrl || `https://yourdomain.com/product/${slug}`;
 
-    const price = product.discountPrice && product.discountPrice > 0 
+    const price = product?.discountPrice && product.discountPrice > 0 
       ? product.discountPrice 
-      : product.price;
+      : product?.price;
 
     return {
       title,
@@ -76,8 +76,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       },
 
       other: {
-        'product:price:amount': price.toString(),
-        'product:price:currency': 'INR',
+        'product:price:amount': price?.toString(),
+         'product:price:currency': 'INR',
         'product:availability': product.stock > 0 ? 'in stock' : 'out of stock',
         'product:condition': 'new',
         'product:brand': product.brandInfo || 'Your Brand',

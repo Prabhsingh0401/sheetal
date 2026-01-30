@@ -75,15 +75,6 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
           </p>
         )}
         <div className="mt-4">
-          {/* <p className="text-xs text-gray-500">
-                      <Link
-                        href="/login"
-                        className="text-[#6a3f07] font-semibold"
-                      >
-                        Login
-                      </Link>{" "}
-                      to get up to ₹300 OFF on first order
-                    </p> */}
         </div>
         <h3 className="text-md font-bold mb-4 uppercase mt-5">
           Price Details ({cartLength} Items)

@@ -12,12 +12,16 @@ interface ProductImageGalleryProps {
   isWishlisted: boolean;
   onToggleWishlist: () => void;
   onScrollToSimilar: () => void;
+  videoUrl?: string;
 }
 
-const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selectedImage, onImageChange, title, isWishlisted, onToggleWishlist, onScrollToSimilar }) => {
+const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selectedImage, onImageChange, title, isWishlisted, onToggleWishlist, onScrollToSimilar, videoUrl }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [showVideo, setShowVideo] = useState(false);
+
+  const media = videoUrl ? [...images, videoUrl] : images;
 
   // Embla for Mobile Slider
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
@@ -25,8 +29,15 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     const index = emblaApi.selectedScrollSnap();
-    onImageChange(images[index]);
-  }, [emblaApi, images, onImageChange]);
+    const selectedMedia = media[index];
+    if(selectedMedia === videoUrl) {
+      setShowVideo(true);
+      onImageChange('');
+    } else {
+      setShowVideo(false);
+      onImageChange(selectedMedia);
+    }
+  }, [emblaApi, media, onImageChange, videoUrl]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -74,12 +85,20 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
           {images.map((img, idx) => (
             <div 
               key={idx} 
-              className={`border cursor-pointer transition-all flex-shrink-0 ${selectedImage === img ? 'border-[#bd9951]' : 'border-gray-200 hover:border-gray-300'}`}
-              onClick={() => onImageChange(img)}
+              className={`border cursor-pointer transition-all flex-shrink-0 ${selectedImage === img && !showVideo ? 'border-[#bd9951]' : 'border-gray-200 hover:border-gray-300'}`}
+              onClick={() => { onImageChange(img); setShowVideo(false); }}
             >
                 <Image src={img} alt={`thumb-${idx}`} width={100} height={133} className="w-full h-auto object-cover" />
             </div>
           ))}
+          {videoUrl && (
+            <div
+              className={`border cursor-pointer transition-all flex-shrink-0 flex items-center justify-center h-24 ${showVideo ? 'border-[#bd9951]' : 'border-gray-200 hover:border-gray-300'}`}
+              onClick={() => { setShowVideo(true); onImageChange(''); }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-video text-gray-400"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>
+            </div>
+          )}
         </div>
 
         <button 
@@ -97,15 +116,29 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
         <div className="md:hidden">
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
-              {images.map((img, idx) => (
+              {media.map((item, idx) => (
                 <div key={idx} className="flex-[0_0_100%] min-w-0 relative aspect-[3/4]">
-                  <Image 
-                    src={img} 
-                    alt={`${title}-${idx}`} 
-                    fill 
-                    className="object-cover"
-                    priority={idx === 0}
-                  />
+                  {item === videoUrl ? (
+                    <video
+                      key={videoUrl}
+                      className="w-full h-full object-contain"
+                      controls
+                      autoPlay
+                      muted
+                      loop
+                    >
+                      <source src={videoUrl} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <Image 
+                      src={item} 
+                      alt={`${title}-${idx}`} 
+                      fill 
+                      className="object-cover"
+                      priority={idx === 0}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -113,8 +146,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
           
           {/* Mobile Dots - Now below the image */}
           <div className="flex justify-center gap-2 py-4">
-              {images.map((_, i) => (
-                  <div key={i} className={`w-2 h-2 rounded-full transition-colors duration-300 ${selectedImage === images[i] ? 'bg-[#bd9951]' : 'bg-gray-300'}`}></div>
+              {media.map((item, i) => (
+                  <div key={i} className={`w-2 h-2 rounded-full transition-colors duration-300 ${ (selectedImage === item && !showVideo) || (item === videoUrl && showVideo) ? 'bg-[#bd9951]' : 'bg-gray-300'}`}></div>
               ))}
           </div>
         </div>
@@ -126,27 +159,43 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({ images, selec
           onMouseLeave={() => setIsHovered(false)}
           onMouseMove={handleMouseMove}
         >
-            {/* Normal Image */}
-            <Image 
-              src={selectedImage} 
-              alt={title} 
-              fill 
-              className={`object-cover transition-opacity duration-200 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
-              priority
-            />
+          {showVideo ? (
+            <video
+              key={videoUrl}
+              className="w-full h-full object-contain"
+              controls
+              autoPlay
+              muted
+              loop
+            >
+              <source src={videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          ) : (
+            <>
+              {/* Normal Image */}
+              <Image 
+                src={selectedImage} 
+                alt={title} 
+                fill 
+                className={`object-cover transition-opacity duration-200 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
+                priority
+              />
 
-            {/* Zoomed Background */}
-            {isHovered && (
-                <div 
-                    className="absolute inset-0 w-full h-full pointer-events-none"
-                    style={{
-                        backgroundImage: `url(${selectedImage})`,
-                        backgroundPosition: `${mousePos.x}% ${mousePos.y}%`,
-                        backgroundSize: '250%',
-                        backgroundRepeat: 'no-repeat'
-                    }}
-                />
-            )}
+              {/* Zoomed Background */}
+              {isHovered && (
+                  <div 
+                      className="absolute inset-0 w-full h-full pointer-events-none"
+                      style={{
+                          backgroundImage: `url(${selectedImage})`,
+                          backgroundPosition: `${mousePos.x}% ${mousePos.y}%`,
+                          backgroundSize: '250%',
+                          backgroundRepeat: 'no-repeat'
+                      }}
+                  />
+              )}
+            </>
+          )}
         </div>
 
         {/* Floating Icons */}

@@ -118,7 +118,8 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                 }
                 const selectedSizeInfo = selectedVariant.sizes.find(s => s.name === selectedSize);
                 if (selectedSizeInfo) {
-                    await addToCart(product._id, selectedVariant._id, quantity, selectedSize, selectedSizeInfo.price, selectedSizeInfo.discountPrice);
+                    const variantImageUrl = selectedVariant.v_image || product.mainImage?.url || '';
+                    await addToCart(product._id, selectedVariant._id, quantity, selectedSize, selectedSizeInfo.price, selectedSizeInfo.discountPrice, selectedColor, variantImageUrl);
                     onClose();
                 } else {
                     console.error("Selected size info not found");
@@ -142,16 +143,11 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
         ...(product?.images?.map(img => getApiImageUrl(img.url)) || [])
     ].filter(Boolean) as string[];
 
-    // Derive all unique colors, all unique sizes, and a map of color to available sizes
     const allUniqueColors: { name: string; image: string; }[] = [];
     const allUniqueSizeNames = new Set<string>();
-    const colorToAvailableSizesMap = new Map<string, Set<string>>(); // Map: colorName -> Set<sizeName>
-
-    // To store overall stock for each size for `allUniqueSizes`
-    const sizeOverallStockMap = new Map<string, { totalStock: number, minLeft: number }>();
+    const colorToAvailableSizesMap = new Map<string, Set<string>>();
 
     product?.variants?.forEach(v => {
-        // Collect unique colors
         if (v.color && typeof v.color === 'object' && v.color.name && !allUniqueColors.some(c => c.name === v.color!.name)) {
             allUniqueColors.push({
                 name: v.color!.name,
@@ -162,14 +158,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
         if (Array.isArray(v.sizes)) {
             v.sizes.forEach(s => {
                 if (s?.name) {
-                    allUniqueSizeNames.add(s.name); // Collect all unique size names across all variants
-
-                    const currentStock = sizeOverallStockMap.get(s.name) || { totalStock: 0, minLeft: Infinity };
-                    currentStock.totalStock += s.stock || 0;
-                    currentStock.minLeft = Math.min(currentStock.minLeft, s.stock || 0);
-                    sizeOverallStockMap.set(s.name, currentStock);
-
-                    // Populate colorToAvailableSizesMap
+                    allUniqueSizeNames.add(s.name);
                     if (v.color && typeof v.color === 'object' && v.color.name && s.stock > 0) {
                         if (!colorToAvailableSizesMap.has(v.color!.name)) {
                             colorToAvailableSizesMap.set(v.color!.name, new Set<string>());
@@ -180,26 +169,17 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
             });
         }
     });
-
-    const allSizesForDisplay = Array.from(allUniqueSizeNames).map(sizeName => {
-        const stockInfo = sizeOverallStockMap.get(sizeName);
-        return {
-            name: sizeName,
-            available: stockInfo ? stockInfo.totalStock > 0 : false,
-            left: stockInfo ? stockInfo.minLeft : 0
-        };
-    });
+    
+    const allSizesForDisplay = Array.from(allUniqueSizeNames);
 
     const handleColorChange = (color: { name: string; image: string }) => {
         setSelectedColor(color.name);
         setSelectedImage(color.image);
 
-        // Check if previously selected size is available for the new color
         const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
         if (selectedSize && availableSizesForNewColor && !availableSizesForNewColor.has(selectedSize)) {
-            setSelectedSize(""); // Reset if not available
+            setSelectedSize("");
         }
-        // Optionally, auto-select the first available size for the new color if no size is selected
         if (!selectedSize && availableSizesForNewColor && availableSizesForNewColor.size > 0) {
             setSelectedSize(Array.from(availableSizesForNewColor)[0]);
         }
@@ -284,18 +264,19 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                         </label>
                                     </div>
                                     <div className="flex flex-wrap gap-3">
-                                        {Array.isArray(allSizesForDisplay) &&
-                                            allSizesForDisplay.map((size: { name: string; available: boolean; left: number }) => {
-                                                const isAvailableForSelectedColor = colorToAvailableSizesMap.get(selectedColor)?.has(size.name);
+                                        {allSizesForDisplay.map((sizeName) => {
+                                                const isAvailableForSelectedColor = colorToAvailableSizesMap.get(selectedColor)?.has(sizeName);
                                                 const isDisabled = !isAvailableForSelectedColor; 
-                                                
+                                                const selectedVariant = product.variants.find(v => v.color?.name === selectedColor);
+                                                const stock = selectedVariant?.sizes.find(s => s.name === sizeName)?.stock ?? 0;
+
                                                 return (
-                                                    <div key={size.name} className="flex flex-col items-center">
+                                                    <div key={sizeName} className="flex flex-col items-center">
                                                         <button
                                                             disabled={isDisabled}
-                                                            onClick={() => setSelectedSize(size.name)}
+                                                            onClick={() => setSelectedSize(sizeName)}
                                                             className={`
-                                                                ${size.name === 'One Size' ? 'px-3 py-2 rounded-md' : 'w-10 h-10 rounded-full'}
+                                                                ${sizeName === 'One Size' ? 'px-3 py-2 rounded-md' : 'w-10 h-10 rounded-full'}
                                                                 flex items-center justify-center border text-sm font-medium transition-colors relative overflow-hidden
                                                                 ${
                                                                     isDisabled
@@ -303,19 +284,19 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                                                     : ""
                                                                 }
                                                                 ${
-                                                                    selectedSize === size.name && !isDisabled
+                                                                    selectedSize === sizeName && !isDisabled
                                                                     ? "border-[#bd9951]"
                                                                     : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
                                                                 }
                                                             `}
                                                         >
-                                                            {size.name}
+                                                            {sizeName}
                                                             {isDisabled && <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>}
                                                         </button> 
 
-                                                        {isAvailableForSelectedColor && size.left <= 2 && (
+                                                        {isAvailableForSelectedColor && stock <= 5 && stock > 0 && (
                                                             <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
-                                                                {size.left} left
+                                                                {stock} left
                                                             </span>
                                                         )}
                                                     </div>
