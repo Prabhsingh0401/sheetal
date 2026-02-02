@@ -1,40 +1,37 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import TopInfo from '../components/TopInfo';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-
-// Mock Data for Blogs List
-const BLOGS = [
-  {
-    id: 'colour-trends-2025',
-    title: 'Colour Trends in Sarees for 2025: Jewel Tones from Studio by Sheetal’s Festive Collection',
-    date: 'December 31, 2024',
-    image: '/assets/410718746.jpg',
-    description: 'Colour Trends in Sarees for 2025: Jewel Tones from Studio by Sheetal’s Festive Collection',
-    link: '/blog/colour-trends-2025'
-  },
-  {
-    id: 'banarasi-saree-guide',
-    title: 'What to Look for When Buying a Banarasi Saree Online',
-    date: 'December 31, 2024',
-    image: '/assets/484942625.jpg',
-    description: 'What to Look for When Buying a Banarasi Saree Online',
-    link: '/blog/banarasi-saree-guide'
-  },
-  {
-    id: 'wedding-wardrobe-magic',
-    title: 'How SBS Brings Banarasi Magic to Your Wedding Wardrobe',
-    date: 'December 31, 2024',
-    image: '/assets/823107476.jpg',
-    description: 'How SBS Brings Banarasi Magic to Your Wedding Wardrobe',
-    link: '/blog/wedding-wardrobe-magic'
-  }
-];
+import { getBlogs, getBlogImageUrl, Blog } from '@/app/services/blogService';
 
 const BlogsPage = () => {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      setLoading(true);
+      try {
+        const response = await getBlogs({ page, limit: 9 });
+        if (response.success) {
+          setBlogs(response.blogs);
+          setTotalPages(response.pages);
+        }
+      } catch (error) {
+        console.error("Failed to fetch blogs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, [page]);
+
   return (
     <div className="font-[family-name:var(--font-montserrat)] bg-white">
       <TopInfo />
@@ -61,47 +58,78 @@ const BlogsPage = () => {
 
       {/* Blogs Listing */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {BLOGS.map((blog) => (
-            <div key={blog.id} className="group flex flex-col h-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <Link href={blog.link} className="relative w-full aspect-[4/3] overflow-hidden">
-                <Image
-                  src={blog.image}
-                  alt={blog.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              </Link>
-              
-              <div className="p-6 flex flex-col flex-grow">
-                <div className="text-sm text-gray-500 mb-3 font-medium">
-                  {blog.date}
-                </div>
-                
-                <h3 className="text-lg font-semibold text-[#2c2c2c] mb-3 leading-snug font-[family-name:var(--font-optima)] line-clamp-2 group-hover:text-[#bd9951] transition-colors">
-                  <Link href={blog.link}>{blog.title}</Link>
-                </h3>
-                
-                <p className="text-sm text-gray-600 mb-6 line-clamp-3 leading-relaxed flex-grow">
-                  {blog.description}
-                </p>
-                
-                <div>
-                  <Link 
-                    href={blog.link} 
-                    className="inline-block text-sm font-medium text-black border-b border-black pb-0.5 hover:text-[#bd9951] hover:border-[#bd9951] transition-all"
-                  >
-                    Read More
-                  </Link>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse space-y-4">
+                <div className="bg-gray-200 h-52 rounded-lg"></div>
+                <div className="space-y-2">
+                  <div className="bg-gray-200 h-4 w-1/4 rounded"></div>
+                  <div className="bg-gray-200 h-6 w-full rounded"></div>
+                  <div className="bg-gray-200 h-12 w-full rounded"></div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogs.map((blog) => (
+              <div key={blog._id} className="group flex flex-col h-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <Link href={`/blog/${blog.slug}`} className="relative w-full aspect-[4/3] overflow-hidden">
+                  <Image
+                    src={getBlogImageUrl(blog)}
+                    alt={blog.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                </Link>
+                
+                <div className="p-6 flex flex-col flex-grow">
+                  <div className="text-sm text-gray-500 mb-3 font-medium">
+                    {new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </div>
+                  
+                  <h3 className="text-lg font-semibold text-[#2c2c2c] mb-3 leading-snug font-[family-name:var(--font-optima)] line-clamp-2 group-hover:text-[#bd9951] transition-colors">
+                    <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 mb-6 line-clamp-3 leading-relaxed flex-grow">
+                    {blog.excerpt}
+                  </p>
+                  
+                  <div>
+                    <Link 
+                      href={`/blog/${blog.slug}`} 
+                      className="inline-block text-sm font-medium text-black border-b border-black pb-0.5 hover:text-[#bd9951] hover:border-[#bd9951] transition-all"
+                    >
+                      Read More
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Pagination (Static for now) */}
-        <div className="mt-12 flex justify-center">
-           {/* Pagination logic can be added here later */}
+        {/* Pagination */}
+        <div className="mt-12 flex justify-center items-center gap-4">
+          <button
+            onClick={() => setPage(p => Math.max(p - 1, 1))}
+            disabled={page === 1}
+            className="px-4 py-2 bg-gray-100 rounded-md text-sm font-semibold disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-sm font-semibold">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+            disabled={page === totalPages}
+            className="px-4 py-2 bg-gray-100 rounded-md text-sm font-semibold disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       </div>
 

@@ -1,6 +1,13 @@
 import { apiFetch } from './api';
 import { updateUserDetailsInLocalStorage } from './authService'; // Import the new function
 
+export interface User {
+  _id: string;
+  name: string;
+  email?: string; // Optional, as not always populated
+  // Add other user fields if needed and they are populated in different contexts
+}
+
 export const updateUserProfile = async (userData: any | FormData) => {
   const options: RequestInit = {
     method: 'PUT',

@@ -125,6 +125,10 @@ export const fetchProducts = async (params: ProductQueryParams = {}): Promise<Pr
   return apiFetch(`/products?${query.toString()}`);
 };
 
+export const getNewArrivals = async (): Promise<{ success: boolean; products: Product[] }> => {
+    return apiFetch('/products/new-arrivals');
+};
+
 export const fetchProductBySlug = async (slug: string) => {
   return apiFetch(`/products/${slug}`);
 };
