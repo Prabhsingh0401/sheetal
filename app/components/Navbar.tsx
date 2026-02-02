@@ -7,6 +7,7 @@ import { useWishlist } from '../hooks/useWishlist';
 import { useCart } from '../hooks/useCart';
 import { isAuthenticated, logout, getUserDetails } from '../services/authService';
 import toast from 'react-hot-toast';
+import SearchModal from './SearchModal'
 
 const Navbar = () => {
   const router = useRouter();
@@ -269,27 +270,7 @@ const Navbar = () => {
          </div>
       </header>
 
-      {/* Search Box Overlay */}
-      {searchOpen && (
-        <div className="fixed inset-0 z-[10000] bg-black/90 flex justify-center pt-20 font-[family-name:var(--font-montserrat)]">
-           <div className="w-full max-w-2xl px-4 relative"> 
-               <button onClick={closeSearch} className="absolute -top-10 right-4 text-white text-2xl">✕</button>
-               <input 
-                 type="text" 
-                 className="w-full p-4 text-lg border-b-2 border-white bg-transparent text-white focus:outline-none placeholder-gray-400" 
-                 placeholder="I'm Looking for..." 
-               />
-               <div className="mt-8 text-white">
-                   <h4 className="text-xl mb-4 font-semibold">Product Suggestion</h4>
-                   <ul className="space-y-2">
-                       {['Sarees', 'Lehengas', 'Suits', 'Gowns'].map((item, i) => (
-                           <li key={i}><Link href={`/category/${item.toLowerCase()}`} className="hover:text-yellow-400 transition-colors" onClick={closeSearch}>{item}</Link></li>
-                       ))}
-                   </ul>
-                </div>
-            </div>
-        </div>
-      )}
+      <SearchModal isOpen={searchOpen} onClose={closeSearch} />
 
       {/* Mobile Menu Drawer */}
       <div className={`fixed inset-0 z-[10000] bg-black/50 transition-opacity duration-300 md:hidden ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
@@ -299,8 +280,7 @@ const Navbar = () => {
             </div>
             <div className="p-6 flex flex-col gap-4 overflow-y-auto h-full pb-20">
                <Link href="/" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">Home</Link>
-               <Link href="/about-us" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">OUR STORY</Link>
-               
+               <Link href="/about-us" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">OUR STORY</Link> 
                {/* Mobile Dropdown */}
                <div>
                   <button 
@@ -316,7 +296,6 @@ const Navbar = () => {
                      <Link href="/category/suits" className="block py-2 !text-[#b3a660]">Suits</Link>
                   </div>
                </div>
-
                <Link href="/blog" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">Blog</Link>
                <Link href="/contact-us" className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]">Contact Us</Link>
             </div>

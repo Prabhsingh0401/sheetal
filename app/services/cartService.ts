@@ -21,13 +21,13 @@ export const removeFromCart = async (itemId: string) => {
     });
 };
 
-export const applyCoupon = async (code: string, cartTotal: number, cartItems: CartItem[]) => {
+export const applyCoupon = async (code: string, cartTotal: number, userId: string, cartItems: CartItem[]) => {
     return apiFetch('/coupons/apply', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code, cartTotal, cartItems }),
+        body: JSON.stringify({ code, cartTotal, userId, cartItems }),
     });
 };
 

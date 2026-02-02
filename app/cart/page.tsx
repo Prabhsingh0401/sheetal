@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import toast from 'react-hot-toast';
 import { useCart, CartItem } from "../hooks/useCart"; 
 import CartItemsList from "./components/CartItemsList";
 import PriceDetails from "./components/PriceDetails";
@@ -12,6 +13,7 @@ const CartPage = () => {
     loading,
     removeFromCart,
     moveFromCartToWishlist,
+    couponCode,
     couponDiscount,
     couponError,
     totalMrp,
@@ -22,8 +24,10 @@ const CartPage = () => {
     bogoMessage,
     applicableCategory,
     itemWiseDiscount, 
-    updateCartItemQuantity, 
+    updateCartItemQuantity,
+    removeCoupon, // Add this
   } = useCart(); 
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
   const [couponInput, setCouponInput] = useState("");
@@ -54,10 +58,19 @@ const CartPage = () => {
     setItemToRemove(null);
   };
 
-  const handleApplyCoupon = () => {
-    if (couponInput.trim()) {
-      applyCoupon(couponInput.trim());
+  const handleApplyCoupon = (userId: string | undefined) => {
+    if (!userId) {
+      toast.error("Please login to apply coupons.");
+      return;
     }
+    
+    if (!couponInput.trim()) {
+      toast.error("Please enter a coupon code.");
+      return;
+    }
+    
+    console.log("Applying coupon:", couponInput, "for user:", userId);
+    applyCoupon(couponInput.trim().toUpperCase(), userId);
   };
 
   if (loading) {
@@ -169,6 +182,8 @@ const CartPage = () => {
                 bogoMessage={bogoMessage}
                 applicableCategory={applicableCategory}
                 categoryName={categoryName}
+                couponCode={couponCode} // Pass the applied coupon code
+                onRemoveCoupon={removeCoupon} // Pass the remove function
                 cartLength={cartItems.length}
                 totalMrp={totalMrp}
                 totalDiscount={totalDiscount}
