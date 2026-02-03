@@ -47,12 +47,12 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
   // Helper to get the correct href for each section
   const getHref = (link: string) => {
-    if (link === 'overview') {
-      return '/my-account';
-    } else if (link === 'profile') {
-      return '/my-account/profile';
-    } else if (link === 'edit-profile') {
-      return '/my-account/profile/edit';
+    if (link === "overview") {
+      return "/my-account";
+    } else if (link === "profile") {
+      return "/my-account/profile";
+    } else if (link === "edit-profile") {
+      return "/my-account/profile/edit";
     }
     return `/my-account/${link}`;
   };

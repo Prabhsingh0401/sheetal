@@ -3,11 +3,13 @@ import StarRating from "./StarRating";
 
 interface Review {
   _id: string;
-  user: {
-    _id: string;
-    name: string;
-    profileImage?: string;
-  } | string;
+  user:
+    | {
+        _id: string;
+        name: string;
+        profileImage?: string;
+      }
+    | string;
   rating: number;
   comment: string;
   createdAt?: string;
@@ -40,9 +42,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
         {/* Rating Summary */}
         <div className="flex flex-col items-center md:border-r md:px-20 border-gray-300">
           <StarRating rating={Math.round(overallRating)} />
-          <p className="text-lg mt-2">
-            Based on {totalReviews} Reviews
-          </p>
+          <p className="text-lg mt-2">Based on {totalReviews} Reviews</p>
         </div>
 
         {/* Write Review Area */}
@@ -64,23 +64,23 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
               {/* Review Form */}
               <div className="border border-gray-300 p-4 relative flex flex-col justify-between w-100 items-center">
                 <div className="mb-4 flex justify-between items-center border-b pb-4 w-full">
-                <h4 className="text-lg">Write a review</h4>
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="text-3xl text-gray-500 hover:text-black"
-                >
-                  ×
-                </button>
+                  <h4 className="text-lg">Write a review</h4>
+                  <button
+                    onClick={() => setShowForm(false)}
+                    className="text-3xl text-gray-500 hover:text-black"
+                  >
+                    ×
+                  </button>
                 </div>
                 <input
                   type="text"
                   placeholder="Enter your name"
                   className="w-full border border-dashed border-gray-300 rounded-full px-4 py-2 mb-4 focus:outline-none"
                 />
- 
+
                 <div className="mb-4 flex justify-between w-full">
                   <p className="text-sm mb-1">Rating(s):</p>
-                  <StarRating rating={rating} /> 
+                  <StarRating rating={rating} />
                   {/* Note: StarRating component needs to support onChange if we want to setRating interactively, 
                       or we use a different input for rating in form. 
                       For now restoring UI as it was. */}
@@ -106,11 +106,12 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
       {/* Reviews Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {reviews.length > 0 ? (
-           reviews.map((review, i) => {
-             const userName = typeof review.user === 'object' ? review.user.name : 'Anonymous';
-             const userInitial = userName.charAt(0);
-             
-             return (
+          reviews.map((review, i) => {
+            const userName =
+              typeof review.user === "object" ? review.user.name : "Anonymous";
+            const userInitial = userName.charAt(0);
+
+            return (
               <div key={i}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-sm font-semibold uppercase">
@@ -121,14 +122,14 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
 
                 <StarRating rating={review.rating} />
 
-                <p className="text-md mt-3 leading-relaxed">
-                  {review.comment}
-                </p>
+                <p className="text-md mt-3 leading-relaxed">{review.comment}</p>
               </div>
             );
           })
         ) : (
-            <p className="text-gray-500 text-center col-span-2">No reviews yet. Be the first to review!</p>
+          <p className="text-gray-500 text-center col-span-2">
+            No reviews yet. Be the first to review!
+          </p>
         )}
       </div>
     </section>

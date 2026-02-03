@@ -16,10 +16,8 @@ const EnquireModal: React.FC<EnquireModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center">
-      
       {/* Circular Modal */}
       <div className="relative w-[520px] h-[520px] rounded-full bg-[#f7f3ee] border-[3px] border-[#f5a623] flex flex-col items-center justify-center px-20">
-
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -72,10 +70,9 @@ const EnquireModal: React.FC<EnquireModalProps> = ({
           <button
             type="submit"
             className="mx-auto mt-3 block w-40 py-2 text-sm font-medium border-y border-black text-black font-normal uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-sm"
-            >
+          >
             Enquire Now
-        </button>
-
+          </button>
         </form>
 
         {/* Decorative Saree Image */}

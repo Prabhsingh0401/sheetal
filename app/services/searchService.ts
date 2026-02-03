@@ -1,5 +1,5 @@
-import { apiFetch } from './api';
+import { apiFetch } from "./api";
 
 export const searchService = async (query: string) => {
-    return apiFetch(`/search?q=${query}`);
+  return apiFetch(`/search?q=${query}`);
 };

@@ -1,8 +1,8 @@
-'use client';
-import React from 'react';
-import Image from 'next/image';
-import { getApiImageUrl } from '@/app/services/api';
-import { Blog } from '@/app/services/blogService';
+"use client";
+import React from "react";
+import Image from "next/image";
+import { getApiImageUrl } from "@/app/services/api";
+import { Blog } from "@/app/services/blogService";
 
 // Taking the whole blog object is cleaner
 interface BlogContentProps {
@@ -16,25 +16,33 @@ const BlogContent: React.FC<BlogContentProps> = ({ blog }) => {
         {blog.title}
       </h3>
       <div className="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <span className="font-semibold text-[#bd9951]">{blog.author?.name || 'Admin'}</span>
+        <span className="font-semibold text-[#bd9951]">
+          {blog.author?.name || "Admin"}
+        </span>
         <span>|</span>
-        <span>{new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+        <span>
+          {new Date(blog.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </span>
       </div>
-      
+
       {blog.contentImage && (
         <div className="relative w-full aspect-video mb-8 rounded-lg overflow-hidden shadow-sm">
-            <Image
-              src={getApiImageUrl(blog.contentImage)}
-              alt={blog.title}
-              fill
-              className="object-cover"
-            />
+          <Image
+            src={getApiImageUrl(blog.contentImage)}
+            alt={blog.title}
+            fill
+            className="object-cover"
+          />
         </div>
       )}
 
-      <div 
+      <div
         className="prose prose-lg max-w-none text-gray-600 leading-relaxed text-base space-y-6"
-        dangerouslySetInnerHTML={{ __html: blog.content }} 
+        dangerouslySetInnerHTML={{ __html: blog.content }}
       />
     </div>
   );

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import Image from "next/image";
-import { SizeChartData, getHowToMeasureImageUrl } from '../../services/sizeChartService';
+import {
+  SizeChartData,
+  getHowToMeasureImageUrl,
+} from "../../services/sizeChartService";
 
 interface SizeChartModalProps {
   isOpen: boolean;
@@ -21,28 +24,31 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
   setSelectedSize,
   sizeChartData,
 }) => {
-  const [activeTab, setActiveTab] = useState<"sizechart" | "measure">("sizechart");
+  const [activeTab, setActiveTab] = useState<"sizechart" | "measure">(
+    "sizechart",
+  );
   const [unit, setUnit] = useState<"in" | "cm">("in");
 
   if (!isOpen) return null;
   if (!sizeChartData) return null; // Render nothing if size chart data is not yet available
 
   const convertToCm = (inches: string | number) => {
-    if (typeof inches === 'string') {
-      const parts = inches.split("-").map(s => parseFloat(s.trim()));
+    if (typeof inches === "string") {
+      const parts = inches.split("-").map((s) => parseFloat(s.trim()));
       // If any part is NaN after parsing, return "-"
       if (parts.some(isNaN)) return "-";
-      const convertedParts = parts.map(val => (val * 2.54).toFixed(1));
+      const convertedParts = parts.map((val) => (val * 2.54).toFixed(1));
       return convertedParts.join(" - ");
-    } else if (typeof inches === 'number') {
+    } else if (typeof inches === "number") {
       // If it's a number, convert directly
       return (inches * 2.54).toFixed(1);
     }
     // If it's neither string nor number, return "-"
     return "-";
   };
-  
-  const availableSizesForSelectedColor = colorToAvailableSizesMap[selectedColor] || [];
+
+  const availableSizesForSelectedColor =
+    colorToAvailableSizesMap[selectedColor] || [];
 
   return (
     <div
@@ -57,7 +63,7 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
         onClick={onClose}
       ></div>
       <div
-        className={`absolute right-0 top-0 h-full w-full max-w-4xl bg-white transform transition-transform duration-300 ease-in-out overflow-y-auto ${ 
+        className={`absolute right-0 top-0 h-full w-full max-w-4xl bg-white transform transition-transform duration-300 ease-in-out overflow-y-auto ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -72,8 +78,8 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
             Size Chart
           </h3>
           <p className="text-center mb-6 text-lg">
-            Our Sizes fit the best for mentioned body measurements (not garment measurements)*
-            Tip: SBS sizes are to fit Indian Body.
+            Our Sizes fit the best for mentioned body measurements (not garment
+            measurements)* Tip: SBS sizes are to fit Indian Body.
           </p>
           <div className="flex justify-center mb-6 border-b border-t border-gray-200">
             <button
@@ -125,7 +131,9 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
           {activeTab === "sizechart" && (
             <div className="animate-fade-in">
               {!selectedColor ? (
-                <p className="text-center text-red-500">Please select a color first to see available sizes.</p>
+                <p className="text-center text-red-500">
+                  Please select a color first to see available sizes.
+                </p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-center border-collapse whitespace-nowrap">
@@ -142,7 +150,8 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
                     </thead>
                     <tbody>
                       {sizeChartData.table.map((row: any, idx: number) => {
-                        const isAvailable = availableSizesForSelectedColor.includes(row.label);
+                        const isAvailable =
+                          availableSizesForSelectedColor.includes(row.label);
                         return (
                           <tr
                             key={idx}
@@ -164,11 +173,27 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
                             <td className="p-3 font-bold text-gray-700">
                               {row.label}
                             </td>
-                            <td className="p-3 text-gray-600">{unit === "in" ? row.bust : convertToCm(row.bust)}</td>
-                            <td className="p-3 text-gray-600">{unit === "in" ? row.waist : convertToCm(row.waist)}</td>
-                            <td className="p-3 text-gray-600">{unit === "in" ? row.hip : convertToCm(row.hip)}</td>
-                            <td className="p-3 text-gray-600">{unit === "in" ? row.shoulder : convertToCm(row.shoulder)}</td>
-                            <td className="p-3 text-gray-600">{unit === "in" ? row.length : convertToCm(row.length)}</td>
+                            <td className="p-3 text-gray-600">
+                              {unit === "in" ? row.bust : convertToCm(row.bust)}
+                            </td>
+                            <td className="p-3 text-gray-600">
+                              {unit === "in"
+                                ? row.waist
+                                : convertToCm(row.waist)}
+                            </td>
+                            <td className="p-3 text-gray-600">
+                              {unit === "in" ? row.hip : convertToCm(row.hip)}
+                            </td>
+                            <td className="p-3 text-gray-600">
+                              {unit === "in"
+                                ? row.shoulder
+                                : convertToCm(row.shoulder)}
+                            </td>
+                            <td className="p-3 text-gray-600">
+                              {unit === "in"
+                                ? row.length
+                                : convertToCm(row.length)}
+                            </td>
                           </tr>
                         );
                       })}

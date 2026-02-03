@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useCallback } from 'react';
-import useEmblaCarousel from 'embla-carousel-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import React, { useCallback } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const Collections = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
-    align: 'start',
+    align: "start",
     skipSnaps: false,
   });
 
@@ -23,58 +23,57 @@ const Collections = () => {
   const products = [
     {
       id: 1,
-      name: 'Rama Green Zariwork Soft Silk Saree',
-      image: '/assets/494291571.webp',
-      hoverImage: '/assets/487339289.webp',
-      price: '₹ 790.50',
-      mrp: '₹ 850.00',
-      discount: '7% OFF',
-      size: 'L',
+      name: "Rama Green Zariwork Soft Silk Saree",
+      image: "/assets/494291571.webp",
+      hoverImage: "/assets/487339289.webp",
+      price: "₹ 790.50",
+      mrp: "₹ 850.00",
+      discount: "7% OFF",
+      size: "L",
       soldOut: true,
-      link: '/product-detail',
+      link: "/product-detail",
     },
     {
       id: 2,
-      name: 'Mustard Zariwork Organza Fabric Readymade Salwar Suit',
-      image: '/assets/590900458.webp',
-      hoverImage: '/assets/789323917.webp',
-      price: '₹ 790.50',
-      mrp: '₹ 850.00',
-      discount: '7% OFF',
-      size: 'L',
+      name: "Mustard Zariwork Organza Fabric Readymade Salwar Suit",
+      image: "/assets/590900458.webp",
+      hoverImage: "/assets/789323917.webp",
+      price: "₹ 790.50",
+      mrp: "₹ 850.00",
+      discount: "7% OFF",
+      size: "L",
       soldOut: false,
-      link: '/product-detail',
+      link: "/product-detail",
     },
     {
       id: 3,
-      name: 'Onion Pink Zariwork Tissue Saree',
-      image: '/assets/670149944.webp',
-      hoverImage: '/assets/882872675.webp',
-      price: '₹ 790.50',
-      mrp: '₹ 850.00',
-      discount: '7% OFF',
-      size: 'L',
+      name: "Onion Pink Zariwork Tissue Saree",
+      image: "/assets/670149944.webp",
+      hoverImage: "/assets/882872675.webp",
+      price: "₹ 790.50",
+      mrp: "₹ 850.00",
+      discount: "7% OFF",
+      size: "L",
       soldOut: false,
-      link: '/product-detail',
+      link: "/product-detail",
     },
     {
       id: 4,
-      name: 'Sky Blue Threadwork Semi Crepe Readymade Salwar Suit',
-      image: '/assets/229013918.webp',
-      hoverImage: '/assets/493323435.webp',
-      price: '₹ 790.50',
-      mrp: '₹ 850.00',
-      discount: '7% OFF',
-      size: 'L',
+      name: "Sky Blue Threadwork Semi Crepe Readymade Salwar Suit",
+      image: "/assets/229013918.webp",
+      hoverImage: "/assets/493323435.webp",
+      price: "₹ 790.50",
+      mrp: "₹ 850.00",
+      discount: "7% OFF",
+      size: "L",
       soldOut: false,
-      link: '/product-detail',
+      link: "/product-detail",
     },
   ];
 
   return (
     <div className="container-fluid py-12 home-page-product font-[family-name:var(--font-montserrat)]">
       <div className="container mx-auto px-4 py-10">
-
         {/* HEADING */}
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center gap-10 w-full">
@@ -85,7 +84,8 @@ const Collections = () => {
             <div className="h-[1px] bg-[#68400f] flex-1" />
           </div>
           <p className="text-center max-w-2xl text-lg mt-2">
-            Best-Selling Gems: Signature sarees, ensembles, and Indo-Western pieces that define Studio By Sheetal.
+            Best-Selling Gems: Signature sarees, ensembles, and Indo-Western
+            pieces that define Studio By Sheetal.
           </p>
         </div>
 
@@ -93,7 +93,6 @@ const Collections = () => {
         <div className="relative group/slider">
           <div ref={emblaRef} className="overflow-hidden">
             <div className="flex gap-4">
-
               {products.map((product) => (
                 <div
                   key={product.id}
@@ -106,10 +105,8 @@ const Collections = () => {
                   "
                 >
                   <div className="rounded-xl overflow-hidden group">
-
                     {/* IMAGE */}
                     <div className="relative aspect-[3/4] overflow-hidden">
-
                       {/* SOLD OUT */}
                       {product.soldOut && (
                         <div className="absolute -top-1 left-0 z-20">
@@ -130,7 +127,10 @@ const Collections = () => {
                       </div>
 
                       {/* PRODUCT IMAGES */}
-                      <Link href={product.link} className="block h-full w-full relative">
+                      <Link
+                        href={product.link}
+                        className="block h-full w-full relative"
+                      >
                         <Image
                           src={product.image}
                           alt={product.name}
@@ -161,7 +161,8 @@ const Collections = () => {
 
                       <div className="mb-3 flex flex-col items-center">
                         <div className="text-xs text-gray-600 font-medium mb-1">
-                          <span className="font-bold text-black">Size:</span> {product.size}
+                          <span className="font-bold text-black">Size:</span>{" "}
+                          {product.size}
                         </div>
                         <div className="flex justify-center gap-0.5">
                           {[1, 2, 3, 4, 5].map((i) => (
@@ -195,11 +196,9 @@ const Collections = () => {
                         View Product
                       </Link>
                     </div>
-
                   </div>
                 </div>
               ))}
-
             </div>
           </div>
 
@@ -208,20 +207,41 @@ const Collections = () => {
             onClick={scrollPrev}
             className="absolute left-[-15px] top-[30%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
             </svg>
           </button>
           <button
             onClick={scrollNext}
             className="absolute right-[-15px] top-[30%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+              />
             </svg>
           </button>
         </div>
-
       </div>
     </div>
   );

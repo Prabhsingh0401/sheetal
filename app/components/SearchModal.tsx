@@ -1,31 +1,31 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { searchService } from '@/app/services/searchService'; 
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { searchService } from "@/app/services/searchService";
 
-const PREVIOUS_SEARCHES_KEY = 'previous_searches';
+const PREVIOUS_SEARCHES_KEY = "previous_searches";
 const MAX_PREVIOUS_SEARCHES = 5;
 
 interface PreviousSearchItem {
-  type: 'product' | 'category';
+  type: "product" | "category";
   name: string;
-  slug?: string; 
-  categoryName?: string; 
+  slug?: string;
+  categoryName?: string;
 }
 
 // Helper functions for local storage
 const getPreviousSearches = (): PreviousSearchItem[] => {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   const searches = localStorage.getItem(PREVIOUS_SEARCHES_KEY);
   return searches ? JSON.parse(searches) : [];
 };
 
 const addClickedItem = (item: PreviousSearchItem) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   const items = getPreviousSearches();
-  
+
   let identifier: string;
-  if (item.type === 'product') {
+  if (item.type === "product") {
     identifier = `product-${item.slug}`;
   } else {
     identifier = `category-${item.categoryName}`;
@@ -33,19 +33,18 @@ const addClickedItem = (item: PreviousSearchItem) => {
 
   const updatedItems = [
     item,
-    ...items.filter(existingItem => {
+    ...items.filter((existingItem) => {
       let existingIdentifier: string;
-      if (existingItem.type === 'product') {
+      if (existingItem.type === "product") {
         existingIdentifier = `product-${existingItem.slug}`;
       } else {
         existingIdentifier = `category-${existingItem.categoryName}`;
       }
       return existingIdentifier !== identifier;
-    })
+    }),
   ].slice(0, MAX_PREVIOUS_SEARCHES);
   localStorage.setItem(PREVIOUS_SEARCHES_KEY, JSON.stringify(updatedItems));
 };
-
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -53,10 +52,12 @@ interface SearchModalProps {
 }
 
 const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [previousSearches, setPreviousSearches] = useState<PreviousSearchItem[]>([]);
+  const [previousSearches, setPreviousSearches] = useState<
+    PreviousSearchItem[]
+  >([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -83,7 +84,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     // Optionally, you might want to populate the search bar with the item's name
     // setQuery(item.name);
     // Or just close the modal and let the Link handle navigation
-    onClose(); 
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -91,7 +92,12 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-[10000] bg-black/90 flex justify-center pt-20 font-[family-name:var(--font-montserrat)]">
       <div className="w-full max-w-2xl px-4 relative">
-        <button onClick={onClose} className="absolute -top-10 right-4 text-white text-2xl">✕</button>
+        <button
+          onClick={onClose}
+          className="absolute -top-10 right-4 text-white text-2xl"
+        >
+          ✕
+        </button>
         <input
           type="text"
           className="w-full p-4 text-lg border-b-2 border-white bg-transparent text-white focus:outline-none placeholder-gray-400"
@@ -106,14 +112,27 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
               <h4 className="text-xl mb-4 font-semibold">Search Results</h4>
               <ul className="space-y-2">
                 {results.map((item, i) => {
-                  const clickedItem: PreviousSearchItem = item.type === 'product'
-                    ? { type: 'product', name: item.data.name, slug: item.data.slug }
-                    : { type: 'category', name: item.data.name, categoryName: item.data.name };
+                  const clickedItem: PreviousSearchItem =
+                    item.type === "product"
+                      ? {
+                          type: "product",
+                          name: item.data.name,
+                          slug: item.data.slug,
+                        }
+                      : {
+                          type: "category",
+                          name: item.data.name,
+                          categoryName: item.data.name,
+                        };
 
                   return (
                     <li key={i}>
                       <Link
-                        href={item.type === 'product' ? `/product/${item.data.slug}` : `/product-list?category=${encodeURIComponent(item.data.name)}`}
+                        href={
+                          item.type === "product"
+                            ? `/product/${item.data.slug}`
+                            : `/product-list?category=${encodeURIComponent(item.data.name)}`
+                        }
                         className="hover:text-yellow-400 transition-colors"
                         onClick={() => {
                           addClickedItem(clickedItem);
@@ -128,19 +147,27 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
               </ul>
             </>
           )}
-          {!isLoading && results.length === 0 && query.length > 2 && <p>No results found.</p>}
-          
+          {!isLoading && results.length === 0 && query.length > 2 && (
+            <p>No results found.</p>
+          )}
+
           {/* Previous Searches and Suggestions */}
           {!isLoading && query.length <= 2 && (
             <>
               {previousSearches.length > 0 && (
                 <div className="mb-8">
-                  <h4 className="text-xl mb-4 font-semibold">Previous Searches</h4>
+                  <h4 className="text-xl mb-4 font-semibold">
+                    Previous Searches
+                  </h4>
                   <ul className="flex flex-wrap gap-2">
                     {previousSearches.map((item, i) => (
                       <li key={i}>
-                        <Link 
-                          href={item.type === 'product' ? `/product/${item.slug}` : `/product-list?category=${encodeURIComponent(item.categoryName || '')}`}
+                        <Link
+                          href={
+                            item.type === "product"
+                              ? `/product/${item.slug}`
+                              : `/product-list?category=${encodeURIComponent(item.categoryName || "")}`
+                          }
                           onClick={() => {
                             handlePreviousSearchClick(item);
                             // Ensure the modal closes when navigating
@@ -158,8 +185,16 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
 
               <h4 className="text-xl mb-4 font-semibold">Product Suggestion</h4>
               <ul className="space-y-2">
-                {['Sarees', 'Lehengas', 'Suits', 'Gowns'].map((item, i) => (
-                  <li key={i}><Link href={`/product-list?category=${encodeURIComponent(item)}`} className="hover:text-yellow-400 transition-colors" onClick={onClose}>{item}</Link></li>
+                {["Sarees", "Lehengas", "Suits", "Gowns"].map((item, i) => (
+                  <li key={i}>
+                    <Link
+                      href={`/product-list?category=${encodeURIComponent(item)}`}
+                      className="hover:text-yellow-400 transition-colors"
+                      onClick={onClose}
+                    >
+                      {item}
+                    </Link>
+                  </li>
                 ))}
               </ul>
             </>

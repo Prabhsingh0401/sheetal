@@ -22,12 +22,12 @@ export default function Home() {
       <HiddenBeauty />
       <TrendingThisWeek />
       <NewArrivals />
-      <Collections/>
+      <Collections />
       <TimelessWomenCollection />
       <InstagramDiaries />
       <Testimonials />
       <Blogs />
       <Footer />
     </>
-    );
+  );
 }

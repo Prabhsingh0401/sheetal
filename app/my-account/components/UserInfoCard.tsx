@@ -1,7 +1,7 @@
-'use client';
-import React from 'react';
-import Image from 'next/image';
-import { getApiImageUrl } from '../../services/api'; // Import getApiImageUrl
+"use client";
+import React from "react";
+import Image from "next/image";
+import { getApiImageUrl } from "../../services/api"; // Import getApiImageUrl
 
 interface UserInfoCardProps {
   user: {
@@ -13,10 +13,15 @@ interface UserInfoCardProps {
   onSelectSection: (section: string) => void;
 }
 
-const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, onSelectSection }) => {
+const UserInfoCard: React.FC<UserInfoCardProps> = ({
+  user,
+  onSelectSection,
+}) => {
   if (!user) return null;
 
-  const profileImageSrc = getApiImageUrl(user.profilePicture || "/assets/default-image.png");
+  const profileImageSrc = getApiImageUrl(
+    user.profilePicture || "/assets/default-image.png",
+  );
 
   return (
     <div className="col-lg-12">
@@ -34,12 +39,14 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, onSelectSection }) =>
           <h4 className="text-xl font-semibold uppercase">Account</h4>
           <div className="flex flex-wrap gap-x-4 text-sm">
             {user.name && <span>{user.name}</span>}
-            <p className="font-semibold">Phone No:</p>{user.phoneNumber && <span>{user.phoneNumber}</span>}
-            <p className="font-semibold">Email ID:</p>{user.email && <span>{user.email}</span>}
+            <p className="font-semibold">Phone No:</p>
+            {user.phoneNumber && <span>{user.phoneNumber}</span>}
+            <p className="font-semibold">Email ID:</p>
+            {user.email && <span>{user.email}</span>}
           </div>
           <div className="mt-2">
             <button
-              onClick={() => onSelectSection('edit-profile')}
+              onClick={() => onSelectSection("edit-profile")}
               className="border p-1 px-2 text-sm rounded-[2px] border-gray-200 hover:bg-gray-100 transition-colors"
             >
               Edit Profile

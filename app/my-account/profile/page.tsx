@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import UserDashboardLayout from '../components/UserDashboardLayout';
+import UserDashboardLayout from "../components/UserDashboardLayout";
 
 const MyAccountProfilePage = () => {
   return <UserDashboardLayout />;

@@ -1,298 +1,371 @@
-import { useState, useEffect, useCallback } from 'react';
-import toast from 'react-hot-toast';
-import { fetchCart, addToCart as addToCartApi, removeFromCart as removeFromCartApi, applyCoupon as applyCouponApi, updateCartItemQuantity as updateCartItemQuantityApi } from '../services/cartService';
-import { toggleWishlist as toggleWishlistApi, Product } from '../services/productService';
+import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
+import {
+  fetchCart,
+  addToCart as addToCartApi,
+  removeFromCart as removeFromCartApi,
+  applyCoupon as applyCouponApi,
+  updateCartItemQuantity as updateCartItemQuantityApi,
+} from "../services/cartService";
+import {
+  toggleWishlist as toggleWishlistApi,
+  Product,
+} from "../services/productService";
 
 export interface CartItem {
-    _id: string;
-    product: Product;
-    quantity: number;
-    color: string;
-    size: string;
-    variantImage?: string;
-    price?: number; 
-    discountPrice?: number; 
+  _id: string;
+  product: Product;
+  quantity: number;
+  color: string;
+  size: string;
+  variantImage?: string;
+  price?: number;
+  discountPrice?: number;
 }
 
 interface CartApiResponse {
-    success: boolean;
-    data: { items: CartItem[] };
+  success: boolean;
+  data: { items: CartItem[] };
 }
 
 interface UseCartReturn {
-    cart: CartItem[];
-    loading: boolean;
-    error: string | null;
-    couponCode: string;
-    couponDiscount: number;
-    couponError: string | null;
-    couponOfferType: string | null;
-    bogoMessage: string | null;
-    applicableCategory: string | null;
-    itemWiseDiscount: { [cartItemId: string]: number } | null;
-    totalMrp: number;
-    totalDiscount: number;
-    finalAmount: number;
-    addToCart: (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number, variantImage: string , color: string) => Promise<void>;
-    removeFromCart: (itemId: string) => Promise<void>;
-    moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
-    applyCoupon: (code: string, userId: string) => Promise<void>;
-    updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
-    removeCoupon: () => void; // Add this to allow removing coupons
+  cart: CartItem[];
+  loading: boolean;
+  error: string | null;
+  couponCode: string;
+  couponDiscount: number;
+  couponError: string | null;
+  couponOfferType: string | null;
+  bogoMessage: string | null;
+  applicableCategory: string | null;
+  itemWiseDiscount: { [cartItemId: string]: number } | null;
+  totalMrp: number;
+  totalDiscount: number;
+  finalAmount: number;
+  addToCart: (
+    productId: string,
+    variantId: string,
+    quantity: number,
+    size: string,
+    price: number,
+    discountPrice: number,
+    variantImage: string,
+    color: string,
+  ) => Promise<void>;
+  removeFromCart: (itemId: string) => Promise<void>;
+  moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
+  applyCoupon: (code: string, userId: string) => Promise<void>;
+  updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
+  removeCoupon: () => void; // Add this to allow removing coupons
 }
 
 export const useCart = (): UseCartReturn => {
-    const [cart, setCart] = useState<CartItem[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [couponCode, setCouponCode] = useState('');
-    const [couponDiscount, setCouponDiscount] = useState(0);
-    const [couponError, setCouponError] = useState<string | null>(null);
-    const [couponOfferType, setCouponOfferType] = useState<string | null>(null);
-    const [bogoMessage, setBogoMessage] = useState<string | null>(null);
-    const [applicableCategory, setApplicableCategory] = useState<string | null>(null);
-    const [itemWiseDiscount, setItemWiseDiscount] = useState<{ [cartItemId: string]: number } | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponOfferType, setCouponOfferType] = useState<string | null>(null);
+  const [bogoMessage, setBogoMessage] = useState<string | null>(null);
+  const [applicableCategory, setApplicableCategory] = useState<string | null>(
+    null,
+  );
+  const [itemWiseDiscount, setItemWiseDiscount] = useState<{
+    [cartItemId: string]: number;
+  } | null>(null);
 
-    const [totalMrp, setTotalMrp] = useState(0);
-    const [totalDiscount, setTotalDiscount] = useState(0);
-    const [finalAmount, setFinalAmount] = useState(0);
+  const [totalMrp, setTotalMrp] = useState(0);
+  const [totalDiscount, setTotalDiscount] = useState(0);
+  const [finalAmount, setFinalAmount] = useState(0);
 
-    const loadCart = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response: CartApiResponse = await fetchCart();
-            if (response.success && response.data && Array.isArray(response.data.items)) {
-                setCart(response.data.items);
-            } else {
-                setError('Failed to fetch cart');
-            }
-        } catch (err: any) {
-            console.error("Error loading cart:", err);
-            setError(err.message || 'An error occurred while fetching cart');
-        } finally {
-            setLoading(false);
+  const loadCart = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response: CartApiResponse = await fetchCart();
+      if (
+        response.success &&
+        response.data &&
+        Array.isArray(response.data.items)
+      ) {
+        setCart(response.data.items);
+      } else {
+        setError("Failed to fetch cart");
+      }
+    } catch (err: any) {
+      console.error("Error loading cart:", err);
+      setError(err.message || "An error occurred while fetching cart");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
+
+  const addToCart = useCallback(
+    async (
+      productId: string,
+      variantId: string,
+      quantity: number,
+      size: string,
+      price: number,
+      discountPrice: number,
+      variantImage: string,
+      color: string,
+    ) => {
+      try {
+        const response = await addToCartApi(
+          productId,
+          variantId,
+          quantity,
+          size,
+          price,
+          discountPrice,
+          variantImage,
+          color,
+        );
+        if (response.success) {
+          toast.success(response.message || "Product added to cart!");
+          await loadCart();
+        } else {
+          toast.error(response.message || "Failed to add to cart.");
         }
-    }, []);
+      } catch (err: any) {
+        console.error("Error adding to cart:", err);
+        toast.error("Could not add to cart. Please try again.");
+      }
+    },
+    [loadCart],
+  );
 
-    useEffect(() => {
-        loadCart();
-    }, [loadCart]);
-
-    const addToCart = useCallback(async (productId: string, variantId: string, quantity: number, size: string, price: number, discountPrice: number, variantImage: string, color: string) => {
-        try {
-            const response = await addToCartApi(productId, variantId, quantity, size, price, discountPrice, variantImage , color);
-            if (response.success) {
-                toast.success(response.message || 'Product added to cart!');
-                await loadCart();
-            } else {
-                toast.error(response.message || 'Failed to add to cart.');
-            }
-        } catch (err: any) {
-            console.error("Error adding to cart:", err);
-            toast.error('Could not add to cart. Please try again.');
+  const removeFromCart = useCallback(
+    async (itemId: string) => {
+      try {
+        const response = await removeFromCartApi(itemId);
+        if (response.success) {
+          toast.success(response.message || "Item removed from cart!");
+          await loadCart();
+          // Reset coupon when cart changes
+          setCouponCode("");
+          setCouponDiscount(0);
+          setCouponOfferType(null);
+          setBogoMessage(null);
+          setApplicableCategory(null);
+          setItemWiseDiscount(null);
+        } else {
+          toast.error(response.message || "Failed to remove item from cart.");
         }
-    }, [loadCart]);
+      } catch (err: any) {
+        console.error("Error removing from cart:", err);
+        toast.error("Could not remove item from cart. Please try again.");
+      }
+    },
+    [loadCart],
+  );
 
-    const removeFromCart = useCallback(async (itemId: string) => {
-        try {
-            const response = await removeFromCartApi(itemId);
-            if (response.success) {
-                toast.success(response.message || 'Item removed from cart!');
-                await loadCart();
-                // Reset coupon when cart changes
-                setCouponCode('');
-                setCouponDiscount(0);
-                setCouponOfferType(null);
-                setBogoMessage(null);
-                setApplicableCategory(null);
-                setItemWiseDiscount(null);
-            } else {
-                toast.error(response.message || 'Failed to remove item from cart.');
-            }
-        } catch (err: any) {
-            console.error("Error removing from cart:", err);
-            toast.error('Could not remove item from cart. Please try again.');
+  const moveFromCartToWishlist = useCallback(
+    async (itemId: string, productId: string) => {
+      try {
+        const removeResponse = await removeFromCartApi(itemId);
+        if (removeResponse.success) {
+          toast.success("Item removed from cart!");
+          await loadCart();
+          // Reset coupon when cart changes
+          setCouponCode("");
+          setCouponDiscount(0);
+          setCouponOfferType(null);
+          setBogoMessage(null);
+          setApplicableCategory(null);
+          setItemWiseDiscount(null);
+
+          const wishlistResponse = await toggleWishlistApi(productId);
+          if (wishlistResponse.success) {
+            toast.success("Item added to wishlist!");
+          } else {
+            toast.error(
+              wishlistResponse.message || "Failed to add to wishlist.",
+            );
+          }
+        } else {
+          toast.error(
+            removeResponse.message || "Failed to remove item from cart.",
+          );
         }
-    }, [loadCart]);
+      } catch (err: any) {
+        console.error("Error moving to wishlist:", err);
+        toast.error("Could not move item to wishlist. Please try again.");
+      }
+    },
+    [loadCart],
+  );
 
-    const moveFromCartToWishlist = useCallback(async (itemId: string, productId: string) => {
-        try {
-            const removeResponse = await removeFromCartApi(itemId);
-            if (removeResponse.success) {
-                toast.success('Item removed from cart!');
-                await loadCart();
-                // Reset coupon when cart changes
-                setCouponCode('');
-                setCouponDiscount(0);
-                setCouponOfferType(null);
-                setBogoMessage(null);
-                setApplicableCategory(null);
-                setItemWiseDiscount(null);
-                
-                const wishlistResponse = await toggleWishlistApi(productId);
-                if(wishlistResponse.success) {
-                    toast.success('Item added to wishlist!');
-                } else {
-                    toast.error(wishlistResponse.message || 'Failed to add to wishlist.');
-                }
-            } else {
-                toast.error(removeResponse.message || 'Failed to remove item from cart.');
-            }
-        } catch (err: any) {
-            console.error("Error moving to wishlist:", err);
-            toast.error('Could not move item to wishlist. Please try again.');
-        }
-    }, [loadCart]);
+  // Calculate totals whenever cart or coupon changes
+  useEffect(() => {
+    let newTotalMrp = 0;
+    let newTotalDiscount = 0;
 
-    // Calculate totals whenever cart or coupon changes
-    useEffect(() => {
-        let newTotalMrp = 0;
-        let newTotalDiscount = 0;
+    cart.forEach((item) => {
+      const itemPrice = item.price ?? 0;
+      const itemDiscountPrice = item.discountPrice ?? itemPrice;
 
-        cart.forEach(item => {
-            const itemPrice = item.price ?? 0;
-            const itemDiscountPrice = item.discountPrice ?? itemPrice;
-                    
-            newTotalMrp += itemPrice * item.quantity;
-            newTotalDiscount += (itemPrice - itemDiscountPrice) * item.quantity;
+      newTotalMrp += itemPrice * item.quantity;
+      newTotalDiscount += (itemPrice - itemDiscountPrice) * item.quantity;
+    });
+
+    setTotalMrp(newTotalMrp);
+    setTotalDiscount(newTotalDiscount);
+    setFinalAmount(newTotalMrp - newTotalDiscount - couponDiscount);
+  }, [cart, couponDiscount]);
+
+  const applyCoupon = useCallback(
+    async (code: string, userId: string) => {
+      setCouponError(null);
+      setBogoMessage(null);
+      setCouponOfferType(null);
+      setApplicableCategory(null);
+      setItemWiseDiscount(null);
+
+      try {
+        // Calculate the current totals first
+        let currentMrp = 0;
+        let currentDiscount = 0;
+
+        cart.forEach((item) => {
+          const itemPrice = item.price ?? 0;
+          const itemDiscountPrice = item.discountPrice ?? itemPrice;
+
+          currentMrp += itemPrice * item.quantity;
+          currentDiscount += (itemPrice - itemDiscountPrice) * item.quantity;
         });
 
-        setTotalMrp(newTotalMrp);
-        setTotalDiscount(newTotalDiscount);
-        setFinalAmount(newTotalMrp - newTotalDiscount - couponDiscount);
-    }, [cart, couponDiscount]);
+        const currentFinalAmount = currentMrp - currentDiscount;
 
-    const applyCoupon = useCallback(async (code: string, userId: string) => {
-        setCouponError(null);
-        setBogoMessage(null);
-        setCouponOfferType(null);
-        setApplicableCategory(null);
-        setItemWiseDiscount(null);
+        console.log("Applying coupon with:", {
+          code,
+          currentFinalAmount,
+          currentMrp,
+          currentDiscount,
+          cartItemsCount: cart.length,
+        });
 
-        try {
-            // Calculate the current totals first
-            let currentMrp = 0;
-            let currentDiscount = 0;
+        const response = await applyCouponApi(
+          code,
+          currentFinalAmount,
+          userId,
+          cart,
+        );
 
-            cart.forEach(item => {
-                const itemPrice = item.price ?? 0;
-                const itemDiscountPrice = item.discountPrice ?? itemPrice;
-                        
-                currentMrp += itemPrice * item.quantity;
-                currentDiscount += (itemPrice - itemDiscountPrice) * item.quantity;
-            });
+        if (response.success) {
+          console.log("Coupon applied successfully:", response.data);
 
-            const currentFinalAmount = currentMrp - currentDiscount;
-            
-            console.log('Applying coupon with:', {
-                code,
-                currentFinalAmount,
-                currentMrp,
-                currentDiscount,
-                cartItemsCount: cart.length
-            });
+          setCouponCode(response.data.couponCode || code);
+          setCouponOfferType(response.data.offerType);
 
-            const response = await applyCouponApi(code, currentFinalAmount, userId, cart);
-            
-            if (response.success) {
-                console.log('Coupon applied successfully:', response.data);
-                
-                setCouponCode(response.data.couponCode || code);
-                setCouponOfferType(response.data.offerType);
-                
-                if(response.data.applicableIds && response.data.applicableIds.length > 0) {
-                    setApplicableCategory(response.data.applicableIds[0]);
-                }
-                
-                setItemWiseDiscount(response.data.itemWiseDiscount || {});
+          if (
+            response.data.applicableIds &&
+            response.data.applicableIds.length > 0
+          ) {
+            setApplicableCategory(response.data.applicableIds[0]);
+          }
 
-                // Set the discount amount
-                const discountAmount = response.data.discount ?? 0;
-                setCouponDiscount(discountAmount);
+          setItemWiseDiscount(response.data.itemWiseDiscount || {});
 
-                if (response.data.offerType === 'BOGO') {
-                    setBogoMessage(`Congrats! Your BOGO offer has been applied. You saved ₹${discountAmount.toFixed(2)}!`);
-                 } //else if (response.data.offerType === 'Percentage') {
-                //     setBogoMessage(`${response.data.offerValue}% discount applied!`)} 
-                    else if (response.data.offerType === 'Fixed') {
-                    setBogoMessage(`₹${discountAmount.toFixed(2)} discount applied!`);
-                }
-                
-                toast.success('Coupon applied successfully!');
-            } else {
-                setCouponError(response.message || 'Invalid coupon code.');
-                toast.error(response.message || 'Invalid coupon code.');
-            }
-        } catch (err: any) {
-            console.error("Error applying coupon:", err);
-            setCouponError('Could not apply coupon. Please try again.');
-            toast.error('Could not apply coupon. Please try again.');
+          // Set the discount amount
+          const discountAmount = response.data.discount ?? 0;
+          setCouponDiscount(discountAmount);
+
+          if (response.data.offerType === "BOGO") {
+            setBogoMessage(
+              `Congrats! Your BOGO offer has been applied. You saved ₹${discountAmount.toFixed(2)}!`,
+            );
+          } //else if (response.data.offerType === 'Percentage') {
+          //     setBogoMessage(`${response.data.offerValue}% discount applied!`)}
+          else if (response.data.offerType === "Fixed") {
+            setBogoMessage(`₹${discountAmount.toFixed(2)} discount applied!`);
+          }
+
+          toast.success("Coupon applied successfully!");
+        } else {
+          setCouponError(response.message || "Invalid coupon code.");
+          toast.error(response.message || "Invalid coupon code.");
         }
-    }, [cart]);
+      } catch (err: any) {
+        console.error("Error applying coupon:", err);
+        setCouponError("Could not apply coupon. Please try again.");
+        toast.error("Could not apply coupon. Please try again.");
+      }
+    },
+    [cart],
+  );
 
-    const updateCartItemQuantity = useCallback(async (itemId: string, quantity: number) => {
-        try {
-            const response = await updateCartItemQuantityApi(itemId, quantity);
-            if (response.success) {
-                toast.success(response.message || 'Cart updated!');
-                
-                // Update cart locally
-                setCart(prevCart => {
-                    if (quantity <= 0) {
-                        return prevCart.filter(item => item._id !== itemId);
-                    }
-                    return prevCart.map(item =>
-                        item._id === itemId ? { ...item, quantity } : item
-                    );
-                });
+  const updateCartItemQuantity = useCallback(
+    async (itemId: string, quantity: number) => {
+      try {
+        const response = await updateCartItemQuantityApi(itemId, quantity);
+        if (response.success) {
+          toast.success(response.message || "Cart updated!");
 
-                // Reset coupon when quantity changes
-                setCouponCode('');
-                setCouponDiscount(0);
-                setCouponOfferType(null);
-                setBogoMessage(null);
-                setApplicableCategory(null);
-                setItemWiseDiscount(null);
-            } else {
-                toast.error(response.message || 'Failed to update quantity.');
+          // Update cart locally
+          setCart((prevCart) => {
+            if (quantity <= 0) {
+              return prevCart.filter((item) => item._id !== itemId);
             }
-        } catch (err: any) {
-            console.error("Error updating cart quantity:", err);
-            toast.error('Could not update quantity. Please try again.');
+            return prevCart.map((item) =>
+              item._id === itemId ? { ...item, quantity } : item,
+            );
+          });
+
+          // Reset coupon when quantity changes
+          setCouponCode("");
+          setCouponDiscount(0);
+          setCouponOfferType(null);
+          setBogoMessage(null);
+          setApplicableCategory(null);
+          setItemWiseDiscount(null);
+        } else {
+          toast.error(response.message || "Failed to update quantity.");
         }
-    }, []);
+      } catch (err: any) {
+        console.error("Error updating cart quantity:", err);
+        toast.error("Could not update quantity. Please try again.");
+      }
+    },
+    [],
+  );
 
-    const removeCoupon = useCallback(() => {
-        setCouponCode('');
-        setCouponDiscount(0);
-        setCouponError(null);
-        setCouponOfferType(null);
-        setBogoMessage(null);
-        setApplicableCategory(null);
-        setItemWiseDiscount(null);
-        toast.success('Coupon removed');
-    }, []);
+  const removeCoupon = useCallback(() => {
+    setCouponCode("");
+    setCouponDiscount(0);
+    setCouponError(null);
+    setCouponOfferType(null);
+    setBogoMessage(null);
+    setApplicableCategory(null);
+    setItemWiseDiscount(null);
+    toast.success("Coupon removed");
+  }, []);
 
-    return {
-        cart,
-        loading,
-        error,
-        couponCode,
-        couponDiscount,
-        couponError,
-        couponOfferType,
-        bogoMessage,
-        applicableCategory,
-        itemWiseDiscount,
-        totalMrp,
-        totalDiscount,
-        finalAmount,
-        addToCart,
-        removeFromCart,
-        moveFromCartToWishlist,
-        applyCoupon,
-        updateCartItemQuantity,
-        removeCoupon,
-    };
+  return {
+    cart,
+    loading,
+    error,
+    couponCode,
+    couponDiscount,
+    couponError,
+    couponOfferType,
+    bogoMessage,
+    applicableCategory,
+    itemWiseDiscount,
+    totalMrp,
+    totalDiscount,
+    finalAmount,
+    addToCart,
+    removeFromCart,
+    moveFromCartToWishlist,
+    applyCoupon,
+    updateCartItemQuantity,
+    removeCoupon,
+  };
 };

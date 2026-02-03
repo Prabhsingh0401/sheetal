@@ -1,5 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { fetchProducts, Product, ProductQueryParams } from '../services/productService';
+import { useState, useEffect, useCallback } from "react";
+import {
+  fetchProducts,
+  Product,
+  ProductQueryParams,
+} from "../services/productService";
 
 interface UseProductsReturn {
   products: Product[];
@@ -11,7 +15,9 @@ interface UseProductsReturn {
   refetch: (params?: ProductQueryParams) => Promise<void>;
 }
 
-export const useProducts = (initialParams: ProductQueryParams = {}): UseProductsReturn => {
+export const useProducts = (
+  initialParams: ProductQueryParams = {},
+): UseProductsReturn => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,11 +36,11 @@ export const useProducts = (initialParams: ProductQueryParams = {}): UseProducts
         setCurrentPage(response.currentPage);
         setTotalPages(response.totalPages);
       } else {
-        setError('Failed to fetch products');
+        setError("Failed to fetch products");
       }
     } catch (err) {
       console.error(err);
-      setError('An error occurred while fetching products');
+      setError("An error occurred while fetching products");
     } finally {
       setLoading(false);
     }

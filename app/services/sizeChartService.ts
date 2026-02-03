@@ -1,4 +1,4 @@
-import { apiFetch, getApiImageUrl } from './api';
+import { apiFetch, getApiImageUrl } from "./api";
 
 export interface SizeChartEntry {
   label: string;
@@ -18,14 +18,20 @@ export interface SizeChartData {
   _id: string;
   name: string;
   table: SizeChartEntry[];
-  howToMeasureImage: string; 
+  howToMeasureImage: string;
   unit: string;
 }
 
-export const fetchSizeChart = async (): Promise<{ success: boolean; data: SizeChartData }> => {
-  return apiFetch('/size-chart');
+export const fetchSizeChart = async (): Promise<{
+  success: boolean;
+  data: SizeChartData;
+}> => {
+  return apiFetch("/size-chart");
 };
 
-export const getHowToMeasureImageUrl = (path: string | undefined, fallback: string = '/assets/Apparel-Illustration.svg'): string => {
+export const getHowToMeasureImageUrl = (
+  path: string | undefined,
+  fallback: string = "/assets/Apparel-Illustration.svg",
+): string => {
   return getApiImageUrl(path, fallback);
 };

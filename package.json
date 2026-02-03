@@ -7,7 +7,8 @@
     "dev:clean": "node -e \"require('fs').rmSync('.next', { recursive: true, force: true })\" && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prettier": "prettier --write ."
   },
   "dependencies": {
     "@types/react-slick": "^0.23.13",
@@ -17,7 +18,7 @@
     "framer-motion": "^12.25.0",
     "js-cookie": "^3.0.5",
     "next": "16.1.1",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.4.1",

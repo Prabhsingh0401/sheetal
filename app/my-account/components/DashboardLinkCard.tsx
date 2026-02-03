@@ -32,9 +32,7 @@ const DashboardLinkCard: React.FC<DashboardLinkCardProps> = ({
         {title}
       </h5>
 
-      <p className="mt-1 text-xs text-gray-500 max-w-[160px]">
-        {description}
-      </p>
+      <p className="mt-1 text-xs text-gray-500 max-w-[160px]">{description}</p>
     </Link>
   );
 };

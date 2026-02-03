@@ -1,60 +1,60 @@
-'use client';
+"use client";
 
-import React from 'react';
-import useEmblaCarousel from 'embla-carousel-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import React from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const TrendingThisWeek = () => {
   const [emblaRef] = useEmblaCarousel({
     loop: true,
-    align: 'start',
+    align: "start",
     skipSnaps: false,
   });
 
   const products = [
     {
       id: 29950464,
-      name: 'Rama Green Zariwork Soft Silk Saree',
-      image: '/assets/494291571.webp',
-      hoverImage: '/assets/487339289.webp',
-      price: '₹ 790.50',
-      mrp: '₹ 850.00',
-      discount: '7% OFF',
-      size: 'L',
+      name: "Rama Green Zariwork Soft Silk Saree",
+      image: "/assets/494291571.webp",
+      hoverImage: "/assets/487339289.webp",
+      price: "₹ 790.50",
+      mrp: "₹ 850.00",
+      discount: "7% OFF",
+      size: "L",
       soldOut: true,
     },
     {
       id: 2,
-      name: 'Mustard Zariwork Organza Fabric Readymade Salwar Suit',
-      image: '/assets/590900458.webp',
-      hoverImage: '/assets/789323917.webp',
-      price: '₹ 790.50',
-      mrp: '₹ 850.00',
-      discount: '7% OFF',
-      size: 'L',
+      name: "Mustard Zariwork Organza Fabric Readymade Salwar Suit",
+      image: "/assets/590900458.webp",
+      hoverImage: "/assets/789323917.webp",
+      price: "₹ 790.50",
+      mrp: "₹ 850.00",
+      discount: "7% OFF",
+      size: "L",
       soldOut: false,
     },
     {
       id: 3,
-      name: 'Onion Pink Zariwork Tissue Saree',
-      image: '/assets/670149944.webp',
-      hoverImage: '/assets/882872675.webp',
-      price: '₹ 790.50',
-      mrp: '₹ 850.00',
-      discount: '7% OFF',
-      size: 'L',
+      name: "Onion Pink Zariwork Tissue Saree",
+      image: "/assets/670149944.webp",
+      hoverImage: "/assets/882872675.webp",
+      price: "₹ 790.50",
+      mrp: "₹ 850.00",
+      discount: "7% OFF",
+      size: "L",
       soldOut: false,
     },
     {
       id: 4,
-      name: 'Sky Blue Threadwork Semi Crepe Readymade Salwar Suit',
-      image: '/assets/229013918.webp',
-      hoverImage: '/assets/493323435.webp',
-      price: '₹ 790.50',
-      mrp: '₹ 850.00',
-      discount: '7% OFF',
-      size: 'L',
+      name: "Sky Blue Threadwork Semi Crepe Readymade Salwar Suit",
+      image: "/assets/229013918.webp",
+      hoverImage: "/assets/493323435.webp",
+      price: "₹ 790.50",
+      mrp: "₹ 850.00",
+      discount: "7% OFF",
+      size: "L",
       soldOut: false,
     },
   ];
@@ -64,7 +64,7 @@ const TrendingThisWeek = () => {
       className="container-fluid py-12 home-page-product font-[family-name:var(--font-montserrat)]"
       style={{
         backgroundImage: "url('/assets/650465765.png')",
-        backgroundSize: 'cover',
+        backgroundSize: "cover",
       }}
     >
       <div className="container mx-auto px-4 py-10">
@@ -78,7 +78,8 @@ const TrendingThisWeek = () => {
             <div className="h-[1px] bg-[#68400f] flex-1" />
           </div>
           <p className="text-center max-w-2xl text-lg mt-2">
-            Best-Selling Gems: Signature sarees, ensembles, and Indo-Western pieces that define Studio By Sheetal.
+            Best-Selling Gems: Signature sarees, ensembles, and Indo-Western
+            pieces that define Studio By Sheetal.
           </p>
         </div>
 
@@ -96,10 +97,8 @@ const TrendingThisWeek = () => {
                 "
               >
                 <div className="rounded-xl overflow-hidden group">
-
                   {/* IMAGE BLOCK */}
                   <div className="relative aspect-[3/4] overflow-hidden">
-
                     {/* SOLD OUT */}
                     {product.soldOut && (
                       <div className="absolute -top-1 left-0 z-20">
@@ -120,7 +119,10 @@ const TrendingThisWeek = () => {
                     </div>
 
                     {/* PRODUCT IMAGE */}
-                    <Link href={`/product/${product.id}`} className="block h-full w-full relative">
+                    <Link
+                      href={`/product/${product.id}`}
+                      className="block h-full w-full relative"
+                    >
                       <Image
                         src={product.image}
                         alt={product.name}
@@ -151,7 +153,8 @@ const TrendingThisWeek = () => {
 
                     <div className="mb-3">
                       <div className="text-xs text-gray-600 font-medium mb-1">
-                        <span className="font-bold text-black">Size:</span> {product.size}
+                        <span className="font-bold text-black">Size:</span>{" "}
+                        {product.size}
                       </div>
                       <div className="flex justify-center gap-0.5">
                         {[1, 2, 3, 4, 5].map((i) => (
@@ -185,7 +188,6 @@ const TrendingThisWeek = () => {
                       View Product
                     </Link>
                   </div>
-
                 </div>
               </div>
             ))}

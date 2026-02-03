@@ -1,5 +1,4 @@
-import { apiFetch, getApiImageUrl } from './api';
-
+import { apiFetch, getApiImageUrl } from "./api";
 
 export interface CategoryImage {
   url: string;
@@ -35,10 +34,10 @@ export interface ApiResponse<T> {
  */
 export const fetchAllCategories = async (): Promise<Category[]> => {
   try {
-    const data: ApiResponse<Category[]> = await apiFetch('/categories');
+    const data: ApiResponse<Category[]> = await apiFetch("/categories");
     return data.data || [];
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    console.error("Error fetching categories:", error);
     throw error;
   }
 };
@@ -46,16 +45,18 @@ export const fetchAllCategories = async (): Promise<Category[]> => {
 /**
  * Fetch a single category by slug
  */
-export const fetchCategoryBySlug = async (slug: string): Promise<Category | null> => {
+export const fetchCategoryBySlug = async (
+  slug: string,
+): Promise<Category | null> => {
   try {
     const data: ApiResponse<Category> = await apiFetch(`/categories/${slug}`);
     return data.data || null;
   } catch (error) {
-    console.error('Error fetching category by slug:', error);
+    console.error("Error fetching category by slug:", error);
     // Fallback if endpoint not implemented yet
     try {
       const all: Category[] = await fetchAllCategories();
-      return all.find(c => c.slug === slug) || null;
+      return all.find((c) => c.slug === slug) || null;
     } catch (e) {
       throw error;
     }
@@ -67,10 +68,10 @@ export const fetchCategoryBySlug = async (slug: string): Promise<Category | null
  */
 export const getCategoryImageUrl = (
   category: Category | undefined,
-  fallback: string = '/assets/placeholder-category.jpg'
+  fallback: string = "/assets/placeholder-category.jpg",
 ): string => {
   if (!category) return fallback;
-  
+
   // Prioritize mainImage for general category listings
   const imageUrl = category.mainImage?.url;
   return getApiImageUrl(imageUrl, fallback);
@@ -81,7 +82,7 @@ export const getCategoryImageUrl = (
  */
 export const getCategoryBannerUrl = (
   category: Category | undefined,
-  fallback: string = '/assets/254852228.jpg' // Default banner
+  fallback: string = "/assets/254852228.jpg", // Default banner
 ): string => {
   if (!category) return fallback;
 

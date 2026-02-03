@@ -1,5 +1,5 @@
-import { apiFetch } from './api';
-import { updateUserDetailsInLocalStorage } from './authService'; // Import the new function
+import { apiFetch } from "./api";
+import { updateUserDetailsInLocalStorage } from "./authService"; // Import the new function
 
 export interface User {
   _id: string;
@@ -10,7 +10,7 @@ export interface User {
 
 export const updateUserProfile = async (userData: any | FormData) => {
   const options: RequestInit = {
-    method: 'PUT',
+    method: "PUT",
   };
 
   if (userData instanceof FormData) {
@@ -20,12 +20,12 @@ export const updateUserProfile = async (userData: any | FormData) => {
     // If other headers are needed, merge them carefully.
   } else {
     options.headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
     options.body = JSON.stringify(userData);
   }
 
-  const response = await apiFetch('/users/update', options);
+  const response = await apiFetch("/users/update", options);
   // If the update was successful and the backend returns the updated user,
   // update the local storage with the new user details.
   if (response.success && response.data) {
@@ -35,7 +35,7 @@ export const updateUserProfile = async (userData: any | FormData) => {
 };
 
 export const getCurrentUser = async () => {
-  return await apiFetch('/users/me', {
-    method: 'GET',
+  return await apiFetch("/users/me", {
+    method: "GET",
   });
 };

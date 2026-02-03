@@ -1,5 +1,5 @@
 import StarRating from "./StarRating";
-import { ProductVariant } from '../../services/productService'; 
+import { ProductVariant } from "../../services/productService";
 import Image from "next/image";
 
 interface ProductInfoProps {
@@ -179,14 +179,21 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                       )}
                     </button>
                     {/* Only show 'X left' if available for selected color and stock is low for that specific size */}
-                    {isAvailableForSelectedColor && selectedVariantData && (() => {
-                      const actualStock = selectedVariantData.sizes?.find(s => s.name === size.name)?.stock;
-                      return actualStock !== undefined && actualStock <= 5 && (
-                        <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
-                          {actualStock} left
-                        </span>
-                      );
-                    })()}
+                    {isAvailableForSelectedColor &&
+                      selectedVariantData &&
+                      (() => {
+                        const actualStock = selectedVariantData.sizes?.find(
+                          (s) => s.name === size.name,
+                        )?.stock;
+                        return (
+                          actualStock !== undefined &&
+                          actualStock <= 5 && (
+                            <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
+                              {actualStock} left
+                            </span>
+                          )
+                        );
+                      })()}
                   </div>
                 );
               },

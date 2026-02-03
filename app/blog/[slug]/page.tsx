@@ -1,12 +1,16 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
-import TopInfo from '../../components/TopInfo';
-import NavbarInner from '../../components/NavbarInner';
-import Footer from '../../components/Footer';
-import BlogBanner from '../components/BlogBanner';
-import BlogContent from '../components/BlogContent';
-import BlogSidebar from '../components/BlogSidebar';
-import { getBlogBySlug, getBlogs, getBlogImageUrl } from '@/app/services/blogService';
+import React from "react";
+import { notFound } from "next/navigation";
+import TopInfo from "../../components/TopInfo";
+import NavbarInner from "../../components/NavbarInner";
+import Footer from "../../components/Footer";
+import BlogBanner from "../components/BlogBanner";
+import BlogContent from "../components/BlogContent";
+import BlogSidebar from "../components/BlogSidebar";
+import {
+  getBlogBySlug,
+  getBlogs,
+  getBlogImageUrl,
+} from "@/app/services/blogService";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -18,9 +22,9 @@ const BlogDetail = async ({ params }: PageProps) => {
 
   const [blogData, recentPostsData] = await Promise.all([
     getBlogBySlug(slug),
-    getBlogs({ limit: 4 })
+    getBlogs({ limit: 4 }),
   ]);
-  
+
   if (!blogData.success || !blogData.data) {
     notFound();
   }

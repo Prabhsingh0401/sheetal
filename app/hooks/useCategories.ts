@@ -3,10 +3,10 @@
  * Custom hook to fetch and manage categories
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { fetchAllCategories, Category } from '../services/categoryService';
+import { useEffect, useState } from "react";
+import { fetchAllCategories, Category } from "../services/categoryService";
 
 interface UseCategoriesReturn {
   categories: Category[];
@@ -27,9 +27,10 @@ export const useCategories = (): UseCategoriesReturn => {
       const data = await fetchAllCategories();
       setCategories(data);
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error occurred');
+      const error =
+        err instanceof Error ? err : new Error("Unknown error occurred");
       setError(error);
-      console.error('Error in useCategories:', error);
+      console.error("Error in useCategories:", error);
     } finally {
       setLoading(false);
     }

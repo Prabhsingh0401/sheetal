@@ -1,32 +1,35 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-import FilterSortMobile from './components/FilterSortMobile';
-import MobileSortSheet from './components/MobileSortSheet';
-import TopInfo from '../components/TopInfo';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import ProductListBanner from './components/ProductListBanner';
-import ProductFilterBar from './components/ProductFilterBar';
-import ProductGrid from './components/ProductGrid';
-import QuickView from './components/QuickView';
+import FilterSortMobile from "./components/FilterSortMobile";
+import MobileSortSheet from "./components/MobileSortSheet";
+import TopInfo from "../components/TopInfo";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import ProductListBanner from "./components/ProductListBanner";
+import ProductFilterBar from "./components/ProductFilterBar";
+import ProductGrid from "./components/ProductGrid";
+import QuickView from "./components/QuickView";
 
-import { getProductImageUrl } from '../services/productService';
-import { fetchCategoryBySlug } from '../services/categoryService';
-import { getApiImageUrl } from '../services/api';
+import { getProductImageUrl } from "../services/productService";
+import { fetchCategoryBySlug } from "../services/categoryService";
+import { getApiImageUrl } from "../services/api";
 
-import { useProducts } from '../hooks/useProducts';
-import { useWishlist } from '../hooks/useWishlist';
+import { useProducts } from "../hooks/useProducts";
+import { useWishlist } from "../hooks/useWishlist";
 
 const ProductListContent = () => {
   const searchParams = useSearchParams();
-  const categorySlug = searchParams.get('category');
+  const categorySlug = searchParams.get("category");
 
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
-  const [isResolvingCategory, setIsResolvingCategory] = useState(!!categorySlug);
-  const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(null);
+  const [isResolvingCategory, setIsResolvingCategory] =
+    useState(!!categorySlug);
+  const [selectedProductSlug, setSelectedProductSlug] = useState<string | null>(
+    null,
+  );
 
   /* =======================
      UI State
@@ -34,7 +37,7 @@ const ProductListContent = () => {
   const [mobileSortOpen, setMobileSortOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortByOpen, setSortByOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [activeFilters, setActiveFilters] = useState<
     { label: string; type: string }[]
   >([]);
@@ -61,10 +64,10 @@ const ProductListContent = () => {
         if (category?._id) {
           setCategoryId(category._id);
         } else {
-          console.warn('Category not found:', categorySlug);
+          console.warn("Category not found:", categorySlug);
         }
       } catch (error) {
-        console.error('Error resolving category:', error);
+        console.error("Error resolving category:", error);
       } finally {
         setIsResolvingCategory(false);
       }
@@ -91,7 +94,7 @@ const ProductListContent = () => {
      Handlers
   ======================= */
   const handleMobileSort = (option: string) => {
-    console.log('Sorting by:', option);
+    console.log("Sorting by:", option);
     setMobileSortOpen(false);
   };
 
@@ -106,14 +109,17 @@ const ProductListContent = () => {
     let lowestPrice = Infinity;
     let lowestMrp = Infinity;
 
-    p.variants?.forEach(variant => {
-        variant.sizes?.forEach(size => {
-            const currentPrice = size.discountPrice && size.discountPrice > 0 ? size.discountPrice : size.price;
-            if (currentPrice < lowestPrice) {
-                lowestPrice = currentPrice;
-                lowestMrp = size.price; // The MRP corresponding to this lowest price
-            }
-        });
+    p.variants?.forEach((variant) => {
+      variant.sizes?.forEach((size) => {
+        const currentPrice =
+          size.discountPrice && size.discountPrice > 0
+            ? size.discountPrice
+            : size.price;
+        if (currentPrice < lowestPrice) {
+          lowestPrice = currentPrice;
+          lowestMrp = size.price; // The MRP corresponding to this lowest price
+        }
+      });
     });
 
     const discountPercent =
@@ -123,19 +129,15 @@ const ProductListContent = () => {
 
     /* ---- Derive Sizes from variants[].sizes[] ---- */
     const allSizes = Array.from(
-      new Set(
-        p.variants?.flatMap((v) =>
-          v.sizes?.map((s) => s.name)
-        ) || []
-      )
+      new Set(p.variants?.flatMap((v) => v.sizes?.map((s) => s.name)) || []),
     );
 
     const sizeLabel =
       allSizes.length === 0
-        ? 'One Size'
+        ? "One Size"
         : allSizes.length === 1
-        ? allSizes[0]
-        : `${allSizes[0]}–${allSizes[allSizes.length - 1]}`;
+          ? allSizes[0]
+          : `${allSizes[0]}–${allSizes[allSizes.length - 1]}`;
 
     return {
       _id: p._id,
@@ -146,8 +148,8 @@ const ProductListContent = () => {
         ? getApiImageUrl(p.hoverImage.url)
         : getProductImageUrl(p),
       price: lowestPrice,
-      mrp: lowestMrp,    
-      discount: discountPercent > 0 ? `${discountPercent}% OFF` : '',
+      mrp: lowestMrp,
+      discount: discountPercent > 0 ? `${discountPercent}% OFF` : "",
       size: sizeLabel,
       rating: p.averageRating || 0,
       soldOut: p.stock <= 0,

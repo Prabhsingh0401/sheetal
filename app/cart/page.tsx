@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import toast from 'react-hot-toast';
-import { useCart, CartItem } from "../hooks/useCart"; 
+import toast from "react-hot-toast";
+import { useCart, CartItem } from "../hooks/useCart";
 import CartItemsList from "./components/CartItemsList";
 import PriceDetails from "./components/PriceDetails";
 
@@ -23,11 +23,11 @@ const CartPage = () => {
     couponOfferType,
     bogoMessage,
     applicableCategory,
-    itemWiseDiscount, 
+    itemWiseDiscount,
     updateCartItemQuantity,
     removeCoupon, // Add this
-  } = useCart(); 
-  
+  } = useCart();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
   const [couponInput, setCouponInput] = useState("");
@@ -63,12 +63,12 @@ const CartPage = () => {
       toast.error("Please login to apply coupons.");
       return;
     }
-    
+
     if (!couponInput.trim()) {
       toast.error("Please enter a coupon code.");
       return;
     }
-    
+
     console.log("Applying coupon:", couponInput, "for user:", userId);
     applyCoupon(couponInput.trim().toUpperCase(), userId);
   };
@@ -88,23 +88,28 @@ const CartPage = () => {
   const cheapestItem =
     couponOfferType === "BOGO" && cartItems.length > 0
       ? cartItems
-          .filter(item => !applicableCategory || item.product.category._id === applicableCategory)
-          .reduce((cheapest, item) =>
-              (Number(item.discountPrice ?? item.price ?? 0)) <
-              (Number(cheapest.discountPrice ?? cheapest.price ?? 0))
+          .filter(
+            (item) =>
+              !applicableCategory ||
+              item.product.category._id === applicableCategory,
+          )
+          .reduce(
+            (cheapest, item) =>
+              Number(item.discountPrice ?? item.price ?? 0) <
+              Number(cheapest.discountPrice ?? cheapest.price ?? 0)
                 ? item
                 : cheapest,
             cartItems[0],
           )
       : null;
 
-  const categoryName = applicableCategory 
-    ? cartItems.find(item => item.product.category._id === applicableCategory)?.product.category.name 
+  const categoryName = applicableCategory
+    ? cartItems.find((item) => item.product.category._id === applicableCategory)
+        ?.product.category.name
     : null;
-  
+
   return (
     <div className="font-montserrat">
-
       {/* Header */}
       <div className="">
         <div className="container mx-auto">
@@ -193,7 +198,7 @@ const CartPage = () => {
                 totalAmount={totalAmount}
               />
             </div>
-            
+
             <div className="flex justify-around items-center mt-12 py-4">
               <div className="flex items-center text-sm">
                 <Image

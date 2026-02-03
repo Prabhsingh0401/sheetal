@@ -1,11 +1,15 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
-import { auth } from '../../services/firebase';
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  ConfirmationResult,
+} from "firebase/auth";
+import { auth } from "../../services/firebase";
 
 declare global {
   interface Window {
@@ -16,18 +20,18 @@ declare global {
 
 const LoginForm = () => {
   const router = useRouter();
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
   const setupRecaptcha = async () => {
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
-        'recaptcha-container',
+        "recaptcha-container",
         {
-          size: 'invisible',
+          size: "invisible",
           callback: () => {},
-        }
+        },
       );
 
       // 🔑 REQUIRED FIX
@@ -37,7 +41,7 @@ const LoginForm = () => {
 
   const handleContinue = async () => {
     if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
-      alert('Enter a valid 10-digit mobile number');
+      alert("Enter a valid 10-digit mobile number");
       return;
     }
 
@@ -51,15 +55,14 @@ const LoginForm = () => {
       const confirmationResult = await signInWithPhoneNumber(
         auth,
         `+91${phoneNumber}`,
-        appVerifier
+        appVerifier,
       );
 
       window.confirmationResult = confirmationResult;
-      router.push('/otp');
-
+      router.push("/otp");
     } catch (error: any) {
-      console.error('OTP error:', error);
-      alert(error.message || 'Failed to send OTP');
+      console.error("OTP error:", error);
+      alert(error.message || "Failed to send OTP");
 
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
@@ -74,7 +77,6 @@ const LoginForm = () => {
     <div className="min-h-screen bg-[#f6f6f4] flex items-center justify-center px-4 font-['Montserrat']">
       <div className="w-full max-w-4xl bg-white shadow-xl overflow-hidden my-30">
         <div className="grid grid-cols-1 md:grid-cols-2 min-h-[570px]">
-
           {/* LEFT IMAGE */}
           <div className="relative hidden md:block">
             <Image
@@ -89,7 +91,6 @@ const LoginForm = () => {
           {/* RIGHT FORM */}
           <div className="flex items-center justify-center px-6 sm:px-10">
             <div className="w-full max-w-sm">
-
               <h1 className="text-2xl font-medium text-gray-900 mb-6 font-[family-name:var(--font-optima)]">
                 Login or Signup
               </h1>
@@ -108,16 +109,26 @@ const LoginForm = () => {
               </div>
 
               <div className="flex items-start gap-2 text-lg mb-6">
-                <input type="checkbox" required className="mt-1 accent-[#6b4a1f]" />
+                <input
+                  type="checkbox"
+                  required
+                  className="mt-1 accent-[#6b4a1f]"
+                />
                 <p>
-                  By continuing, I agree to the{' '}
-                  <Link href="/terms-of-use" className="underline text-[#6b4a1f]">
+                  By continuing, I agree to the{" "}
+                  <Link
+                    href="/terms-of-use"
+                    className="underline text-[#6b4a1f]"
+                  >
                     Terms of Use
-                  </Link>{' '}
-                  &{' '}
-                  <Link href="/privacy-policy" className="underline text-[#6b4a1f]">
+                  </Link>{" "}
+                  &{" "}
+                  <Link
+                    href="/privacy-policy"
+                    className="underline text-[#6b4a1f]"
+                  >
                     Privacy Policy
-                  </Link>{' '}
+                  </Link>{" "}
                   and I am above 18 years old.
                 </p>
               </div>
@@ -127,22 +138,30 @@ const LoginForm = () => {
                 disabled={loading}
                 className="w-full bg-[#6b4a1f] text-white py-3 text-md tracking-wide hover:bg-green-400 transition mb-6 cursor-pointer"
               >
-                {loading ? 'Sending OTP…' : 'Continue'}
+                {loading ? "Sending OTP…" : "Continue"}
               </button>
 
               <div className="flex items-center justify-center my-3">
-                <span className="px-3 text-md">
-                  Or Continue with
-                </span>
+                <span className="px-3 text-md">Or Continue with</span>
               </div>
 
               <div className="flex justify-center gap-6 mb-6">
                 <button className="w-10 h-10 flex items-center justify-center cursor-pointer">
-                  <Image src="/assets/icons/google.svg" alt="Google" width={25} height={25} />
+                  <Image
+                    src="/assets/icons/google.svg"
+                    alt="Google"
+                    width={25}
+                    height={25}
+                  />
                 </button>
 
                 <button className="w-10 h-10 flex items-center justify-center cursor-pointer">
-                  <Image src="/assets/icons/facebook.svg" alt="Facebook" width={25} height={25} />
+                  <Image
+                    src="/assets/icons/facebook.svg"
+                    alt="Facebook"
+                    width={25}
+                    height={25}
+                  />
                 </button>
               </div>
 
@@ -150,15 +169,13 @@ const LoginForm = () => {
               <div id="recaptcha-container"></div>
 
               <p className="text-left text-md mt-4">
-                Have trouble logging in?{' '}
+                Have trouble logging in?{" "}
                 <Link href="/contact-us" className="underline">
                   Get help
                 </Link>
               </p>
-
             </div>
           </div>
-
         </div>
       </div>
     </div>

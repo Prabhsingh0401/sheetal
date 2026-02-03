@@ -1,11 +1,11 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import TopInfo from '../components/TopInfo';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { getBlogs, getBlogImageUrl, Blog } from '@/app/services/blogService';
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import TopInfo from "../components/TopInfo";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { getBlogs, getBlogImageUrl, Blog } from "@/app/services/blogService";
 
 const BlogsPage = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -47,14 +47,18 @@ const BlogsPage = () => {
           priority
         />
       </div>
-        <div className="flex flex-col justify-center items-center text-center">
-          <h1 className="text-4xl md:text-5xl font-medium text-[#69460c] mb-2 mt-10 font-[family-name:var(--font-optima)]">Blogs</h1>
-          <nav className="text-gray-600 text-sm md:text-base">
-            <Link href="/" className="hover:text-[#f3bf43] transition-colors">Home</Link>
-            <span className="mx-2">/</span>
-            <span>Blogs</span>
-          </nav>
-        </div>
+      <div className="flex flex-col justify-center items-center text-center">
+        <h1 className="text-4xl md:text-5xl font-medium text-[#69460c] mb-2 mt-10 font-[family-name:var(--font-optima)]">
+          Blogs
+        </h1>
+        <nav className="text-gray-600 text-sm md:text-base">
+          <Link href="/" className="hover:text-[#f3bf43] transition-colors">
+            Home
+          </Link>
+          <span className="mx-2">/</span>
+          <span>Blogs</span>
+        </nav>
+      </div>
 
       {/* Blogs Listing */}
       <div className="container mx-auto px-4 py-16">
@@ -74,8 +78,14 @@ const BlogsPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogs.map((blog) => (
-              <div key={blog._id} className="group flex flex-col h-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <Link href={`/blog/${blog.slug}`} className="relative w-full aspect-[4/3] overflow-hidden">
+              <div
+                key={blog._id}
+                className="group flex flex-col h-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              >
+                <Link
+                  href={`/blog/${blog.slug}`}
+                  className="relative w-full aspect-[4/3] overflow-hidden"
+                >
                   <Image
                     src={getBlogImageUrl(blog)}
                     alt={blog.title}
@@ -83,23 +93,27 @@ const BlogsPage = () => {
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </Link>
-                
+
                 <div className="p-6 flex flex-col flex-grow">
                   <div className="text-sm text-gray-500 mb-3 font-medium">
-                    {new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   </div>
-                  
+
                   <h3 className="text-lg font-semibold text-[#2c2c2c] mb-3 leading-snug font-[family-name:var(--font-optima)] line-clamp-2 group-hover:text-[#bd9951] transition-colors">
                     <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
                   </h3>
-                  
+
                   <p className="text-sm text-gray-600 mb-6 line-clamp-3 leading-relaxed flex-grow">
                     {blog.excerpt}
                   </p>
-                  
+
                   <div>
-                    <Link 
-                      href={`/blog/${blog.slug}`} 
+                    <Link
+                      href={`/blog/${blog.slug}`}
                       className="inline-block text-sm font-medium text-black border-b border-black pb-0.5 hover:text-[#bd9951] hover:border-[#bd9951] transition-all"
                     >
                       Read More
@@ -114,7 +128,7 @@ const BlogsPage = () => {
         {/* Pagination */}
         <div className="mt-12 flex justify-center items-center gap-4">
           <button
-            onClick={() => setPage(p => Math.max(p - 1, 1))}
+            onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page === 1}
             className="px-4 py-2 bg-gray-100 rounded-md text-sm font-semibold disabled:opacity-50"
           >
@@ -124,7 +138,7 @@ const BlogsPage = () => {
             Page {page} of {totalPages}
           </span>
           <button
-            onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
             className="px-4 py-2 bg-gray-100 rounded-md text-sm font-semibold disabled:opacity-50"
           >

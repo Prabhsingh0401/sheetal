@@ -249,14 +249,24 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                     }}
                   >
                     <div className="font-bold border border-dashed border-gray-500 text-[#6b5639] mb-2 uppercase text-lg p-2 w-full">
-                        {coupon.code}
+                      {coupon.code}
                     </div>
-                    <div className="flex flex-wrap justify-start gap-1 mt-2"> {/* Changed justify-end to justify-start for better alignment */}
-                        {coupon.offerType === 'BOGO' && (
-                            <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5">Buy 1 Get 1</span>
-                        )}
-                        {coupon.scope === 'Category' && coupon.applicableIds && coupon.applicableIds.length > 0 && typeof coupon.applicableIds[0] === 'object' && coupon.applicableIds[0].name && (
-                            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5">{coupon.applicableIds[0].name}</span>
+                    <div className="flex flex-wrap justify-start gap-1 mt-2">
+                      {" "}
+                      {/* Changed justify-end to justify-start for better alignment */}
+                      {coupon.offerType === "BOGO" && (
+                        <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5">
+                          Buy 1 Get 1
+                        </span>
+                      )}
+                      {coupon.scope === "Category" &&
+                        coupon.applicableIds &&
+                        coupon.applicableIds.length > 0 &&
+                        typeof coupon.applicableIds[0] === "object" &&
+                        coupon.applicableIds[0].name && (
+                          <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5">
+                            {coupon.applicableIds[0].name}
+                          </span>
                         )}
                     </div>
 
@@ -265,12 +275,12 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                         ? `Get ${coupon.offerValue}% OFF`
                         : coupon.offerType === "FixedAmount"
                           ? `Save ₹${coupon.offerValue}`
-                          : coupon.offerType === 'BOGO' 
-                          ? coupon.description 
-                          : `${coupon.offerType} Offer`}
+                          : coupon.offerType === "BOGO"
+                            ? coupon.description
+                            : `${coupon.offerType} Offer`}
                     </div>
 
-                    {coupon.description && coupon.offerType !== 'BOGO' && (
+                    {coupon.description && coupon.offerType !== "BOGO" && (
                       <div className="text-xs text-gray-600">
                         {coupon.description}
                       </div>

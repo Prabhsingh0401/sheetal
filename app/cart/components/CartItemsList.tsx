@@ -90,12 +90,15 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
         <div className="">
           {cartItems.map((item, index) => {
             const displayOriginalPrice = item.price ?? 0;
-            const displayDiscountPrice = item.discountPrice ?? displayOriginalPrice;
+            const displayDiscountPrice =
+              item.discountPrice ?? displayOriginalPrice;
 
             const discountPercentage =
               displayOriginalPrice > 0
                 ? Math.round(
-                    ((displayOriginalPrice - displayDiscountPrice) / displayOriginalPrice) * 100
+                    ((displayOriginalPrice - displayDiscountPrice) /
+                      displayOriginalPrice) *
+                      100,
                   )
                 : 0;
 
@@ -114,7 +117,9 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                 {/* Image */}
                 <div className="w-[90px] shrink-0">
                   <Image
-                    src={getApiImageUrl(item.variantImage || item.product.mainImage?.url)}
+                    src={getApiImageUrl(
+                      item.variantImage || item.product.mainImage?.url,
+                    )}
                     alt={item.product.name}
                     width={90}
                     height={120}

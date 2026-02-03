@@ -22,9 +22,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         className="bg-white p-2 shadow-2xl max-w-xs w-full font-montserrat font-optima"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold text-gray-800 mb-3">
-          Remove Item
-        </h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-3">Remove Item</h2>
 
         <p className="text-gray-600 mb-5 text-sm">
           Are you sure you want to remove this item from your cart?
