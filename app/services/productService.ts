@@ -37,7 +37,10 @@ export interface ProductVariant {
     code: string;
     swatchImage?: string;
   };
-  v_image?: string;
+  v_image?: {
+    url: string;
+    public_id?: string;
+  };
 }
 
 export interface Product {
@@ -74,6 +77,9 @@ export interface Product {
 
   displayCollections: string[];
   eventTags: string[];
+  wearType?: string[];
+  occasion?: string[];
+  tags?: string[];
 
   brandInfo?: string;
   warranty: string;
@@ -96,6 +102,7 @@ export interface ProductQueryParams {
   search?: string;
   sort?: string;
   category?: string; // ID
+  subCategory?: string; // String
   brand?: string;
   status?: string;
   color?: string;
@@ -118,6 +125,7 @@ export const fetchProducts = async (
   if (params.search) query.append("search", params.search);
   if (params.sort) query.append("sort", params.sort);
   if (params.category) query.append("category", params.category);
+  if (params.subCategory) query.append("subCategory", params.subCategory);
   if (params.brand) query.append("brand", params.brand);
   if (params.color) query.append("color", params.color);
 
@@ -141,8 +149,8 @@ export const fetchProductBySlug = async (slug: string) => {
 
 export const getProductImageUrl = (
   product: Product | undefined,
-  fallback: string = "/assets/placeholder-product.jpg",
+  fallback: string = "/assets/default-image.png",
 ) => {
   if (!product) return fallback;
-  return getApiImageUrl(product.mainImage?.url, fallback);
+  return getApiImageUrl(product.mainImage, fallback);
 };

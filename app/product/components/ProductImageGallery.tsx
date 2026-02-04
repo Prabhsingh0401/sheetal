@@ -102,7 +102,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 }}
               >
                 <Image
-                  src={img}
+                  src={img || "/assets/placeholder-product.jpg"}
                   alt={`thumb-${idx}`}
                   width={100}
                   height={133}
@@ -170,7 +170,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                       </video>
                     ) : (
                       <Image
-                        src={item}
+                        src={item || "/assets/placeholder-product.jpg"}
                         alt={`${title}-${idx}`}
                         fill
                         className="object-cover"
@@ -212,7 +212,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
               </video>
             ) : (
               <Image
-                src={selectedImage}
+                src={selectedImage || "/assets/placeholder-product.jpg"}
                 alt={title}
                 fill
                 className="object-cover"

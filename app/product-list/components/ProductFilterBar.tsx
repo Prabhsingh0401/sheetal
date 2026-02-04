@@ -1,86 +1,30 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
+import { FilterOptions } from "../../hooks/useProductFilters";
 
 interface ProductFilterBarProps {
   filtersOpen: boolean;
   toggleFilters: () => void;
   sortByOpen: boolean;
   toggleSortBy: () => void;
-  activeFilters: { label: string; type: string }[];
+  activeFilters: { label: string; type: string; value: string }[];
   removeFilter: (label: string) => void;
   clearFilters: () => void;
   viewMode: "grid" | "list";
   setViewMode: (mode: "grid" | "list") => void;
+  filterOptions: FilterOptions;
+  totalProducts: number;
+  onFilterChange: (type: string, value: string) => void;
+  onSortChange: (sortOption: string) => void;
+  currentSort?: string;
 }
 
-const filterCategories = [
-  {
-    id: "size",
-    label: "Size",
-    type: "checkbox",
-    options: ["28", "30", "32", "34", "36", "38"],
-  },
-  {
-    id: "color",
-    label: "Color",
-    type: "color",
-    options: [
-      { label: "Black", color: "#000" },
-      { label: "Blue", color: "rgb(97, 148, 249)" },
-      { label: "Orange", color: "rgb(255, 165, 0)" },
-      { label: "Teal", color: "rgb(0, 140, 154)" },
-    ],
-  },
-  {
-    id: "fabric",
-    label: "Fabric",
-    type: "checkbox",
-    options: [
-      "Pure Silk",
-      "Pure Mul Cotton",
-      "Art Silk",
-      "Cotton-silk",
-      "Crepe",
-      "Georgette",
-    ],
-  },
-  {
-    id: "price",
-    label: "Price",
-    type: "checkbox",
-    options: [
-      "₹1000 - ₹1,999",
-      "₹2000 - ₹2,999",
-      "₹3000 - ₹3,999",
-      "₹4000 - ₹4,999",
-    ],
-  },
-  {
-    id: "work_type",
-    label: "Work Type",
-    type: "checkbox",
-    options: ["Office Wear", "Casual Wear", "Party Wear"],
-  },
-  {
-    id: "occasion",
-    label: "Occasion",
-    type: "checkbox",
-    options: ["Weddings", "Anniversaries", "Birthdays", "Outdoor Parties"],
-  },
-  {
-    id: "availability",
-    label: "Availability",
-    type: "checkbox",
-    options: ["Instock", "Less Than 10"],
-  },
-  {
-    id: "rating",
-    label: "Rating",
-    type: "checkbox",
-    options: ["5 Star", "4 Star", "3 Star", "2 Star", "1 Star"],
-  },
-];
+// Helper function to convert text to sentence case
+const toSentenceCase = (text: string): string => {
+  if (!text) return text;
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+};
 
 const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
   filtersOpen,
@@ -92,13 +36,21 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
   clearFilters,
   viewMode,
   setViewMode,
+  filterOptions,
+  totalProducts,
+  onFilterChange,
+  onSortChange,
+  currentSort = "newest",
 }) => {
-  // State for accordion sections (all open by default or track individually)
-  // For simplicity, we'll let them be independently collapsible.
-  // We'll use a local state to track open sections.
-  const [openSections, setOpenSections] = useState<string[]>(
-    filterCategories.map((c) => c.id),
-  );
+  const [openSections, setOpenSections] = useState<string[]>([
+    "size",
+    "color",
+    "price",
+    "availability",
+    "wearType",
+    "occasion",
+    "tags",
+  ]);
 
   const toggleSection = (id: string) => {
     if (openSections.includes(id)) {
@@ -106,6 +58,11 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
     } else {
       setOpenSections([...openSections, id]);
     }
+  };
+
+  const handleSortClick = (option: string) => {
+    onSortChange(option);
+    toggleSortBy();
   };
 
   return (
@@ -151,23 +108,67 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               >
                 <ul>
                   <li>
-                    <button className="block w-full text-left px-4 py-2 text-sm cursor-pointer">
-                      Price: Low to High
+                    <button
+                      onClick={() => handleSortClick("price_asc")}
+                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "price_asc"
+                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                        : "hover:bg-gray-50"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Price: Low to High</span>
+                        {currentSort === "price_asc" && (
+                          <span className="text-[#bd9951]">✓</span>
+                        )}
+                      </div>
                     </button>
                   </li>
                   <li>
-                    <button className="block w-full text-left px-4 py-2 text-sm cursor-pointer">
-                      Price: High to Low
+                    <button
+                      onClick={() => handleSortClick("price_desc")}
+                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "price_desc"
+                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                        : "hover:bg-gray-50"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Price: High to Low</span>
+                        {currentSort === "price_desc" && (
+                          <span className="text-[#bd9951]">✓</span>
+                        )}
+                      </div>
                     </button>
                   </li>
                   <li>
-                    <button className="block w-full text-left px-4 py-2 text-sm cursor-pointer ">
-                      New Arrivals
+                    <button
+                      onClick={() => handleSortClick("newest")}
+                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "newest"
+                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                        : "hover:bg-gray-50"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>New Arrivals</span>
+                        {currentSort === "newest" && (
+                          <span className="text-[#bd9951]">✓</span>
+                        )}
+                      </div>
                     </button>
                   </li>
                   <li>
-                    <button className="block w-full text-left px-4 py-2 text-sm cursor-pointer ">
-                      Popularity
+                    <button
+                      onClick={() => handleSortClick("popularity")}
+                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "popularity"
+                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                        : "hover:bg-gray-50"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Popularity</span>
+                        {currentSort === "popularity" && (
+                          <span className="text-[#bd9951]">✓</span>
+                        )}
+                      </div>
                     </button>
                   </li>
                 </ul>
@@ -236,119 +237,376 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
           {/* Clear Filters (Top) */}
           <div className="mb-6 flex justify-between items-center">
-            <span className="text-sm text-gray-500">100 Products</span>
-            <button
-              onClick={clearFilters}
-              className="text-sm text-[#bd9951] underline uppercase tracking-wider"
-            >
-              Clear All
-            </button>
+            <span className="text-sm text-gray-500">
+              {totalProducts} Product{totalProducts !== 1 ? "s" : ""}
+            </span>
+            {activeFilters.length > 0 && (
+              <button
+                onClick={clearFilters}
+                className="text-sm text-[#bd9951] underline uppercase tracking-wider"
+              >
+                Clear All
+              </button>
+            )}
           </div>
 
           {/* Active Filters inside Sidebar */}
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            {activeFilters.map((filter, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-1 bg-gray-100 px-2 py-1 text-[10px] uppercase tracking-wide text-gray-600 rounded-sm"
-              >
-                {filter.label}
-                <button
-                  onClick={() => removeFilter(filter.label)}
-                  className="hover:text-red-500 font-bold ml-1"
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              {activeFilters.map((filter, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-1 bg-gray-100 px-2 py-1 text-[10px] uppercase tracking-wide text-gray-600 rounded-sm"
                 >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
+                  {filter.label}
+                  <button
+                    onClick={() => removeFilter(filter.label)}
+                    className="hover:text-red-500 font-bold ml-1"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Filter Categories Accordion */}
           <div className="space-y-4">
-            {filterCategories.map((category) => (
-              <div
-                key={category.id}
-                className="border-b border-gray-100 pb-4 last:border-0"
-              >
+            {/* Size Filter */}
+            {filterOptions.sizes.length > 0 && (
+              <div className="border-b border-gray-100 pb-4">
                 <button
-                  onClick={() => toggleSection(category.id)}
+                  onClick={() => toggleSection("size")}
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
-                  {category.label}
+                  Size
                   <span
-                    className={`text-xl transition-transform duration-200 ${openSections.includes(category.id) ? "rotate-180" : ""}`}
+                    className={`text-xl transition-transform duration-200 ${openSections.includes("size") ? "rotate-180" : ""}`}
                   >
-                    {openSections.includes(category.id) ? "−" : "+"}
+                    {openSections.includes("size") ? "−" : "+"}
                   </span>
                 </button>
 
                 <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes(category.id) ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("size") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
-                  {category.options.map((option: any, idx: number) => {
-                    const isColor = category.type === "color";
-                    const label = isColor ? option.label : option;
-                    const colorValue = isColor ? option.color : null;
-                    const count = 5; // Placeholder count
-
-                    return (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-3 group cursor-pointer"
+                  {filterOptions.sizes.map((size, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-size-${idx}`}
+                        onChange={() => onFilterChange("size", size)}
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-size-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
                       >
-                        <input
-                          type="checkbox"
-                          id={`f-${category.id}-${idx}`}
-                          className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                        />
-                        <label
-                          htmlFor={`f-${category.id}-${idx}`}
-                          className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
-                        >
-                          {isColor && (
-                            <span
-                              className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
-                              style={{ backgroundColor: colorValue }}
-                            ></span>
-                          )}
-                          {label}{" "}
-                          <span className="text-gray-400">({count})</span>
-                        </label>
-                      </div>
-                    );
-                  })}
+                        {size}
+                      </label>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Color Filter */}
+            {filterOptions.colors.length > 0 && (
+              <div className="border-b border-gray-100 pb-4">
+                <button
+                  onClick={() => toggleSection("color")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Color
+                  <span
+                    className={`text-xl transition-transform duration-200 ${openSections.includes("color") ? "rotate-180" : ""}`}
+                  >
+                    {openSections.includes("color") ? "−" : "+"}
+                  </span>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("color") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.colors.map((color, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-color-${idx}`}
+                        onChange={() => onFilterChange("color", color.name)}
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-color-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        <span
+                          className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
+                          style={{ backgroundColor: color.code }}
+                        ></span>
+                        {color.name}{" "}
+                        <span className="text-gray-400">({color.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Price Filter */}
+            {filterOptions.priceRanges.length > 0 && (
+              <div className="border-b border-gray-100 pb-4">
+                <button
+                  onClick={() => toggleSection("price")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Price
+                  <span
+                    className={`text-xl transition-transform duration-200 ${openSections.includes("price") ? "rotate-180" : ""}`}
+                  >
+                    {openSections.includes("price") ? "−" : "+"}
+                  </span>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("price") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.priceRanges.map((range, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-price-${idx}`}
+                        onChange={() =>
+                          onFilterChange("price", `${range.min}-${range.max}`)
+                        }
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-price-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {range.label}{" "}
+                        <span className="text-gray-400">({range.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Availability Filter */}
+            {filterOptions.availability.length > 0 && (
+              <div className="border-b border-gray-100 pb-4 last:border-0">
+                <button
+                  onClick={() => toggleSection("availability")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Availability
+                  <span
+                    className={`text-xl transition-transform duration-200 ${openSections.includes("availability") ? "rotate-180" : ""}`}
+                  >
+                    {openSections.includes("availability") ? "−" : "+"}
+                  </span>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("availability") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.availability.map((avail, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-availability-${idx}`}
+                        onChange={() =>
+                          onFilterChange("availability", avail.label)
+                        }
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-availability-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {avail.label}{" "}
+                        <span className="text-gray-400">({avail.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Wear Type Filter */}
+            {filterOptions.wearTypes.length > 0 && (
+              <div className="border-b border-gray-100 pb-4">
+                <button
+                  onClick={() => toggleSection("wearType")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Wear Type
+                  <span
+                    className={`text-xl transition-transform duration-200 ${openSections.includes("wearType") ? "rotate-180" : ""}`}
+                  >
+                    {openSections.includes("wearType") ? "−" : "+"}
+                  </span>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("wearType") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.wearTypes.map((wearType, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-wearType-${idx}`}
+                        onChange={() =>
+                          onFilterChange("wearType", wearType.label)
+                        }
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-wearType-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {toSentenceCase(wearType.label)}{" "}
+                        <span className="text-gray-400">({wearType.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Occasion Filter */}
+            {filterOptions.occasions.length > 0 && (
+              <div className="border-b border-gray-100 pb-4">
+                <button
+                  onClick={() => toggleSection("occasion")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Occasion
+                  <span
+                    className={`text-xl transition-transform duration-200 ${openSections.includes("occasion") ? "rotate-180" : ""}`}
+                  >
+                    {openSections.includes("occasion") ? "−" : "+"}
+                  </span>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("occasion") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.occasions.map((occasion, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-occasion-${idx}`}
+                        onChange={() =>
+                          onFilterChange("occasion", occasion.label)
+                        }
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-occasion-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {toSentenceCase(occasion.label)}{" "}
+                        <span className="text-gray-400">({occasion.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tags Filter */}
+            {filterOptions.tags.length > 0 && (
+              <div className="border-b border-gray-100 pb-4 last:border-0">
+                <button
+                  onClick={() => toggleSection("tags")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Tags
+                  <span
+                    className={`text-xl transition-transform duration-200 ${openSections.includes("tags") ? "rotate-180" : ""}`}
+                  >
+                    {openSections.includes("tags") ? "−" : "+"}
+                  </span>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("tags") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.tags.map((tag, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-tag-${idx}`}
+                        onChange={() =>
+                          onFilterChange("tags", tag.label)
+                        }
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-tag-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {toSentenceCase(tag.label)}{" "}
+                        <span className="text-gray-400">({tag.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Active Filters List (Desktop/External) */}
-      <div className="hidden md:flex flex-wrap items-center gap-3 mb-10">
-        {activeFilters.map((filter, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 text-xs uppercase tracking-wide text-gray-600 rounded-sm"
-          >
-            {filter.label}
-            <button
-              onClick={() => removeFilter(filter.label)}
-              className="hover:text-red-500 font-bold ml-1"
+      {activeFilters.length > 0 && (
+        <div className="hidden md:flex flex-wrap items-center gap-3 mb-10">
+          {activeFilters.map((filter, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 text-xs uppercase tracking-wide text-gray-600 rounded-sm"
             >
-              ✕
-            </button>
-          </div>
-        ))}
-        {activeFilters.length > 0 && (
+              {filter.label}
+              <button
+                onClick={() => removeFilter(filter.label)}
+                className="hover:text-red-500 font-bold ml-1"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
           <button
             onClick={clearFilters}
             className="text-xs uppercase tracking-wide text-[#bd9951] underline hover:no-underline"
           >
             Clear Filters
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 };

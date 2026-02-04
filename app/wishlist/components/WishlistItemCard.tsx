@@ -3,7 +3,6 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "../../services/productService";
-import { getApiImageUrl } from "../../services/api";
 
 interface WishlistItemCardProps {
   product: Product & {
@@ -34,7 +33,7 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
           className="block aspect-[3/4] relative"
         >
           <Image
-            src={getApiImageUrl(product.mainImage?.url)}
+            src={product.mainImage?.url || "/assets/placeholder-product.jpg"}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -43,7 +42,7 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden rounded-lg">
             {product.hoverImage?.url && (
               <Image
-                src={getApiImageUrl(product.hoverImage.url)}
+                src={product.hoverImage.url || "/assets/placeholder-product.jpg"}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"

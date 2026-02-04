@@ -113,7 +113,7 @@ const HiddenBeauty = () => {
                     <Image
                       src={getCategoryImageUrl(
                         cat,
-                        "/assets/placeholder-category.jpg",
+                        "/assets/default-image.png",
                       )}
                       alt={cat.name}
                       width={400}

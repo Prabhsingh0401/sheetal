@@ -19,10 +19,12 @@ import { getApiImageUrl } from "../services/api";
 
 import { useProducts } from "../hooks/useProducts";
 import { useWishlist } from "../hooks/useWishlist";
+import { useProductFilters } from "../hooks/useProductFilters";
 
 const ProductListContent = () => {
   const searchParams = useSearchParams();
   const categorySlug = searchParams.get("category");
+  const subCategory = searchParams.get("subCategory");
 
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [isResolvingCategory, setIsResolvingCategory] =
@@ -39,8 +41,9 @@ const ProductListContent = () => {
   const [sortByOpen, setSortByOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [activeFilters, setActiveFilters] = useState<
-    { label: string; type: string }[]
+    { label: string; type: string; value: string }[]
   >([]);
+  const [sortOption, setSortOption] = useState<string>("newest");
 
   /* =======================
      Wishlist
@@ -85,8 +88,14 @@ const ProductListContent = () => {
     error,
   } = useProducts({
     category: categoryId,
+    subCategory: subCategory || undefined,
     limit: 50,
   });
+
+  /* =======================
+     Extract Filter Options
+  ======================= */
+  const filterOptions = useProductFilters(products);
 
   const loading = isResolvingCategory || productsLoading;
 
@@ -94,8 +103,31 @@ const ProductListContent = () => {
      Handlers
   ======================= */
   const handleMobileSort = (option: string) => {
-    console.log("Sorting by:", option);
+    setSortOption(option);
     setMobileSortOpen(false);
+  };
+
+  const handleSortChange = (option: string) => {
+    setSortOption(option);
+  };
+
+  const handleFilterChange = (type: string, value: string) => {
+    const filterLabel = `${type}: ${value}`;
+    const existing = activeFilters.find((f) => f.label === filterLabel);
+
+    if (existing) {
+      setActiveFilters(activeFilters.filter((f) => f.label !== filterLabel));
+    } else {
+      setActiveFilters([...activeFilters, { label: filterLabel, type, value }]);
+    }
+  };
+
+  const removeFilter = (label: string) => {
+    setActiveFilters(activeFilters.filter((f) => f.label !== label));
+  };
+
+  const clearFilters = () => {
+    setActiveFilters([]);
   };
 
   const handleQuickView = (slug: string) => {
@@ -158,6 +190,70 @@ const ProductListContent = () => {
   });
 
   /* =======================
+     Apply Filters and Sorting
+  ======================= */
+  let filteredProducts = [...gridProducts];
+
+  // Apply filters
+  activeFilters.forEach((filter) => {
+    if (filter.type === "size") {
+      filteredProducts = filteredProducts.filter((p) =>
+        products
+          .find((prod) => prod._id === p._id)
+          ?.variants?.some((v) => v.sizes?.some((s) => s.name === filter.value)),
+      );
+    } else if (filter.type === "color") {
+      filteredProducts = filteredProducts.filter((p) =>
+        products
+          .find((prod) => prod._id === p._id)
+          ?.variants?.some((v) => v.color?.name === filter.value),
+      );
+    } else if (filter.type === "price") {
+      const [min, max] = filter.value.split("-").map(Number);
+      filteredProducts = filteredProducts.filter(
+        (p) => p.price >= min && (max === Infinity || p.price < max),
+      );
+    } else if (filter.type === "availability") {
+      if (filter.value === "In Stock") {
+        filteredProducts = filteredProducts.filter((p) => {
+          const product = products.find((prod) => prod._id === p._id);
+          return product && product.stock > 10;
+        });
+      } else if (filter.value === "Low Stock (≤10)") {
+        filteredProducts = filteredProducts.filter((p) => {
+          const product = products.find((prod) => prod._id === p._id);
+          return product && product.stock > 0 && product.stock <= 10;
+        });
+      }
+    } else if (filter.type === "wearType") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return product?.wearType?.includes(filter.value);
+      });
+    } else if (filter.type === "occasion") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return product?.occasion?.includes(filter.value);
+      });
+    } else if (filter.type === "tags") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return product?.tags?.includes(filter.value);
+      });
+    }
+  });
+
+  // Apply sorting
+  if (sortOption === "price_asc") {
+    filteredProducts.sort((a, b) => a.price - b.price);
+  } else if (sortOption === "price_desc") {
+    filteredProducts.sort((a, b) => b.price - a.price);
+  } else if (sortOption === "popularity") {
+    filteredProducts.sort((a, b) => b.rating - a.rating);
+  }
+  // newest is default (already sorted by createdAt from backend)
+
+  /* =======================
      Render
   ======================= */
   return (
@@ -174,12 +270,15 @@ const ProductListContent = () => {
           sortByOpen={sortByOpen}
           toggleSortBy={() => setSortByOpen(!sortByOpen)}
           activeFilters={activeFilters}
-          removeFilter={(label) =>
-            setActiveFilters(activeFilters.filter((f) => f.label !== label))
-          }
-          clearFilters={() => setActiveFilters([])}
+          removeFilter={removeFilter}
+          clearFilters={clearFilters}
           viewMode={viewMode}
-          setViewMode={setViewMode}
+          setViewMode={(mode) => setViewMode(mode)}
+          filterOptions={filterOptions}
+          totalProducts={filteredProducts.length}
+          onFilterChange={handleFilterChange}
+          onSortChange={handleSortChange}
+          currentSort={sortOption}
         />
 
         {loading ? (
@@ -190,13 +289,17 @@ const ProductListContent = () => {
           <div className="flex justify-center py-20">
             <p className="text-red-500">{error}</p>
           </div>
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <div className="flex justify-center py-20">
-            <p className="text-gray-500">No products found.</p>
+            <p className="text-gray-500">
+              {activeFilters.length > 0
+                ? "No products match your filters. Try adjusting your selection."
+                : "No products found."}
+            </p>
           </div>
         ) : (
           <ProductGrid
-            products={gridProducts}
+            products={filteredProducts}
             viewMode={viewMode}
             onToggleWishlist={toggleProductInWishlist}
             onQuickView={handleQuickView}
@@ -209,12 +312,14 @@ const ProductListContent = () => {
       <FilterSortMobile
         onFilterClick={() => setFiltersOpen(true)}
         onSortClick={() => setMobileSortOpen(true)}
+        activeFilterCount={activeFilters.length}
       />
 
       <MobileSortSheet
         isOpen={mobileSortOpen}
         onClose={() => setMobileSortOpen(false)}
         onSelect={handleMobileSort}
+        currentSort={sortOption}
       />
 
       {selectedProductSlug && (

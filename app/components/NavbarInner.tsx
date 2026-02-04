@@ -11,6 +11,8 @@ import {
   getUserDetails,
 } from "../services/authService";
 import { useRouter } from "next/navigation";
+import useSWR from "swr"; // Import SWR
+import { fetchAllCategories, Category } from "../services/categoryService"; // Import Category Service
 
 const NavbarInner = () => {
   const { wishlist } = useWishlist();
@@ -24,6 +26,9 @@ const NavbarInner = () => {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null); // State to store user details
   const [isClient, setIsClient] = useState(false); // State to track if component is mounted on client
+
+  // Fetch categories using SWR
+  const { data: categories, error } = useSWR<Category[]>("/categories", fetchAllCategories);
 
   useEffect(() => {
     setIsClient(true); // Mark that we are on the client side
@@ -157,9 +162,8 @@ const NavbarInner = () => {
     <>
       {/* Desktop Header - Fixed at top */}
       <div
-        className={`hidden md:block fixed w-full z-[80] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm py-4 font-[family-name:var(--font-montserrat)] ${
-          scrolled ? "top-0 shadow-lg" : "top-[27px]"
-        }`}
+        className={`hidden md:block fixed w-full z-[80] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm py-4 font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[27px]"
+          }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center w-full">
@@ -205,58 +209,34 @@ const NavbarInner = () => {
                     className={`absolute left-0 top-full pt-4 w-[200px] text-left transition-all duration-300 ${shopDropdownOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
                   >
                     <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
-                      <li className="border-b border-white/20">
-                        <Link
-                          href="/category/sarees"
-                          className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors"
-                        >
-                          Sarees
-                        </Link>
-                      </li>
-                      <li className="border-b border-white/20">
-                        <Link
-                          href="/category/salwar-suits"
-                          className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors"
-                        >
-                          Salwar Suits
-                        </Link>
-                      </li>
-                      <li className="relative group/lehenga border-b border-white/20">
-                        <Link
-                          href="/category/lehengas"
-                          className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex justify-between items-center"
-                        >
-                          Lehengas{" "}
-                          <span className="-rotate-90 text-[8px]">▼</span>
-                        </Link>
-                        {/* Level 2 Submenu */}
-                        <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/lehenga:block z-[999]">
-                          <li className="border-b border-white/20">
-                            <Link
-                              href="/category/bridal-lehengas"
-                              className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
-                            >
-                              Bridal Lehengas
-                            </Link>
-                          </li>
-                          <li className="border-b border-white/20">
-                            <Link
-                              href="/category/party-wear-lehengas"
-                              className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
-                            >
-                              Party Wear
-                            </Link>
-                          </li>
-                        </ul>
-                      </li>
-                      <li>
-                        <Link
-                          href="/category/suits"
-                          className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors"
-                        >
-                          Suits
-                        </Link>
-                      </li>
+                      {categories?.map((category) => (
+                        <li key={category._id} className="relative group/sub border-b border-white/20 last:border-none">
+                          <Link
+                            href={`/product-list?category=${category.slug}`}
+                            className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex items-center justify-between"
+                          >
+                            {category.name}
+                            {category.subCategories && category.subCategories.length > 0 && (
+                              <span className="-rotate-90 text-[8px]">▼</span>
+                            )}
+                          </Link>
+                          {/* Level 2 Submenu (Subcategories) */}
+                          {category.subCategories && category.subCategories.length > 0 && (
+                            <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/sub:block z-[999]">
+                              {category.subCategories.map((sub, idx) => (
+                                <li key={idx} className="border-b border-white/20 last:border-none">
+                                  <Link
+                                    href={`/product-list?category=${category.slug}&subCategory=${encodeURIComponent(sub)}`}
+                                    className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
+                                  >
+                                    {sub}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </li>
@@ -324,9 +304,8 @@ const NavbarInner = () => {
 
       {/* Mobile Header */}
       <header
-        className={`md:hidden fixed w-full z-40 bg-[#112f23] backdrop-blur-sm shadow-sm py-2 transition-all duration-300 ${
-          scrolled ? "top-0" : "top-[27px]"
-        }`}
+        className={`md:hidden fixed w-full z-40 bg-[#112f23] backdrop-blur-sm shadow-sm py-2 transition-all duration-300 ${scrolled ? "top-0" : "top-[27px]"
+          }`}
       >
         <div className="container mx-auto px-4 flex justify-between items-center h-[50px]">
           {/* Logo for Mobile */}
@@ -454,32 +433,31 @@ const NavbarInner = () => {
                 </span>
               </button>
               <div
-                className={`pl-4 bg-gray-50 overflow-hidden transition-all duration-300 ${mobileShopDropdownOpen ? "max-h-[500px] py-2" : "max-h-0"}`}
+                className={`pl-4 bg-gray-50 overflow-hidden transition-all duration-300 ${mobileShopDropdownOpen ? "max-h-[1000px] py-2" : "max-h-0"}`}
               >
-                <Link
-                  href="/category/sarees"
-                  className="block py-2 !text-[#b3a660]"
-                >
-                  Sarees
-                </Link>
-                <Link
-                  href="/category/salwar-suits"
-                  className="block py-2 !text-[#b3a660]"
-                >
-                  Salwar Suits
-                </Link>
-                <Link
-                  href="/category/lehengas"
-                  className="block py-2 !text-[#b3a660]"
-                >
-                  Lehengas
-                </Link>
-                <Link
-                  href="/category/suits"
-                  className="block py-2 !text-[#b3a660]"
-                >
-                  Suits
-                </Link>
+                {categories?.map((category) => (
+                  <div key={category._id}>
+                    <Link
+                      href={`/product-list?category=${category.slug}`}
+                      className="block py-2 !text-[#b3a660] font-medium"
+                    >
+                      {category.name}
+                    </Link>
+                    {category.subCategories && category.subCategories.length > 0 && (
+                      <div className="pl-4 border-l border-gray-200 ml-2">
+                        {category.subCategories.map((sub, idx) => (
+                          <Link
+                            key={idx}
+                            href={`/product-list?category=${category.slug}&subCategory=${encodeURIComponent(sub)}`}
+                            className="block py-1.5 text-sm !text-[#aa8c6a]"
+                          >
+                            {sub}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 

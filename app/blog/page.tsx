@@ -5,7 +5,8 @@ import Image from "next/image";
 import TopInfo from "../components/TopInfo";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { getBlogs, getBlogImageUrl, Blog } from "@/app/services/blogService";
+import { getBlogs, Blog } from "@/app/services/blogService";
+import { getApiImageUrl } from "@/app/services/api";
 
 const BlogsPage = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -84,10 +85,10 @@ const BlogsPage = () => {
               >
                 <Link
                   href={`/blog/${blog.slug}`}
-                  className="relative w-full aspect-[4/3] overflow-hidden"
+                  className="relative w-full aspect-video overflow-hidden"
                 >
                   <Image
-                    src={getBlogImageUrl(blog)}
+                    src={getApiImageUrl(blog.contentImage || blog.bannerImage, "/assets/default-image.png")}
                     alt={blog.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"

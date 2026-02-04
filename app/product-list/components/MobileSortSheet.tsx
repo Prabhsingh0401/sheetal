@@ -1,24 +1,31 @@
 "use client";
 import React from "react";
 
+interface SortOption {
+  label: string;
+  value: string;
+}
+
 interface MobileSortSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (option: string) => void;
+  currentSort?: string;
+  sortOptions?: SortOption[];
 }
 
 const MobileSortSheet: React.FC<MobileSortSheetProps> = ({
   isOpen,
   onClose,
   onSelect,
+  currentSort = "newest",
+  sortOptions = [
+    { label: "Price: Low to High", value: "price_asc" },
+    { label: "Price: High to Low", value: "price_desc" },
+    { label: "New Arrivals", value: "newest" },
+    { label: "Popularity", value: "popularity" },
+  ],
 }) => {
-  const options = [
-    "Price: Low to High",
-    "Price: High to Low",
-    "New Arrivals",
-    "Popularity",
-  ];
-
   return (
     <>
       {/* Backdrop */}
@@ -42,19 +49,30 @@ const MobileSortSheet: React.FC<MobileSortSheetProps> = ({
           </div>
 
           <ul className="space-y-4">
-            {options.map((option, idx) => (
-              <li key={idx}>
-                <button
-                  className="w-full text-left text-sm font-medium py-2 border-b border-gray-100 last:border-0 hover:text-[#bd9951]"
-                  onClick={() => {
-                    onSelect(option);
-                    onClose();
-                  }}
-                >
-                  {option}
-                </button>
-              </li>
-            ))}
+            {sortOptions.map((option, idx) => {
+              const isSelected = currentSort === option.value;
+              return (
+                <li key={idx}>
+                  <button
+                    className={`w-full text-left text-sm font-medium py-2 border-b border-gray-100 last:border-0 transition-colors ${isSelected
+                        ? "text-[#bd9951] font-semibold"
+                        : "hover:text-[#bd9951]"
+                      }`}
+                    onClick={() => {
+                      onSelect(option.value);
+                      onClose();
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>{option.label}</span>
+                      {isSelected && (
+                        <span className="text-[#bd9951]">✓</span>
+                      )}
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

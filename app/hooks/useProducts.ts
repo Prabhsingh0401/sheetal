@@ -48,7 +48,17 @@ export const useProducts = (
 
   useEffect(() => {
     loadProducts(initialParams);
-  }, [JSON.stringify(initialParams)]); // Simple dependency check
+  }, [
+    initialParams.page,
+    initialParams.limit,
+    initialParams.search,
+    initialParams.sort,
+    initialParams.category,
+    initialParams.subCategory,
+    initialParams.brand,
+    initialParams.status,
+    initialParams.color,
+  ]);
 
   return {
     products,

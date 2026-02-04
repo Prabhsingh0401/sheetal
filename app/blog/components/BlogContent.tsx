@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { getApiImageUrl } from "@/app/services/api";
 import { Blog } from "@/app/services/blogService";
+import { getApiImageUrl } from "@/app/services/api";
 
 // Taking the whole blog object is cleaner
 interface BlogContentProps {

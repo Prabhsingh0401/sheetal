@@ -21,6 +21,7 @@ export interface Category {
   metaDescription?: string;
   createdAt?: string;
   updatedAt?: string;
+  subCategories?: string[]; // Added support for subcategories
 }
 
 export interface ApiResponse<T> {
@@ -68,13 +69,12 @@ export const fetchCategoryBySlug = async (
  */
 export const getCategoryImageUrl = (
   category: Category | undefined,
-  fallback: string = "/assets/placeholder-category.jpg",
+  fallback: string = "/assets/default-image.png",
 ): string => {
   if (!category) return fallback;
 
   // Prioritize mainImage for general category listings
-  const imageUrl = category.mainImage?.url;
-  return getApiImageUrl(imageUrl, fallback);
+  return getApiImageUrl(category.mainImage, fallback);
 };
 
 /**
@@ -87,6 +87,5 @@ export const getCategoryBannerUrl = (
   if (!category) return fallback;
 
   // Prioritize bannerImage for category banners
-  const imageUrl = category.bannerImage?.url;
-  return getApiImageUrl(imageUrl, fallback);
+  return getApiImageUrl(category.bannerImage, fallback);
 };

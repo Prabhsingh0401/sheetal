@@ -28,13 +28,13 @@ const ProductCard = ({ product }: { product: any }) => {
         <Link href={`/product/${product.id}`}>
           <div className="relative aspect-[3/4]">
             <Image
-              src={product.image}
+              src={product.image || "/assets/placeholder-product.jpg"}
               alt={product.name}
               fill
               className="object-cover transition-opacity duration-500 group-hover:opacity-0 rounded-lg"
             />
             <Image
-              src={product.hoverImage}
+              src={product.hoverImage || "/assets/placeholder-product.jpg"}
               alt={product.name}
               fill
               className="object-cover absolute top-0 left-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 rounded-lg"

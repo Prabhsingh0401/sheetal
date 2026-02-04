@@ -8,7 +8,6 @@ import "slick-carousel/slick/slick-theme.css";
 import { getActiveBanners } from "../services/bannerService";
 import { getApiImageUrl } from "../services/api";
 
-
 // Custom Arrow Components
 const CustomPrevArrow = (props: any) => {
   const { className, style, onClick } = props;
@@ -68,6 +67,7 @@ const CustomNextArrow = (props: any) => {
 };
 
 
+
 const HomeBanner = () => {
   const [banners, setBanners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,9 +115,9 @@ const HomeBanner = () => {
       </div>
     );
   }
-  
-  const desktopBanners = banners.filter((b) => b.image.desktop?.url);
-  const mobileBanners = banners.filter((b) => b.image.mobile?.url);
+
+  const desktopBanners = banners.filter((b) => b.image?.desktop);
+  const mobileBanners = banners.filter((b) => b.image?.mobile);
 
   return (
     <div className="w-full p-0 relative home-banner">
@@ -131,7 +131,7 @@ const HomeBanner = () => {
                   <Link href={banner.link || "#"}>
                     <div className="relative w-full h-[720px]">
                       <Image
-                        src={getApiImageUrl(banner.image.desktop.url)}
+                        src={getApiImageUrl(banner.image.desktop, "/assets/default-image.png")}
                         alt={banner.title}
                         width={1920}
                         height={720}
@@ -166,7 +166,7 @@ const HomeBanner = () => {
                 <Link href={banner.link || "#"}>
                   <div className="relative w-full h-[1000px]">
                     <Image
-                      src={getApiImageUrl(banner.image.mobile.url)}
+                      src={getApiImageUrl(banner.image.mobile, "/assets/default-image.png")}
                       alt={banner.title}
                       width={800}
                       height={1000}

@@ -1,0 +1,208 @@
+import { useMemo } from "react";
+import { Product } from "../services/productService";
+
+export interface FilterOptions {
+    sizes: string[];
+    colors: Array<{ name: string; code: string; count: number }>;
+    priceRanges: Array<{ label: string; min: number; max: number; count: number }>;
+    availability: Array<{ label: string; count: number }>;
+    wearTypes: Array<{ label: string; count: number }>;
+    occasions: Array<{ label: string; count: number }>;
+    tags: Array<{ label: string; count: number }>;
+}
+
+/**
+ * Hook to extract intelligent filter options from products
+ * Dynamically generates filters based on actual product data
+ */
+export const useProductFilters = (products: Product[]): FilterOptions => {
+    return useMemo(() => {
+        const sizeSet = new Set<string>();
+        const colorMap = new Map<string, { code: string; count: number }>();
+        const wearTypeMap = new Map<string, number>();
+        const occasionMap = new Map<string, number>();
+        const tagMap = new Map<string, number>();
+        const prices: number[] = [];
+        let inStockCount = 0;
+        let lowStockCount = 0;
+
+        // Extract data from products
+        products.forEach((product) => {
+            let productLowestPrice = Infinity;
+
+            product.variants?.forEach((variant) => {
+                // Collect colors
+                if (variant.color?.name && variant.color?.code) {
+                    const colorName = variant.color.name;
+                    const existing = colorMap.get(colorName);
+                    if (existing) {
+                        existing.count++;
+                    } else {
+                        colorMap.set(colorName, {
+                            code: variant.color.code,
+                            count: 1,
+                        });
+                    }
+                }
+
+                // Collect sizes and calculate prices
+                variant.sizes?.forEach((size) => {
+                    if (size.name) {
+                        sizeSet.add(size.name);
+                    }
+
+                    // Calculate effective price
+                    const effectivePrice =
+                        size.discountPrice && size.discountPrice > 0
+                            ? size.discountPrice
+                            : size.price;
+
+                    if (effectivePrice > 0 && effectivePrice < productLowestPrice) {
+                        productLowestPrice = effectivePrice;
+                    }
+                });
+            });
+
+            // Add product's lowest price to prices array
+            if (productLowestPrice !== Infinity) {
+                prices.push(productLowestPrice);
+            }
+
+            // Check availability
+            if (product.stock > 10) {
+                inStockCount++;
+            } else if (product.stock > 0 && product.stock <= 10) {
+                lowStockCount++;
+            }
+
+            // Collect wear types
+            product.wearType?.forEach((wearType) => {
+                const count = wearTypeMap.get(wearType) || 0;
+                wearTypeMap.set(wearType, count + 1);
+            });
+
+            // Collect occasions
+            product.occasion?.forEach((occasion) => {
+                const count = occasionMap.get(occasion) || 0;
+                occasionMap.set(occasion, count + 1);
+            });
+
+            // Collect tags
+            product.tags?.forEach((tag) => {
+                const count = tagMap.get(tag) || 0;
+                tagMap.set(tag, count + 1);
+            });
+        });
+
+        // Sort sizes intelligently (numeric first, then alphabetic)
+        const sizes = Array.from(sizeSet).sort((a, b) => {
+            const aNum = parseInt(a);
+            const bNum = parseInt(b);
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+                return aNum - bNum;
+            }
+            // Handle size labels like S, M, L, XL, XXL
+            const sizeOrder = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+            const aIndex = sizeOrder.indexOf(a.toUpperCase());
+            const bIndex = sizeOrder.indexOf(b.toUpperCase());
+            if (aIndex !== -1 && bIndex !== -1) {
+                return aIndex - bIndex;
+            }
+            return a.localeCompare(b);
+        });
+
+        // Convert color map to array and sort by count
+        const colors = Array.from(colorMap.entries())
+            .map(([name, data]) => ({
+                name,
+                code: data.code,
+                count: data.count,
+            }))
+            .sort((a, b) => b.count - a.count);
+
+        // Convert wear types to array and sort by count
+        const wearTypes = Array.from(wearTypeMap.entries())
+            .map(([label, count]) => ({ label, count }))
+            .sort((a, b) => b.count - a.count);
+
+        // Convert occasions to array and sort by count
+        const occasions = Array.from(occasionMap.entries())
+            .map(([label, count]) => ({ label, count }))
+            .sort((a, b) => b.count - a.count);
+
+        // Convert tags to array and sort by count
+        const tags = Array.from(tagMap.entries())
+            .map(([label, count]) => ({ label, count }))
+            .sort((a, b) => b.count - a.count);
+
+        // Generate price ranges based on actual price distribution
+        const priceRanges = generatePriceRanges(prices);
+
+        // Availability options
+        const availability = [
+            { label: "In Stock", count: inStockCount },
+            { label: "Low Stock (≤10)", count: lowStockCount },
+        ].filter((item) => item.count > 0);
+
+        return {
+            sizes,
+            colors,
+            priceRanges,
+            availability,
+            wearTypes,
+            occasions,
+            tags,
+        };
+    }, [products]);
+};
+
+/**
+ * Generate intelligent price ranges based on actual product prices
+ */
+function generatePriceRanges(
+    prices: number[],
+): Array<{ label: string; min: number; max: number; count: number }> {
+    if (prices.length === 0) return [];
+
+    const sortedPrices = [...prices].sort((a, b) => a - b);
+    const minPrice = sortedPrices[0];
+    const maxPrice = sortedPrices[sortedPrices.length - 1];
+
+    // Define price range buckets
+    const ranges = [
+        { min: 0, max: 5000 },
+        { min: 5000, max: 10000 },
+        { min: 10000, max: 15000 },
+        { min: 15000, max: 20000 },
+        { min: 20000, max: 30000 },
+        { min: 30000, max: 50000 },
+        { min: 50000, max: Infinity },
+    ];
+
+    // Count products in each range
+    const rangesWithCount = ranges
+        .map((range) => {
+            const count = prices.filter(
+                (p) => p >= range.min && p < range.max,
+            ).length;
+
+            let label: string;
+            if (range.max === Infinity) {
+                label = `₹${(range.min / 1000).toFixed(0)}k+`;
+            } else if (range.min === 0) {
+                label = `Under ₹${(range.max / 1000).toFixed(0)}k`;
+            } else {
+                label = `₹${(range.min / 1000).toFixed(0)}k - ₹${(range.max / 1000).toFixed(0)}k`;
+            }
+
+            return {
+                label,
+                min: range.min,
+                max: range.max,
+                count,
+            };
+        })
+        .filter((range) => range.count > 0); // Only show ranges with products
+
+    return rangesWithCount;
+}

@@ -12,6 +12,8 @@ import {
 } from "../services/authService";
 import toast from "react-hot-toast";
 import SearchModal from "./SearchModal";
+import useSWR from "swr";
+import { fetchAllCategories, Category } from "../services/categoryService"; // Import Category Service
 
 const Navbar = () => {
   const router = useRouter();
@@ -26,8 +28,11 @@ const Navbar = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isClient, setIsClient] = useState(false); // NEW: Track if we're on client
 
+  // Fetch categories using SWR
+  const { data: categories, error } = useSWR<Category[]>("/categories", fetchAllCategories);
+
   useEffect(() => {
-    // Mark that we're now on the client
+
     setIsClient(true);
 
     const handleScroll = () => {
@@ -162,10 +167,9 @@ const Navbar = () => {
       <div
         className={`flex fixed w-full ${scrolled ? "z-[1004]" : "z-[1002]"} transition-all duration-500 pointer-events-none
           text-[#f2bf42] items-center
-          ${
-            scrolled
-              ? "top-[25px] justify-start px-4 h-[70px]"
-              : "top-[120px] md:top-[120px] justify-center"
+          ${scrolled
+            ? "top-[25px] justify-start px-4 h-[70px]"
+            : "top-[120px] md:top-[120px] justify-center"
           }
         `}
       >
@@ -178,18 +182,16 @@ const Navbar = () => {
             alt="Studio By Sheetal"
             width={300}
             height={100}
-            className={`transition-all duration-500 w-auto ${
-              scrolled ? "-mt-5 h-[40px] md:h-[70px]" : "h-[200px] md:h-[250px]"
-            }`}
+            className={`transition-all duration-500 w-auto ${scrolled ? "-mt-5 h-[40px] md:h-[70px]" : "h-[200px] md:h-[250px]"
+              }`}
           />
         </Link>
       </div>
 
       {/* Top Header (Desktop) - Links & Icons */}
       <div
-        className={`hidden md:block fixed w-full z-[1003] transition-all duration-500 bg-[#082722]/90 backdrop-blur-sm py-[25px] font-[family-name:var(--font-montserrat)] ${
-          scrolled ? "top-0 shadow-lg" : "top-[24px]"
-        }`}
+        className={`hidden md:block fixed w-full z-[1003] transition-all duration-500 bg-[#082722]/90 backdrop-blur-sm py-[25px] font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[24px]"
+          }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex justify-end items-center w-full">
@@ -226,86 +228,34 @@ const Navbar = () => {
                     className={`absolute left-0 top-full pt-4 w-[280px] text-left transition-all duration-300 ${shopDropdownOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
                   >
                     <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
-                      <li className="border-b border-white/20">
-                        <Link
-                          href="/category/sarees"
-                          className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors"
-                        >
-                          Sarees
-                        </Link>
-                      </li>
-                      <li className="border-b border-white/20">
-                        <Link
-                          href="/category/salwar-suits"
-                          className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors"
-                        >
-                          Salwar Suits
-                        </Link>
-                      </li>
-                      <li className="relative group/lehenga border-b border-white/20">
-                        <Link
-                          href="/category/lehengas"
-                          className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex items-center gap-2"
-                        >
-                          <span className="-rotate-90 text-[8px]">▼</span>{" "}
-                          Lehengas
-                        </Link>
-                        {/* Level 2 Submenu */}
-                        <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/lehenga:block z-[999]">
-                          <li className="relative group/bridal border-b border-white/20">
-                            <Link
-                              href="/category/bridal-lehengas"
-                              className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] flex items-center gap-2"
-                            >
-                              <span className="-rotate-90 text-[8px]">▼</span>{" "}
-                              Bridal Lehengas
-                            </Link>
-                            {/* Level 3 Submenu */}
-                            <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/bridal:block z-[999]">
-                              <li className="border-b border-white/20">
-                                <Link
-                                  href="/category/heavy-bridal"
-                                  className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
-                                >
-                                  Heavy Bridal
-                                </Link>
-                              </li>
-                              <li className="border-b border-white/20">
-                                <Link
-                                  href="/category/light-bridal"
-                                  className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
-                                >
-                                  Light Bridal
-                                </Link>
-                              </li>
-                              <li className="border-b border-white/20">
-                                <Link
-                                  href="/category/designer-bridal"
-                                  className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
-                                >
-                                  Designer Bridal
-                                </Link>
-                              </li>
+                      {categories?.map((category) => (
+                        <li key={category._id} className="relative group/sub border-b border-white/20 last:border-none">
+                          <Link
+                            href={`/product-list?category=${category.slug}`}
+                            className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex items-center justify-between"
+                          >
+                            {category.name}
+                            {category.subCategories && category.subCategories.length > 0 && (
+                              <span className="-rotate-90 text-[8px]">▼</span>
+                            )}
+                          </Link>
+                          {/* Level 2 Submenu (Subcategories) */}
+                          {category.subCategories && category.subCategories.length > 0 && (
+                            <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/sub:block z-[999]">
+                              {category.subCategories.map((sub, idx) => (
+                                <li key={idx} className="border-b border-white/20 last:border-none">
+                                  <Link
+                                    href={`/product-list?category=${category.slug}&subCategory=${encodeURIComponent(sub)}`}
+                                    className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
+                                  >
+                                    {sub}
+                                  </Link>
+                                </li>
+                              ))}
                             </ul>
-                          </li>
-                          <li className="border-b border-white/20">
-                            <Link
-                              href="/category/party-wear-lehengas"
-                              className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
-                            >
-                              Party Wear
-                            </Link>
-                          </li>
-                        </ul>
-                      </li>
-                      <li>
-                        <Link
-                          href="/category/suits"
-                          className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors"
-                        >
-                          Suits
-                        </Link>
-                      </li>
+                          )}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </li>
@@ -468,32 +418,31 @@ const Navbar = () => {
                 </span>
               </button>
               <div
-                className={`pl-4 bg-gray-50 overflow-hidden transition-all duration-300 ${mobileShopDropdownOpen ? "max-h-[500px] py-2" : "max-h-0"}`}
+                className={`pl-4 bg-gray-50 overflow-hidden transition-all duration-300 ${mobileShopDropdownOpen ? "max-h-[1000px] py-2" : "max-h-0"}`}
               >
-                <Link
-                  href="/category/sarees"
-                  className="block py-2 !text-[#b3a660]"
-                >
-                  Sarees
-                </Link>
-                <Link
-                  href="/category/salwar-suits"
-                  className="block py-2 !text-[#b3a660]"
-                >
-                  Salwar Suits
-                </Link>
-                <Link
-                  href="/category/lehengas"
-                  className="block py-2 !text-[#b3a660]"
-                >
-                  Lehengas
-                </Link>
-                <Link
-                  href="/category/suits"
-                  className="block py-2 !text-[#b3a660]"
-                >
-                  Suits
-                </Link>
+                {categories?.map((category) => (
+                  <div key={category._id}>
+                    <Link
+                      href={`/product-list?category=${category.slug}`}
+                      className="block py-2 !text-[#b3a660] font-medium"
+                    >
+                      {category.name}
+                    </Link>
+                    {category.subCategories && category.subCategories.length > 0 && (
+                      <div className="pl-4 border-l border-gray-200 ml-2">
+                        {category.subCategories.map((sub, idx) => (
+                          <Link
+                            key={idx}
+                            href={`/product-list?category=${category.slug}&subCategory=${encodeURIComponent(sub)}`}
+                            className="block py-1.5 text-sm !text-[#aa8c6a]"
+                          >
+                            {sub}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
             <Link

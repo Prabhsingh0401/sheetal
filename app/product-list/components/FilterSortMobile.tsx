@@ -5,11 +5,13 @@ import Image from "next/image";
 interface FilterSortMobileProps {
   onFilterClick: () => void;
   onSortClick: () => void;
+  activeFilterCount?: number;
 }
 
 const FilterSortMobile: React.FC<FilterSortMobileProps> = ({
   onFilterClick,
   onSortClick,
+  activeFilterCount = 0,
 }) => {
   return (
     <div className="fixed bottom-0 left-0 w-full bg-white z-[999] border-t border-gray-200 lg:hidden flex shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
@@ -29,7 +31,7 @@ const FilterSortMobile: React.FC<FilterSortMobileProps> = ({
       </div>
       <div className="w-1/2">
         <button
-          className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium uppercase tracking-wider"
+          className="w-full py-4 flex items-center justify-center gap-2 text-sm font-medium uppercase tracking-wider relative"
           onClick={onFilterClick}
         >
           <Image
@@ -39,6 +41,11 @@ const FilterSortMobile: React.FC<FilterSortMobileProps> = ({
             alt="Filter"
           />
           Filter
+          {activeFilterCount > 0 && (
+            <span className="absolute top-2 right-[calc(50%-30px)] bg-[#bd9951] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {activeFilterCount}
+            </span>
+          )}
         </button>
       </div>
     </div>

@@ -208,8 +208,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       if (selectedVariant) {
         const price = selectedSizeObject.price || 0;
         const discountPrice = selectedSizeObject.discountPrice || 0;
-        const variantImageUrl =
-          selectedVariant.v_image || product.mainImage?.url || "";
+        const variantImageUrl = getApiImageUrl(
+          selectedVariant.v_image,
+          product.mainImage?.url || "/assets/placeholder-product.jpg",
+        );
         await addToCart(
           product._id,
           selectedVariant._id,
@@ -274,9 +276,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     ) {
       allUniqueColors.push({
         name: v.color.name,
-        image: v.v_image
-          ? getApiImageUrl(v.v_image)
-          : getProductImageUrl(product),
+        image: getApiImageUrl(
+          v.v_image,
+          product.mainImage?.url || "/assets/placeholder-product.jpg",
+        ),
       });
     }
 
@@ -381,7 +384,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const currentSelectedOriginalPrice = selectedSizeObject?.price || 0;
   const currentSelectedDiscount =
     currentSelectedOriginalPrice > 0 &&
-    currentSelectedPrice < currentSelectedOriginalPrice
+      currentSelectedPrice < currentSelectedOriginalPrice
       ? `${Math.round(((currentSelectedOriginalPrice - currentSelectedPrice) / currentSelectedOriginalPrice) * 100)}`
       : "0";
 

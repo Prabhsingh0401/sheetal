@@ -2,6 +2,11 @@ import { apiFetch, getApiImageUrl } from "./api";
 import { Product } from "./productService";
 import { User } from "./userService";
 
+export interface BlogImage {
+  url: string;
+  public_id?: string;
+}
+
 export interface Blog {
   _id: string;
   title: string;
@@ -9,10 +14,9 @@ export interface Blog {
   content: string;
   excerpt: string;
   author: User;
-  bannerImage: string;
-  contentImage?: string; // Added new field
+  bannerImage: BlogImage;
+  contentImage?: BlogImage;
   imageAlt?: string;
-  category: string;
   tags: string[];
   relatedProducts: Product[];
   metaTitle?: string;
@@ -42,7 +46,6 @@ export interface BlogListParams {
   page?: number;
   limit?: number;
   search?: string;
-  category?: string;
 }
 
 export const getBlogs = async (
@@ -52,7 +55,6 @@ export const getBlogs = async (
   if (params.page) query.append("page", params.page.toString());
   if (params.limit) query.append("limit", params.limit.toString());
   if (params.search) query.append("search", params.search);
-  if (params.category) query.append("category", params.category);
 
   return apiFetch(`/blogs?${query.toString()}`);
 };

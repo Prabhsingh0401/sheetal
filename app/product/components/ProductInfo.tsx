@@ -1,6 +1,7 @@
 import StarRating from "./StarRating";
 import { ProductVariant } from "../../services/productService";
 import Image from "next/image";
+import { getApiImageUrl } from "../../services/api";
 
 interface ProductInfoProps {
   product: {
@@ -110,7 +111,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                 onClick={() => onColorChange(color)}
               >
                 <Image
-                  src={color.image}
+                  src={getApiImageUrl(color.image, "/assets/default-image.png")}
                   alt={color.name}
                   fill
                   className="object-cover"
@@ -158,18 +159,16 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                       className={`
                                                                                 ${size.name === "One Size" ? "px-3 py-2 rounded-md" : "w-10 h-10 rounded-full"}
                                                                                 flex items-center justify-center border text-sm font-medium transition-colors relative overflow-hidden
-                                                                                ${
-                                                                                  isDisabled
-                                                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                                                    : ""
-                                                                                }
-                                                                                ${
-                                                                                  selectedSize ===
-                                                                                    size.name &&
-                                                                                  !isDisabled
-                                                                                    ? "border-[#bd9951]"
-                                                                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-                                                                                }
+                                                                                ${isDisabled
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : ""
+                        }
+                                                                                ${selectedSize ===
+                          size.name &&
+                          !isDisabled
+                          ? "border-[#bd9951]"
+                          : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+                        }
                                                                             `}
                     >
                       {size.name}
@@ -315,11 +314,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </div>
         {pincodeMessage && (
           <p
-            className={`text-xs ${
-              pincodeMessage.includes("valid")
-                ? "text-red-500"
-                : "text-green-600"
-            }`}
+            className={`text-xs ${pincodeMessage.includes("valid")
+              ? "text-red-500"
+              : "text-green-600"
+              }`}
           >
             {pincodeMessage}
           </p>
@@ -377,7 +375,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
           <div className="p-4 bg-gray-50 text-sm">
             {Array.isArray(product?.specifications) &&
-            product.specifications.length > 0 ? (
+              product.specifications.length > 0 ? (
               <div className="grid grid-cols-2 gap-y-4 gap-x-8">
                 {product.specifications.map((spec: any, idx: number) => (
                   <div

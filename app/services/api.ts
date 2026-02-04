@@ -59,27 +59,14 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
 };
 
 /**
- * Helper to resolve API image URLs
+ * Helper to resolve API image URLs.
+ * Handles both string paths and objects with a 'url' property.
  */
 export const getApiImageUrl = (
-  path: string | undefined,
-  fallback: string = "/assets/placeholder.jpg",
+  path: any,
+  fallback: string = "/assets/default-image.png",
 ): string => {
   if (!path) return fallback;
-
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
-  }
-
-  // Normalize backslashes
-  const normalizedPath = path.replace(/\\/g, "/");
-
-  const cleanBaseUrl = BASE_URL.endsWith("/")
-    ? BASE_URL.slice(0, -1)
-    : BASE_URL;
-  const cleanPath = normalizedPath.startsWith("/")
-    ? normalizedPath
-    : `/${normalizedPath}`;
-
-  return `${cleanBaseUrl}${cleanPath}`;
+  if (typeof path === "string") return path || fallback;
+  return path.url || fallback;
 };
