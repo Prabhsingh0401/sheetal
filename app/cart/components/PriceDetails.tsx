@@ -23,6 +23,7 @@ interface PriceDetailsProps {
   totalAmount: number;
   couponCode?: string;
   onRemoveCoupon?: () => void;
+  hideProceedButton?: boolean;
 }
 
 const PriceDetails: React.FC<PriceDetailsProps> = ({
@@ -42,6 +43,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   totalAmount,
   couponCode,
   onRemoveCoupon,
+  hideProceedButton = false,
 }) => {
   const [openCouponModal, setOpenCouponModal] = useState(false);
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -92,7 +94,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
 
   return (
     <>
-      <div className="w-full lg:w-4/12 mt-5 font-[family-name:var(--font-monterrat)]">
+      <div className="mt-5 font-[family-name:var(--font-monterrat)]">
         <div className="p-4">
           <h3 className="text-md font-bold mb-4 uppercase">Coupons</h3>
 
@@ -214,9 +216,14 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
             Tax included. Shipping Calculated at checkout.
           </p>
 
-          <button className="w-full bg-[#6a3f07] text-white py-3 rounded-md mt-6 font-bold uppercase hover:bg-[#5a3506] transition-colors">
-            Proceed to Buy
-          </button>
+          {!hideProceedButton && (
+            <Link
+              href="/checkout/address"
+              className="w-full block text-center bg-[#be9952] text-white py-3 rounded-[5px] mt-6 font-bold uppercase hover:bg-[#5a3506] transition-colors"
+            >
+              Proceed to Buy
+            </Link>
+          )}
         </div>
       </div>
 
@@ -239,8 +246,8 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                   <div
                     key={coupon._id || coupon.id}
                     className={`border border-dashed p-4 rounded-md cursor-pointer ${selectedCouponCode === coupon.code
-                        ? "border-[#6a3f07] border-2"
-                        : "border-gray-500"
+                      ? "border-[#6a3f07] border-2"
+                      : "border-gray-500"
                       }`}
                     onClick={() => {
                       setSelectedCouponCode(coupon.code);

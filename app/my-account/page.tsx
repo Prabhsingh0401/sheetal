@@ -26,7 +26,7 @@ const MyAccountOverviewPage = () => {
           description="Check your order status"
         />
         <DashboardLinkCard
-          href="/my-account/wishlist"
+          href="/wishlist"
           icon={WISHLIST_ICON_PATH}
           title="Wishlist"
           description="All product collections"

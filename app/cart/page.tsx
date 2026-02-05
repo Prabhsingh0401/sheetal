@@ -167,7 +167,7 @@ const CartPage = () => {
             </div>
             <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
               <div className="text-[#bd9951]">BAG</div>
-              <div className="text-gray-400">ADDRESS</div>
+              <Link href="/checkout/address" className="text-gray-400 hover:text-[#bd9951]">ADDRESS</Link>
               <div className="text-gray-400">PAYMENT</div>
             </div>
             <div className="flex items-center space-x-2 text-sm font-semibold">
@@ -225,24 +225,26 @@ const CartPage = () => {
                 onBulkHeart={handleBulkHeart}
               />
 
-              <PriceDetails
-                couponInput={couponInput}
-                setCouponInput={setCouponInput}
-                handleApplyCoupon={handleApplyCoupon}
-                couponError={couponError}
-                bogoMessage={bogoMessage}
-                applicableCategories={applicableCategories}
-                categoryName={displayCategoryName}
-                couponCode={couponCode} // Pass the applied coupon code
-                onRemoveCoupon={removeCoupon} // Pass the remove function
-                cartLength={cartItems.length}
-                totalMrp={totalMrp}
-                totalDiscount={totalDiscount}
-                couponDiscount={couponDiscount}
-                shippingCharges={shippingCharges}
-                platformFee={platformFee}
-                totalAmount={totalAmount}
-              />
+              <div className="w-full lg:w-4/12">
+                <PriceDetails
+                  couponInput={couponInput}
+                  setCouponInput={setCouponInput}
+                  handleApplyCoupon={handleApplyCoupon}
+                  couponError={couponError}
+                  bogoMessage={bogoMessage}
+                  applicableCategories={applicableCategories}
+                  categoryName={displayCategoryName}
+                  couponCode={couponCode} // Pass the applied coupon code
+                  onRemoveCoupon={removeCoupon} // Pass the remove function
+                  cartLength={cartItems.length}
+                  totalMrp={totalMrp}
+                  totalDiscount={totalDiscount}
+                  couponDiscount={couponDiscount}
+                  shippingCharges={shippingCharges}
+                  platformFee={platformFee}
+                  totalAmount={totalAmount}
+                />
+              </div>
             </div>
 
             <div className="flex justify-around items-center mt-12 py-4">

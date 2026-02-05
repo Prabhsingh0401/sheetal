@@ -209,9 +209,9 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
                                         key={type}
                                         type="button"
                                         onClick={() => handleTypeChange(type)}
-                                        className={`px-4 py-1 rounded-full text-xs font-medium border transition-colors     cursor-pointer ${formData.addressType === type
-                                            ? "bg-[#73561e] text-white border-[#73561e]"
-                                            : "bg-white text-gray-800 border-gray-800 hover:border-[#73561e] hover:text-[#73561e]"
+                                        className={`px-4 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${formData.addressType === type
+                                            ? "bg-transparent text-[#bd9951] border-[#bd9951]"
+                                            : "bg-white text-black border-black hover:bg-transparent hover:text-[#bd9951] hover:border-[#bd9951]"
                                             }`}
                                     >
                                         {type}
