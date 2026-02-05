@@ -12,7 +12,7 @@ interface PriceDetailsProps {
   handleApplyCoupon: (userId: string | undefined) => void;
   couponError: string | null;
   bogoMessage: string | null;
-  applicableCategory: string | null;
+  applicableCategories: string[];
   categoryName: string | null | undefined;
   cartLength: number;
   totalMrp: number;
@@ -31,7 +31,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   handleApplyCoupon,
   couponError,
   bogoMessage,
-  applicableCategory,
+  applicableCategories,
   categoryName,
   cartLength,
   totalMrp,
@@ -143,7 +143,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
             </p>
           )}
 
-          {applicableCategory && categoryName && (
+          {applicableCategories.length > 0 && categoryName && (
             <p className="text-blue-600 text-sm mt-2">
               Coupon applied to <strong>{categoryName}</strong> items.
             </p>
@@ -238,11 +238,10 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                 coupons.map((coupon) => (
                   <div
                     key={coupon._id || coupon.id}
-                    className={`border border-dashed p-4 rounded-md cursor-pointer ${
-                      selectedCouponCode === coupon.code
+                    className={`border border-dashed p-4 rounded-md cursor-pointer ${selectedCouponCode === coupon.code
                         ? "border-[#6a3f07] border-2"
                         : "border-gray-500"
-                    }`}
+                      }`}
                     onClick={() => {
                       setSelectedCouponCode(coupon.code);
                       setCouponInput(coupon.code);

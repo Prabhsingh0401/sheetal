@@ -1,9 +1,10 @@
 "use client";
 
-import UserDashboardLayout from "../components/UserDashboardLayout";
+import React from "react";
+import ProfileView from "../components/ProfileView";
 
 const MyAccountProfilePage = () => {
-  return <UserDashboardLayout />;
+  return <ProfileView />;
 };
 
 export default MyAccountProfilePage;

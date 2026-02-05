@@ -37,7 +37,7 @@ interface UseCartReturn {
   couponError: string | null;
   couponOfferType: string | null;
   bogoMessage: string | null;
-  applicableCategory: string | null;
+  applicableCategories: string[];
   itemWiseDiscount: { [cartItemId: string]: number } | null;
   totalMrp: number;
   totalDiscount: number;
@@ -68,8 +68,8 @@ export const useCart = (): UseCartReturn => {
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponOfferType, setCouponOfferType] = useState<string | null>(null);
   const [bogoMessage, setBogoMessage] = useState<string | null>(null);
-  const [applicableCategory, setApplicableCategory] = useState<string | null>(
-    null,
+  const [applicableCategories, setApplicableCategories] = useState<string[]>(
+    [],
   );
   const [itemWiseDiscount, setItemWiseDiscount] = useState<{
     [cartItemId: string]: number;
@@ -153,7 +153,7 @@ export const useCart = (): UseCartReturn => {
           setCouponDiscount(0);
           setCouponOfferType(null);
           setBogoMessage(null);
-          setApplicableCategory(null);
+          setApplicableCategories([]);
           setItemWiseDiscount(null);
         } else {
           toast.error(response.message || "Failed to remove item from cart.");
@@ -178,7 +178,7 @@ export const useCart = (): UseCartReturn => {
           setCouponDiscount(0);
           setCouponOfferType(null);
           setBogoMessage(null);
-          setApplicableCategory(null);
+          setApplicableCategories([]);
           setItemWiseDiscount(null);
 
           const wishlistResponse = await toggleWishlistApi(productId);
@@ -225,7 +225,7 @@ export const useCart = (): UseCartReturn => {
       setCouponError(null);
       setBogoMessage(null);
       setCouponOfferType(null);
-      setApplicableCategory(null);
+      setApplicableCategories([]);
       setItemWiseDiscount(null);
 
       try {
@@ -268,7 +268,7 @@ export const useCart = (): UseCartReturn => {
             response.data.applicableIds &&
             response.data.applicableIds.length > 0
           ) {
-            setApplicableCategory(response.data.applicableIds[0]);
+            setApplicableCategories(response.data.applicableIds);
           }
 
           setItemWiseDiscount(response.data.itemWiseDiscount || {});
@@ -323,7 +323,7 @@ export const useCart = (): UseCartReturn => {
           setCouponDiscount(0);
           setCouponOfferType(null);
           setBogoMessage(null);
-          setApplicableCategory(null);
+          setApplicableCategories([]);
           setItemWiseDiscount(null);
         } else {
           toast.error(response.message || "Failed to update quantity.");
@@ -342,7 +342,7 @@ export const useCart = (): UseCartReturn => {
     setCouponError(null);
     setCouponOfferType(null);
     setBogoMessage(null);
-    setApplicableCategory(null);
+    setApplicableCategories([]);
     setItemWiseDiscount(null);
     toast.success("Coupon removed");
   }, []);
@@ -356,7 +356,7 @@ export const useCart = (): UseCartReturn => {
     couponError,
     couponOfferType,
     bogoMessage,
-    applicableCategory,
+    applicableCategories,
     itemWiseDiscount,
     totalMrp,
     totalDiscount,

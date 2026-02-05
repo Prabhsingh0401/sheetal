@@ -1,14 +1,14 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { getApiImageUrl } from "../../services/api"; // Import getApiImageUrl
+import { getApiImageUrl } from "../../services/api"; 
 
 interface UserInfoCardProps {
   user: {
     name?: string;
     email?: string;
     phoneNumber?: string;
-    profilePicture?: string; // Added
+    profilePicture?: string; 
   } | null;
   onSelectSection: (section: string) => void;
 }

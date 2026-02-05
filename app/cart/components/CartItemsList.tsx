@@ -8,8 +8,8 @@ import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
 interface CartItemsListProps {
   cartItems: CartItem[];
-  cheapestItem: CartItem | null;
-  applicableCategory: string | null;
+  // cheapestItem: CartItem | null; // Removed
+  applicableCategories: string[];
   itemWiseDiscount: { [cartItemId: string]: number } | null;
   couponOfferType: string | null;
   removeFromCart: (itemId: string) => Promise<void>;
@@ -21,12 +21,16 @@ interface CartItemsListProps {
   cancelRemoveItem: () => void;
   handleMoveToWishlist: () => Promise<void>;
   cartLength: number;
+  selectedItemIds: string[];
+  onSelectionChange: (itemId: string) => void;
+  onBulkRemove: () => void;
+  onBulkHeart: () => void;
+  isBulkAction: boolean;
 }
 
 const CartItemsList: React.FC<CartItemsListProps> = ({
   cartItems,
-  cheapestItem,
-  applicableCategory,
+  applicableCategories,
   itemWiseDiscount,
   couponOfferType,
   removeFromCart,
@@ -38,6 +42,11 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   cancelRemoveItem,
   handleMoveToWishlist,
   cartLength,
+  selectedItemIds,
+  onSelectionChange,
+  onBulkRemove,
+  onBulkHeart,
+  isBulkAction,
 }) => {
   return (
     <>
@@ -46,6 +55,8 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
           onConfirm={confirmRemoveItem}
           onCancel={cancelRemoveItem}
           onMoveToWishlist={handleMoveToWishlist}
+          isBulkAction={isBulkAction}
+          itemCount={selectedItemIds.length}
         />
       )}
       <div className="w-full lg:w-8/12">
@@ -68,19 +79,21 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             <div>
               <Image
                 src="/assets/icons/delete.svg"
-                alt="Info"
+                alt="Delete Selected"
                 width={16}
                 height={16}
-                className="inline-block mr-2 cursor-pointer"
+                className="inline-block mr-2 cursor-pointer hover:opacity-80"
+                onClick={onBulkRemove}
               />
             </div>
             <div>
               <Image
                 src="/assets/icons/heart-b.svg"
-                alt="Info"
+                alt="Wishlist Selected"
                 width={16}
                 height={16}
-                className="inline-block mr-2"
+                className="inline-block mr-2 cursor-pointer hover:opacity-80"
+                onClick={onBulkHeart}
               />
             </div>
           </div>
@@ -96,22 +109,26 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             const discountPercentage =
               displayOriginalPrice > 0
                 ? Math.round(
-                    ((displayOriginalPrice - displayDiscountPrice) /
-                      displayOriginalPrice) *
-                      100,
-                  )
+                  ((displayOriginalPrice - displayDiscountPrice) /
+                    displayOriginalPrice) *
+                  100,
+                )
                 : 0;
 
             return (
               <div
                 key={item._id}
-                className={`flex items-start px-4 py-5 gap-4 ${
-                  index < cartItems.length - 1 ? "" : ""
-                }`}
+                className={`flex items-start px-4 py-5 gap-4 ${index < cartItems.length - 1 ? "" : ""
+                  }`}
               >
                 {/* Checkbox */}
                 <div className="pt-2">
-                  <input type="checkbox" className="w-4 h-4 accent-green-600" />
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 accent-green-600 cursor-pointer"
+                    checked={selectedItemIds.includes(item._id)}
+                    onChange={() => onSelectionChange(item._id)}
+                  />
                 </div>
 
                 {/* Image */}
@@ -137,15 +154,21 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                     Color: {item.color} | Size: {item.size}
                   </p>
 
-                  {applicableCategory &&
-                    item.product.category._id === applicableCategory && (
+                  {applicableCategories.length > 0 &&
+                    item.product.category &&
+                    applicableCategories.includes(item.product.category._id) && (
                       <span className="text-xs text-blue-600 font-medium">
                         Category Coupon Applied
                       </span>
                     )}
 
                   <div className="flex items-center gap-2 text-sm text-[#bd9951] mt-2">
-                    <button className="hover:underline">Edit</button>
+                    <Link
+                      href={`/product/${item.product.slug}`}
+                      className="hover:underline"
+                    >
+                      Edit
+                    </Link>
                     <span className="text-gray-300">|</span>
                     <button
                       className="hover:underline"
@@ -174,15 +197,10 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                         {discountPercentage}% OFF
                       </span>
                     )}
-                    {cheapestItem && cheapestItem._id === item._id && (
-                      <span className="text-xs text-white bg-green-600 px-2 py-1 rounded-full">
-                        Free
-                      </span>
-                    )}
+                    {/* Removed manual cheapestItem check */}
                     {itemWiseDiscount &&
-                      itemWiseDiscount[item._id] > 0 &&
-                      couponOfferType !== "BOGO" && (
-                        <span className="text-xs text-green-600 px-2 py-1 rounded-full">
+                      itemWiseDiscount[item._id] > 0 && (
+                        <span className="text-xs text-green-600 px-2 py-1 rounded-full bg-green-50 border border-green-200">
                           -₹{itemWiseDiscount[item._id].toFixed(2)}
                         </span>
                       )}

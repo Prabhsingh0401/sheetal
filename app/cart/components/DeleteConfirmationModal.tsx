@@ -4,12 +4,16 @@ interface DeleteConfirmationModalProps {
   onConfirm: () => void;
   onCancel: () => void;
   onMoveToWishlist: () => void;
+  isBulkAction?: boolean;
+  itemCount?: number;
 }
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   onConfirm,
   onCancel,
   onMoveToWishlist,
+  isBulkAction = false,
+  itemCount = 0,
 }) => {
   return (
     // Backdrop
@@ -22,10 +26,14 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         className="bg-white p-2 shadow-2xl max-w-xs w-full font-montserrat font-optima"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-bold text-gray-800 mb-3">Remove Item</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-3">
+          {isBulkAction ? `Remove ${itemCount} Items` : "Remove Item"}
+        </h2>
 
         <p className="text-gray-600 mb-5 text-sm">
-          Are you sure you want to remove this item from your cart?
+          {isBulkAction
+            ? "Are you sure you want to remove these items from your cart?"
+            : "Are you sure you want to remove this item from your cart?"}
         </p>
 
         <div className="flex justify-between space-x-3">

@@ -129,7 +129,11 @@ const EditProfile: React.FC = () => {
 
       {/* Content */}
       <div className="text-sm">
-        {initialLoading && <p>Loading user data...</p>}
+        {initialLoading && (
+          <div className="flex justify-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-amber-600 border-t-transparent"></div>
+          </div>
+        )}
         {initialError && <p className="text-red-500">{initialError}</p>}
 
         {!initialLoading && !initialError && (

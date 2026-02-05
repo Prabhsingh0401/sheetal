@@ -22,40 +22,92 @@ const CartPage = () => {
     applyCoupon,
     couponOfferType,
     bogoMessage,
-    applicableCategory,
+    applicableCategories,
     itemWiseDiscount,
     updateCartItemQuantity,
     removeCoupon, // Add this
   } = useCart();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  /* Selection State */
+  const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
   const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isBulkAction, setIsBulkAction] = useState(false);
   const [couponInput, setCouponInput] = useState("");
 
+  /* Selection Handlers */
+  const handleSelectionChange = (itemId: string) => {
+    setSelectedItemIds((prev) =>
+      prev.includes(itemId)
+        ? prev.filter((id) => id !== itemId)
+        : [...prev, itemId],
+    );
+  };
+
+  const handleBulkRemove = () => {
+    if (selectedItemIds.length === 0) {
+      toast.error("Please select items to remove.");
+      return;
+    }
+    setIsBulkAction(true);
+    setIsModalOpen(true);
+  };
+
+  const handleBulkHeart = () => {
+    if (selectedItemIds.length === 0) {
+      toast.error("Please select items to remove.");
+      return;
+    }
+    setIsBulkAction(true);
+    setIsModalOpen(true);
+  };
+
   const handleRemoveItem = (item: CartItem) => {
+    setIsBulkAction(false);
     setItemToRemove(item);
     setIsModalOpen(true);
   };
 
   const confirmRemoveItem = async () => {
-    if (itemToRemove) {
+    if (isBulkAction) {
+      // Bulk Delete
+      for (const id of selectedItemIds) {
+        await removeFromCart(id);
+      }
+      setSelectedItemIds([]); // Clear selection
+    } else if (itemToRemove) {
+      // Single Delete
       await removeFromCart(itemToRemove._id);
-      setIsModalOpen(false);
       setItemToRemove(null);
     }
+    setIsModalOpen(false);
+    setIsBulkAction(false);
   };
 
   const handleMoveToWishlist = async () => {
-    if (itemToRemove) {
+    if (isBulkAction) {
+      // Bulk Move
+      for (const id of selectedItemIds) {
+        // Find product ID from cart items
+        const item = cartItems.find((i) => i._id === id);
+        if (item) {
+          await moveFromCartToWishlist(id, item.product._id);
+        }
+      }
+      setSelectedItemIds([]); // Clear selection
+    } else if (itemToRemove) {
+      // Single Move
       await moveFromCartToWishlist(itemToRemove._id, itemToRemove.product._id);
-      setIsModalOpen(false);
       setItemToRemove(null);
     }
+    setIsModalOpen(false);
+    setIsBulkAction(false);
   };
 
   const cancelRemoveItem = () => {
     setIsModalOpen(false);
     setItemToRemove(null);
+    setIsBulkAction(false);
   };
 
   const handleApplyCoupon = (userId: string | undefined) => {
@@ -85,28 +137,17 @@ const CartPage = () => {
   const platformFee = 23;
   const totalAmount = finalAmount + shippingCharges - platformFee;
 
-  const cheapestItem =
-    couponOfferType === "BOGO" && cartItems.length > 0
-      ? cartItems
-          .filter(
-            (item) =>
-              !applicableCategory ||
-              item.product.category._id === applicableCategory,
-          )
-          .reduce(
-            (cheapest, item) =>
-              Number(item.discountPrice ?? item.price ?? 0) <
-              Number(cheapest.discountPrice ?? cheapest.price ?? 0)
-                ? item
-                : cheapest,
-            cartItems[0],
-          )
-      : null;
+  /* Removed client-side cheapestItem calculation to rely on server response */
 
-  const categoryName = applicableCategory
-    ? cartItems.find((item) => item.product.category._id === applicableCategory)
-        ?.product.category.name
-    : null;
+  /* Logic for display name */
+  const categoryNames = applicableCategories.length > 0
+    ? cartItems
+      .filter(item => item.product.category && applicableCategories.includes(item.product.category._id))
+      .map(item => item.product.category.name)
+    : [];
+  // Unique names
+  const uniqueCategoryNames = Array.from(new Set(categoryNames));
+  const displayCategoryName = uniqueCategoryNames.length > 0 ? uniqueCategoryNames.join(", ") : null;
 
   return (
     <div className="font-montserrat">
@@ -164,8 +205,8 @@ const CartPage = () => {
             <div className="flex flex-col lg:flex-row gap-8">
               <CartItemsList
                 cartItems={cartItems}
-                cheapestItem={cheapestItem}
-                applicableCategory={applicableCategory}
+                // cheapestItem prop removed
+                applicableCategories={applicableCategories}
                 itemWiseDiscount={itemWiseDiscount}
                 couponOfferType={couponOfferType}
                 removeFromCart={removeFromCart}
@@ -177,6 +218,11 @@ const CartPage = () => {
                 cancelRemoveItem={cancelRemoveItem}
                 handleMoveToWishlist={handleMoveToWishlist}
                 cartLength={cartItems.length}
+                selectedItemIds={selectedItemIds}
+                onSelectionChange={handleSelectionChange}
+                onBulkRemove={handleBulkRemove}
+                isBulkAction={isBulkAction}
+                onBulkHeart={handleBulkHeart}
               />
 
               <PriceDetails
@@ -185,8 +231,8 @@ const CartPage = () => {
                 handleApplyCoupon={handleApplyCoupon}
                 couponError={couponError}
                 bogoMessage={bogoMessage}
-                applicableCategory={applicableCategory}
-                categoryName={categoryName}
+                applicableCategories={applicableCategories}
+                categoryName={displayCategoryName}
                 couponCode={couponCode} // Pass the applied coupon code
                 onRemoveCoupon={removeCoupon} // Pass the remove function
                 cartLength={cartItems.length}

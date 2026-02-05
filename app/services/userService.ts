@@ -1,11 +1,10 @@
 import { apiFetch } from "./api";
-import { updateUserDetailsInLocalStorage } from "./authService"; // Import the new function
+import { updateUserDetailsInLocalStorage } from "./authService";
 
 export interface User {
   _id: string;
   name: string;
-  email?: string; // Optional, as not always populated
-  // Add other user fields if needed and they are populated in different contexts
+  email?: string;
 }
 
 export const updateUserProfile = async (userData: any | FormData) => {
@@ -15,9 +14,6 @@ export const updateUserProfile = async (userData: any | FormData) => {
 
   if (userData instanceof FormData) {
     options.body = userData;
-    // When FormData is used, browser sets Content-Type to multipart/form-data automatically.
-    // Manually setting it to application/json would break the upload.
-    // If other headers are needed, merge them carefully.
   } else {
     options.headers = {
       "Content-Type": "application/json",
@@ -26,8 +22,6 @@ export const updateUserProfile = async (userData: any | FormData) => {
   }
 
   const response = await apiFetch("/users/update", options);
-  // If the update was successful and the backend returns the updated user,
-  // update the local storage with the new user details.
   if (response.success && response.data) {
     updateUserDetailsInLocalStorage(response.data);
   }
@@ -37,5 +31,37 @@ export const updateUserProfile = async (userData: any | FormData) => {
 export const getCurrentUser = async () => {
   return await apiFetch("/users/me", {
     method: "GET",
+  });
+};
+
+export const addAddress = async (addressData: any) => {
+  return await apiFetch("/users/address", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(addressData),
+  });
+};
+
+export const updateAddress = async (addressId: string, addressData: any) => {
+  return await apiFetch(`/users/address/${addressId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(addressData),
+  });
+};
+
+export const deleteAddress = async (addressId: string) => {
+  return await apiFetch(`/users/address/${addressId}`, {
+    method: "DELETE",
+  });
+};
+
+export const setDefaultAddress = async (addressId: string) => {
+  return await apiFetch(`/users/address/${addressId}/default`, {
+    method: "PUT",
   });
 };

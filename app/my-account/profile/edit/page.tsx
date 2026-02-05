@@ -1,9 +1,9 @@
 "use client";
 
-import UserDashboardLayout from "../../components/UserDashboardLayout";
+import EditProfile from "../../components/EditProfile";
 
 const EditProfilePage = () => {
-  return <UserDashboardLayout />;
+  return <EditProfile />;
 };
 
 export default EditProfilePage;
