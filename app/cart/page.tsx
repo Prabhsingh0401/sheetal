@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { useCart, CartItem } from "../hooks/useCart";
 import CartItemsList from "./components/CartItemsList";
 import PriceDetails from "./components/PriceDetails";
+import { getSettings } from "../services/settingsService";
 
 const CartPage = () => {
   const {
@@ -27,6 +28,12 @@ const CartPage = () => {
     updateCartItemQuantity,
     removeCoupon, // Add this
   } = useCart();
+
+  /* Settings State - Moved to top to avoid hook ordering issues */
+  const [platformFee, setPlatformFee] = useState(0);
+  const [shippingCharges, setShippingCharges] = useState(0);
+  const [baseShippingFee, setBaseShippingFee] = useState(0);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
 
   /* Selection State */
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
@@ -125,6 +132,37 @@ const CartPage = () => {
     applyCoupon(couponInput.trim().toUpperCase(), userId);
   };
 
+  /* Fetch Settings Once */
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const settings = await getSettings();
+        setPlatformFee(settings.platformFee || 0);
+        setBaseShippingFee(settings.shippingFee || 0);
+        setFreeShippingThreshold(settings.freeShippingThreshold || 0);
+
+        // Initial calculation
+        if (finalAmount > (settings.freeShippingThreshold || 0) && (settings.freeShippingThreshold || 0) > 0) {
+          setShippingCharges(0);
+        } else {
+          setShippingCharges(settings.shippingFee || 0);
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings", err);
+      }
+    };
+    fetchSettings();
+  }, [finalAmount]);
+
+  /* Recalculate Shipping on Amount Change */
+  useEffect(() => {
+    if (finalAmount > freeShippingThreshold && freeShippingThreshold > 0) {
+      setShippingCharges(0);
+    } else {
+      setShippingCharges(baseShippingFee);
+    }
+  }, [finalAmount, freeShippingThreshold, baseShippingFee]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
@@ -133,9 +171,11 @@ const CartPage = () => {
     );
   }
 
-  const shippingCharges = 150;
-  const platformFee = 23;
-  const totalAmount = finalAmount + shippingCharges - platformFee;
+
+
+
+
+  const totalAmount = finalAmount + shippingCharges + platformFee;
 
   /* Removed client-side cheapestItem calculation to rely on server response */
 

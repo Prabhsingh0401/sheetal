@@ -145,9 +145,9 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
             </p>
           )}
 
-          {applicableCategories.length > 0 && categoryName && (
+          {applicableCategories.length > 0 && (
             <p className="text-blue-600 text-sm mt-2">
-              Coupon applied to <strong>{categoryName}</strong> items.
+              Coupon applied to applicable items.
             </p>
           )}
 
@@ -267,13 +267,16 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                       )}
                       {coupon.scope === "Category" &&
                         coupon.applicableIds &&
-                        coupon.applicableIds.length > 0 &&
-                        typeof coupon.applicableIds[0] === "object" &&
-                        coupon.applicableIds[0].name && (
+                        coupon.applicableIds.length > 0 && (
                           <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5">
-                            {coupon.applicableIds[0].name}
+                            {typeof coupon.applicableIds[0] === 'object' && coupon.applicableIds[0].name ? coupon.applicableIds[0].name : "Category Offer"}
                           </span>
                         )}
+                      {coupon.scope === "Specific_Product" && (
+                        <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5">
+                          Product Offer
+                        </span>
+                      )}
                     </div>
 
                     <div className="text-sm font-semibold text-gray-800 mt-2">

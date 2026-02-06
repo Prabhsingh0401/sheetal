@@ -154,11 +154,12 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                     Color: {item.color} | Size: {item.size}
                   </p>
 
-                  {applicableCategories.length > 0 &&
-                    item.product.category &&
-                    applicableCategories.includes(item.product.category._id) && (
+                  {applicableCategories.length > 0 && (
+                    (item.product.category && applicableCategories.includes(typeof item.product.category === 'object' ? item.product.category._id : item.product.category)) ||
+                    (applicableCategories.includes(item.product._id))
+                  ) && (
                       <span className="text-xs text-blue-600 font-medium">
-                        Category Coupon Applied
+                        {applicableCategories.includes(item.product._id) ? "Product Coupon Applied" : "Category Coupon Applied"}
                       </span>
                     )}
 
