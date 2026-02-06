@@ -137,15 +137,16 @@ const CartPage = () => {
     const fetchSettings = async () => {
       try {
         const settings = await getSettings();
-        setPlatformFee(settings.platformFee || 0);
-        setBaseShippingFee(settings.shippingFee || 0);
-        setFreeShippingThreshold(settings.freeShippingThreshold || 0);
+        setPlatformFee(Number(settings.platformFee) || 0);
+        setBaseShippingFee(Number(settings.shippingFee) || 0);
+        setFreeShippingThreshold(Number(settings.freeShippingThreshold) || 0);
 
         // Initial calculation
-        if (finalAmount > (settings.freeShippingThreshold || 0) && (settings.freeShippingThreshold || 0) > 0) {
+        const threshold = Number(settings.freeShippingThreshold) || 0;
+        if (finalAmount > threshold && threshold > 0) {
           setShippingCharges(0);
         } else {
-          setShippingCharges(settings.shippingFee || 0);
+          setShippingCharges(Number(settings.shippingFee) || 0);
         }
       } catch (err) {
         console.error("Failed to fetch settings", err);

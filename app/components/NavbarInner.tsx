@@ -11,15 +11,118 @@ import {
   getUserDetails,
 } from "../services/authService";
 import { useRouter } from "next/navigation";
-import useSWR from "swr"; // Import SWR
-import { fetchAllCategories, Category } from "../services/categoryService"; // Import Category Service
+import useSWR from "swr";
+import { fetchAllCategories, Category } from "../services/categoryService";
+import { getSettings } from "../services/settingsService";
+
+// Recursive Desktop Menu Item
+const DesktopMenuItem = ({ item }: { item: any }) => {
+  if (item.hidden) return null;
+
+  const hasChildren = item.children && item.children.length > 0;
+
+  return (
+    <li className="relative group h-full flex items-center">
+      <Link
+        href={item.href || "#"}
+        className={`
+          inline-block px-[19px] !text-[#b3a660] border-r !border-[#f2bf42] 
+          tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-1
+        `}
+      >
+        {item.label}{" "}
+        {hasChildren && <span className="text-[10px] transform group-hover:rotate-180 transition-transform">▼</span>}
+      </Link>
+
+      {/* Dropdown Menu */}
+      {hasChildren && (
+        <div
+          className={`
+            absolute left-0 top-full pt-4 w-[280px] text-left 
+            opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+            transition-all duration-300 z-[1005]
+          `}
+        >
+          <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
+            {item.children.map((child: any, idx: number) => (
+              <DesktopSubMenuItem key={`${child.id}-${idx}`} item={child} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </li>
+  );
+};
+
+// Helper for Recursive Submenus (Level 2+)
+const DesktopSubMenuItem = ({ item }: { item: any }) => {
+  if (item.hidden) return null;
+  const hasChildren = item.children && item.children.length > 0;
+
+  return (
+    <li className="relative group/sub border-b border-white/20 last:border-none">
+      <Link
+        href={item.href || "#"}
+        className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex items-center justify-between"
+      >
+        {item.label}
+        {hasChildren && <span className="-rotate-90 text-[8px]">▼</span>}
+      </Link>
+
+      {/* Recursive Children */}
+      {hasChildren && (
+        <div className="absolute right-full top-0 w-full hidden group-hover/sub:block z-[999] pr-1">
+          <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e]">
+            {item.children.map((child: any, idx: number) => (
+              <DesktopSubMenuItem key={`${child.id}-${idx}`} item={child} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </li>
+  )
+}
+
+// Recursive Mobile Menu Item
+const MobileMenuItem = ({ item, depth = 0 }: { item: any; depth?: number }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  if (item.hidden) return null;
+
+  const hasChildren = item.children && item.children.length > 0;
+
+  if (!hasChildren) {
+    return (
+      <Link
+        href={item.href || "#"}
+        className={`block font-medium border-b border-gray-100 py-2 !text-[#b3a660] ${depth > 0 ? 'text-sm !text-[#aa8c6a] pl-4' : 'text-lg'}`}
+      >
+        {item.label}
+      </Link>
+    );
+  }
+
+  return (
+    <div>
+      <button
+        className={`w-full flex justify-between items-center border-b border-gray-100 py-2 !text-[#b3a660] ${depth > 0 ? 'text-sm font-normal' : 'text-lg font-medium'}`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {item.label}{" "}
+        <span className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>▼</span>
+      </button>
+      <div className={`pl-4 bg-gray-50 overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[1000px] py-2" : "max-h-0"}`}>
+        {item.children.map((child: any, idx: number) => (
+          <MobileMenuItem key={`${child.id}-${idx}`} item={child} depth={depth + 1} />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const NavbarInner = () => {
   const { wishlist } = useWishlist();
   const { cart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [shopDropdownOpen, setShopDropdownOpen] = useState(false);
-  const [mobileShopDropdownOpen, setMobileShopDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false); // State for user dropdown
@@ -27,8 +130,37 @@ const NavbarInner = () => {
   const [currentUser, setCurrentUser] = useState<any>(null); // State to store user details
   const [isClient, setIsClient] = useState(false); // State to track if component is mounted on client
 
-  // Fetch categories using SWR
-  const { data: categories, error } = useSWR<Category[]>("/categories", fetchAllCategories);
+  // Fetch Settings (Layout) AND Categories (Fallback)
+  const { data: settings } = useSWR("/settings", getSettings);
+  const { data: categories } = useSWR("/categories", fetchAllCategories);
+
+  // Determine the Navigation Items to Render
+  let navItems: any[] = [];
+
+  if (settings?.navbarLayout && settings.navbarLayout.length > 0) {
+    navItems = settings.navbarLayout;
+  } else if (categories) {
+    // Fallback: Build standard structure
+    navItems = [
+      { label: "Home", href: "/", id: "home" },
+      {
+        label: "Shop",
+        href: "#",
+        id: "shop",
+        children: categories.map(cat => ({
+          label: cat.name,
+          href: `/product-list?category=${cat.slug}`,
+          id: cat._id,
+          children: cat.subCategories?.map(sub => ({
+            label: sub,
+            href: `/product-list?category=${cat.slug}&subCategory=${encodeURIComponent(sub)}`,
+            id: sub
+          }))
+        }))
+      },
+      { label: "Our Story", href: "/about-us", id: "about" }
+    ];
+  }
 
   useEffect(() => {
     setIsClient(true); // Mark that we are on the client side
@@ -53,11 +185,6 @@ const NavbarInner = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Desktop Shop Dropdown handlers
-  const handleMouseEnterShop = () => setShopDropdownOpen(true);
-  const handleMouseLeaveShop = () => setShopDropdownOpen(false);
-
-  // User Dropdown handlers
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
   const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
 
@@ -150,11 +277,6 @@ const NavbarInner = () => {
 
   // Mobile Menu Toggles
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
-  const toggleMobileShopDropdown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setMobileShopDropdownOpen(!mobileShopDropdownOpen);
-  };
-
   const toggleSearch = () => setSearchOpen(!searchOpen);
   const closeSearch = () => setSearchOpen(false);
 
@@ -181,77 +303,14 @@ const NavbarInner = () => {
             {/* Right Side (Navigation) */}
             <div className="flex justify-end items-center flex-1 ml-8">
               <ul className="m-0 p-0 list-none inline-flex items-center gap-0">
-                <li className="relative">
-                  <Link
-                    href="/"
-                    className="inline-block px-[19px] !text-[#b3a660] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors"
-                  >
-                    Home
-                  </Link>
-                </li>
 
-                {/* Desktop Shop Dropdown */}
-                <li
-                  className="relative group"
-                  onMouseEnter={handleMouseEnterShop}
-                  onMouseLeave={handleMouseLeaveShop}
-                >
-                  <Link
-                    href="#"
-                    className="inline-block px-[19px] !text-[#b3a660] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-1"
-                  >
-                    Shop{" "}
-                    <span className="text-[10px] transform rotate-180">▼</span>
-                  </Link>
-
-                  {/* Dropdown Menu */}
-                  <div
-                    className={`absolute left-0 top-full pt-4 w-[200px] text-left transition-all duration-300 ${shopDropdownOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
-                  >
-                    <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
-                      {categories?.map((category) => (
-                        <li key={category._id} className="relative group/sub border-b border-white/20 last:border-none">
-                          <Link
-                            href={`/product-list?category=${category.slug}`}
-                            className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex items-center justify-between"
-                          >
-                            {category.name}
-                            {category.subCategories && category.subCategories.length > 0 && (
-                              <span className="-rotate-90 text-[8px]">▼</span>
-                            )}
-                          </Link>
-                          {/* Level 2 Submenu (Subcategories) */}
-                          {category.subCategories && category.subCategories.length > 0 && (
-                            <ul className="absolute right-full top-0 w-full bg-[#153427] border !border-[#f5de7e] p-5 hidden group-hover/sub:block z-[999]">
-                              {category.subCategories.map((sub, idx) => (
-                                <li key={idx} className="border-b border-white/20 last:border-none">
-                                  <Link
-                                    href={`/product-list?category=${category.slug}&subCategory=${encodeURIComponent(sub)}`}
-                                    className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a]"
-                                  >
-                                    {sub}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </li>
-
-                <li className="relative">
-                  <Link
-                    href="/about-us"
-                    className="inline-block px-[19px] !text-[#b3a660] border-r !border-[#f2bf42] tracking-[1px] text-[16px] hover:text-white transition-colors"
-                  >
-                    Our Story
-                  </Link>
-                </li>
+                {/* DYNAMIC DESKTOP NAVIGATION */}
+                {navItems.map((item, idx) => (
+                  <DesktopMenuItem key={`${item.id}-${idx}`} item={item} />
+                ))}
 
                 {/* Icons */}
-                <li className="flex items-center gap-4 pl-5">
+                <li className="flex items-center gap-4 pl-5 ml-2 border-l border-[#f2bf42]/30">
                   <button
                     onClick={toggleSearch}
                     className="hover:opacity-80 transition-opacity"
@@ -406,60 +465,11 @@ const NavbarInner = () => {
             </button>
           </div>
           <div className="p-6 flex flex-col gap-4 overflow-y-auto h-full pb-20">
-            <Link
-              href="/"
-              className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]"
-            >
-              Home
-            </Link>
-            <Link
-              href="/about-us"
-              className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]"
-            >
-              OUR STORY
-            </Link>
 
-            {/* Mobile Dropdown */}
-            <div>
-              <button
-                className="w-full flex justify-between items-center text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]"
-                onClick={toggleMobileShopDropdown}
-              >
-                Shop{" "}
-                <span
-                  className={`transition-transform duration-200 ${mobileShopDropdownOpen ? "rotate-180" : ""}`}
-                >
-                  ▼
-                </span>
-              </button>
-              <div
-                className={`pl-4 bg-gray-50 overflow-hidden transition-all duration-300 ${mobileShopDropdownOpen ? "max-h-[1000px] py-2" : "max-h-0"}`}
-              >
-                {categories?.map((category) => (
-                  <div key={category._id}>
-                    <Link
-                      href={`/product-list?category=${category.slug}`}
-                      className="block py-2 !text-[#b3a660] font-medium"
-                    >
-                      {category.name}
-                    </Link>
-                    {category.subCategories && category.subCategories.length > 0 && (
-                      <div className="pl-4 border-l border-gray-200 ml-2">
-                        {category.subCategories.map((sub, idx) => (
-                          <Link
-                            key={idx}
-                            href={`/product-list?category=${category.slug}&subCategory=${encodeURIComponent(sub)}`}
-                            className="block py-1.5 text-sm !text-[#aa8c6a]"
-                          >
-                            {sub}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* DYNAMIC MOBILE NAVIGATION */}
+            {navItems.map((item, idx) => (
+              <MobileMenuItem key={`${item.id}-${idx}`} item={item} />
+            ))}
 
             <Link
               href="/blog"

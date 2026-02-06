@@ -1,8 +1,100 @@
-import React from "react";
+'use client';
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { getSettings } from "../services/settingsService";
+
+interface FooterLink {
+  id: string;
+  label: string;
+  href: string;
+  hidden?: boolean;
+}
+
+interface FooterSection {
+  id: string;
+  title: string;
+  links: FooterLink[];
+  hidden?: boolean;
+}
+
+// Default fallback structure
+const defaultSections: FooterSection[] = [
+  {
+    id: "info",
+    title: "Information",
+    links: [
+      { id: "1", label: "Our Story", href: "/about-us" },
+      { id: "2", label: "Blog", href: "/blog" },
+      { id: "3", label: "FAQ's", href: "/faq" },
+      { id: "4", label: "Contact us", href: "/contact-us" },
+    ]
+  },
+  {
+    id: "account",
+    title: "My Account / Orders",
+    links: [
+      { id: "5", label: "My Account", href: "/my-account" },
+      { id: "6", label: "Track Order", href: "/track-order" },
+      { id: "7", label: "Return Order", href: "/return-order" },
+      { id: "8", label: "Sitemap", href: "/sitemap" },
+    ]
+  },
+  {
+    id: "quick",
+    title: "Quick Links",
+    links: [
+      { id: "9", label: "Privacy Policy", href: "/privacy-policy" },
+      { id: "10", label: "Return & Exchange Policy", href: "/returne-policy" },
+      { id: "11", label: "Shipping Policy", href: "/shipping-policy" },
+      { id: "12", label: "Terms of Use", href: "/terms-conditions" },
+    ]
+  }
+];
 
 const Footer = () => {
+  const [sectionsToRender, setSectionsToRender] = useState<FooterSection[]>(defaultSections);
+
+  useEffect(() => {
+    const fetchFooterLayout = async () => {
+      try {
+        const settings = await getSettings();
+        const footerLayout: FooterSection[] = settings.footerLayout || [];
+
+        // Validate that it's actually footer data, not navbar data
+        // Navbar data has: isDroppable, type, children
+        // Footer data has: title, links
+        const hasNavbarStructure = footerLayout.length > 0 &&
+          (footerLayout[0].hasOwnProperty('isDroppable') ||
+            footerLayout[0].hasOwnProperty('type') ||
+            footerLayout[0].hasOwnProperty('children'));
+
+        // If empty or has navbar structure, keep defaults
+        if (footerLayout.length === 0 || hasNavbarStructure) {
+          return; // Keep default sections
+        }
+
+        // Filter out hidden sections and links
+        const visibleSections = footerLayout
+          .filter(section => !section.hidden)
+          .map(section => ({
+            ...section,
+            links: (section.links || []).filter(link => !link.hidden)
+          }));
+
+        // Use fetched layout if available
+        if (visibleSections.length > 0) {
+          setSectionsToRender(visibleSections);
+        }
+      } catch (error) {
+        console.error("Failed to fetch footer layout:", error);
+        // Keep default sections on error
+      }
+    };
+
+    fetchFooterLayout();
+  }, []);
+
   return (
     <>
       {/* MAIN FOOTER */}
@@ -16,7 +108,7 @@ const Footer = () => {
       >
         <div className="container mx-auto px-6 py-12">
           {/* TOP GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 text-left">
             {/* LOGO + SOCIAL */}
             <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
               <Link href="/" className="mb-4">
@@ -61,101 +153,26 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* INFORMATION */}
-            <div>
-              <h3 className="text-[#f8f0b4] text-[22px] font-normal mb-6">
-                Information
-              </h3>
+            {/* DYNAMIC FOOTER SECTIONS */}
+            {sectionsToRender.map((section) => (
+              <div key={section.id}>
+                <h3 className="text-[#f8f0b4] text-[22px] font-normal mb-6">
+                  {section.title}
+                </h3>
 
-              <div className="flex flex-wrap text-[#f8f0b6]">
-                <div className="w-1/2 flex flex-col gap-2">
-                  <Link
-                    href="/about-us"
-                    className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                  >
-                    Our Story
-                  </Link>
-                  <Link
-                    href="/blog"
-                    className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                  >
-                    Blog
-                  </Link>
-                  <Link
-                    href="/faq"
-                    className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                  >
-                    FAQ's
-                  </Link>
-                  <Link
-                    href="/contact-us"
-                    className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                  >
-                    Contact us
-                  </Link>
-                </div>
-                <div className="w-1/2 flex flex-col gap-2">
-                  <Link
-                    href="/my-account"
-                    className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                  >
-                    My Account
-                  </Link>
-                  <Link
-                    href="/track-order"
-                    className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                  >
-                    Track Order
-                  </Link>
-                  <Link
-                    href="/return-order"
-                    className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                  >
-                    Return Order
-                  </Link>
-                  <Link
-                    href="/sitemap"
-                    className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                  >
-                    Sitemap
-                  </Link>
+                <div className="flex flex-col gap-2 text-[#f8f0b6]">
+                  {section.links.map((link) => (
+                    <Link
+                      key={link.id}
+                      href={link.href}
+                      className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
                 </div>
               </div>
-            </div>
-
-            {/* QUICK LINKS */}
-            <div>
-              <h3 className="text-[#f8f0b4] text-[22px] font-normal mb-6">
-                Quick Links
-              </h3>
-
-              <div className="flex flex-col gap-2 text-[#f8f0b6]">
-                <Link
-                  href="/privacy-policy"
-                  className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                >
-                  Privacy Policy
-                </Link>
-                <Link
-                  href="/returne-policy"
-                  className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                >
-                  Return & Exchange Policy
-                </Link>
-                <Link
-                  href="/shipping-policy"
-                  className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                >
-                  Shipping Policy
-                </Link>
-                <Link
-                  href="/terms-conditions"
-                  className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
-                >
-                  Terms of Use
-                </Link>
-              </div>
-            </div>
+            ))}
 
             {/* NEWSLETTER */}
             <div>

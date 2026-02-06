@@ -5,6 +5,8 @@ interface Settings {
     shippingFee: number;
     freeShippingThreshold: number;
     taxPercentage: number;
+    navbarLayout?: any[]; // Recursive layout structure
+    footerLayout?: any[]; // Footer sections with links
 }
 
 export const getSettings = async (): Promise<Settings> => {
@@ -17,5 +19,7 @@ export const getSettings = async (): Promise<Settings> => {
         shippingFee: 0,
         freeShippingThreshold: 0,
         taxPercentage: 0,
+        navbarLayout: [],
+        footerLayout: []
     };
 };

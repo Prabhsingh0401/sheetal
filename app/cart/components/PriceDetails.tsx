@@ -200,8 +200,8 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                   </Link>
                 </span>
 
-                <span className="text-green-600">
-                  -₹{platformFee.toFixed(2)}
+                <span className="text-gray-900">
+                  ₹{platformFee.toFixed(2)}
                 </span>
               </div>
             )}
