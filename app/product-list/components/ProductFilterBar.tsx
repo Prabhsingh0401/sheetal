@@ -42,15 +42,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
   onSortChange,
   currentSort = "newest",
 }) => {
-  const [openSections, setOpenSections] = useState<string[]>([
-    "size",
-    "color",
-    "price",
-    "availability",
-    "wearType",
-    "occasion",
-    "tags",
-  ]);
+  const [openSections, setOpenSections] = useState<string[]>([]);
 
   const toggleSection = (id: string) => {
     if (openSections.includes(id)) {
@@ -280,11 +272,19 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Size
-                  <span
-                    className={`text-xl transition-transform duration-200 ${openSections.includes("size") ? "rotate-180" : ""}`}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("size") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {openSections.includes("size") ? "−" : "+"}
-                  </span>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
 
                 <div
@@ -321,11 +321,19 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Color
-                  <span
-                    className={`text-xl transition-transform duration-200 ${openSections.includes("color") ? "rotate-180" : ""}`}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("color") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {openSections.includes("color") ? "−" : "+"}
-                  </span>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
 
                 <div
@@ -367,11 +375,19 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Price
-                  <span
-                    className={`text-xl transition-transform duration-200 ${openSections.includes("price") ? "rotate-180" : ""}`}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("price") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {openSections.includes("price") ? "−" : "+"}
-                  </span>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
 
                 <div
@@ -411,11 +427,19 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Availability
-                  <span
-                    className={`text-xl transition-transform duration-200 ${openSections.includes("availability") ? "rotate-180" : ""}`}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("availability") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {openSections.includes("availability") ? "−" : "+"}
-                  </span>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
 
                 <div
@@ -455,11 +479,19 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Wear Type
-                  <span
-                    className={`text-xl transition-transform duration-200 ${openSections.includes("wearType") ? "rotate-180" : ""}`}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("wearType") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {openSections.includes("wearType") ? "−" : "+"}
-                  </span>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
 
                 <div
@@ -499,11 +531,19 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Occasion
-                  <span
-                    className={`text-xl transition-transform duration-200 ${openSections.includes("occasion") ? "rotate-180" : ""}`}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("occasion") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {openSections.includes("occasion") ? "−" : "+"}
-                  </span>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
 
                 <div
@@ -543,11 +583,19 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Tags
-                  <span
-                    className={`text-xl transition-transform duration-200 ${openSections.includes("tags") ? "rotate-180" : ""}`}
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("tags") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {openSections.includes("tags") ? "−" : "+"}
-                  </span>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
 
                 <div
@@ -582,26 +630,36 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
         </div>
       </div>
 
-      {/* Active Filters List (Desktop/External) */}
+      {/* Active Filters List (Desktop/External) - Pill Style */}
       {activeFilters.length > 0 && (
-        <div className="hidden md:flex flex-wrap items-center gap-3 mb-10">
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6 py-3">
           {activeFilters.map((filter, index) => (
-            <div
+            <button
               key={index}
-              className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 text-xs uppercase tracking-wide text-gray-600 rounded-sm"
+              onClick={() => removeFilter(filter.label)}
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-full text-sm text-gray-700 hover:bg-gray-50 hover:border-[#bd9951] transition-all group cursor-pointer"
             >
-              {filter.label}
-              <button
-                onClick={() => removeFilter(filter.label)}
-                className="hover:text-red-500 font-bold ml-1"
-              >
-                ✕
-              </button>
-            </div>
+              <span className="font-normal">{filter.label}</span>
+              <span className="flex items-center justify-center w-4 h-4 rounded-full border border-[#bd9951] bg-[#bd9951]/10 group-hover:bg-[#bd9951]/20 transition-colors">
+                <svg
+                  className="w-2.5 h-2.5 text-[#bd9951] transition-colors"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={3}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </span>
+            </button>
           ))}
           <button
             onClick={clearFilters}
-            className="text-xs uppercase tracking-wide text-[#bd9951] underline hover:no-underline"
+            className="text-sm text-orange-600 hover:text-orange-700 font-medium underline ml-2 transition-colors"
           >
             Clear Filters
           </button>

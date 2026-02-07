@@ -18,7 +18,7 @@ export interface SizeChartData {
   _id: string;
   name: string;
   table: SizeChartEntry[];
-  howToMeasureImage: string;
+  howToMeasureImage: string | { url: string; public_id?: string };
   unit: string;
 }
 
@@ -30,7 +30,7 @@ export const fetchSizeChart = async (): Promise<{
 };
 
 export const getHowToMeasureImageUrl = (
-  path: string | undefined,
+  path: string | { url: string; public_id?: string } | undefined,
   fallback: string = "/assets/Apparel-Illustration.svg",
 ): string => {
   return getApiImageUrl(path, fallback);
