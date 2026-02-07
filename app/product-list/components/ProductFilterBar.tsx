@@ -61,136 +61,132 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
     <>
       {/* Top Filter Bar */}
       <div className="border-t border-b border-gray-200 py-4 mb-6 relative hidden lg:block">
-        <div className="flex flex-wrap justify-between items-center">
-          {/* Left: Filters Toggle */}
-          <div className="w-full md:w-auto mb-4 md:mb-0">
+        <div className="flex flex-col items-center gap-4">
+          {/* Centered Sort By */}
+          <div className="relative">
             <button
-              onClick={toggleFilters}
-              className="flex items-center gap-2 text-lg font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
+              onClick={toggleSortBy}
+              className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
             >
               <Image
-                src="/assets/icons/filter.svg"
-                alt="Filter"
-                width={20}
-                height={20}
+                src="/assets/icons/sort.svg"
+                alt="Sort"
+                width={16}
+                height={16}
               />
-              Filters
+              Sort By
             </button>
+
+            {/* Sort Dropdown */}
+            <div
+              className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white shadow-xl border border-gray-100 z-50 py-2 transition-all duration-300 ${sortByOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+            >
+              <ul>
+                <li>
+                  <button
+                    onClick={() => handleSortClick("price_asc")}
+                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "price_asc"
+                      ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                      : "hover:bg-gray-50"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Price: Low to High</span>
+                      {currentSort === "price_asc" && (
+                        <span className="text-[#bd9951]">✓</span>
+                      )}
+                    </div>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => handleSortClick("price_desc")}
+                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "price_desc"
+                      ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                      : "hover:bg-gray-50"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Price: High to Low</span>
+                      {currentSort === "price_desc" && (
+                        <span className="text-[#bd9951]">✓</span>
+                      )}
+                    </div>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => handleSortClick("newest")}
+                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "newest"
+                      ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                      : "hover:bg-gray-50"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>New Arrivals</span>
+                      {currentSort === "newest" && (
+                        <span className="text-[#bd9951]">✓</span>
+                      )}
+                    </div>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => handleSortClick("popularity")}
+                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "popularity"
+                      ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                      : "hover:bg-gray-50"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Popularity</span>
+                      {currentSort === "popularity" && (
+                        <span className="text-[#bd9951]">✓</span>
+                      )}
+                    </div>
+                  </button>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          {/* Right: Sort By & View Options */}
-          <div className="flex items-center gap-6 md:gap-10 w-full md:w-auto justify-between md:justify-end">
-            <div className="relative">
-              <button
-                onClick={toggleSortBy}
-                className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
-              >
-                <Image
-                  src="/assets/icons/sort.svg"
-                  alt="Sort"
-                  width={16}
-                  height={16}
-                />
-                Sort By
-              </button>
+          {/* Filters and View Mode - Positioned Absolutely */}
+          <button
+            onClick={toggleFilters}
+            className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-lg font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
+          >
+            <Image
+              src="/assets/icons/filter.svg"
+              alt="Filter"
+              width={20}
+              height={20}
+            />
+            Filters
+          </button>
 
-              {/* Sort Dropdown */}
-              <div
-                className={`absolute right-0 top-full mt-2 w-48 bg-white shadow-xl border border-gray-100 z-50 py-2 transition-all duration-300 ${sortByOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
-              >
-                <ul>
-                  <li>
-                    <button
-                      onClick={() => handleSortClick("price_asc")}
-                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "price_asc"
-                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                        : "hover:bg-gray-50"
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>Price: Low to High</span>
-                        {currentSort === "price_asc" && (
-                          <span className="text-[#bd9951]">✓</span>
-                        )}
-                      </div>
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => handleSortClick("price_desc")}
-                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "price_desc"
-                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                        : "hover:bg-gray-50"
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>Price: High to Low</span>
-                        {currentSort === "price_desc" && (
-                          <span className="text-[#bd9951]">✓</span>
-                        )}
-                      </div>
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => handleSortClick("newest")}
-                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "newest"
-                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                        : "hover:bg-gray-50"
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>New Arrivals</span>
-                        {currentSort === "newest" && (
-                          <span className="text-[#bd9951]">✓</span>
-                        )}
-                      </div>
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => handleSortClick("popularity")}
-                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "popularity"
-                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                        : "hover:bg-gray-50"
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>Popularity</span>
-                        {currentSort === "popularity" && (
-                          <span className="text-[#bd9951]">✓</span>
-                        )}
-                      </div>
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 border-l border-gray-200 pl-6">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`transition-opacity ${viewMode === "grid" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
-              >
-                <Image
-                  src="/assets/icons/grid.svg"
-                  alt="Grid"
-                  width={18}
-                  height={18}
-                />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`transition-opacity ${viewMode === "list" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
-              >
-                <Image
-                  src="/assets/icons/list.svg"
-                  alt="List"
-                  width={18}
-                  height={18}
-                />
-              </button>
-            </div>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3 border-l border-gray-200 pl-6">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`transition-opacity ${viewMode === "grid" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
+            >
+              <Image
+                src="/assets/icons/grid.svg"
+                alt="Grid"
+                width={18}
+                height={18}
+              />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`transition-opacity ${viewMode === "list" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
+            >
+              <Image
+                src="/assets/icons/list.svg"
+                alt="List"
+                width={18}
+                height={18}
+              />
+            </button>
           </div>
         </div>
       </div>
@@ -637,7 +633,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
             <button
               key={index}
               onClick={() => removeFilter(filter.label)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-full text-sm text-gray-700 hover:bg-gray-50 hover:border-[#bd9951] transition-all group cursor-pointer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-full text-sm hover:bg-gray-50 hover:border-[#bd9951] transition-all group cursor-pointer"
             >
               <span className="font-normal">{filter.label}</span>
               <span className="flex items-center justify-center w-4 h-4 rounded-full border border-[#bd9951] bg-[#bd9951]/10 group-hover:bg-[#bd9951]/20 transition-colors">

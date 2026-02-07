@@ -47,7 +47,12 @@ const Blogs = () => {
               Latest Articles & Blogs
             </h2>
           </div>
-          <div className="text-center text-gray-500">Loading blogs...</div>
+          <div className="flex justify-center items-center py-20">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-[#d18702] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
         </div>
       </div>
     );
