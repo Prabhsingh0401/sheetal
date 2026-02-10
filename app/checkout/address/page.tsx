@@ -144,7 +144,7 @@ const AddressPage = () => {
         <div className="font-montserrat">
             {/* Header */}
             <div className="">
-                <div className="container mx-auto">
+                <div className="container mx-10">
                     <div className="flex justify-between items-center py-3 px-4 md:px-0">
                         <div className="flex items-center">
                             <Link href="/">
@@ -219,7 +219,7 @@ const AddressPage = () => {
                         ) : (
                             <>
                                 {addresses.length === 0 && !loadingAddresses ? (
-                                    <div className="border p-8 text-center bg-white rounded shadow-sm">
+                                    <div className="border border-gray-200 p-8 text-center rounded shadow-sm">
                                         <p className="text-gray-600 mb-4">No addresses found. Please add a new address.</p>
                                         <button
                                             onClick={() => setShowAddForm(true)}

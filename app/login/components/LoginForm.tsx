@@ -121,7 +121,14 @@ const LoginForm = () => {
       }
     } catch (error: any) {
       console.error("Google Login Error:", error);
-      toast.error(error.message || "Failed to login with Google");
+      if (error.code === "auth/account-exists-with-different-credential") {
+        toast.error(
+          "An account already exists with this email but using a different sign-in method (like phone). Please sign in using your original method or link accounts in your profile.",
+          { duration: 6000 },
+        );
+      } else {
+        toast.error(error.message || "Failed to login with Google");
+      }
     } finally {
       setLoading(false);
       setLoadingType(null);

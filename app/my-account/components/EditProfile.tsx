@@ -11,6 +11,7 @@ import {
   unlink,
 } from "firebase/auth";
 import { auth } from "../../services/firebase";
+import { verifyIdToken, login } from "../../services/authService";
 import toast from "react-hot-toast";
 
 declare global {
@@ -136,43 +137,25 @@ const EditProfile: React.FC = () => {
       const appVerifier = window.recaptchaVerifier!;
 
       let result;
-      if (auth.currentUser) {
-        const formattedNumber = `+91${mobileNumber}`;
+      const formattedNumber = `+91${mobileNumber}`;
 
-        // Check if ALREADY matched
-        if (auth.currentUser.phoneNumber === formattedNumber) {
-          setIsPhoneVerified(true);
-          setShowOtpInput(false);
-          toast.success("Phone number verified successfully!");
-          setPhoneLoading(false);
-          return;
-        }
-
-        // If existing phone number (different) exists, UNLINK it first
-        const hasPhoneProvider = auth.currentUser.providerData.some(p => p.providerId === 'phone');
-        if (auth.currentUser.phoneNumber || hasPhoneProvider) {
-          try {
-            await unlink(auth.currentUser, "phone");
-          } catch (unlinkError: any) {
-            console.error("Unlink error:", unlinkError);
-            // Continue anyway, link might fail but we try
-          }
-        }
-
-        // Link NEW phone number
-        result = await linkWithPhoneNumber(
-          auth.currentUser,
-          formattedNumber,
-          appVerifier,
-        );
-      } else {
-        // Fallback
-        result = await signInWithPhoneNumber(
-          auth,
-          `+91${mobileNumber}`,
-          appVerifier,
-        );
+      // Check if ALREADY matched in our current Firebase session
+      if (auth.currentUser?.phoneNumber === formattedNumber) {
+        setIsPhoneVerified(true);
+        setShowOtpInput(false);
+        toast.success("Phone number verified successfully!");
+        setPhoneLoading(false);
+        return;
       }
+
+      // We use signInWithPhoneNumber instead of linkWithPhoneNumber 
+      // to avoid 'account-exists-with-different-credential' errors.
+      // The backend verifyIdToken call will handle the logical merging of accounts.
+      result = await signInWithPhoneNumber(
+        auth,
+        formattedNumber,
+        appVerifier,
+      );
 
       setConfirmationResult(result);
       setShowOtpInput(true);
@@ -194,16 +177,34 @@ const EditProfile: React.FC = () => {
 
     try {
       setPhoneLoading(true);
-      await confirmationResult?.confirm(otpString);
-      setIsPhoneVerified(true);
-      setShowOtpInput(false);
-      toast.success("Phone number verified & linked successfully!");
+      // Attempt to confirm the OTP
+      const userCredential = await confirmationResult?.confirm(otpString);
+      const idToken = await userCredential?.user.getIdToken(true);
+      
+      if (idToken) {
+        const verifyRes = await verifyIdToken(idToken);
+        
+        if (verifyRes.success) {
+          // If successful, the backend has linked/merged the accounts
+          login(verifyRes.token, verifyRes.user); 
+          setIsPhoneVerified(true);
+          setShowOtpInput(false);
+          toast.success("Phone number verified and accounts merged successfully!");
+          
+          // Small delay before reload to let the user see the success message
+          setTimeout(() => {
+            window.location.reload(); 
+          }, 1500);
+        } else {
+          toast.error(verifyRes.message || "Backend synchronization failed.");
+        }
+      }
     } catch (error: any) {
       console.error("Error verifying OTP:", error);
-      if (error.code === 'auth/credential-already-in-use') {
-        toast.error("This phone number is already linked to another account.");
+      if (error.code === "auth/credential-already-in-use" || error.code === "auth/account-exists-with-different-credential") {
+        toast.error("This phone number is already associated with another account. However, we tried to merge them. Please try again or contact support if the issue persists.");
       } else {
-        toast.error("Invalid OTP or verification failed.");
+        toast.error(error.message || "Invalid OTP or verification failed.");
       }
     } finally {
       setPhoneLoading(false);

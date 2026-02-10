@@ -26,12 +26,19 @@ interface VerifyTokenResponse {
 export const verifyIdToken = async (
   idToken: string,
 ): Promise<VerifyTokenResponse> => {
+  const currentToken = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${idToken}`,
+  };
+
+  if (currentToken) {
+    headers["X-Session-Token"] = currentToken;
+  }
+
   return apiFetch("/client/auth/verify-id-token", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${idToken}`,
-    },
+    headers,
   });
 };
 

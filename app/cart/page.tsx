@@ -193,7 +193,7 @@ const CartPage = () => {
     <div className="font-montserrat">
       {/* Header */}
       <div className="">
-        <div className="container mx-auto">
+        <div className="container mx-10">
           <div className="flex justify-between items-center py-3">
             <div className="flex items-center">
               <Link href="/">
