@@ -9,6 +9,7 @@ import MiniCartSummary from "../components/MiniCartSummary";
 import PriceDetails from "../../cart/components/PriceDetails"; // Import existing component
 import { useCart } from "../../hooks/useCart";
 import { getCurrentUser } from "../../services/userService";
+import { getSettings } from "../../services/settingsService";
 import toast from "react-hot-toast";
 
 const AddressPage = () => {
@@ -38,6 +39,12 @@ const AddressPage = () => {
 
     // For Coupon Input in Price Details (if needed to pass down)
     const [couponInput, setCouponInput] = useState("");
+
+    /* Settings State - Same as Cart Page */
+    const [platformFee, setPlatformFee] = useState(0);
+    const [shippingCharges, setShippingCharges] = useState(0);
+    const [baseShippingFee, setBaseShippingFee] = useState(0);
+    const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
 
     const fetchAddresses = async () => {
         setLoadingAddresses(true);
@@ -72,6 +79,38 @@ const AddressPage = () => {
     useEffect(() => {
         fetchAddresses();
     }, []);
+
+    /* Fetch Settings Once - Same as Cart Page */
+    useEffect(() => {
+        const fetchSettingsData = async () => {
+            try {
+                const settings = await getSettings();
+                setPlatformFee(Number(settings.platformFee) || 0);
+                setBaseShippingFee(Number(settings.shippingFee) || 0);
+                setFreeShippingThreshold(Number(settings.freeShippingThreshold) || 0);
+
+                // Initial calculation
+                const threshold = Number(settings.freeShippingThreshold) || 0;
+                if (finalAmount > threshold && threshold > 0) {
+                    setShippingCharges(0);
+                } else {
+                    setShippingCharges(Number(settings.shippingFee) || 0);
+                }
+            } catch (err) {
+                console.error("Failed to fetch settings", err);
+            }
+        };
+        fetchSettingsData();
+    }, [finalAmount]);
+
+    /* Recalculate Shipping on Amount Change - Same as Cart Page */
+    useEffect(() => {
+        if (finalAmount > freeShippingThreshold && freeShippingThreshold > 0) {
+            setShippingCharges(0);
+        } else {
+            setShippingCharges(baseShippingFee);
+        }
+    }, [finalAmount, freeShippingThreshold, baseShippingFee]);
 
     const handleEditAddress = (address: Address) => {
         setEditingAddress(address);
@@ -228,9 +267,9 @@ const AddressPage = () => {
                             totalMrp={totalMrp}
                             totalDiscount={totalDiscount}
                             couponDiscount={couponDiscount}
-                            shippingCharges={150} // Hardcoded as per CartPage
-                            platformFee={23}    // Hardcoded as per CartPage
-                            totalAmount={finalAmount + 150 - 23}
+                            shippingCharges={shippingCharges}
+                            platformFee={platformFee}
+                            totalAmount={finalAmount + shippingCharges + platformFee}
                             hideProceedButton={true}
                         />
 

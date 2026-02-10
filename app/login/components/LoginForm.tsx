@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
@@ -23,20 +23,38 @@ const LoginForm = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const setupRecaptcha = async () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-          callback: () => {},
-        },
-      );
+  useEffect(() => {
+    return () => {
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (error) {
+          console.error("Error clearing recaptcha:", error);
+        }
+        window.recaptchaVerifier = undefined;
+      }
+    };
+  }, []);
 
-      // 🔑 REQUIRED FIX
-      await window.recaptchaVerifier.render();
+  const setupRecaptcha = async () => {
+    if (window.recaptchaVerifier) {
+      return;
     }
+
+    const recaptchaVerifier = new RecaptchaVerifier(
+      auth,
+      "recaptcha-container",
+      {
+        size: "invisible",
+        callback: () => {
+        },
+        "expired-callback": () => {
+        }
+      },
+    );
+
+    window.recaptchaVerifier = recaptchaVerifier;
+    await window.recaptchaVerifier.render();
   };
 
   const handleContinue = async () => {

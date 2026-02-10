@@ -143,6 +143,19 @@ export const getNewArrivals = async (): Promise<{
   return apiFetch("/products/new-arrivals");
 };
 
+export const fetchTrendingProducts = async (): Promise<{
+  success: boolean;
+  data: Product[];
+}> => {
+  return apiFetch("/products/trending");
+};
+
+export const incrementProductView = async (productIdOrSlug: string) => {
+  return apiFetch(`/products/view/${productIdOrSlug}`, {
+    method: "POST",
+  });
+};
+
 export const fetchProductBySlug = async (slug: string) => {
   return apiFetch(`/products/${slug}`);
 };

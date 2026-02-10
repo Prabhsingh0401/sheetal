@@ -19,6 +19,7 @@ import {
   Product,
   getProductImageUrl,
   ProductVariant,
+  incrementProductView,
 } from "../../services/productService";
 import { fetchSizeChart, SizeChartData } from "../../services/sizeChartService";
 import { getApiImageUrl } from "../../services/api";
@@ -147,6 +148,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               })
               .catch(console.error);
           }
+
+          // Increment View Count
+          incrementProductView(slug).catch(console.error);
         } else {
           setError("Product not found");
         }

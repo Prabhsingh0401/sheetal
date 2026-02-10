@@ -128,7 +128,6 @@ const CartPage = () => {
       return;
     }
 
-    console.log("Applying coupon:", couponInput, "for user:", userId);
     applyCoupon(couponInput.trim().toUpperCase(), userId);
   };
 
@@ -225,7 +224,7 @@ const CartPage = () => {
       </div>
 
       {/* Cart Content */}
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-8 px-4 md:px-8 lg:px-12">
         {cartItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <p className="text-xl font-semibold text-gray-700 mb-4">

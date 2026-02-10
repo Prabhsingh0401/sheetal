@@ -4,7 +4,13 @@ import React, { useCallback, useState, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import Link from "next/link";
-import { getNewArrivals, Product } from "@/app/services/productService"; // Import Product type
+import {
+  getNewArrivals,
+  Product,
+  fetchWishlist,
+  toggleWishlist,
+} from "@/app/services/productService";
+import toast from "react-hot-toast";
 
 const NewArrivals = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -13,24 +19,33 @@ const NewArrivals = () => {
     skipSnaps: false,
   });
 
-  const [products, setProducts] = useState<Product[]>([]); // Explicitly type the state
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [wishlist, setWishlist] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchNewArrivals = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await getNewArrivals();
-        if (res.success) {
-          setProducts(res.products);
+        const [newArrivalsRes, wishlistRes] = await Promise.all([
+          getNewArrivals(),
+          fetchWishlist(),
+        ]);
+
+        if (newArrivalsRes.success) {
+          setProducts(newArrivalsRes.products);
+        }
+
+        if (wishlistRes.success && wishlistRes.data) {
+          setWishlist(wishlistRes.data.map((p: any) => p._id));
         }
       } catch (error) {
-        console.error("Failed to fetch new arrivals:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchNewArrivals();
+    fetchData();
   }, []);
 
   const scrollPrev = useCallback(() => {
@@ -41,25 +56,59 @@ const NewArrivals = () => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
-  const getDisplayPrice = (product: Product) => {
-    // Add type to product argument
-    if (
-      !product.variants ||
-      product.variants.length === 0 ||
-      !product.variants[0].sizes ||
-      product.variants[0].sizes.length === 0
-    ) {
-      return { price: "N/A", mrp: "N/A", discount: "" };
+  const handleWishlistToggle = async (productId: string) => {
+    try {
+      const isInWishlist = wishlist.includes(productId);
+
+      // Optimistic update
+      if (isInWishlist) {
+        setWishlist((prev) => prev.filter((id) => id !== productId));
+        toast.success("Removed from wishlist");
+      } else {
+        setWishlist((prev) => [...prev, productId]);
+        toast.success("Added to wishlist");
+      }
+
+      await toggleWishlist(productId);
+    } catch (error) {
+      console.error("Failed to toggle wishlist:", error);
+      toast.error("Failed to update wishlist");
+      // Revert on error could be added here
     }
-    const firstSize = product.variants[0].sizes[0];
-    const price = firstSize.discountPrice || firstSize.price;
-    const mrp = firstSize.price;
-    const discount =
-      mrp > price ? `${Math.round(((mrp - price) / mrp) * 100)}% OFF` : "";
+  };
+
+  const getDisplayPrice = (product: Product) => {
+    let minPrice = Infinity;
+    let relatedMrp = 0;
+    let discountStr = "";
+
+    if (product.variants && product.variants.length > 0) {
+      product.variants.forEach((v: any) => {
+        v.sizes?.forEach((s: any) => {
+          // Logic to find lowest effective price
+          const effective =
+            s.discountPrice && s.discountPrice > 0 ? s.discountPrice : s.price;
+          if (effective < minPrice) {
+            minPrice = effective;
+            relatedMrp = s.price;
+          }
+        });
+      });
+    }
+
+    if (minPrice === Infinity) {
+      minPrice = 0;
+      relatedMrp = 0;
+    }
+
+    if (minPrice > 0 && relatedMrp > minPrice) {
+      discountStr = `${Math.round(((relatedMrp - minPrice) / relatedMrp) * 100)}% OFF`;
+    }
+
     return {
-      price: `₹ ${price.toFixed(2)}`,
-      mrp: `₹ ${mrp.toFixed(2)}`,
-      discount,
+      price: `₹ ${minPrice.toFixed(2)}`,
+      mrp: `₹ ${relatedMrp.toFixed(2)}`,
+      discount: discountStr,
     };
   };
 
@@ -107,9 +156,7 @@ const NewArrivals = () => {
                   ))
                   : products.map((product) => {
                     const displayPrice = getDisplayPrice(product);
-                    const firstVariant = product.variants?.[0];
-                    const displaySize =
-                      firstVariant?.sizes?.[0]?.name || "N/A";
+                    const isWishlisted = wishlist.includes(product._id);
 
                     return (
                       <div
@@ -125,28 +172,55 @@ const NewArrivals = () => {
                                 </span>
                               </div>
                             )}
-                            <div className="absolute top-3 right-3 z-20 cursor-pointer rounded-full p-1.5">
-                              <Image
-                                src="/assets/icons/heart.svg"
-                                width={18}
-                                height={18}
-                                alt="wishlist"
-                              />
+
+                            {/* Wishlist Button - Matched with ProductGrid */}
+                            <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 z-20">
+                              <button
+                                className="w-10 h-10 rounded-full flex items-center justify-center group/icon"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleWishlistToggle(product._id);
+                                }}
+                              >
+                                <Image
+                                  src={
+                                    isWishlisted
+                                      ? "/assets/icons/heart-solid.svg"
+                                      : "/assets/icons/heart.svg"
+                                  }
+                                  alt="Wishlist"
+                                  width={18}
+                                  height={18}
+                                  className={
+                                    isWishlisted
+                                      ? ""
+                                      : "group-hover/icon:brightness-0 group-hover/icon:invert"
+                                  }
+                                />
+                              </button>
                             </div>
+
                             <Link
                               href={`/product/${product.slug}`}
                               className="block h-full w-full relative"
                             >
                               <Image
-                                src={product.mainImage?.url || "/assets/placeholder-product.jpg"}
+                                src={
+                                  product.mainImage?.url ||
+                                  "/assets/placeholder-product.jpg"
+                                }
                                 alt={product.name}
                                 width={400}
                                 height={533}
                                 className="w-full h-full object-cover rounded-xl transition-opacity duration-700 group-hover:opacity-0"
                               />
                               <Image
-                                src={product.hoverImage?.url ||
-                                  product.mainImage?.url || "/assets/placeholder-product.jpg"}
+                                src={
+                                  product.hoverImage?.url ||
+                                  product.mainImage?.url ||
+                                  "/assets/placeholder-product.jpg"
+                                }
                                 alt={product.name}
                                 width={400}
                                 height={533}
@@ -164,12 +238,7 @@ const NewArrivals = () => {
                               </Link>
                             </h6>
                             <div className="flex flex-col items-center gap-1 mb-3">
-                              <div className="text-xs text-gray-600">
-                                <span className="font-bold text-black">
-                                  Size:
-                                </span>{" "}
-                                {displaySize}
-                              </div>
+                              {/* Size removed */}
                               <div className="flex gap-0.5">
                                 {[1, 2, 3, 4, 5].map((i) => (
                                   <Image
@@ -190,7 +259,10 @@ const NewArrivals = () => {
                                   </span>
                                 )}
                                 <span
-                                  className={`text-xs text-gray-400 ${displayPrice.discount ? "line-through" : "text-lg text-[#281b00] font-bold"}`}
+                                  className={`text-xs text-gray-400 ${displayPrice.discount
+                                    ? "line-through"
+                                    : "text-lg text-[#281b00] font-bold"
+                                    }`}
                                 >
                                   {displayPrice.mrp}
                                 </span>

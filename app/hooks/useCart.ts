@@ -243,14 +243,6 @@ export const useCart = (): UseCartReturn => {
 
         const currentFinalAmount = currentMrp - currentDiscount;
 
-        console.log("Applying coupon with:", {
-          code,
-          currentFinalAmount,
-          currentMrp,
-          currentDiscount,
-          cartItemsCount: cart.length,
-        });
-
         const response = await applyCouponApi(
           code,
           currentFinalAmount,
@@ -259,7 +251,6 @@ export const useCart = (): UseCartReturn => {
         );
 
         if (response.success) {
-          console.log("Coupon applied successfully:", response.data);
 
           setCouponCode(response.data.couponCode || code);
           setCouponOfferType(response.data.offerType);

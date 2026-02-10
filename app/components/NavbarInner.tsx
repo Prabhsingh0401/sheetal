@@ -310,7 +310,7 @@ const NavbarInner = () => {
                 ))}
 
                 {/* Icons */}
-                <li className="flex items-center gap-4 pl-5 ml-2 border-l border-[#f2bf42]/30">
+                <li className="flex items-center gap-4 pl-5 ml-2">
                   <button
                     onClick={toggleSearch}
                     className="hover:opacity-80 transition-opacity"
