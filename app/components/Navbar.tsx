@@ -228,7 +228,7 @@ const Navbar = () => {
           </Link>
           {isUserDropdownOpen && (
             <div className="absolute right-0 top-full mt-2 w-48 bg-[#153427]/95 backdrop-blur-md p-3 border border-[#f5de7e] text-[#b3a660] text-sm z-50 shadow-lg">
-              <p className="px-3 py-2 border-b border-white/20">Hello, {getDisplayName()}</p>
+              <p className="px-3 py-2 border-b border-white/20 truncate">Hello, {getDisplayName()}</p>
               <Link href="/my-account" className="block px-3 py-2 hover:text-white transition-colors cursor-pointer">My Account</Link>
               <button onClick={handleLogout} className="w-full text-left px-3 py-2 hover:text-white transition-colors cursor-pointer">Logout</button>
             </div>

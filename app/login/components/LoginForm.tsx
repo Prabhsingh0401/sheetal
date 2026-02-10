@@ -9,7 +9,9 @@ import {
   signInWithPhoneNumber,
   ConfirmationResult,
 } from "firebase/auth";
-import { auth } from "../../services/firebase";
+import { auth, googleProvider, signInWithPopup } from "../../services/firebase";
+import { verifyIdToken, login } from "../../services/authService";
+import toast from "react-hot-toast";
 
 declare global {
   interface Window {
@@ -22,6 +24,7 @@ const LoginForm = () => {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(null);
 
   useEffect(() => {
     return () => {
@@ -59,12 +62,13 @@ const LoginForm = () => {
 
   const handleContinue = async () => {
     if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
-      alert("Enter a valid 10-digit mobile number");
+      toast.error("Enter a valid 10-digit mobile number");
       return;
     }
 
     try {
       setLoading(true);
+      setLoadingType("phone");
 
       await setupRecaptcha();
 
@@ -80,7 +84,7 @@ const LoginForm = () => {
       router.push("/otp");
     } catch (error: any) {
       console.error("OTP error:", error);
-      alert(error.message || "Failed to send OTP");
+      toast.error(error.message || "Failed to send OTP");
 
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
@@ -88,6 +92,39 @@ const LoginForm = () => {
       }
     } finally {
       setLoading(false);
+      setLoadingType(null);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setLoadingType("google");
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+
+      const data = await verifyIdToken(idToken);
+
+      if (data.success && data.token) {
+        login(data.token, data.user);
+        toast.success("Logged in successfully!");
+        const redirectUrl = sessionStorage.getItem("redirect");
+        if (redirectUrl) {
+          sessionStorage.removeItem("redirect");
+          router.push(redirectUrl);
+        } else {
+          router.push("/");
+        }
+      } else {
+        toast.error(data.message || "Backend login failed.");
+      }
+    } catch (error: any) {
+      console.error("Google Login Error:", error);
+      toast.error(error.message || "Failed to login with Google");
+    } finally {
+      setLoading(false);
+      setLoadingType(null);
     }
   };
 
@@ -156,7 +193,11 @@ const LoginForm = () => {
                 disabled={loading}
                 className="w-full bg-[#6b4a1f] text-white py-3 text-md tracking-wide hover:bg-green-400 transition mb-6 cursor-pointer"
               >
-                {loading ? "Sending OTP…" : "Continue"}
+                {loading
+                  ? loadingType === "google"
+                    ? "Verifying..."
+                    : "Sending OTP…"
+                  : "Continue"}
               </button>
 
               <div className="flex items-center justify-center my-3">
@@ -164,7 +205,11 @@ const LoginForm = () => {
               </div>
 
               <div className="flex justify-center gap-6 mb-6">
-                <button className="w-10 h-10 flex items-center justify-center cursor-pointer">
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="w-10 h-10 flex items-center justify-center cursor-pointer"
+                >
                   <Image
                     src="/assets/icons/google.svg"
                     alt="Google"

@@ -241,7 +241,7 @@ const NavbarInner = () => {
           </Link>
           {isUserDropdownOpen && (
             <div className="absolute right-0 top-full mt-2 w-48 bg-[#153427]/95 backdrop-blur-md p-3 border border-[#f5de7e] text-[#b3a660] text-sm z-50 shadow-lg">
-              <p className="px-3 py-2 border-b border-white/20">
+              <p className="px-3 py-2 border-b border-white/20 truncate">
                 Hello, {getDisplayName()}
               </p>
               <Link

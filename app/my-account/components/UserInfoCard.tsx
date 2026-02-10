@@ -1,14 +1,14 @@
 "use client";
 import React from "react";
 import Image from "next/image";
-import { getApiImageUrl } from "../../services/api"; 
+import { getApiImageUrl } from "../../services/api";
 
 interface UserInfoCardProps {
   user: {
     name?: string;
     email?: string;
     phoneNumber?: string;
-    profilePicture?: string; 
+    profilePicture?: string;
   } | null;
   onSelectSection: (section: string) => void;
 }
@@ -39,10 +39,18 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({
           <h4 className="text-xl font-semibold uppercase">Account</h4>
           <div className="flex flex-wrap gap-x-4 text-sm">
             {user.name && <span>{user.name}</span>}
-            <p className="font-semibold">Phone No:</p>
-            {user.phoneNumber && <span>{user.phoneNumber}</span>}
-            <p className="font-semibold">Email ID:</p>
-            {user.email && <span>{user.email}</span>}
+            {user.phoneNumber && (
+              <>
+                <p className="font-semibold">Phone No:</p>
+                <span>{user.phoneNumber}</span>
+              </>
+            )}
+            {user.email && (
+              <>
+                <p className="font-semibold">Email ID:</p>
+                <span>{user.email}</span>
+              </>
+            )}
           </div>
           <div className="mt-2">
             <button
