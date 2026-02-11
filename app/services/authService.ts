@@ -10,10 +10,10 @@ interface User {
   phoneNumber?: string;
   email?: string;
   role: string;
-  alternativeMobileNumber?: string; // Added
-  gender?: "Male" | "Female"; // Added
-  dateOfBirth?: string; // Added (assuming ISO string format from backend)
-  profilePicture?: string; // Added
+  alternativeMobileNumber?: string;
+  gender?: "Male" | "Female"; 
+  dateOfBirth?: string; 
+  profilePicture?: string; 
 }
 
 interface VerifyTokenResponse {
@@ -39,6 +39,20 @@ export const verifyIdToken = async (
   return apiFetch("/client/auth/verify-id-token", {
     method: "POST",
     headers,
+  });
+};
+
+export const sendEmailOtp = async (email: string) => {
+  return apiFetch("/client/auth/send-email-otp", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+};
+
+export const verifyEmailOtp = async (email: string, otp: string) => {
+  return apiFetch("/client/auth/verify-email-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, otp }),
   });
 };
 

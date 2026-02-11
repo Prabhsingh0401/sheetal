@@ -225,14 +225,14 @@ const LoginForm = () => {
                   />
                 </button>
 
-                <button className="w-10 h-10 flex items-center justify-center cursor-pointer">
+                {/* <button className="w-10 h-10 flex items-center justify-center cursor-pointer">
                   <Image
                     src="/assets/icons/facebook.svg"
                     alt="Facebook"
                     width={25}
                     height={25}
                   />
-                </button>
+                </button> */}
               </div>
 
               {/* REQUIRED: reCAPTCHA container */}

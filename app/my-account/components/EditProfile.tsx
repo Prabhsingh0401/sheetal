@@ -6,12 +6,10 @@ import { getApiImageUrl } from "../../services/api";
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
-  linkWithPhoneNumber,
   ConfirmationResult,
-  unlink,
 } from "firebase/auth";
 import { auth } from "../../services/firebase";
-import { verifyIdToken, login } from "../../services/authService";
+import { verifyIdToken, login, sendEmailOtp, verifyEmailOtp } from "../../services/authService";
 import toast from "react-hot-toast";
 
 declare global {
@@ -51,6 +49,13 @@ const EditProfile: React.FC = () => {
   const [phoneLoading, setPhoneLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Email Verification States
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [emailOtp, setEmailOtp] = useState(["", "", "", "", "", ""]);
+  const [showEmailOtpInput, setShowEmailOtpInput] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const emailInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   useEffect(() => {
     // 1. Fetch User Data from DB
     const fetchUserData = async () => {
@@ -60,7 +65,14 @@ const EditProfile: React.FC = () => {
         if (res.success && res.data) {
           const userDetails = res.data;
           setName(userDetails.name || "");
-          setEmail(userDetails.email || "");
+
+          if (userDetails.email) {
+            setEmail(userDetails.email);
+            setIsEmailVerified(true);
+          } else {
+            setEmail("");
+            setIsEmailVerified(false);
+          }
 
           // Use DB phone if available
           if (userDetails.phoneNumber) {
@@ -180,20 +192,20 @@ const EditProfile: React.FC = () => {
       // Attempt to confirm the OTP
       const userCredential = await confirmationResult?.confirm(otpString);
       const idToken = await userCredential?.user.getIdToken(true);
-      
+
       if (idToken) {
         const verifyRes = await verifyIdToken(idToken);
-        
+
         if (verifyRes.success) {
           // If successful, the backend has linked/merged the accounts
-          login(verifyRes.token, verifyRes.user); 
+          login(verifyRes.token, verifyRes.user);
           setIsPhoneVerified(true);
           setShowOtpInput(false);
           toast.success("Phone number verified and accounts merged successfully!");
-          
+
           // Small delay before reload to let the user see the success message
           setTimeout(() => {
-            window.location.reload(); 
+            window.location.reload();
           }, 1500);
         } else {
           toast.error(verifyRes.message || "Backend synchronization failed.");
@@ -228,6 +240,81 @@ const EditProfile: React.FC = () => {
     }
   };
 
+  // --- Email OTP Handlers ---
+
+  const handleSendEmailOtp = async () => {
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      setEmailLoading(true);
+      const res = await sendEmailOtp(email);
+      if (res.success) {
+        setShowEmailOtpInput(true);
+        toast.success("OTP sent to email successfully!");
+      } else {
+        toast.error(res.message || "Failed to send email OTP.");
+      }
+    } catch (error: any) {
+      console.error("Error sending email OTP:", error);
+      toast.error("Failed to send email OTP. Please try again.");
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    const otpString = emailOtp.join("");
+    if (otpString.length !== 6) {
+      toast.error("Please enter specific 6-digit OTP");
+      return;
+    }
+
+    try {
+      setEmailLoading(true);
+      const res = await verifyEmailOtp(email, otpString);
+
+      if (res.success && res.token) {
+        login(res.token, res.user);
+        setIsEmailVerified(true);
+        setShowEmailOtpInput(false);
+        toast.success("Email verified successfully!");
+        // Refresh page or update local state logic
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        toast.error(res.message || "Invalid OTP or verification failed.");
+      }
+    } catch (error: any) {
+      console.error("Error verifying email OTP:", error);
+      toast.error(error.message || "An error occurred during verification.");
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleEmailOtpChange = (index: number, value: string) => {
+    if (value && !/^\d$/.test(value)) return;
+    const newOtp = [...emailOtp];
+    newOtp[index] = value;
+    setEmailOtp(newOtp);
+    if (value && index < 5) emailInputRefs.current[index + 1]?.focus();
+  };
+
+  const handleEmailKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (e.key === "Backspace" && !emailOtp[index] && index > 0) {
+      emailInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // --------------------------
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -244,6 +331,11 @@ const EditProfile: React.FC = () => {
   const handleSave = async () => {
     if (!isPhoneVerified) {
       toast.error("Please verify your mobile number before saving.");
+      return;
+    }
+
+    if (email && !isEmailVerified) {
+      toast.error("Please verify your email address before saving.");
       return;
     }
 
@@ -422,20 +514,101 @@ const EditProfile: React.FC = () => {
               <div id="recaptcha-container"></div>
             </div>
 
-            {/* Email */}
-            <div className="flex items-center justify-between py-6 px-5 border border-gray-200 hover:border-[#ac8037] rounded-sm mt-3">
-              <div className="flex flex-col w-full">
-                <label className="text-gray-700 mb-1">Email*</label>
-                <input
-                  type="email"
-                  value={email}
-                  disabled
-                  className="w-full border border-gray-200 bg-gray-50 px-3 py-2 rounded text-gray-500 cursor-not-allowed"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Email cannot be changed directly. Contact support.
-                </p>
+            {/* Email Section */}
+            <div className="flex flex-col py-6 px-5 border border-gray-200 hover:border-[#ac8037] rounded-sm mt-3 transition-colors">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col w-full">
+                  <label className="text-gray-700 font-medium mb-1">Email*</label>
+                  {isEmailVerified && !showEmailOtpInput ? (
+                    <div className="flex items-center">
+                      <span className="text-gray-900 font-medium text-lg min-w-[200px] truncate">
+                        {email}
+                      </span>
+                      <span className="ml-2 text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-bold border border-green-200 flex items-center gap-1">
+                        ✓ Verified
+                      </span>
+                      <button
+                        onClick={() => {
+                          setIsEmailVerified(false);
+                          setShowEmailOtpInput(false);
+                        }}
+                        className="ml-auto text-xs text-[#8b6b2f] underline hover:text-[#7a5f29]"
+                      >
+                        CHANGE
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-4 items-center justify-between">
+                      <div className="relative flex-1 max-w-sm">
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Enter your email"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#8b6b2f] focus:outline-none"
+                          disabled={showEmailOtpInput}
+                        />
+                      </div>
+                      {!showEmailOtpInput && (
+                        <button
+                          onClick={handleSendEmailOtp}
+                          disabled={emailLoading || !email}
+                          className="bg-[#8b6b2f] text-white px-4 py-2 rounded text-xs font-bold tracking-wide hover:bg-[#7a5f29] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {emailLoading ? "SENDING..." : "VERIFY"}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Email OTP Input Section */}
+              {showEmailOtpInput && (
+                <div className="mt-4 pt-4 border-t border-gray-100 animate-in fade-in slide-in-from-top-2">
+                  <p className="text-gray-600 text-sm mb-3">
+                    Enter the 6-digit code sent to {email}
+                  </p>
+                  <div className="flex gap-3 mb-4">
+                    {emailOtp.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={(el) => {
+                          emailInputRefs.current[index] = el;
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        className="w-10 h-10 text-center text-lg border border-gray-300 rounded focus:border-[#8b6b2f] focus:ring-1 focus:ring-[#8b6b2f] outline-none transition-all"
+                        value={digit}
+                        onChange={(e) => handleEmailOtpChange(index, e.target.value)}
+                        onKeyDown={(e) => handleEmailKeyDown(index, e)}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleVerifyEmailOtp}
+                      disabled={emailLoading}
+                      className="bg-green-600 text-white px-6 py-2 rounded text-sm font-bold hover:bg-green-700 transition-colors disabled:opacity-70"
+                    >
+                      {emailLoading ? "VERIFYING..." : "CONFIRM OTP"}
+                    </button>
+                    <button
+                      onClick={() => setShowEmailOtpInput(false)}
+                      className="text-gray-500 text-sm hover:text-gray-700 underline"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSendEmailOtp}
+                      className="ml-auto text-[#8b6b2f] text-sm font-medium hover:underline"
+                    >
+                      Resend Code
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Full Name */}
@@ -509,7 +682,7 @@ const EditProfile: React.FC = () => {
           <button
             onClick={handleSave}
             className="w-full bg-[#8b6b2f] hover:bg-[#7a5f29] text-white py-4 text-sm font-bold tracking-widest rounded transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-            disabled={loading || (showOtpInput && !isPhoneVerified)}
+            disabled={loading || (showOtpInput && !isPhoneVerified) || (showEmailOtpInput && !isEmailVerified)}
           >
             {loading ? "SAVING..." : "SAVE DETAILS"}
           </button>
