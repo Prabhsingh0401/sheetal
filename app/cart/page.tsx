@@ -205,7 +205,7 @@ const CartPage = () => {
                 />
               </Link>
             </div>
-            <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+            <div className="hidden md:flex items-center space-x-8 text-sm font-medium mx-20">
               <div className="text-[#bd9951]">BAG</div>
               <Link href="/checkout/address" className="text-gray-400 hover:text-[#bd9951]">ADDRESS</Link>
               <div className="text-gray-400">PAYMENT</div>

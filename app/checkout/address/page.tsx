@@ -156,7 +156,7 @@ const AddressPage = () => {
                                 />
                             </Link>
                         </div>
-                        <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+                        <div className="hidden md:flex items-center space-x-8 text-sm font-medium mx-20">
                             <Link href="/cart" className="text-black hover:text-[#bd9951]">BAG</Link>
                             <div className="text-[#bd9951]">ADDRESS</div>
                             <div className="text-gray-400">PAYMENT</div>

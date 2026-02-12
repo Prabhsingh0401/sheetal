@@ -1,13 +1,39 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Link from "next/link";
+import { API_BASE_URL } from "../services/api";
 
 const TimelessWomenCollection = () => {
+  const [leftImages, setLeftImages] = useState([]);
+  const [rightImages, setRightImages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLookbook = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/lookbooks/timeless-women`);
+        const data = await res.json();
+        if (data.success && data.lookbook) {
+          setLeftImages(data.lookbook.leftSliderImages);
+          setRightImages(data.lookbook.rightSliderImages);
+
+          console.log(data.lookbook.leftSliderImages, data.lookbook.rightSliderImages)
+        }
+      } catch (error) {
+        console.error("Error fetching lookbook images", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLookbook();
+  }, []);
+
   const sliderSettings = {
     dots: false,
     infinite: true,
@@ -18,6 +44,15 @@ const TimelessWomenCollection = () => {
     arrows: false,
   };
 
+  const defaultImages = [
+    "/assets/deals1.jpg",
+    "/assets/deals2.jpg",
+    "/assets/deals3.jpg",
+  ];
+
+  const leftSliderData = leftImages.length > 0 ? leftImages : defaultImages.map(url => ({ url }));
+  const rightSliderData = rightImages.length > 0 ? rightImages : defaultImages.map(url => ({ url }));
+
   return (
     <div className="relative w-full py-24 md:py-20 bg-[#fbfbfb]">
       <div className="container mx-auto px-4">
@@ -25,15 +60,11 @@ const TimelessWomenCollection = () => {
           {/* LEFT SLIDER */}
           <div className="w-full max-w-xl mx-auto">
             <Slider {...sliderSettings} autoplaySpeed={3000}>
-              {[
-                "/assets/deals1.jpg",
-                "/assets/deals2.jpg",
-                "/assets/deals3.jpg",
-              ].map((img, i) => (
+              {leftSliderData.map((img, i) => (
                 <div key={i} className="px-2">
                   <div className="relative aspect-[16/9] rounded-lg overflow-hidden shadow-lg">
                     <Image
-                      src={img}
+                      src={img.url}
                       alt={`Deal ${i + 1}`}
                       fill
                       className="object-cover transition-transform duration-500 hover:scale-105"
@@ -74,15 +105,11 @@ const TimelessWomenCollection = () => {
           {/* RIGHT SLIDER */}
           <div className="w-full max-w-xl mx-auto">
             <Slider {...sliderSettings} autoplaySpeed={3500}>
-              {[
-                "/assets/deals2.jpg",
-                "/assets/deals1.jpg",
-                "/assets/deals3.jpg",
-              ].map((img, i) => (
+              {rightSliderData.map((img, i) => (
                 <div key={i} className="px-2">
                   <div className="relative aspect-[16/9] rounded-lg overflow-hidden shadow-lg">
                     <Image
-                      src={img}
+                      src={img.url}
                       alt={`Deal ${i + 1}`}
                       fill
                       className="object-cover transition-transform duration-500 hover:scale-105"
