@@ -251,25 +251,25 @@ const NewArrivals = () => {
                                 ))}
                               </div>
                             </div>
-                            <div className="flex justify-between items-center gap-2 mb-4">
-                              <div className="flex flex-col">
-                                {displayPrice.discount && (
-                                  <span className="text-lg text-[#281b00] font-bold">
+                            <div
+                              className="w-full flex flex-nowrap items-center justify-center gap-1 mb-4 px-1"
+                              style={{ containerType: "inline-size" } as React.CSSProperties}
+                            >
+                              {displayPrice.discount ? (
+                                <>
+                                  <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
                                     {displayPrice.price}
                                   </span>
-                                )}
-                                <span
-                                  className={`text-xs text-gray-400 ${displayPrice.discount
-                                    ? "line-through"
-                                    : "text-lg text-[#281b00] font-bold"
-                                    }`}
-                                >
+                                  <span className="text-[clamp(9px,4cqw,14px)] text-gray-400 line-through whitespace-nowrap">
+                                    {displayPrice.mrp}
+                                  </span>
+                                  <span className="text-[clamp(9px,4cqw,14px)] text-[#B78D65] font-bold whitespace-nowrap">
+                                    {displayPrice.discount}
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
                                   {displayPrice.mrp}
-                                </span>
-                              </div>
-                              {displayPrice.discount && (
-                                <span className="text-xs text-[#B78D65] font-bold">
-                                  {displayPrice.discount}
                                 </span>
                               )}
                             </div>
