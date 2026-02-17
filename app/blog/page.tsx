@@ -88,7 +88,10 @@ const BlogsPage = () => {
                   className="relative w-full aspect-video overflow-hidden"
                 >
                   <Image
-                    src={getApiImageUrl(blog.contentImage || blog.bannerImage, "/assets/default-image.png")}
+                    src={getApiImageUrl(
+                      blog.contentImage || blog.bannerImage,
+                      "/assets/default-image.png",
+                    )}
                     alt={blog.title}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"

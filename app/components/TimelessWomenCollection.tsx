@@ -22,7 +22,10 @@ const TimelessWomenCollection = () => {
           setLeftImages(data.lookbook.leftSliderImages);
           setRightImages(data.lookbook.rightSliderImages);
 
-          console.log(data.lookbook.leftSliderImages, data.lookbook.rightSliderImages)
+          console.log(
+            data.lookbook.leftSliderImages,
+            data.lookbook.rightSliderImages,
+          );
         }
       } catch (error) {
         console.error("Error fetching lookbook images", error);
@@ -50,8 +53,12 @@ const TimelessWomenCollection = () => {
     "/assets/deals3.jpg",
   ];
 
-  const leftSliderData = leftImages.length > 0 ? leftImages : defaultImages.map(url => ({ url }));
-  const rightSliderData = rightImages.length > 0 ? rightImages : defaultImages.map(url => ({ url }));
+  const leftSliderData =
+    leftImages.length > 0 ? leftImages : defaultImages.map((url) => ({ url }));
+  const rightSliderData =
+    rightImages.length > 0
+      ? rightImages
+      : defaultImages.map((url) => ({ url }));
 
   return (
     <div className="relative w-full py-24 md:py-20 bg-[#fbfbfb]">

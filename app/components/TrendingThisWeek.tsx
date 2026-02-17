@@ -7,7 +7,7 @@ import Link from "next/link";
 import {
   fetchTrendingProducts,
   getProductImageUrl,
-  Product
+  Product,
 } from "../services/productService";
 import { getApiImageUrl } from "../services/api";
 const TrendingThisWeek = () => {
@@ -42,7 +42,10 @@ const TrendingThisWeek = () => {
               p.variants.forEach((v: any) => {
                 v.sizes?.forEach((s: any) => {
                   // Logic to find lowest effective price
-                  const effective = s.discountPrice && s.discountPrice > 0 ? s.discountPrice : s.price;
+                  const effective =
+                    s.discountPrice && s.discountPrice > 0
+                      ? s.discountPrice
+                      : s.price;
                   if (effective < minPrice) {
                     minPrice = effective;
                     relatedMrp = s.price;
@@ -60,8 +63,11 @@ const TrendingThisWeek = () => {
               discountStr = `${Math.round(((relatedMrp - minPrice) / relatedMrp) * 100)}% OFF`;
             }
 
-            const validVariants = p.variants?.filter((v: any) => v.sizes?.some((s: any) => s.stock > 0));
-            const isSoldOut = !validVariants || validVariants.length === 0 || p.stock <= 0;
+            const validVariants = p.variants?.filter((v: any) =>
+              v.sizes?.some((s: any) => s.stock > 0),
+            );
+            const isSoldOut =
+              !validVariants || validVariants.length === 0 || p.stock <= 0;
 
             return {
               id: p.slug,
@@ -190,7 +196,11 @@ const TrendingThisWeek = () => {
 
                       <div
                         className="w-full flex flex-nowrap items-center justify-center gap-1 mb-4 px-1"
-                        style={{ containerType: "inline-size" } as React.CSSProperties}
+                        style={
+                          {
+                            containerType: "inline-size",
+                          } as React.CSSProperties
+                        }
                       >
                         {product.discount ? (
                           <>

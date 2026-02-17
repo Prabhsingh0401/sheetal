@@ -109,17 +109,18 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             const discountPercentage =
               displayOriginalPrice > 0
                 ? Math.round(
-                  ((displayOriginalPrice - displayDiscountPrice) /
-                    displayOriginalPrice) *
-                  100,
-                )
+                    ((displayOriginalPrice - displayDiscountPrice) /
+                      displayOriginalPrice) *
+                      100,
+                  )
                 : 0;
 
             return (
               <div
                 key={item._id}
-                className={`flex items-start px-4 py-5 gap-4 ${index < cartItems.length - 1 ? "" : ""
-                  }`}
+                className={`flex items-start px-4 py-5 gap-4 ${
+                  index < cartItems.length - 1 ? "" : ""
+                }`}
               >
                 {/* Checkbox */}
                 <div className="pt-2">
@@ -154,12 +155,18 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                     Color: {item.color} | Size: {item.size}
                   </p>
 
-                  {applicableCategories.length > 0 && (
-                    (item.product.category && applicableCategories.includes(typeof item.product.category === 'object' ? item.product.category._id : item.product.category)) ||
-                    (applicableCategories.includes(item.product._id))
-                  ) && (
+                  {applicableCategories.length > 0 &&
+                    ((item.product.category &&
+                      applicableCategories.includes(
+                        typeof item.product.category === "object"
+                          ? item.product.category._id
+                          : item.product.category,
+                      )) ||
+                      applicableCategories.includes(item.product._id)) && (
                       <span className="text-xs text-blue-600 font-medium">
-                        {applicableCategories.includes(item.product._id) ? "Product Coupon Applied" : "Category Coupon Applied"}
+                        {applicableCategories.includes(item.product._id)
+                          ? "Product Coupon Applied"
+                          : "Category Coupon Applied"}
                       </span>
                     )}
 
@@ -199,12 +206,11 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       </span>
                     )}
                     {/* Removed manual cheapestItem check */}
-                    {itemWiseDiscount &&
-                      itemWiseDiscount[item._id] > 0 && (
-                        <span className="text-xs text-green-600 px-2 py-1 rounded-full bg-green-50 border border-green-200">
-                          -₹{itemWiseDiscount[item._id].toFixed(2)}
-                        </span>
-                      )}
+                    {itemWiseDiscount && itemWiseDiscount[item._id] > 0 && (
+                      <span className="text-xs text-green-600 px-2 py-1 rounded-full bg-green-50 border border-green-200">
+                        -₹{itemWiseDiscount[item._id].toFixed(2)}
+                      </span>
+                    )}
                   </div>
 
                   {/* Quantity */}

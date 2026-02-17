@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,7 +28,7 @@ const defaultSections: FooterSection[] = [
       { id: "2", label: "Blog", href: "/blog" },
       { id: "3", label: "FAQ's", href: "/faq" },
       { id: "4", label: "Contact us", href: "/contact-us" },
-    ]
+    ],
   },
   {
     id: "account",
@@ -38,7 +38,7 @@ const defaultSections: FooterSection[] = [
       { id: "6", label: "Track Order", href: "/track-order" },
       { id: "7", label: "Return Order", href: "/return-order" },
       { id: "8", label: "Sitemap", href: "/sitemap" },
-    ]
+    ],
   },
   {
     id: "quick",
@@ -48,12 +48,13 @@ const defaultSections: FooterSection[] = [
       { id: "10", label: "Return & Exchange Policy", href: "/returne-policy" },
       { id: "11", label: "Shipping Policy", href: "/shipping-policy" },
       { id: "12", label: "Terms of Use", href: "/terms-conditions" },
-    ]
-  }
+    ],
+  },
 ];
 
 const Footer = () => {
-  const [sectionsToRender, setSectionsToRender] = useState<FooterSection[]>(defaultSections);
+  const [sectionsToRender, setSectionsToRender] =
+    useState<FooterSection[]>(defaultSections);
 
   useEffect(() => {
     const fetchFooterLayout = async () => {
@@ -64,10 +65,11 @@ const Footer = () => {
         // Validate that it's actually footer data, not navbar data
         // Navbar data has: isDroppable, type, children
         // Footer data has: title, links
-        const hasNavbarStructure = footerLayout.length > 0 &&
-          (footerLayout[0].hasOwnProperty('isDroppable') ||
-            footerLayout[0].hasOwnProperty('type') ||
-            footerLayout[0].hasOwnProperty('children'));
+        const hasNavbarStructure =
+          footerLayout.length > 0 &&
+          (footerLayout[0].hasOwnProperty("isDroppable") ||
+            footerLayout[0].hasOwnProperty("type") ||
+            footerLayout[0].hasOwnProperty("children"));
 
         // If empty or has navbar structure, keep defaults
         if (footerLayout.length === 0 || hasNavbarStructure) {
@@ -76,10 +78,10 @@ const Footer = () => {
 
         // Filter out hidden sections and links
         const visibleSections = footerLayout
-          .filter(section => !section.hidden)
-          .map(section => ({
+          .filter((section) => !section.hidden)
+          .map((section) => ({
             ...section,
-            links: (section.links || []).filter(link => !link.hidden)
+            links: (section.links || []).filter((link) => !link.hidden),
           }));
 
         // Use fetched layout if available

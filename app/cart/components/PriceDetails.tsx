@@ -200,9 +200,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                   </Link>
                 </span>
 
-                <span className="text-gray-900">
-                  ₹{platformFee.toFixed(2)}
-                </span>
+                <span className="text-gray-900">₹{platformFee.toFixed(2)}</span>
               </div>
             )}
           </div>
@@ -245,10 +243,11 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                 coupons.map((coupon) => (
                   <div
                     key={coupon._id || coupon.id}
-                    className={`border border-dashed p-4 rounded-md cursor-pointer ${selectedCouponCode === coupon.code
-                      ? "border-[#6a3f07] border-2"
-                      : "border-gray-500"
-                      }`}
+                    className={`border border-dashed p-4 rounded-md cursor-pointer ${
+                      selectedCouponCode === coupon.code
+                        ? "border-[#6a3f07] border-2"
+                        : "border-gray-500"
+                    }`}
                     onClick={() => {
                       setSelectedCouponCode(coupon.code);
                       setCouponInput(coupon.code);
@@ -269,7 +268,10 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                         coupon.applicableIds &&
                         coupon.applicableIds.length > 0 && (
                           <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5">
-                            {typeof coupon.applicableIds[0] === 'object' && coupon.applicableIds[0].name ? coupon.applicableIds[0].name : "Category Offer"}
+                            {typeof coupon.applicableIds[0] === "object" &&
+                            coupon.applicableIds[0].name
+                              ? coupon.applicableIds[0].name
+                              : "Category Offer"}
                           </span>
                         )}
                       {coupon.scope === "Specific_Product" && (

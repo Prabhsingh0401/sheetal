@@ -87,7 +87,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
           if (selectedSizeInfo) {
             price =
               selectedSizeInfo.discountPrice &&
-                selectedSizeInfo.discountPrice > 0
+              selectedSizeInfo.discountPrice > 0
                 ? selectedSizeInfo.discountPrice
                 : selectedSizeInfo.price;
             originalPrice = selectedSizeInfo.price;
@@ -197,10 +197,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     ) {
       allUniqueColors.push({
         name: v.color!.name,
-        image: getApiImageUrl(
-          v.v_image,
-          getProductImageUrl(product),
-        ),
+        image: getApiImageUrl(v.v_image, getProductImageUrl(product)),
       });
     }
 
@@ -277,7 +274,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                   title={product.name}
                   isWishlisted={isProductInWishlist(product._id)}
                   onToggleWishlist={() => toggleProductInWishlist(product._id)}
-                  onScrollToSimilar={() => { }}
+                  onScrollToSimilar={() => {}}
                 />
               </div>
               <div className="w-full sm:w-1/2 px-2 text-left relative">
@@ -365,16 +362,18 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                             className={`
                                                                 ${sizeName === "One Size" ? "px-3 py-2 rounded-md" : "w-10 h-10 rounded-full"}
                                                                 flex items-center justify-center border text-sm font-medium transition-colors relative overflow-hidden
-                                                                ${isDisabled
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                : ""
-                              }
-                                                                ${selectedSize ===
-                                sizeName &&
-                                !isDisabled
-                                ? "border-[#bd9951]"
-                                : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-                              }
+                                                                ${
+                                                                  isDisabled
+                                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                                    : ""
+                                                                }
+                                                                ${
+                                                                  selectedSize ===
+                                                                    sizeName &&
+                                                                  !isDisabled
+                                                                    ? "border-[#bd9951]"
+                                                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+                                                                }
                                                             `}
                           >
                             {sizeName}

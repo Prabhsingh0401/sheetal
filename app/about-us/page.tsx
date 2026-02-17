@@ -43,13 +43,15 @@ const AboutUs = () => {
   }, []);
 
   // Helper for images
-  const getImage = (path: string | undefined, fallback: string): string => path || fallback;
+  const getImage = (path: string | undefined, fallback: string): string =>
+    path || fallback;
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6a3f07]"></div>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6a3f07]"></div>
+      </div>
+    );
 
   return (
     <>
@@ -84,7 +86,9 @@ const AboutUs = () => {
                   </Link>
                   <span className="absolute -right-[19px] top-0">/</span>
                 </li>
-                <li className="inline-block mx-3 relative">{data?.banner?.title || "Our Story"}</li>
+                <li className="inline-block mx-3 relative">
+                  {data?.banner?.title || "Our Story"}
+                </li>
               </ul>
             </div>
           </div>
@@ -125,15 +129,15 @@ const AboutUs = () => {
                   <>
                     <p>
                       Studio By Sheetal isn’t just a name — it’s a feeling woven
-                      into every saree we create. SBS represents the joy of draping
-                      tradition, the pride of cultural identity, and the grace of
-                      timeless elegance.
+                      into every saree we create. SBS represents the joy of
+                      draping tradition, the pride of cultural identity, and the
+                      grace of timeless elegance.
                     </p>
                     <p>
                       Founded in 2017 in Surat’s vibrant Vankar Textile Market,
                       Studio By Sheetal began as a humble 160 sq. ft. shop. This
-                      powerful blend laid the foundation for a brand that would soon
-                      change the ethnicwear landscape.
+                      powerful blend laid the foundation for a brand that would
+                      soon change the ethnicwear landscape.
                     </p>
                   </>
                 )}
@@ -159,7 +163,8 @@ const AboutUs = () => {
             <div className="w-full">
               <div className="text-center px-4 md:px-8 py-8 md:py-12">
                 <h2 className="font-optima text-[30px] md:text-[39px] text-[#593300] mb-8 font-normal">
-                  {data?.mission?.title || "Custom handpicked styles showcased by our founder, experience the quality"}
+                  {data?.mission?.title ||
+                    "Custom handpicked styles showcased by our founder, experience the quality"}
                 </h2>
                 <div className="mx-auto max-w-4xl text-[15px] font-[family-name:var(--font-montserrat)] text-black leading-relaxed space-y-4 whitespace-pre-wrap">
                   {data?.mission?.description ? (
@@ -167,23 +172,24 @@ const AboutUs = () => {
                   ) : (
                     <>
                       <p>
-                        Starting with local saree sales in 2017, Studio By Sheetal
-                        quickly gained a reputation for lightweight, stylish designs
-                        and smart pricing. Within 6 months, we tripled our sales and
-                        expanded into a larger space, setting the pace for rapid
-                        growth. By 2018, we supplied local resellers and dealers
-                        across India’s textile hubs. In just two years, Studio By
-                        Sheetal scaled 5X, culminating in a significant breakthrough
-                        in 2019 by launching on India’s top fashion marketplaces
-                        including Myntra, Tata Cliq, Nykaa, and Ajio. This digital
-                        entry rocketed our sales 10X.
+                        Starting with local saree sales in 2017, Studio By
+                        Sheetal quickly gained a reputation for lightweight,
+                        stylish designs and smart pricing. Within 6 months, we
+                        tripled our sales and expanded into a larger space,
+                        setting the pace for rapid growth. By 2018, we supplied
+                        local resellers and dealers across India’s textile hubs.
+                        In just two years, Studio By Sheetal scaled 5X,
+                        culminating in a significant breakthrough in 2019 by
+                        launching on India’s top fashion marketplaces including
+                        Myntra, Tata Cliq, Nykaa, and Ajio. This digital entry
+                        rocketed our sales 10X.
                       </p>
                       <p>
                         Even during the challenging pandemic years, Studio By
                         Sheetal defied industry trends with continuous scaling,
-                        thanks to the founders’ combined experience and a focus on
-                        unique, exclusive products and organic lead generation in
-                        India’s offline textile markets
+                        thanks to the founders’ combined experience and a focus
+                        on unique, exclusive products and organic lead
+                        generation in India’s offline textile markets
                       </p>
                     </>
                   )}
@@ -219,8 +225,8 @@ const AboutUs = () => {
                     <p>
                       Our sarees are more than fabric — they are stories crafted
                       by skilled artisans and weavers from all across India. We
-                      honor and preserve their ancestral techniques, patience, and
-                      passion, blending age-old craftsmanship with modern
+                      honor and preserve their ancestral techniques, patience,
+                      and passion, blending age-old craftsmanship with modern
                       aesthetics. Each saree carries the legacy of generations,
                       made lightweight, shrink-resistant, and finished to
                       perfection — all at an affordable price point.

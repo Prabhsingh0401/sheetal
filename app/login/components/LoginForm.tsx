@@ -24,7 +24,9 @@ const LoginForm = () => {
   const router = useRouter();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
-  const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(null);
+  const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(
+    null,
+  );
 
   useEffect(() => {
     return () => {
@@ -49,10 +51,8 @@ const LoginForm = () => {
       "recaptcha-container",
       {
         size: "invisible",
-        callback: () => {
-        },
-        "expired-callback": () => {
-        }
+        callback: () => {},
+        "expired-callback": () => {},
       },
     );
 

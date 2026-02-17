@@ -54,10 +54,11 @@ const MobileSortSheet: React.FC<MobileSortSheetProps> = ({
               return (
                 <li key={idx}>
                   <button
-                    className={`w-full text-left text-sm font-medium py-2 border-b border-gray-100 last:border-0 transition-colors ${isSelected
+                    className={`w-full text-left text-sm font-medium py-2 border-b border-gray-100 last:border-0 transition-colors ${
+                      isSelected
                         ? "text-[#bd9951] font-semibold"
                         : "hover:text-[#bd9951]"
-                      }`}
+                    }`}
                     onClick={() => {
                       onSelect(option.value);
                       onClose();
@@ -65,9 +66,7 @@ const MobileSortSheet: React.FC<MobileSortSheetProps> = ({
                   >
                     <div className="flex items-center justify-between">
                       <span>{option.label}</span>
-                      {isSelected && (
-                        <span className="text-[#bd9951]">✓</span>
-                      )}
+                      {isSelected && <span className="text-[#bd9951]">✓</span>}
                     </div>
                   </button>
                 </li>

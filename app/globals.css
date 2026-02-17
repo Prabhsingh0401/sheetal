@@ -77,7 +77,7 @@
     margin-bottom: 0.5rem;
   }
 
-  .prose ul[data-type="taskList"] li>label {
+  .prose ul[data-type="taskList"] li > label {
     margin-top: 0.25rem;
     /* Align checkbox visually with text cap-height */
     cursor: pointer;
@@ -86,7 +86,7 @@
     user-select: none;
   }
 
-  .prose ul[data-type="taskList"] li>div {
+  .prose ul[data-type="taskList"] li > div {
     flex: 1;
     min-width: 0;
   }

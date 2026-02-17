@@ -251,7 +251,6 @@ export const useCart = (): UseCartReturn => {
         );
 
         if (response.success) {
-
           setCouponCode(response.data.couponCode || code);
           setCouponOfferType(response.data.offerType);
 

@@ -42,7 +42,9 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden rounded-lg">
             {product.hoverImage?.url && (
               <Image
-                src={product.hoverImage.url || "/assets/placeholder-product.jpg"}
+                src={
+                  product.hoverImage.url || "/assets/placeholder-product.jpg"
+                }
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"

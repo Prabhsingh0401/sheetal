@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 import FilterSortMobile from "./components/FilterSortMobile";
 import MobileSortSheet from "./components/MobileSortSheet";
@@ -21,10 +21,29 @@ import { useProducts } from "../hooks/useProducts";
 import { useWishlist } from "../hooks/useWishlist";
 import { useProductFilters } from "../hooks/useProductFilters";
 
-const ProductListContent = () => {
+interface ProductListProps {
+  categorySlug?: string;
+}
+
+const ProductListContent = ({
+  categorySlug: propCategorySlug,
+}: ProductListProps) => {
   const searchParams = useSearchParams();
-  const categorySlug = searchParams.get("category");
+  const router = useRouter();
+  const pathname = usePathname();
+  const categorySlug = propCategorySlug || searchParams.get("category");
   const subCategory = searchParams.get("subCategory");
+
+  // Redirect /product-list?category=xyz to /xyz
+  useEffect(() => {
+    if (pathname === "/product-list" && categorySlug) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("category");
+      const queryString = params.toString();
+      const newPath = `/${categorySlug}${queryString ? `?${queryString}` : ""}`;
+      router.replace(newPath);
+    }
+  }, [pathname, categorySlug, router, searchParams]);
 
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [isResolvingCategory, setIsResolvingCategory] =
@@ -40,10 +59,33 @@ const ProductListContent = () => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortByOpen, setSortByOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const activeType = searchParams.get("type");
+  const activeValue = searchParams.get("value");
+
   const [activeFilters, setActiveFilters] = useState<
     { label: string; type: string; value: string }[]
   >([]);
+
+  useEffect(() => {
+    if (activeType && activeValue) {
+      setActiveFilters([
+        {
+          label: `${activeType}: ${activeValue}`,
+          type: activeType,
+          value: activeValue,
+        },
+      ]);
+    } else {
+      // Only clear if not using initial params, or handle appropriately.
+      // For now, if no query params, start empty.
+      if (!activeType && !activeValue) {
+        setActiveFilters([]);
+      }
+    }
+  }, [activeType, activeValue]);
   const [sortOption, setSortOption] = useState<string>("newest");
+
+  // ... rest of logic uses categorySlug variable which is now derived
 
   /* =======================
      Wishlist
@@ -200,7 +242,9 @@ const ProductListContent = () => {
       filteredProducts = filteredProducts.filter((p) =>
         products
           .find((prod) => prod._id === p._id)
-          ?.variants?.some((v) => v.sizes?.some((s) => s.name === filter.value)),
+          ?.variants?.some((v) =>
+            v.sizes?.some((s) => s.name === filter.value),
+          ),
       );
     } else if (filter.type === "color") {
       filteredProducts = filteredProducts.filter((p) =>
@@ -239,6 +283,26 @@ const ProductListContent = () => {
       filteredProducts = filteredProducts.filter((p) => {
         const product = products.find((prod) => prod._id === p._id);
         return product?.tags?.includes(filter.value);
+      });
+    } else if (filter.type === "style") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return product?.style?.includes(filter.value);
+      });
+    } else if (filter.type === "work") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return product?.work?.includes(filter.value);
+      });
+    } else if (filter.type === "fabric") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return product?.fabric?.includes(filter.value);
+      });
+    } else if (filter.type === "productType") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return product?.productType?.includes(filter.value);
       });
     }
   });
@@ -335,7 +399,7 @@ const ProductListContent = () => {
 /* =======================
    Suspense Wrapper
 ======================= */
-const ProductList = () => {
+const ProductList = (props: ProductListProps) => {
   return (
     <Suspense
       fallback={
@@ -344,7 +408,7 @@ const ProductList = () => {
         </div>
       }
     >
-      <ProductListContent />
+      <ProductListContent {...props} />
     </Suspense>
   );
 };

@@ -171,23 +171,25 @@ const CartPage = () => {
     );
   }
 
-
-
-
-
   const totalAmount = finalAmount + shippingCharges + platformFee;
 
   /* Removed client-side cheapestItem calculation to rely on server response */
 
   /* Logic for display name */
-  const categoryNames = applicableCategories.length > 0
-    ? cartItems
-      .filter(item => item.product.category && applicableCategories.includes(item.product.category._id))
-      .map(item => item.product.category.name)
-    : [];
+  const categoryNames =
+    applicableCategories.length > 0
+      ? cartItems
+          .filter(
+            (item) =>
+              item.product.category &&
+              applicableCategories.includes(item.product.category._id),
+          )
+          .map((item) => item.product.category.name)
+      : [];
   // Unique names
   const uniqueCategoryNames = Array.from(new Set(categoryNames));
-  const displayCategoryName = uniqueCategoryNames.length > 0 ? uniqueCategoryNames.join(", ") : null;
+  const displayCategoryName =
+    uniqueCategoryNames.length > 0 ? uniqueCategoryNames.join(", ") : null;
 
   return (
     <div className="font-montserrat">
@@ -207,7 +209,12 @@ const CartPage = () => {
             </div>
             <div className="hidden md:flex items-center space-x-8 text-sm font-medium mx-20">
               <div className="text-[#bd9951]">BAG</div>
-              <Link href="/checkout/address" className="text-gray-400 hover:text-[#bd9951]">ADDRESS</Link>
+              <Link
+                href="/checkout/address"
+                className="text-gray-400 hover:text-[#bd9951]"
+              >
+                ADDRESS
+              </Link>
               <div className="text-gray-400">PAYMENT</div>
             </div>
             <div className="flex items-center space-x-2 text-sm font-semibold">

@@ -78,8 +78,7 @@ const MyAccountLayout = ({ children }: { children: React.ReactNode }) => {
         <div
           className="animate-spin rounded-full h-12 w-12 border-4 border-solid border-[#a97f0f] border-t-transparent"
           role="status"
-        >
-        </div>
+        ></div>
       </div>
     );
   }
@@ -104,9 +103,7 @@ const MyAccountLayout = ({ children }: { children: React.ReactNode }) => {
 
             {/* Right Content - Dynamic */}
             <div className="col-lg-8">
-              <div className="">
-                {children}
-              </div>
+              <div className="">{children}</div>
             </div>
           </div>
         </div>

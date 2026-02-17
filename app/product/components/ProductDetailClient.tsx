@@ -388,7 +388,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const currentSelectedOriginalPrice = selectedSizeObject?.price || 0;
   const currentSelectedDiscount =
     currentSelectedOriginalPrice > 0 &&
-      currentSelectedPrice < currentSelectedOriginalPrice
+    currentSelectedPrice < currentSelectedOriginalPrice
       ? `${Math.round(((currentSelectedOriginalPrice - currentSelectedPrice) / currentSelectedOriginalPrice) * 100)}`
       : "0";
 

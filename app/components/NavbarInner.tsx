@@ -1,8 +1,8 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCart } from "../hooks/useCart";
 import {
@@ -10,32 +10,230 @@ import {
   logout,
   getUserDetails,
 } from "../services/authService";
-import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import SearchModal from "./SearchModal";
 import useSWR from "swr";
 import { fetchAllCategories, Category } from "../services/categoryService";
-import { getSettings } from "../services/settingsService";
+import {
+  fetchProducts,
+  getProductImageUrl,
+  Product,
+} from "../services/productService";
+
+// Helper to check if category has any tags
+const hasTags = (category: Category) => {
+  return (
+    (category.occasion && category.occasion.length > 0) ||
+    (category.fabric && category.fabric.length > 0) ||
+    (category.style && category.style.length > 0) ||
+    (category.work && category.work.length > 0) ||
+    (category.wearType && category.wearType.length > 0) ||
+    (category.productType && category.productType.length > 0)
+  );
+};
+
+// Dynamic Mega Menu Component
+const DynamicMegaMenu = ({ category }: { category: Category }) => {
+  const tagGroups = [
+    { title: "By Occasion", items: category.occasion, type: "occasion" },
+    { title: "By Fabric", items: category.fabric, type: "fabric" },
+    { title: "By Style", items: category.style, type: "style" },
+    { title: "By Work", items: category.work, type: "work" },
+    { title: "By Wear Type", items: category.wearType, type: "wearType" },
+    {
+      title: "By Product Type",
+      items: category.productType,
+      type: "productType",
+    },
+  ].filter((g) => g.items && g.items.length > 0);
+
+  const isGrid = tagGroups.length > 3;
+
+  const [latestProducts, setLatestProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    const loadLatestProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        const res = await fetchProducts({
+          category: category._id,
+          limit: 2,
+          sort: "-createdAt",
+          status: "Active",
+        });
+
+        if (res.success && res.products) {
+          setLatestProducts(res.products);
+        }
+      } catch (err) {
+        console.error("Failed to load mega menu products", err);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    if (category._id) {
+      loadLatestProducts();
+    }
+  }, [category._id]);
+
+  return (
+    <div
+      className={`
+        fixed left-0 right-0 w-full text-left 
+        opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+        transition-all duration-300 z-[1004]
+      `}
+      style={{ top: "calc(15px + 63px)" }}
+    >
+      <div className="bg-white/98 backdrop-blur-md border-t border-gray-200 shadow-2xl">
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-12 gap-6">
+            {/* Tag Groups Section */}
+            <div
+              className={`col-span-8 ${isGrid ? "grid grid-cols-3 gap-y-8" : "grid grid-cols-4 gap-4"}`}
+            >
+              {tagGroups.map((group, idx) => (
+                <div key={idx} className={isGrid ? "col-span-1" : "col-span-1"}>
+                  <h3 className="font-semibold text-sm mb-3 text-[#f4be40] uppercase tracking-wide">
+                    {group.title}
+                  </h3>
+                  <ul className="space-y-2 text-sm">
+                    {group.items?.map((tag) => (
+                      <li key={tag}>
+                        <Link
+                          href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
+                          className="text-gray-700 hover:text-gray-900 transition-colors capitalize"
+                        >
+                          {tag}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            {/* Product Images Section */}
+            <div className="col-span-4 grid grid-cols-2 gap-4">
+              {loadingProducts ? (
+                <>
+                  <div className="animate-pulse bg-gray-200 h-[250px] rounded-lg"></div>
+                  <div className="animate-pulse bg-gray-200 h-[250px] rounded-lg"></div>
+                </>
+              ) : latestProducts.length > 0 ? (
+                latestProducts.map((product) => (
+                  <div key={product._id} className="text-center group/product">
+                    <div className="mb-2 overflow-hidden rounded-lg relative">
+                      <Link href={`/product/${product.slug}`}>
+                        <Image
+                          src={getProductImageUrl(product)}
+                          alt={product.name}
+                          width={250}
+                          height={300}
+                          className="w-full h-[250px] object-cover group-hover/product:scale-105 transition-transform duration-300"
+                        />
+                      </Link>
+                    </div>
+                    <Link href={`/product/${product.slug}`}>
+                      <p className="font-semibold text-sm text-gray-800 mb-1 hover:text-[#b3a660] transition-colors line-clamp-1">
+                        {product.name}
+                      </p>
+                    </Link>
+                    <Link
+                      href={`/product/${product.slug}`}
+                      className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium"
+                    >
+                      Shop Now
+                    </Link>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="text-center">
+                    <div className="mb-2 overflow-hidden rounded-lg">
+                      <Image
+                        src="/assets/deals2.jpg"
+                        alt="New Arrivals"
+                        width={250}
+                        height={300}
+                        className="w-full h-[250px] object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <p className="font-semibold text-sm text-gray-800 mb-1">
+                      New Collection
+                    </p>
+                    <button className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium">
+                      Explore
+                    </button>
+                  </div>
+                  <div className="text-center">
+                    <div className="mb-2 overflow-hidden rounded-lg">
+                      <Image
+                        src="/assets/deals1.jpg"
+                        alt="Best Sellers"
+                        width={250}
+                        height={300}
+                        className="w-full h-[250px] object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <p className="font-semibold text-sm text-gray-800 mb-1">
+                      Best Sellers
+                    </p>
+                    <button className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium">
+                      Shop Now
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Recursive Desktop Menu Item
 const DesktopMenuItem = ({ item }: { item: any }) => {
   if (item.hidden) return null;
 
   const hasChildren = item.children && item.children.length > 0;
+  const isMegaMenu = item.isCategory && hasTags(item);
 
   return (
     <li className="relative group h-full flex items-center">
       <Link
         href={item.href || "#"}
         className={`
-          inline-block px-[19px] !text-[#b3a660] border-r !border-[#f2bf42] 
-          tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-1
+          px-[19px] !text-[#b3a660] 
+          tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-2
         `}
       >
-        {item.label}{" "}
-        {hasChildren && <span className="text-[10px] transform group-hover:rotate-180 transition-transform">▼</span>}
+        {item.label}
+        {(hasChildren || isMegaMenu) && (
+          <svg
+            className="w-3 h-3 transition-transform duration-200 group-hover:rotate-180"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        )}
       </Link>
 
-      {/* Dropdown Menu */}
-      {hasChildren && (
+      {/* Dynamic Mega Menu */}
+      {isMegaMenu && <DynamicMegaMenu category={item} />}
+
+      {/* Regular Dropdown Menu */}
+      {hasChildren && !isMegaMenu && (
         <div
           className={`
             absolute left-0 top-full pt-4 w-[280px] text-left 
@@ -80,91 +278,281 @@ const DesktopSubMenuItem = ({ item }: { item: any }) => {
         </div>
       )}
     </li>
-  )
-}
+  );
+};
 
-// Recursive Mobile Menu Item
-const MobileMenuItem = ({ item, depth = 0 }: { item: any; depth?: number }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  if (item.hidden) return null;
-
-  const hasChildren = item.children && item.children.length > 0;
-
-  if (!hasChildren) {
-    return (
-      <Link
-        href={item.href || "#"}
-        className={`block font-medium border-b border-gray-100 py-2 !text-[#b3a660] ${depth > 0 ? 'text-sm !text-[#aa8c6a] pl-4' : 'text-lg'}`}
-      >
-        {item.label}
-      </Link>
-    );
-  }
+// Mobile Submenu View
+const MobileSubMenuView = ({
+  item,
+  onBack,
+  onClose,
+}: {
+  item: any;
+  onBack: () => void;
+  onClose: () => void;
+}) => {
+  const tagGroups = [
+    { title: "By Occasion", items: item.occasion, type: "occasion" },
+    { title: "By Fabric", items: item.fabric, type: "fabric" },
+    { title: "By Style", items: item.style, type: "style" },
+    { title: "By Work", items: item.work, type: "work" },
+    { title: "By Wear Type", items: item.wearType, type: "wearType" },
+    { title: "By Product Type", items: item.productType, type: "productType" },
+  ].filter((g) => g.items && g.items.length > 0);
 
   return (
-    <div>
-      <button
-        className={`w-full flex justify-between items-center border-b border-gray-100 py-2 !text-[#b3a660] ${depth > 0 ? 'text-sm font-normal' : 'text-lg font-medium'}`}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {item.label}{" "}
-        <span className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}>▼</span>
-      </button>
-      <div className={`pl-4 bg-gray-50 overflow-hidden transition-all duration-300 ${isOpen ? "max-h-[1000px] py-2" : "max-h-0"}`}>
-        {item.children.map((child: any, idx: number) => (
-          <MobileMenuItem key={`${child.id}-${idx}`} item={child} depth={depth + 1} />
+    <div className="flex flex-col h-full w-full bg-[#f9f9f9]">
+      <div className="bg-[#082722] p-4 flex items-center justify-between shadow-md shrink-0">
+        <button
+          onClick={onBack}
+          className="text-[#f2bf42] flex items-center gap-2 text-sm font-medium"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back
+        </button>
+        <h2 className="text-[#f2bf42] text-lg font-serif tracking-wide capitalize">
+          {item.label}
+        </h2>
+        <button onClick={onClose} className="text-[#f2bf42] text-xl">
+          ✕
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-[#f5f5f5]">
+        {tagGroups.map((group, idx) => (
+          <div key={idx} className="mb-6">
+            <h3 className="text-[#b3a660] font-medium text-lg mb-3 capitalize">
+              {group.title}
+            </h3>
+            <ul className="space-y-2 pl-1">
+              {group.items?.map((tag: string) => (
+                <li key={tag}>
+                  <Link
+                    href={`/${item.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
+                    className="text-gray-700 hover:text-[#082722] text-base capitalize transition-colors block py-1"
+                    onClick={onClose}
+                  >
+                    {tag}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         ))}
+        {tagGroups.length === 0 && (
+          <div className="text-center py-10">
+            <Link
+              href={item.href || "#"}
+              className="inline-block px-6 py-3 bg-[#082722] text-[#f2bf42] rounded-md"
+              onClick={onClose}
+            >
+              View All {item.label}
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
+const MobileMenuOverlay = ({
+  isOpen,
+  onClose,
+  navItems,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  navItems: any[];
+}) => {
+  const [activeItem, setActiveItem] = useState<any>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setTimeout(() => setActiveItem(null), 300);
+    }
+  }, [isOpen]);
+
+  const handleItemClick = (item: any) => {
+    const hasSubMenu =
+      (item.isCategory && hasTags(item)) ||
+      (item.children && item.children.length > 0);
+
+    if (hasSubMenu) {
+      setActiveItem(item);
+    } else {
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      className={`fixed inset-0 z-[10000] bg-black/60 transition-opacity duration-300 md:hidden ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+    >
+      <nav
+        className={`
+          absolute right-0 top-0 h-full w-[85%] max-w-[320px] 
+          bg-[#082722] shadow-2xl 
+          transition-transform duration-300 transform 
+          ${isOpen ? "translate-x-0" : "translate-x-full"}
+          overflow-hidden
+        `}
+      >
+        {activeItem ? (
+          <MobileSubMenuView
+            item={activeItem}
+            onBack={() => setActiveItem(null)}
+            onClose={onClose}
+          />
+        ) : (
+          <div className="flex flex-col h-full">
+            <div className="flex justify-end p-4 shrink-0">
+              <button onClick={onClose} className="text-[#f2bf42] text-2xl">
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-2 space-y-6">
+              {navItems.map((item, idx) => {
+                const hasSubMenu =
+                  (item.isCategory && hasTags(item)) ||
+                  (item.children && item.children.length > 0);
+                return (
+                  <div
+                    key={`${item.id}-${idx}`}
+                    className="border-b border-[#f2bf42]/20 pb-4 last:border-0"
+                  >
+                    {hasSubMenu ? (
+                      <button
+                        onClick={() => handleItemClick(item)}
+                        className="w-full flex justify-between items-center text-[#f2bf42] text-lg font-medium tracking-wide"
+                      >
+                        {item.label}
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
+                    ) : (
+                      <Link
+                        href={item.href || "#"}
+                        className="block text-[#f2bf42] text-lg font-medium tracking-wide"
+                        onClick={onClose}
+                      >
+                        {item.label}
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+
+              <div className="border-b border-[#f2bf42]/20 pb-4">
+                <Link
+                  href="/blog"
+                  onClick={onClose}
+                  className="block text-[#f2bf42] text-lg font-medium tracking-wide"
+                >
+                  Blog
+                </Link>
+              </div>
+              <div className="border-b border-[#f2bf42]/20 pb-4">
+                <Link
+                  href="/contact-us"
+                  onClick={onClose}
+                  className="block text-[#f2bf42] text-lg font-medium tracking-wide"
+                >
+                  Contact Us
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+    </div>
+  );
+};
+
 const NavbarInner = () => {
+  const router = useRouter();
   const { wishlist } = useWishlist();
   const { cart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false); // State for user dropdown
-  const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<any>(null); // State to store user details
-  const [isClient, setIsClient] = useState(false); // State to track if component is mounted on client
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false);
 
-  // Fetch Settings (Layout) AND Categories (Fallback)
-  const { data: settings } = useSWR("/settings", getSettings);
+  // Fetch categories dynamically
   const { data: categories } = useSWR("/categories", fetchAllCategories);
 
-  // Determine the Navigation Items to Render
-  let navItems: any[] = [];
-
-  if (settings?.navbarLayout && settings.navbarLayout.length > 0) {
-    navItems = settings.navbarLayout;
-  } else if (categories) {
-    // Fallback: Build standard structure
-    navItems = [
-      { label: "Home", href: "/", id: "home" },
-      {
-        label: "Shop",
-        href: "#",
-        id: "shop",
-        children: categories.map(cat => ({
-          label: cat.name,
-          href: `/product-list?category=${cat.slug}`,
-          id: cat._id,
-          children: cat.subCategories?.map(sub => ({
-            label: sub,
-            href: `/product-list?category=${cat.slug}&subCategory=${encodeURIComponent(sub)}`,
-            id: sub
-          }))
-        }))
-      },
-      { label: "Our Story", href: "/about-us", id: "about" }
-    ];
-  }
+  const [navItems, setNavItems] = useState<any[]>([]);
 
   useEffect(() => {
-    setIsClient(true); // Mark that we are on the client side
+    if (categories) {
+      // Filter top-level categories
+      const topLevel = categories.filter(
+        (c) => !c.parentCategory || c.parentCategory === "null",
+      );
 
+      // Recursive function to build menu tree
+      const buildMenuTree = (cats: Category[]): any[] => {
+        return cats.map((cat) => {
+          const childrenCats = categories.filter(
+            (c) =>
+              c.parentCategory &&
+              (typeof c.parentCategory === "object"
+                ? (c.parentCategory as any)._id === cat._id
+                : c.parentCategory === cat._id),
+          );
+
+          return {
+            ...cat, // Spread category data to access tags in MegaMenu
+            label: cat.name,
+            href: `/${cat.slug}`,
+            id: cat._id,
+            isCategory: true,
+            children: buildMenuTree(childrenCats),
+          };
+        });
+      };
+
+      const dynamicNavItems = buildMenuTree(topLevel);
+
+      // Add static items
+      const finalNavItems = [
+        ...dynamicNavItems,
+        { label: "Our Story", href: "/about-us", id: "about" },
+      ];
+
+      setNavItems(finalNavItems);
+    }
+  }, [categories]);
+
+  useEffect(() => {
+    setIsClient(true);
     const handleScroll = () => {
       if (window.scrollY > 50) {
         setScrolled(true);
@@ -175,7 +563,6 @@ const NavbarInner = () => {
 
     window.addEventListener("scroll", handleScroll);
 
-    // Fetch user details when component mounts
     if (isAuthenticated()) {
       setCurrentUser(getUserDetails());
     } else {
@@ -187,14 +574,17 @@ const NavbarInner = () => {
 
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
   const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
-
   const handleLogout = () => {
     logout();
-    setCurrentUser(null); // Clear current user on logout
+    setCurrentUser(null);
+    toast.success("You have been logged out.");
     router.push("/login");
   };
 
-  // Helper to get display name
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const toggleSearch = () => setSearchOpen(!searchOpen);
+  const closeSearch = () => setSearchOpen(false);
+
   const getDisplayName = () => {
     if (!currentUser) return "Guest";
     if (currentUser.name) return currentUser.name;
@@ -205,7 +595,6 @@ const NavbarInner = () => {
 
   const UserIcon = () => {
     if (!isClient) {
-      // During SSR, show login link by default
       return (
         <Link href="/login" className="hover:opacity-80 transition-opacity">
           <Image
@@ -219,7 +608,6 @@ const NavbarInner = () => {
       );
     }
 
-    // After hydration, show actual auth state
     if (isAuthenticated()) {
       return (
         <div
@@ -247,13 +635,13 @@ const NavbarInner = () => {
                 </p>
                 <Link
                   href="/my-account"
-                  className="block px-3 py-2 hover:text-white transition-colors"
+                  className="block px-3 py-2 hover:text-white transition-colors cursor-pointer"
                 >
                   My Account
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 hover:text-white transition-colors"
+                  className="w-full text-left px-3 py-2 hover:text-white transition-colors cursor-pointer"
                 >
                   Logout
                 </button>
@@ -277,16 +665,10 @@ const NavbarInner = () => {
     );
   };
 
-  // Mobile Menu Toggles
-  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
-  const toggleSearch = () => setSearchOpen(!searchOpen);
-  const closeSearch = () => setSearchOpen(false);
-
   return (
     <>
-      {/* Desktop Header - Fixed at top */}
       <div
-        className={`hidden md:block fixed w-full z-[80] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm py-4 font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[27px]"
+        className={`hidden md:block fixed w-full z-[1003] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm py-4 font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[27px]"
           }`}
       >
         <div className="container mx-auto px-4">
@@ -305,7 +687,6 @@ const NavbarInner = () => {
             {/* Right Side (Navigation) */}
             <div className="flex justify-end items-center flex-1 ml-8">
               <ul className="m-0 p-0 list-none inline-flex items-center gap-0">
-
                 {/* DYNAMIC DESKTOP NAVIGATION */}
                 {navItems.map((item, idx) => (
                   <DesktopMenuItem key={`${item.id}-${idx}`} item={item} />
@@ -315,7 +696,7 @@ const NavbarInner = () => {
                 <li className="flex items-center gap-4 pl-5 ml-2">
                   <button
                     onClick={toggleSearch}
-                    className="hover:opacity-80 transition-opacity"
+                    className="hover:opacity-80 transition-opacity cursor-pointer"
                   >
                     <Image
                       src="/assets/icons/search.svg"
@@ -363,7 +744,6 @@ const NavbarInner = () => {
         </div>
       </div>
 
-      {/* Mobile Header */}
       <header
         className={`md:hidden fixed w-full z-40 bg-[#112f23] backdrop-blur-sm shadow-sm py-2 transition-all duration-300 ${scrolled ? "top-0" : "top-[27px]"
           }`}
@@ -416,78 +796,12 @@ const NavbarInner = () => {
         </div>
       </header>
 
-      {/* Search Box Overlay */}
-      {searchOpen && (
-        <div className="fixed inset-0 z-[10000] bg-black/90 flex justify-center pt-20 font-[family-name:var(--font-montserrat)]">
-          <div className="w-full max-w-2xl px-4 relative">
-            <button
-              onClick={closeSearch}
-              className="absolute -top-10 right-4 text-white text-2xl"
-            >
-              ✕
-            </button>
-            <input
-              type="text"
-              className="w-full p-4 text-lg border-b-2 border-white bg-transparent text-white focus:outline-none placeholder-gray-400"
-              placeholder="I'm Looking for..."
-            />
-            <div className="mt-8 text-white">
-              <h4 className="text-xl mb-4 font-semibold">Product Suggestion</h4>
-              <ul className="space-y-2">
-                {["Sarees", "Lehengas", "Suits", "Gowns"].map((item, i) => (
-                  <li key={i}>
-                    <Link
-                      href={`/category/${item.toLowerCase()}`}
-                      className="hover:text-yellow-400 transition-colors"
-                      onClick={closeSearch}
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Menu Drawer */}
-      <div
-        className={`fixed inset-0 z-[10000] bg-black/50 transition-opacity duration-300 md:hidden ${isMobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
-      >
-        <nav
-          className={`absolute right-0 top-0 h-full w-[80%] max-w-[300px] bg-white shadow-2xl transition-transform duration-300 transform ${isMobileMenuOpen ? "translate-x-0" : "translate-x-full"}`}
-        >
-          <div className="p-4 flex justify-end">
-            <button
-              onClick={toggleMobileMenu}
-              className="text-2xl !text-[#b3a660]"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="p-6 flex flex-col gap-4 overflow-y-auto h-full pb-20">
-
-            {/* DYNAMIC MOBILE NAVIGATION */}
-            {navItems.map((item, idx) => (
-              <MobileMenuItem key={`${item.id}-${idx}`} item={item} />
-            ))}
-
-            <Link
-              href="/blog"
-              className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/contact-us"
-              className="text-lg font-medium border-b border-gray-100 py-2 !text-[#b3a660]"
-            >
-              Contact Us
-            </Link>
-          </div>
-        </nav>
-      </div>
+      <SearchModal isOpen={searchOpen} onClose={closeSearch} />
+      <MobileMenuOverlay
+        isOpen={isMobileMenuOpen}
+        onClose={toggleMobileMenu}
+        navItems={navItems}
+      />
     </>
   );
 };

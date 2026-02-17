@@ -80,6 +80,10 @@ export interface Product {
   wearType?: string[];
   occasion?: string[];
   tags?: string[];
+  style?: string[];
+  work?: string[];
+  fabric?: string[];
+  productType?: string[];
 
   brandInfo?: string;
   warranty: string;

@@ -22,6 +22,12 @@ export interface Category {
   createdAt?: string;
   updatedAt?: string;
   subCategories?: string[]; // Added support for subcategories
+  style?: string[];
+  work?: string[];
+  fabric?: string[];
+  productType?: string[];
+  wearType?: string[];
+  occasion?: string[];
 }
 
 export interface ApiResponse<T> {

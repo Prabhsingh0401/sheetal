@@ -66,8 +66,6 @@ const CustomNextArrow = (props: any) => {
   );
 };
 
-
-
 const HomeBanner = () => {
   const [banners, setBanners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,11 +125,17 @@ const HomeBanner = () => {
           <div className="overflow-hidden">
             <Slider {...settings} className="header-carousel">
               {desktopBanners.map((banner, index) => (
-                <div key={banner._id} className="banner-carousel-item outline-none">
+                <div
+                  key={banner._id}
+                  className="banner-carousel-item outline-none"
+                >
                   <Link href={banner.link || "#"}>
                     <div className="relative w-full h-[720px]">
                       <Image
-                        src={getApiImageUrl(banner.image.desktop, "/assets/default-image.png")}
+                        src={getApiImageUrl(
+                          banner.image.desktop,
+                          "/assets/default-image.png",
+                        )}
                         alt={banner.title}
                         width={1920}
                         height={720}
@@ -162,11 +166,17 @@ const HomeBanner = () => {
         <div className="block md:hidden relative group">
           <Slider {...settings} className="header-carousel" arrows={false}>
             {mobileBanners.map((banner, index) => (
-              <div key={banner._id} className="banner-carousel-item outline-none">
+              <div
+                key={banner._id}
+                className="banner-carousel-item outline-none"
+              >
                 <Link href={banner.link || "#"}>
                   <div className="relative w-full h-[1000px]">
                     <Image
-                      src={getApiImageUrl(banner.image.mobile, "/assets/default-image.png")}
+                      src={getApiImageUrl(
+                        banner.image.mobile,
+                        "/assets/default-image.png",
+                      )}
                       alt={banner.title}
                       width={800}
                       height={1000}

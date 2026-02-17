@@ -11,9 +11,9 @@ interface User {
   email?: string;
   role: string;
   alternativeMobileNumber?: string;
-  gender?: "Male" | "Female"; 
-  dateOfBirth?: string; 
-  profilePicture?: string; 
+  gender?: "Male" | "Female";
+  dateOfBirth?: string;
+  profilePicture?: string;
 }
 
 interface VerifyTokenResponse {

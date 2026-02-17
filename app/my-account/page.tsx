@@ -12,9 +12,7 @@ const MyAccountOverviewPage = () => {
   return (
     <div className="ml-20 w-160">
       {/* Header */}
-      <h4 className="text-xl font-semibold text-gray-900 mb-2">
-        Dashboard
-      </h4>
+      <h4 className="text-xl font-semibold text-gray-900 mb-2">Dashboard</h4>
       <hr className="mb-8 border-gray-200" />
 
       {/* Cards */}

@@ -1,4 +1,3 @@
-
 import { apiFetch } from "./api";
 
 const BANNER_ENDPOINT = "/banner";

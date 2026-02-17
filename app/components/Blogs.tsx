@@ -164,8 +164,8 @@ const Blogs = () => {
                       href="/blog/colour-trends-2025"
                       className="hover:text-[#d18702] transition-colors"
                     >
-                      Colour Trends in Sarees for 2025: Jewel Tones from Studio by
-                      Sheetal's Festive Collection
+                      Colour Trends in Sarees for 2025: Jewel Tones from Studio
+                      by Sheetal's Festive Collection
                     </Link>
                   </h4>
                   <Link
@@ -280,4 +280,3 @@ const Blogs = () => {
 };
 
 export default Blogs;
-

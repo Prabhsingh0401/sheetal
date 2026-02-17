@@ -141,149 +141,153 @@ const NewArrivals = () => {
               <div className="flex gap-4">
                 {loading
                   ? Array.from({ length: 3 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className="flex-shrink-0 w-[85%] sm:w-[48%] lg:w-[33.333%] animate-pulse"
-                    >
-                      <div className="rounded-xl overflow-hidden group ml-2">
-                        <div className="relative aspect-[3/4] bg-gray-200 rounded-xl"></div>
-                        <div className="p-4 text-center">
-                          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
-                          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                  : products.map((product) => {
-                    const displayPrice = getDisplayPrice(product);
-                    const isWishlisted = wishlist.includes(product._id);
-
-                    return (
                       <div
-                        key={product._id}
-                        className="flex-shrink-0 w-[85%] sm:w-[48%] lg:w-[33.333%]"
+                        key={index}
+                        className="flex-shrink-0 w-[85%] sm:w-[48%] lg:w-[33.333%] animate-pulse"
                       >
                         <div className="rounded-xl overflow-hidden group ml-2">
-                          <div className="relative aspect-[3/4] overflow-hidden">
-                            {product.stock === 0 && (
-                              <div className="absolute -top-1 left-0 z-20">
-                                <span className="bg-red-600 text-white text-[10px] px-2 py-1 uppercase font-bold rounded-br-lg">
-                                  SOLD OUT
-                                </span>
-                              </div>
-                            )}
+                          <div className="relative aspect-[3/4] bg-gray-200 rounded-xl"></div>
+                          <div className="p-4 text-center">
+                            <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  : products.map((product) => {
+                      const displayPrice = getDisplayPrice(product);
+                      const isWishlisted = wishlist.includes(product._id);
 
-                            {/* Wishlist Button - Matched with ProductGrid */}
-                            <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 z-20">
-                              <button
-                                className="w-10 h-10 rounded-full flex items-center justify-center group/icon"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  handleWishlistToggle(product._id);
-                                }}
+                      return (
+                        <div
+                          key={product._id}
+                          className="flex-shrink-0 w-[85%] sm:w-[48%] lg:w-[33.333%]"
+                        >
+                          <div className="rounded-xl overflow-hidden group ml-2">
+                            <div className="relative aspect-[3/4] overflow-hidden">
+                              {product.stock === 0 && (
+                                <div className="absolute -top-1 left-0 z-20">
+                                  <span className="bg-red-600 text-white text-[10px] px-2 py-1 uppercase font-bold rounded-br-lg">
+                                    SOLD OUT
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Wishlist Button - Matched with ProductGrid */}
+                              <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 z-20">
+                                <button
+                                  className="w-10 h-10 rounded-full flex items-center justify-center group/icon"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleWishlistToggle(product._id);
+                                  }}
+                                >
+                                  <Image
+                                    src={
+                                      isWishlisted
+                                        ? "/assets/icons/heart-solid.svg"
+                                        : "/assets/icons/heart.svg"
+                                    }
+                                    alt="Wishlist"
+                                    width={18}
+                                    height={18}
+                                    className={
+                                      isWishlisted
+                                        ? ""
+                                        : "group-hover/icon:brightness-0 group-hover/icon:invert"
+                                    }
+                                  />
+                                </button>
+                              </div>
+
+                              <Link
+                                href={`/product/${product.slug}`}
+                                className="block h-full w-full relative"
                               >
                                 <Image
                                   src={
-                                    isWishlisted
-                                      ? "/assets/icons/heart-solid.svg"
-                                      : "/assets/icons/heart.svg"
+                                    product.mainImage?.url ||
+                                    "/assets/placeholder-product.jpg"
                                   }
-                                  alt="Wishlist"
-                                  width={18}
-                                  height={18}
-                                  className={
-                                    isWishlisted
-                                      ? ""
-                                      : "group-hover/icon:brightness-0 group-hover/icon:invert"
-                                  }
+                                  alt={product.name}
+                                  width={400}
+                                  height={533}
+                                  className="w-full h-full object-cover rounded-xl transition-opacity duration-700 group-hover:opacity-0"
                                 />
-                              </button>
-                            </div>
-
-                            <Link
-                              href={`/product/${product.slug}`}
-                              className="block h-full w-full relative"
-                            >
-                              <Image
-                                src={
-                                  product.mainImage?.url ||
-                                  "/assets/placeholder-product.jpg"
-                                }
-                                alt={product.name}
-                                width={400}
-                                height={533}
-                                className="w-full h-full object-cover rounded-xl transition-opacity duration-700 group-hover:opacity-0"
-                              />
-                              <Image
-                                src={
-                                  product.hoverImage?.url ||
-                                  product.mainImage?.url ||
-                                  "/assets/placeholder-product.jpg"
-                                }
-                                alt={product.name}
-                                width={400}
-                                height={533}
-                                className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-0 transition-opacity duration-700 group-hover:opacity-100"
-                              />
-                            </Link>
-                          </div>
-                          <div className="p-4 text-center">
-                            <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
-                              <Link
-                                href={`/product/${product.slug}`}
-                                className="text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2"
-                              >
-                                {product.name}
+                                <Image
+                                  src={
+                                    product.hoverImage?.url ||
+                                    product.mainImage?.url ||
+                                    "/assets/placeholder-product.jpg"
+                                  }
+                                  alt={product.name}
+                                  width={400}
+                                  height={533}
+                                  className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+                                />
                               </Link>
-                            </h6>
-                            <div className="flex flex-col items-center gap-1 mb-3">
-                              {/* Size removed */}
-                              <div className="flex gap-0.5">
-                                {[1, 2, 3, 4, 5].map((i) => (
-                                  <Image
-                                    key={i}
-                                    src="/assets/gray-star.png"
-                                    alt="star"
-                                    width={20}
-                                    height={20}
-                                  />
-                                ))}
-                              </div>
                             </div>
-                            <div
-                              className="w-full flex flex-nowrap items-center justify-center gap-1 mb-4 px-1"
-                              style={{ containerType: "inline-size" } as React.CSSProperties}
-                            >
-                              {displayPrice.discount ? (
-                                <>
+                            <div className="p-4 text-center">
+                              <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
+                                <Link
+                                  href={`/product/${product.slug}`}
+                                  className="text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2"
+                                >
+                                  {product.name}
+                                </Link>
+                              </h6>
+                              <div className="flex flex-col items-center gap-1 mb-3">
+                                {/* Size removed */}
+                                <div className="flex gap-0.5">
+                                  {[1, 2, 3, 4, 5].map((i) => (
+                                    <Image
+                                      key={i}
+                                      src="/assets/gray-star.png"
+                                      alt="star"
+                                      width={20}
+                                      height={20}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <div
+                                className="w-full flex flex-nowrap items-center justify-center gap-1 mb-4 px-1"
+                                style={
+                                  {
+                                    containerType: "inline-size",
+                                  } as React.CSSProperties
+                                }
+                              >
+                                {displayPrice.discount ? (
+                                  <>
+                                    <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
+                                      {displayPrice.price}
+                                    </span>
+                                    <span className="text-[clamp(9px,4cqw,14px)] text-gray-400 line-through whitespace-nowrap">
+                                      {displayPrice.mrp}
+                                    </span>
+                                    <span className="text-[clamp(9px,4cqw,14px)] text-[#B78D65] font-bold whitespace-nowrap">
+                                      {displayPrice.discount}
+                                    </span>
+                                  </>
+                                ) : (
                                   <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
-                                    {displayPrice.price}
-                                  </span>
-                                  <span className="text-[clamp(9px,4cqw,14px)] text-gray-400 line-through whitespace-nowrap">
                                     {displayPrice.mrp}
                                   </span>
-                                  <span className="text-[clamp(9px,4cqw,14px)] text-[#B78D65] font-bold whitespace-nowrap">
-                                    {displayPrice.discount}
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
-                                  {displayPrice.mrp}
-                                </span>
-                              )}
+                                )}
+                              </div>
+                              <Link
+                                href={`/product/${product.slug}`}
+                                className="inline-block border-y border-black text-black py-2 px-8 uppercase transition-all duration-500 hover:tracking-[1px]"
+                              >
+                                View Product
+                              </Link>
                             </div>
-                            <Link
-                              href={`/product/${product.slug}`}
-                              className="inline-block border-y border-black text-black py-2 px-8 uppercase transition-all duration-500 hover:tracking-[1px]"
-                            >
-                              View Product
-                            </Link>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
               </div>
             </div>
 

@@ -9,7 +9,12 @@ import {
   ConfirmationResult,
 } from "firebase/auth";
 import { auth } from "../../services/firebase";
-import { verifyIdToken, login, sendEmailOtp, verifyEmailOtp } from "../../services/authService";
+import {
+  verifyIdToken,
+  login,
+  sendEmailOtp,
+  verifyEmailOtp,
+} from "../../services/authService";
 import toast from "react-hot-toast";
 
 declare global {
@@ -160,14 +165,10 @@ const EditProfile: React.FC = () => {
         return;
       }
 
-      // We use signInWithPhoneNumber instead of linkWithPhoneNumber 
+      // We use signInWithPhoneNumber instead of linkWithPhoneNumber
       // to avoid 'account-exists-with-different-credential' errors.
       // The backend verifyIdToken call will handle the logical merging of accounts.
-      result = await signInWithPhoneNumber(
-        auth,
-        formattedNumber,
-        appVerifier,
-      );
+      result = await signInWithPhoneNumber(auth, formattedNumber, appVerifier);
 
       setConfirmationResult(result);
       setShowOtpInput(true);
@@ -201,7 +202,9 @@ const EditProfile: React.FC = () => {
           login(verifyRes.token, verifyRes.user);
           setIsPhoneVerified(true);
           setShowOtpInput(false);
-          toast.success("Phone number verified and accounts merged successfully!");
+          toast.success(
+            "Phone number verified and accounts merged successfully!",
+          );
 
           // Small delay before reload to let the user see the success message
           setTimeout(() => {
@@ -213,8 +216,13 @@ const EditProfile: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Error verifying OTP:", error);
-      if (error.code === "auth/credential-already-in-use" || error.code === "auth/account-exists-with-different-credential") {
-        toast.error("This phone number is already associated with another account. However, we tried to merge them. Please try again or contact support if the issue persists.");
+      if (
+        error.code === "auth/credential-already-in-use" ||
+        error.code === "auth/account-exists-with-different-credential"
+      ) {
+        toast.error(
+          "This phone number is already associated with another account. However, we tried to merge them. Please try again or contact support if the issue persists.",
+        );
       } else {
         toast.error(error.message || "Invalid OTP or verification failed.");
       }
@@ -518,7 +526,9 @@ const EditProfile: React.FC = () => {
             <div className="flex flex-col py-6 px-5 border border-gray-200 hover:border-[#ac8037] rounded-sm mt-3 transition-colors">
               <div className="flex items-center justify-between w-full">
                 <div className="flex flex-col w-full">
-                  <label className="text-gray-700 font-medium mb-1">Email*</label>
+                  <label className="text-gray-700 font-medium mb-1">
+                    Email*
+                  </label>
                   {isEmailVerified && !showEmailOtpInput ? (
                     <div className="flex items-center">
                       <span className="text-gray-900 font-medium text-lg min-w-[200px] truncate">
@@ -581,7 +591,9 @@ const EditProfile: React.FC = () => {
                         maxLength={1}
                         className="w-10 h-10 text-center text-lg border border-gray-300 rounded focus:border-[#8b6b2f] focus:ring-1 focus:ring-[#8b6b2f] outline-none transition-all"
                         value={digit}
-                        onChange={(e) => handleEmailOtpChange(index, e.target.value)}
+                        onChange={(e) =>
+                          handleEmailOtpChange(index, e.target.value)
+                        }
                         onKeyDown={(e) => handleEmailKeyDown(index, e)}
                       />
                     ))}
@@ -625,19 +637,21 @@ const EditProfile: React.FC = () => {
               <div className="flex gap-3 pt-6">
                 <button
                   onClick={() => setGender("Male")}
-                  className={`px-4 py-2 border rounded text-sm transition-all ${gender === "Male"
-                    ? "border-black bg-gray-50 font-semibold shadow-sm"
-                    : "border-gray-300 text-gray-600 hover:border-gray-400"
-                    }`}
+                  className={`px-4 py-2 border rounded text-sm transition-all ${
+                    gender === "Male"
+                      ? "border-black bg-gray-50 font-semibold shadow-sm"
+                      : "border-gray-300 text-gray-600 hover:border-gray-400"
+                  }`}
                 >
                   {gender === "Male" && "✓ "}Male
                 </button>
                 <button
                   onClick={() => setGender("Female")}
-                  className={`px-4 py-2 border rounded text-sm transition-all ${gender === "Female"
-                    ? "border-black bg-gray-50 font-semibold shadow-sm"
-                    : "border-gray-300 text-gray-600 hover:border-gray-400"
-                    }`}
+                  className={`px-4 py-2 border rounded text-sm transition-all ${
+                    gender === "Female"
+                      ? "border-black bg-gray-50 font-semibold shadow-sm"
+                      : "border-gray-300 text-gray-600 hover:border-gray-400"
+                  }`}
                 >
                   {gender === "Female" && "✓ "}Female
                 </button>
@@ -682,12 +696,20 @@ const EditProfile: React.FC = () => {
           <button
             onClick={handleSave}
             className="w-full bg-[#8b6b2f] hover:bg-[#7a5f29] text-white py-4 text-sm font-bold tracking-widest rounded transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-            disabled={loading || (showOtpInput && !isPhoneVerified) || (showEmailOtpInput && !isEmailVerified)}
+            disabled={
+              loading ||
+              (showOtpInput && !isPhoneVerified) ||
+              (showEmailOtpInput && !isEmailVerified)
+            }
           >
             {loading ? "SAVING..." : "SAVE DETAILS"}
           </button>
-          {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
-          {success && <p className="text-green-500 text-sm mt-2 text-center">{success}</p>}
+          {error && (
+            <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+          )}
+          {success && (
+            <p className="text-green-500 text-sm mt-2 text-center">{success}</p>
+          )}
         </div>
       </div>
     </div>

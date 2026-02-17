@@ -85,10 +85,11 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                 <li>
                   <button
                     onClick={() => handleSortClick("price_asc")}
-                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "price_asc"
-                      ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                      : "hover:bg-gray-50"
-                      }`}
+                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
+                      currentSort === "price_asc"
+                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                        : "hover:bg-gray-50"
+                    }`}
                   >
                     <div className="flex items-center justify-between">
                       <span>Price: Low to High</span>
@@ -101,10 +102,11 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                 <li>
                   <button
                     onClick={() => handleSortClick("price_desc")}
-                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "price_desc"
-                      ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                      : "hover:bg-gray-50"
-                      }`}
+                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
+                      currentSort === "price_desc"
+                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                        : "hover:bg-gray-50"
+                    }`}
                   >
                     <div className="flex items-center justify-between">
                       <span>Price: High to Low</span>
@@ -117,10 +119,11 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                 <li>
                   <button
                     onClick={() => handleSortClick("newest")}
-                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "newest"
-                      ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                      : "hover:bg-gray-50"
-                      }`}
+                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
+                      currentSort === "newest"
+                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                        : "hover:bg-gray-50"
+                    }`}
                   >
                     <div className="flex items-center justify-between">
                       <span>New Arrivals</span>
@@ -133,10 +136,11 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                 <li>
                   <button
                     onClick={() => handleSortClick("popularity")}
-                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${currentSort === "popularity"
-                      ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                      : "hover:bg-gray-50"
-                      }`}
+                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
+                      currentSort === "popularity"
+                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                        : "hover:bg-gray-50"
+                    }`}
                   >
                     <div className="flex items-center justify-between">
                       <span>Popularity</span>
@@ -511,7 +515,9 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                         className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
                       >
                         {toSentenceCase(wearType.label)}{" "}
-                        <span className="text-gray-400">({wearType.count})</span>
+                        <span className="text-gray-400">
+                          ({wearType.count})
+                        </span>
                       </label>
                     </div>
                   ))}
@@ -563,7 +569,9 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                         className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
                       >
                         {toSentenceCase(occasion.label)}{" "}
-                        <span className="text-gray-400">({occasion.count})</span>
+                        <span className="text-gray-400">
+                          ({occasion.count})
+                        </span>
                       </label>
                     </div>
                   ))}
@@ -573,7 +581,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Tags Filter */}
             {filterOptions.tags.length > 0 && (
-              <div className="border-b border-gray-100 pb-4 last:border-0">
+              <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("tags")}
                   className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
@@ -605,9 +613,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-tag-${idx}`}
-                        onChange={() =>
-                          onFilterChange("tags", tag.label)
-                        }
+                        onChange={() => onFilterChange("tags", tag.label)}
                         className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
                       />
                       <label
@@ -616,6 +622,208 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       >
                         {toSentenceCase(tag.label)}{" "}
                         <span className="text-gray-400">({tag.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Style Filter */}
+            {filterOptions.styles.length > 0 && (
+              <div className="border-b border-gray-100 pb-4">
+                <button
+                  onClick={() => toggleSection("style")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Style
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("style") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("style") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.styles.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-style-${idx}`}
+                        onChange={() => onFilterChange("style", item.label)}
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-style-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {toSentenceCase(item.label)}{" "}
+                        <span className="text-gray-400">({item.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Work Filter */}
+            {filterOptions.works.length > 0 && (
+              <div className="border-b border-gray-100 pb-4">
+                <button
+                  onClick={() => toggleSection("work")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Work
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("work") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("work") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.works.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-work-${idx}`}
+                        onChange={() => onFilterChange("work", item.label)}
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-work-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {toSentenceCase(item.label)}{" "}
+                        <span className="text-gray-400">({item.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Fabric Filter */}
+            {filterOptions.fabrics.length > 0 && (
+              <div className="border-b border-gray-100 pb-4">
+                <button
+                  onClick={() => toggleSection("fabric")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Fabric
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("fabric") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("fabric") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.fabrics.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-fabric-${idx}`}
+                        onChange={() => onFilterChange("fabric", item.label)}
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-fabric-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {toSentenceCase(item.label)}{" "}
+                        <span className="text-gray-400">({item.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Product Type Filter */}
+            {filterOptions.productTypes.length > 0 && (
+              <div className="border-b border-gray-100 pb-4 last:border-0">
+                <button
+                  onClick={() => toggleSection("productType")}
+                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                >
+                  Product Type
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("productType") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("productType") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.productTypes.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-productType-${idx}`}
+                        onChange={() =>
+                          onFilterChange("productType", item.label)
+                        }
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-productType-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                      >
+                        {toSentenceCase(item.label)}{" "}
+                        <span className="text-gray-400">({item.count})</span>
                       </label>
                     </div>
                   ))}
