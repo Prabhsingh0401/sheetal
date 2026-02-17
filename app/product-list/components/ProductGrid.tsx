@@ -134,15 +134,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </div>
 
             <div
-              className={`flex gap-3 mb-3 ${viewMode === "grid" ? "justify-start items-center" : "justify-start items-center"}`}
+              className={`flex flex-nowrap items-center gap-1.5 sm:gap-3 mb-3 ${viewMode === "grid" ? "justify-start" : "justify-start"}`}
             >
-              <span className="text-md font-medium">
+              <span className="text-[13px] sm:text-base font-bold text-gray-900 whitespace-nowrap">
                 ₹{product.price.toLocaleString()}
               </span>
-              <span className="text-md text-gray-500 line-through">
+              <span className="text-[11px] sm:text-sm text-gray-400 line-through whitespace-nowrap">
                 ₹{product.mrp.toLocaleString()}
               </span>
-              <span className="text-md text-[#6a3f0e] px-2 py-1 uppercase tracking-tighter">
+              <span className="text-[11px] sm:text-sm text-[#B78D65] font-semibold whitespace-nowrap uppercase tracking-tight">
                 {product.discount}
               </span>
             </div>

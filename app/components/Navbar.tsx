@@ -312,6 +312,38 @@ const MobileSubMenuView = ({
     { title: "By Product Type", items: item.productType, type: "productType" },
   ].filter((g) => g.items && g.items.length > 0);
 
+  const [latestProducts, setLatestProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    const loadLatestProducts = async () => {
+      if (!item.isCategory && !item._id) {
+        setLoadingProducts(false);
+        return;
+      }
+      try {
+        setLoadingProducts(true);
+        // Fetch latest 2 products for this category
+        const res = await fetchProducts({
+          category: item._id, // item is the category object
+          limit: 2,
+          sort: "-createdAt",
+          status: "Active",
+        });
+
+        if (res.success && res.products) {
+          setLatestProducts(res.products);
+        }
+      } catch (err) {
+        // console.error("Failed to load mega menu products", err);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    loadLatestProducts();
+  }, [item._id, item.isCategory]);
+
   return (
     <div className="flex flex-col h-full w-full bg-[#f9f9f9]">
       {/* Header */}
@@ -366,9 +398,10 @@ const MobileSubMenuView = ({
             </ul>
           </div>
         ))}
+
         {/* If no tags, maybe show children or just a link to main category */}
         {tagGroups.length === 0 && (
-          <div className="text-center py-10">
+          <div className="text-center py-4">
             <Link
               href={item.href || "#"}
               className="inline-block px-6 py-3 bg-[#082722] text-[#f2bf42] rounded-md"
@@ -376,6 +409,44 @@ const MobileSubMenuView = ({
             >
               View All {item.label}
             </Link>
+          </div>
+        )}
+
+        {/* LATEST PRODUCTS SECTION (Mobile Mega Menu) */}
+        {(loadingProducts || latestProducts.length > 0) && (
+          <div className="mt-8 border-t border-gray-200 pt-8">
+            <h3 className="text-[#082722] font-serif text-xl mb-4 tracking-wide">New Arrivals</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {loadingProducts ? (
+                <>
+                  <div className="bg-gray-200 h-48 rounded-lg animate-pulse"></div>
+                  <div className="bg-gray-200 h-48 rounded-lg animate-pulse"></div>
+                </>
+              ) : (
+                latestProducts.map(product => (
+                  <Link
+                    key={product._id}
+                    href={`/product/${product.slug}`}
+                    onClick={onClose}
+                    className="block group"
+                  >
+                    <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-2 bg-gray-100">
+                      <Image
+                        src={getProductImageUrl(product)}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                      />
+                    </div>
+                    <p className="text-sm font-medium text-gray-800 line-clamp-1 group-hover:text-[#b3a660] transition-colors">
+                      {product.name}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Shop Now</p>
+                  </Link>
+                ))
+              )}
+            </div>
           </div>
         )}
       </div>
