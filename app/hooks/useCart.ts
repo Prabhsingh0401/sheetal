@@ -6,6 +6,7 @@ import {
   removeFromCart as removeFromCartApi,
   applyCoupon as applyCouponApi,
   updateCartItemQuantity as updateCartItemQuantityApi,
+  clearCart as clearCartApi,
 } from "../services/cartService";
 import {
   toggleWishlist as toggleWishlistApi,
@@ -56,7 +57,8 @@ interface UseCartReturn {
   moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
   applyCoupon: (code: string, userId: string) => Promise<void>;
   updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
-  removeCoupon: () => void; // Add this to allow removing coupons
+  removeCoupon: () => void;
+  clearCart: (userId: string) => Promise<void>;
 }
 
 export const useCart = (): UseCartReturn => {
@@ -337,6 +339,29 @@ export const useCart = (): UseCartReturn => {
     toast.success("Coupon removed");
   }, []);
 
+  const clearCart = useCallback(async (userId: string) => {
+    try {
+      if (!userId) {
+        toast.error("User ID is required to clear cart");
+        return;
+      }
+      const response = await clearCartApi(userId);
+      if (response && response.success) {
+        setCart([]);
+        setTotalMrp(0);
+        setTotalDiscount(0);
+        setFinalAmount(0);
+        removeCoupon();
+        toast.success("Cart cleared successfully");
+      } else {
+        toast.error(response?.message || "Failed to clear cart");
+      }
+    } catch (error: any) {
+      console.error("Error clearing cart:", error);
+      toast.error(error.message || "Failed to clear cart");
+    }
+  }, [removeCoupon]);
+
   return {
     cart,
     loading,
@@ -357,5 +382,6 @@ export const useCart = (): UseCartReturn => {
     applyCoupon,
     updateCartItemQuantity,
     removeCoupon,
+    clearCart,
   };
 };

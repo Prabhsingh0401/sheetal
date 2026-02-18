@@ -42,6 +42,12 @@ export const removeFromCart = async (itemId: string) => {
   });
 };
 
+export const clearCart = async (userId: string) => {
+  return apiFetch(`/cart/clear/${userId}`, {
+    method: "DELETE",
+  });
+};
+
 export const applyCoupon = async (
   code: string,
   cartTotal: number,

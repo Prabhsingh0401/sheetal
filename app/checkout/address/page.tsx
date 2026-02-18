@@ -11,6 +11,7 @@ import { useCart } from "../../hooks/useCart";
 import { getCurrentUser } from "../../services/userService";
 import { getSettings } from "../../services/settingsService";
 import toast from "react-hot-toast";
+import { createRazorpayPaymentLink } from "../../services/paymentService";
 
 const AddressPage = () => {
   const router = useRouter();
@@ -119,29 +120,47 @@ const AddressPage = () => {
     setShowAddForm(true);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedAddressId) {
       toast.error("Please select a delivery address.");
       return;
     }
-    // Save selected address to local storage or context if needed for payment step
-    // For now, assume payment page will pick it up or we pass it
-    // Or cleaner: user selection persistence
-    localStorage.setItem("selectedAddressId", selectedAddressId);
 
-    router.push("/checkout/payment");
+    // Find the full address object
+    const selectedAddress = addresses.find((a) => a._id === selectedAddressId);
+    if (!selectedAddress) {
+      toast.error("Invalid address selected.");
+      return;
+    }
+
+    try {
+      toast.loading("Initiating payment...");
+      const response = await createRazorpayPaymentLink(selectedAddressId, selectedAddress);
+      toast.dismiss();
+
+      if (response && response.success && response.data && response.data.short_url) {
+        // Redirect user to Razorpay payment page
+        window.location.href = response.data.short_url;
+      } else {
+        toast.error(response.message || "Failed to create payment link");
+      }
+    } catch (error: any) {
+      toast.dismiss();
+      console.error("Payment Error:", error);
+      toast.error(error.message || "Something went wrong while initiating payment");
+    }
   };
 
   /* Logic for display name (Copied from CartPage logic for consistency) */
   const categoryNames =
     applicableCategories.length > 0
       ? cart
-          .filter(
-            (item) =>
-              item.product.category &&
-              applicableCategories.includes(item.product.category._id),
-          )
-          .map((item) => item.product.category.name)
+        .filter(
+          (item) =>
+            item.product.category &&
+            applicableCategories.includes(item.product.category._id),
+        )
+        .map((item) => item.product.category.name)
       : [];
   const uniqueCategoryNames = Array.from(new Set(categoryNames));
   const displayCategoryName =
