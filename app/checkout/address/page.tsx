@@ -12,6 +12,7 @@ import { getCurrentUser } from "../../services/userService";
 import { getSettings } from "../../services/settingsService";
 import toast from "react-hot-toast";
 import { createRazorpayPaymentLink } from "../../services/paymentService";
+import { createCODOrder } from "../../services/orderService";
 
 const AddressPage = () => {
   const router = useRouter();
@@ -42,6 +43,7 @@ const AddressPage = () => {
 
   // For Coupon Input in Price Details (if needed to pass down)
   const [couponInput, setCouponInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   /* Settings State - Same as Cart Page */
   const [platformFee, setPlatformFee] = useState(0);
@@ -120,34 +122,113 @@ const AddressPage = () => {
     setShowAddForm(true);
   };
 
-  const handleContinue = async () => {
+  const handlePayOnline = async () => {
     if (!selectedAddressId) {
       toast.error("Please select a delivery address.");
       return;
     }
-
-    // Find the full address object
     const selectedAddress = addresses.find((a) => a._id === selectedAddressId);
     if (!selectedAddress) {
       toast.error("Invalid address selected.");
       return;
     }
 
-    try {
-      toast.loading("Initiating payment...");
-      const response = await createRazorpayPaymentLink(selectedAddressId, selectedAddress);
-      toast.dismiss();
+    // Normalise: order schema needs fullName, user address stores firstName + lastName
+    const shippingAddress = {
+      fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
+      phoneNumber: selectedAddress.phoneNumber,
+      addressLine1: selectedAddress.addressLine1,
+      city: selectedAddress.city,
+      state: selectedAddress.state,
+      postalCode: selectedAddress.postalCode,
+      country: selectedAddress.country || "India",
+    };
 
+    try {
+      setIsSubmitting(true);
+      toast.loading("Initiating payment...");
+      const response = await createRazorpayPaymentLink(selectedAddressId, shippingAddress);
+      toast.dismiss();
       if (response && response.success && response.data && response.data.short_url) {
-        // Redirect user to Razorpay payment page
         window.location.href = response.data.short_url;
       } else {
         toast.error(response.message || "Failed to create payment link");
       }
     } catch (error: any) {
       toast.dismiss();
-      console.error("Payment Error:", error);
       toast.error(error.message || "Something went wrong while initiating payment");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCOD = async () => {
+    if (!selectedAddressId) {
+      toast.error("Please select a delivery address.");
+      return;
+    }
+    const selectedAddress = addresses.find((a) => a._id === selectedAddressId);
+    if (!selectedAddress) {
+      toast.error("Invalid address selected.");
+      return;
+    }
+    if (cart.length === 0) {
+      toast.error("Your cart is empty.");
+      return;
+    }
+
+    // Normalise: order schema needs fullName, user address stores firstName + lastName
+    const shippingAddress = {
+      fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
+      phoneNumber: selectedAddress.phoneNumber,
+      addressLine1: selectedAddress.addressLine1,
+      city: selectedAddress.city,
+      state: selectedAddress.state,
+      postalCode: selectedAddress.postalCode,
+      country: selectedAddress.country || "India",
+    };
+
+    // Map cart items to the backend order schema
+    const orderItems = cart.map((item) => ({
+      product: item.product._id,
+      name: item.product.name,
+      image: item.product.mainImage?.url || item.variantImage || "",
+      price: item.discountPrice || item.price,
+      quantity: item.quantity,
+      variant: {
+        size: item.size,
+        color: item.color,
+        v_sku: item.product?.sku || "",
+      },
+    }));
+
+    const totalAmount = finalAmount + shippingCharges + platformFee;
+
+    try {
+      setIsSubmitting(true);
+      toast.loading("Placing your order...");
+      const response = await createCODOrder(
+        shippingAddress,
+        orderItems,
+        {
+          itemsPrice: finalAmount,
+          shippingPrice: shippingCharges,
+          taxPrice: platformFee,
+          totalPrice: totalAmount,
+        }
+      );
+      toast.dismiss();
+      if (response && response.success) {
+        toast.success("Order placed successfully!");
+        router.push("/checkout/success?payment_method=cod");
+      } else {
+        toast.error(response.message || "Failed to place order");
+      }
+    } catch (error: any) {
+      toast.dismiss();
+      toast.error(error.message || "Something went wrong while placing your order");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -307,14 +388,21 @@ const AddressPage = () => {
               hideProceedButton={true}
             />
 
-            {/* Continue Button */}
-            <div className="mt-6">
+            {/* Payment Method Buttons */}
+            <div className="mt-6 flex flex-col gap-3">
               <button
-                onClick={handleContinue}
-                disabled={!selectedAddressId}
-                className="w-full cursor-pointer bg-[#bd9951] text-white py-3 rounded font-bold uppercase tracking-wider disabled:bg-gray-400 disabled:cursor-not-allowed"
+                onClick={handlePayOnline}
+                disabled={!selectedAddressId || isSubmitting}
+                className="w-full cursor-pointer bg-[#bd9951] text-white py-3 rounded font-bold uppercase tracking-wider disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-[#a38038] transition-colors"
               >
-                Continue
+                {isSubmitting ? "Processing..." : "Pay Online"}
+              </button>
+              <button
+                onClick={handleCOD}
+                disabled={!selectedAddressId || isSubmitting}
+                className="w-full cursor-pointer bg-white text-[#bd9951] py-3 rounded font-bold uppercase tracking-wider border-2 border-[#bd9951] disabled:border-gray-400 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-[#fdf8f0] transition-colors"
+              >
+                {isSubmitting ? "Processing..." : "Cash on Delivery"}
               </button>
             </div>
           </div>

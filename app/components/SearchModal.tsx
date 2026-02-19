@@ -139,7 +139,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     let relatedMrp = 0;
     let discount = 0;
 
-    // SCENARIO 1: Data from Algolia (already computed)
     if (product.minPrice !== undefined) {
       minPrice = product.minPrice;
       relatedMrp = product.mrp || 0;

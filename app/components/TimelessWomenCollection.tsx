@@ -21,11 +21,6 @@ const TimelessWomenCollection = () => {
         if (data.success && data.lookbook) {
           setLeftImages(data.lookbook.leftSliderImages);
           setRightImages(data.lookbook.rightSliderImages);
-
-          console.log(
-            data.lookbook.leftSliderImages,
-            data.lookbook.rightSliderImages,
-          );
         }
       } catch (error) {
         console.error("Error fetching lookbook images", error);
