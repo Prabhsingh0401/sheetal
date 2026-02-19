@@ -95,13 +95,7 @@ const SuccessContent = () => {
                     ? "Your order has been placed. Pay with cash when your order arrives."
                     : "Thank you for your purchase. Your order has been placed successfully."}
             </p>
-
-            {isOnline && paymentId && (
-                <div className="bg-gray-100 p-3 rounded mb-6 text-sm">
-                    <p>Payment ID: <span className="font-mono">{paymentId}</span></p>
-                </div>
-            )}
-
+            
             {isCOD && (
                 <div className="bg-amber-50 border border-amber-200 p-3 rounded mb-6 text-sm text-amber-800">
                     <p>Payment will be collected at your doorstep on delivery.</p>
