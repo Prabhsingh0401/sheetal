@@ -1,7 +1,12 @@
 import React from "react";
 import Image from "next/image";
 
-const StarRating = ({ rating }: { rating: number }) => {
+interface StarRatingProps {
+  rating: number;
+  onRatingChange?: (rating: number) => void;
+}
+
+const StarRating = ({ rating, onRatingChange }: StarRatingProps) => {
   return (
     <div className="flex gap-1">
       {[...Array(5)].map((_, i) => (
@@ -11,7 +16,8 @@ const StarRating = ({ rating }: { rating: number }) => {
           alt="star"
           width={14}
           height={14}
-          className="w-[14px] h-[14px]"
+          className={`w-[14px] h-[14px] ${onRatingChange ? "cursor-pointer hover:scale-110 transition-transform" : ""}`}
+          onClick={() => onRatingChange && onRatingChange(i + 1)}
         />
       ))}
     </div>

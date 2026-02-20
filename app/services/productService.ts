@@ -171,3 +171,28 @@ export const getProductImageUrl = (
   if (!product) return fallback;
   return getApiImageUrl(product.mainImage, fallback);
 };
+export const checkCanReview = async (productId: string) => {
+  return apiFetch(`/products/can-review?productId=${productId}`, {
+    method: "GET",
+  });
+};
+
+export const addReview = async (
+  productId: string,
+  rating: number,
+  comment: string,
+) => {
+  return apiFetch("/products/review", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ productId, rating, comment }),
+  });
+};
+
+export const fetchProductReviews = async (productId: string) => {
+  return apiFetch(`/products/reviews?id=${productId}`, {
+    method: "GET",
+  });
+};

@@ -31,3 +31,32 @@ export const createCODOrder = async (
         }),
     });
 };
+
+/**
+ * Fetches paginated orders for the currently logged-in customer.
+ * @param page   - 1-based page number (default 1)
+ * @param limit  - Items per page (default 10)
+ * @param status - Optional order status filter (Processing | Shipped | Delivered | Cancelled | Returned)
+ * @returns API response: { success, data: { orders, totalOrders, currentPage, totalPages, hasNextPage, hasPrevPage }, message }
+ */
+export const getMyOrders = async (
+    page: number = 1,
+    limit: number = 10,
+    status?: string,
+) => {
+    let url = `/orders/my-orders?page=${page}&limit=${limit}`;
+    if (status && status !== "all") url += `&status=${status}`;
+    return apiFetch(url, { method: "GET" });
+};
+
+/**
+ * Fetches a single order by its MongoDB _id.
+ * The backend verifies the order belongs to the authenticated user.
+ * @param orderId - MongoDB ObjectId string of the order
+ * @returns API response: { success, data: Order, message }
+ */
+export const getOrderById = async (orderId: string) => {
+    return apiFetch(`/orders/${orderId}`, { method: "GET" });
+};
+
+

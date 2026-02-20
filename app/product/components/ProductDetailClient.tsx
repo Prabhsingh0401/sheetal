@@ -9,7 +9,7 @@ import Breadcrumb from "../components/Breadcrumb";
 import ProductImageGallery from "./ProductImageGallery";
 import ProductInfo from "./ProductInfo";
 import ProductTabs from "./ProductTabs";
-import ProductReviews from "./ProductReviews";
+import ProductReviews, { Review } from "./ProductReviews";
 import RelatedProducts from "./RelatedProducts";
 import EnquireModal from "./EnquireModal";
 import SizeChartModal from "./SizeChartModal";
@@ -20,6 +20,7 @@ import {
   getProductImageUrl,
   ProductVariant,
   incrementProductView,
+  fetchProductReviews,
 } from "../../services/productService";
 import { fetchSizeChart, SizeChartData } from "../../services/sizeChartService";
 import { getApiImageUrl } from "../../services/api";
@@ -72,7 +73,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
-  //   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -151,6 +152,13 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
           // Increment View Count
           incrementProductView(slug).catch(console.error);
+
+          // Fetch Reviews
+          fetchProductReviews(res.data._id)
+            .then((revRes) => {
+              if (revRes.success) setReviews(revRes.data);
+            })
+            .catch(console.error);
         } else {
           setError("Product not found");
         }
@@ -388,7 +396,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const currentSelectedOriginalPrice = selectedSizeObject?.price || 0;
   const currentSelectedDiscount =
     currentSelectedOriginalPrice > 0 &&
-    currentSelectedPrice < currentSelectedOriginalPrice
+      currentSelectedPrice < currentSelectedOriginalPrice
       ? `${Math.round(((currentSelectedOriginalPrice - currentSelectedPrice) / currentSelectedOriginalPrice) * 100)}`
       : "0";
 
@@ -520,7 +528,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       />
 
       <ProductReviews
-        reviews={[]}
+        productId={product._id}
+        initialReviews={reviews}
         overallRating={product.averageRating || 0}
         totalReviews={product.totalReviews || 0}
       />
