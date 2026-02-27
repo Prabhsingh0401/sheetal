@@ -2,13 +2,16 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCart, CartItem } from "../hooks/useCart";
 import CartItemsList from "./components/CartItemsList";
 import PriceDetails from "./components/PriceDetails";
 import { getSettings } from "../services/settingsService";
+import { isAuthenticated } from "../services/authService";
 
 const CartPage = () => {
+  const router = useRouter();
   const {
     cart: cartItems,
     loading,
@@ -131,6 +134,16 @@ const CartPage = () => {
     applyCoupon(couponInput.trim().toUpperCase(), userId);
   };
 
+  /** Navigates to checkout if signed in, otherwise redirects to login */
+  const handleProceedToBuy = () => {
+    if (!isAuthenticated()) {
+      sessionStorage.setItem("redirect", "/checkout/address");
+      router.push("/login");
+      return;
+    }
+    router.push("/checkout/address");
+  };
+
   /* Fetch Settings Once */
   useEffect(() => {
     const fetchSettings = async () => {
@@ -179,12 +192,12 @@ const CartPage = () => {
   const categoryNames =
     applicableCategories.length > 0
       ? cartItems
-          .filter(
-            (item) =>
-              item.product.category &&
-              applicableCategories.includes(item.product.category._id),
-          )
-          .map((item) => item.product.category.name)
+        .filter(
+          (item) =>
+            item.product.category &&
+            applicableCategories.includes(item.product.category._id),
+        )
+        .map((item) => item.product.category.name)
       : [];
   // Unique names
   const uniqueCategoryNames = Array.from(new Set(categoryNames));
@@ -281,8 +294,8 @@ const CartPage = () => {
                   bogoMessage={bogoMessage}
                   applicableCategories={applicableCategories}
                   categoryName={displayCategoryName}
-                  couponCode={couponCode} // Pass the applied coupon code
-                  onRemoveCoupon={removeCoupon} // Pass the remove function
+                  couponCode={couponCode}
+                  onRemoveCoupon={removeCoupon}
                   cartLength={cartItems.length}
                   totalMrp={totalMrp}
                   totalDiscount={totalDiscount}
@@ -290,6 +303,7 @@ const CartPage = () => {
                   shippingCharges={shippingCharges}
                   platformFee={platformFee}
                   totalAmount={totalAmount}
+                  onProceed={handleProceedToBuy}
                 />
               </div>
             </div>

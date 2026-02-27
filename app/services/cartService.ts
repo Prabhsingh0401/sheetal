@@ -75,3 +75,24 @@ export const updateCartItemQuantity = async (
     body: JSON.stringify({ quantity }),
   });
 };
+
+/**
+ * Merges guest cart items into the authenticated user's server cart.
+ * Called once after login.
+ */
+export const mergeGuestCart = async (
+  guestItems: Array<{
+    productId: string;
+    quantity: number;
+    size: string;
+    color: string;
+    price: number;
+    discountPrice: number;
+    variantImage: string;
+  }>,
+) => {
+  return apiFetch("/cart/merge-guest", {
+    method: "POST",
+    body: JSON.stringify({ guestItems }),
+  });
+};

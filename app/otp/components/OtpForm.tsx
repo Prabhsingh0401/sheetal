@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ConfirmationResult } from "firebase/auth";
 import { verifyIdToken, login } from "../../services/authService";
+import { mergeGuestCartOnLogin } from "../../hooks/useCart";
 import toast from "react-hot-toast";
 
 const OtpForm = () => {
@@ -95,6 +96,8 @@ const OtpForm = () => {
 
       if (data.success && data.token) {
         login(data.token, data.user);
+        // Merge any guest cart items into the user's server cart
+        await mergeGuestCartOnLogin();
         toast.success("Logged in successfully!");
         const redirectUrl = sessionStorage.getItem("redirect");
         if (redirectUrl) {

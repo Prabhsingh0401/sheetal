@@ -24,6 +24,8 @@ interface PriceDetailsProps {
   couponCode?: string;
   onRemoveCoupon?: () => void;
   hideProceedButton?: boolean;
+  /** Called when the user clicks Proceed to Buy */
+  onProceed?: () => void;
 }
 
 const PriceDetails: React.FC<PriceDetailsProps> = ({
@@ -44,6 +46,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   couponCode,
   onRemoveCoupon,
   hideProceedButton = false,
+  onProceed,
 }) => {
   const [openCouponModal, setOpenCouponModal] = useState(false);
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -215,12 +218,12 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
           </p>
 
           {!hideProceedButton && (
-            <Link
-              href="/checkout/address"
-              className="w-full block text-center bg-[#be9952] text-white py-3 rounded-[5px] mt-6 font-bold uppercase hover:bg-[#5a3506] transition-colors"
+            <button
+              onClick={onProceed}
+              className="w-full block text-center bg-[#be9952] text-white py-3 rounded-[5px] mt-6 font-bold uppercase hover:bg-[#5a3506] transition-colors cursor-pointer"
             >
               Proceed to Buy
-            </Link>
+            </button>
           )}
         </div>
       </div>
@@ -243,11 +246,10 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                 coupons.map((coupon) => (
                   <div
                     key={coupon._id || coupon.id}
-                    className={`border border-dashed p-4 rounded-md cursor-pointer ${
-                      selectedCouponCode === coupon.code
+                    className={`border border-dashed p-4 rounded-md cursor-pointer ${selectedCouponCode === coupon.code
                         ? "border-[#6a3f07] border-2"
                         : "border-gray-500"
-                    }`}
+                      }`}
                     onClick={() => {
                       setSelectedCouponCode(coupon.code);
                       setCouponInput(coupon.code);
@@ -269,7 +271,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                         coupon.applicableIds.length > 0 && (
                           <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5">
                             {typeof coupon.applicableIds[0] === "object" &&
-                            coupon.applicableIds[0].name
+                              coupon.applicableIds[0].name
                               ? coupon.applicableIds[0].name
                               : "Category Offer"}
                           </span>

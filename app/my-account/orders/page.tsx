@@ -316,8 +316,8 @@ const TrackModal = ({
           <div key={i} className="flex items-start gap-3">
             <div
               className={`mt-0.5 w-5 h-5 rounded-full shrink-0 border-2 flex items-center justify-center ${step.done
-                  ? "border-[#a97f0f] bg-[#a97f0f]"
-                  : "border-gray-300 bg-white"
+                ? "border-[#a97f0f] bg-[#a97f0f]"
+                : "border-gray-300 bg-white"
                 }`}
             >
               {step.done && (
@@ -484,88 +484,86 @@ interface OrderCardProps {
   onReview: (item: UIOrderItem) => void;
 }
 
-const DeliveryStatusBadge = ({ order }: { order: UIOrder }) => {
-  if (order.status === "Shipped" || order.status === "Processing") {
-    return (
-      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-        {order.status === "Shipped" ? <TruckIcon /> : <ClockIcon />}
-        <span>
-          {order.status === "Shipped"
-            ? "Your order is on the way"
-            : "Order is being processed"}
-        </span>
-        <span
-          className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_CONFIG[order.status].bgColor} ${STATUS_CONFIG[order.status].textColor}`}
-        >
-          {STATUS_CONFIG[order.status].label}
-        </span>
-      </div>
-    );
-  }
+/** Inline delivery status line shown per item, matching the reference image */
+const DeliveryLine = ({ order }: { order: UIOrder }) => {
   if (order.status === "Delivered") {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-        <DeliveredIcon />
-        <span>
+      <div className="flex items-center gap-2 text-sm mb-3">
+        {/* Box icon */}
+        <svg width="36" height="36" viewBox="0 0 512 512" className="shrink-0" fill="#036900">
+          <path d="m506.8125 95.679688-172-94.445313c-2.996094-1.644531-6.628906-1.644531-9.625 0l-64.679688 35.515625c-1.460937.40625-2.824218 1.152344-3.980468 2.183594l-103.339844 56.746094c-3.199219 1.757812-5.1875 5.117187-5.1875 8.765624v20.445313h-115.375c-5.523438 0-10 4.480469-10 10 0 5.523437 4.476562 10 10 10h115.375v36h-57.332031c-5.523438 0-10 4.480469-10 10 0 5.523437 4.476562 10 10 10h57.332031v52h-84c-5.523438 0-10 4.480469-10 10 0 5.523437 4.476562 10 10 10h84v20.449219c0 3.648437 1.988281 7.007812 5.1875 8.765625l172 94.445312c1.5.824219 3.15625 1.234375 4.8125 1.234375s3.3125-.410156 4.8125-1.234375l172-94.445312c3.199219-1.757813 5.1875-5.117188 5.1875-8.765625v-44.78125c0-5.519532-4.476562-10-10-10s-10 4.480468-10 10v38.863281l-152 83.464844v-166.078125l48.339844-26.542969v42.125c0 3.539063 1.867187 6.8125 4.910156 8.609375 1.566406.925781 3.328125 1.390625 5.089844 1.390625 1.65625 0 3.316406-.410156 4.820312-1.238281l36.859375-20.285156c3.191407-1.757813 5.175781-5.113282 5.175781-8.761719v-53.058594l46.804688-25.699219v47.210938c0 5.523437 4.476562 10 10 10s10-4.476563 10-10v-64.113282c0-3.648437-1.988281-7.007812-5.1875-8.765624zm-186.8125 275.207031-152-83.464844v-166.074219l152 83.460938zm10-183.402344-151.222656-83.039063 47.527344-26.097656 151.226562 83.039063zm68.308594-37.507813-151.226563-83.039062 16.394531-9 151.222657 83.039062zm26.886718 44.21875-16.855468 9.277344v-36.1875l16.855468-9.257812zm10.28125-64.628906-151.222656-83.039062 45.746094-25.117188 151.222656 83.035156zm0 0" />
+        </svg>
+        <span className="text-gray-700">
           Delivered on{" "}
           <strong className="text-gray-900">
             {order.deliveredAt ? fmtDelivery(order.deliveredAt) : "—"}
           </strong>
         </span>
-        <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-700">
-          Delivered
-        </span>
       </div>
     );
   }
+
   if (order.status === "Cancelled" || order.status === "Returned" || order.status === "Exchanged") {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-        <CancelledIcon />
-        <span className="font-medium text-red-500">
+      <div className="flex items-center gap-2 text-sm mb-3">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="1.6" strokeLinecap="round" className="shrink-0">
+          <rect x="2" y="7" width="20" height="14" rx="2" />
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+          <line x1="9" y1="12" x2="15" y2="12" />
+        </svg>
+        <span className="text-red-500 font-medium">
           Order {STATUS_CONFIG[order.status].label}
-        </span>
-        <span
-          className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_CONFIG[order.status].bgColor} ${STATUS_CONFIG[order.status].textColor}`}
-        >
-          {STATUS_CONFIG[order.status].label}
         </span>
       </div>
     );
   }
-  return null;
+
+  // Processing or Shipped — show "Delivery expected by ..."
+  const expectedDate = order.deliveredAt
+    ? fmtDelivery(order.deliveredAt)
+    : order.status === "Shipped"
+      ? "in transit"
+      : "soon";
+
+  return (
+    <div className="flex items-center gap-2 text-sm mb-3">
+      {/* Box icon */}
+      <svg width="36" height="36" viewBox="0 0 512 512" className="shrink-0" fill="#16a34a">
+        <path d="m506.8125 95.679688-172-94.445313c-2.996094-1.644531-6.628906-1.644531-9.625 0l-64.679688 35.515625c-1.460937.40625-2.824218 1.152344-3.980468 2.183594l-103.339844 56.746094c-3.199219 1.757812-5.1875 5.117187-5.1875 8.765624v20.445313h-115.375c-5.523438 0-10 4.480469-10 10 0 5.523437 4.476562 10 10 10h115.375v36h-57.332031c-5.523438 0-10 4.480469-10 10 0 5.523437 4.476562 10 10 10h57.332031v52h-84c-5.523438 0-10 4.480469-10 10 0 5.523437 4.476562 10 10 10h84v20.449219c0 3.648437 1.988281 7.007812 5.1875 8.765625l172 94.445312c1.5.824219 3.15625 1.234375 4.8125 1.234375s3.3125-.410156 4.8125-1.234375l172-94.445312c3.199219-1.757813 5.1875-5.117188 5.1875-8.765625v-44.78125c0-5.519532-4.476562-10-10-10s-10 4.480468-10 10v38.863281l-152 83.464844v-166.078125l48.339844-26.542969v42.125c0 3.539063 1.867187 6.8125 4.910156 8.609375 1.566406.925781 3.328125 1.390625 5.089844 1.390625 1.65625 0 3.316406-.410156 4.820312-1.238281l36.859375-20.285156c3.191407-1.757813 5.175781-5.113282 5.175781-8.761719v-53.058594l46.804688-25.699219v47.210938c0 5.523437 4.476562 10 10 10s10-4.476563 10-10v-64.113282c0-3.648437-1.988281-7.007812-5.1875-8.765624zm-186.8125 275.207031-152-83.464844v-166.074219l152 83.460938zm10-183.402344-151.222656-83.039063 47.527344-26.097656 151.226562 83.039063zm68.308594-37.507813-151.226563-83.039062 16.394531-9 151.222657 83.039062zm26.886718 44.21875-16.855468 9.277344v-36.1875l16.855468-9.257812zm10.28125-64.628906-151.222656-83.039062 45.746094-25.117188 151.222656 83.035156zm0 0" />
+      </svg>
+      <span className="text-gray-700">
+        Delivery expected by{" "}
+        <strong className="text-[#16a34a]">{expectedDate}</strong>
+      </span>
+    </div>
+  );
 };
 
 const OrderCard = ({ order, onTrack, onCancel, onReview }: OrderCardProps) => (
-  <div className="border border-gray-200 rounded-xl bg-white mb-4 overflow-hidden">
-    {/* ── Order header ── */}
-    <div className="flex justify-between items-center px-4 py-3 bg-gray-50 border-b border-gray-200 flex-wrap gap-2">
+  <div className="border border-gray-400 bg-transparent mb-6 overflow-hidden rounded-md p-6">
+    {/* ── Order ID strip ── */}
+    <div className="flex justify-end items-center px-0 py-1.5 mb-1">
       <p className="text-xs text-gray-500">
-        <span className="font-bold text-gray-800">Order ID #</span>{" "}
-        {order.orderId}
+        <span className="font-semibold text-gray-700">Order ID #</span>{" "}
+        {order.id}
       </p>
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-gray-400">{fmtDate(order.placedAt)}</span>
-        <span className="text-xs text-gray-500 font-medium">
-          ₹{order.totalPrice.toLocaleString("en-IN")}
-        </span>
-        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-          {order.paymentMethod}
-        </span>
-      </div>
     </div>
 
-    {/* ── Per-item rows ── */}
-    <div className="px-4 pt-3 pb-2">
-      {/* Delivery status (once per order) */}
-      <DeliveryStatusBadge order={order} />
+    {/* ── Per-item blocks ── */}
+    {order.items.map((item, idx) => (
+      <div
+        key={item.id}
+        className={`pt-3 pb-2 ${idx < order.items.length - 1 ? "border-b border-gray-100 mb-3" : ""}`}
+      >
+        {/* Delivery status line */}
+        <DeliveryLine order={order} />
 
-      <div className="divide-y divide-gray-50">
-        {order.items.map((item) => (
-          <div key={item.id} className="py-3 flex gap-4 items-start relative">
-            {/* Product image */}
-            <div className="w-18 h-22 rounded-lg overflow-hidden bg-gray-100 shrink-0 relative border border-gray-100"
-              style={{ width: 72, height: 88 }}>
+        {/* ── Item card: white bg, rounded border ── */}
+        <div className="rounded-xl border border-gray-200 overflow-hidden">
+          {/* Top row: thumbnail + info + chevron */}
+          <div className="flex items-center gap-3 p-3 relative">
+            {/* Thumbnail — soft pink bg matching reference */}
+            <div className="w-[68px] h-[80px] shrink-0 relative overflow-hidden rounded-lg bg-[#fce4ec]">
               <Image
                 src={item.image}
                 alt={item.name}
@@ -580,95 +578,84 @@ const OrderCard = ({ order, onTrack, onCancel, onReview }: OrderCardProps) => (
 
             {/* Info */}
             <div className="flex-1 min-w-0 pr-6">
-              <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2">
+              <p className="text-sm text-gray-900 line-clamp-2 leading-snug">
                 {item.name}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                <span className="font-medium text-gray-700">Color:</span>{" "}
+              <p className="text-xs text-gray-600 mt-1">
+                <span className="font-semibold text-gray-900">Color:</span>{" "}
                 {item.color}
-                &nbsp;|&nbsp;
-                <span className="font-medium text-gray-700">Size:</span>{" "}
+                {" | "}
+                <span className="font-semibold text-gray-900">Size:</span>{" "}
                 {item.size}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Qty: {item.quantity} &nbsp;·&nbsp;₹
-                {item.price.toLocaleString("en-IN")}
-              </p>
-
-              {/* Actions per status */}
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 items-center">
-                {(order.status === "Processing" ||
-                  order.status === "Shipped") && (
-                    <>
-                      <button
-                        onClick={onCancel}
-                        className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={onTrack}
-                        className="text-xs font-semibold text-[#a97f0f] hover:text-[#8b6b2f] transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
-                        </svg>
-                        Track
-                      </button>
-                    </>
-                  )}
-                {order.status === "Delivered" && (
-                  <>
-                    <button
-                      onClick={() => onReview(item)}
-                      className="text-xs font-semibold text-[#a97f0f] hover:text-[#8b6b2f] transition-colors cursor-pointer"
-                    >
-                      Write Review
-                    </button>
-                    <button
-                      className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors cursor-pointer"
-                    >
-                      Return
-                    </button>
-                    <Link
-                      href="/shop"
-                      className="text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors"
-                    >
-                      Buy it again
-                    </Link>
-                  </>
-                )}
-              </div>
             </div>
 
-            {/* View details chevron → navigates to order detail page */}
+            {/* Chevron */}
             <Link
               href={`/my-account/orders/${order.id}`}
-              className="absolute right-0 top-3 p-1 text-gray-400 hover:text-gray-700 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
               aria-label="View order details"
             >
               <svg
-                width="18"
-                height="18"
-                viewBox="0 0 64 64"
-                fill="currentColor"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <path d="m42.7 29.6c-5.5-5.5-11-11-16.5-16.5-.8-.8-1.6-1.6-2.4-2.4-1.8-1.8-4.7 1-2.8 2.8 5.5 5.5 11 11 16.5 16.5.3.3.6.6.9.9-5 5-10 10-15 15-.8.8-1.5 1.5-2.3 2.3-1.8 1.8 1 4.7 2.8 2.8l16.4-16.4 2.3-2.3c.9-.6.9-1.9.1-2.7z" />
+                <path d="m9 18 6-6-6-6" />
               </svg>
             </Link>
           </div>
-        ))}
+
+          {/* Action buttons row — inside the card */}
+          {(order.status === "Processing" || order.status === "Shipped") && (
+            <div className="flex items-center gap-3 px-3 pb-3">
+              <button
+                onClick={onCancel}
+                className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onTrack}
+                className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                {/* Person/location pin icon matching reference image */}
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M20 21a8 8 0 1 0-16 0" />
+                </svg>
+                Track
+              </button>
+            </div>
+          )}
+          {order.status === "Delivered" && (
+            <div className="flex items-center gap-3 px-3 pb-3">
+              <button
+                onClick={() => onReview(item)}
+                className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+              >
+                Write Review
+              </button>
+              <button className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer">
+                Return
+              </button>
+              <Link
+                href="/shop"
+                className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition text-center"
+              >
+                Buy Again
+              </Link>
+            </div>
+          )}
+        </div>
+
       </div>
-    </div>
+    ))}
   </div>
 );
 
@@ -788,7 +775,7 @@ const OrdersPage = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by order ID or product name…"
+            placeholder="search in orders"
             className="w-full border border-gray-200 rounded-lg pl-4 pr-10 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#a97f0f] focus:border-[#a97f0f] bg-white"
           />
           <svg
@@ -818,7 +805,7 @@ const OrdersPage = () => {
             <select
               value={timeMonths}
               onChange={(e) => setTimeMonths(e.target.value)}
-              className="appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-7 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#a97f0f] cursor-pointer"
+              className="appearance-none bg-white border border-gray-200 rounded-lg pl-7 pr-14 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#a97f0f] cursor-pointer"
             >
               {TIME_FILTER_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -834,7 +821,7 @@ const OrdersPage = () => {
             <select
               value={statusFilter}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-7 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#a97f0f] cursor-pointer"
+              className="appearance-none bg-white border border-gray-200 rounded-lg pl-7 pr-14 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#a97f0f] cursor-pointer"
             >
               {STATUS_FILTER_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -926,8 +913,8 @@ const OrdersPage = () => {
                 key={p}
                 onClick={() => setCurrentPage(p)}
                 className={`w-8 h-8 rounded-lg text-sm font-medium transition cursor-pointer ${p === currentPage
-                    ? "bg-gray-900 text-white"
-                    : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-200 text-gray-600 hover:bg-gray-50"
                   }`}
               >
                 {p}

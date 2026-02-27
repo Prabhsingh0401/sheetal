@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { searchService } from "@/app/services/searchService";
 import {
@@ -14,65 +14,76 @@ const PREVIOUS_SEARCHES_KEY = "previous_searches";
 const MAX_PREVIOUS_SEARCHES = 5;
 
 interface PreviousSearchItem {
-  type: "product" | "category";
+  type: "product" | "category" | "query";
   name: string;
   slug?: string;
   categoryName?: string;
 }
 
-// Helper functions for local storage
+/** Reads previous searches from localStorage */
 const getPreviousSearches = (): PreviousSearchItem[] => {
   if (typeof window === "undefined") return [];
   const searches = localStorage.getItem(PREVIOUS_SEARCHES_KEY);
   return searches ? JSON.parse(searches) : [];
 };
 
+/** Persists a clicked item into the previous-searches list */
 const addClickedItem = (item: PreviousSearchItem) => {
   if (typeof window === "undefined") return;
   const items = getPreviousSearches();
 
-  let identifier: string;
-  if (item.type === "product") {
-    identifier = `product-${item.slug}`;
-  } else {
-    identifier = `category-${item.categoryName}`;
-  }
+  const identifier =
+    item.type === "product"
+      ? `product-${item.slug}`
+      : item.type === "category"
+        ? `category-${item.categoryName}`
+        : `query-${item.name.toLowerCase().trim()}`;
 
   const updatedItems = [
     item,
     ...items.filter((existingItem) => {
-      let existingIdentifier: string;
-      if (existingItem.type === "product") {
-        existingIdentifier = `product-${existingItem.slug}`;
-      } else {
-        existingIdentifier = `category-${existingItem.categoryName}`;
-      }
+      const existingIdentifier =
+        existingItem.type === "product"
+          ? `product-${existingItem.slug}`
+          : existingItem.type === "category"
+            ? `category-${existingItem.categoryName}`
+            : `query-${existingItem.name.toLowerCase().trim()}`;
       return existingIdentifier !== identifier;
     }),
   ].slice(0, MAX_PREVIOUS_SEARCHES);
+
   localStorage.setItem(PREVIOUS_SEARCHES_KEY, JSON.stringify(updatedItems));
+};
+
+/** Saves a raw search query term into the previous-searches list */
+const addSearchQuery = (queryText: string) => {
+  const trimmed = queryText.trim();
+  if (!trimmed || trimmed.length < 2) return;
+  addClickedItem({ type: "query", name: trimmed });
 };
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Bottom edge of the navbar in pixels from the top of the viewport */
+  navbarBottom?: number;
 }
 
-const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom = 63 }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [previousSearches, setPreviousSearches] = useState<
-    PreviousSearchItem[]
-  >([]);
+  const [previousSearches, setPreviousSearches] = useState<PreviousSearchItem[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [trendingCategories, setTrendingCategories] = useState<Category[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  // Load data when modal opens
   useEffect(() => {
     if (isOpen) {
       setPreviousSearches(getPreviousSearches());
+      setTimeout(() => inputRef.current?.focus(), 100);
 
-      // Fetch Trending Data
       if (trendingProducts.length === 0) {
         Promise.all([
           fetchProducts({ sort: "-viewCount", limit: 4, status: "Active" }),
@@ -83,18 +94,20 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
               setTrendingProducts(prodRes.products);
             }
             if (cats) {
-              // Filter out subcategories or hidden
               const topCats = cats.filter((c) => !c.parentCategory).slice(0, 8);
               setTrendingCategories(topCats);
             }
           })
-          .catch((err) =>
-            console.error("Failed to load trending suggestions", err),
-          );
+          .catch((err) => console.error("Failed to load trending suggestions", err));
       }
+    } else {
+      // Reset query when closed
+      setQuery("");
+      setResults([]);
     }
   }, [isOpen]);
 
+  // Debounced search
   useEffect(() => {
     if (query.length > 2) {
       const debounce = setTimeout(() => {
@@ -110,30 +123,33 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
     }
   }, [query]);
 
-  // Handler
-  const handlePreviousSearchClick = (item: PreviousSearchItem) => {
-    onClose();
-  };
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      // Save typed query on Enter
+      if (e.key === "Enter" && query.trim().length > 1) {
+        addSearchQuery(query);
+        setPreviousSearches(getPreviousSearches());
+      }
+    };
+    if (isOpen) window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose, query]);
 
-  // Helper
-  const getImageUrl = (item: any) => {
-    // For Product
-    if (item.mainImage) {
-      return item.mainImage.url || "/assets/default-image.png";
-    }
-    // For Category
+  /** Returns a safe image URL for search result items */
+  const getImageUrl = (item: any): string => {
+    if (item.mainImage) return item.mainImage.url || "/assets/default-image.png";
     if (item.image) return item.image.url || "/assets/default-image.png";
-    // Fallback if data structure varies
     if (item.data?.mainImage?.url) return item.data.mainImage.url;
     if (item.data?.image?.url) return item.data.image.url;
-
     return "/assets/default-image.png";
   };
 
   const matchedCategories = results.filter((r) => r.type === "category");
   const matchedProducts = results.filter((r) => r.type === "product");
 
-  // Helper to compute/display price
+  /** Computes and renders the price badge for a product */
   const getPriceDisplay = (product: any) => {
     let minPrice = Infinity;
     let relatedMrp = 0;
@@ -143,12 +159,11 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
       minPrice = product.minPrice;
       relatedMrp = product.mrp || 0;
       discount = product.discount || 0;
-    }
-    // SCENARIO 2: Data from MongoDB Fallback (compute manually)
-    else if (product.variants && product.variants.length > 0) {
+    } else if (product.variants && product.variants.length > 0) {
       product.variants.forEach((v: any) => {
         v.sizes?.forEach((s: any) => {
-          const effective = (s.discountPrice && s.discountPrice > 0) ? s.discountPrice : s.price;
+          const effective =
+            s.discountPrice && s.discountPrice > 0 ? s.discountPrice : s.price;
           if (effective < minPrice) {
             minPrice = effective;
             relatedMrp = s.price;
@@ -178,288 +193,348 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-md flex justify-center items-start pt-10 font-[family-name:var(--font-montserrat)] transition-all duration-300">
+    <>
+      {/* Invisible backdrop to close on outside click — no overlay color */}
       <div
-        className="w-full max-w-4xl mx-4 bg-[#f4fcf4] rounded-xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col relative border border-[#e0e8e0]"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-[9998]"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+
+      {/* Search panel — positioned just below the navbar, inset 10% each side */}
+      <div
+        className="fixed left-0 right-0 z-[9999] font-[family-name:var(--font-montserrat)] transition-all duration-500 px-[10%]"
+        style={{ top: `${navbarBottom + 12}px` }}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-4 text-gray-500 hover:text-red-500 text-2xl z-10 transition-colors"
+        <div
+          className="relative w-full shadow-2xl rounded-b-xl overflow-hidden"
+          style={{ background: 'linear-gradient(135deg, #e2f7cf 0%, #f7efbe 100%)' }}
+          onClick={(e) => e.stopPropagation()}
         >
-          ✕
-        </button>
+          {/* ── Close button — top right of panel ── */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-4 text-gray-500 hover:text-gray-900 text-xl leading-none transition-colors z-10 cursor-pointer"
+            aria-label="Close search"
+          >
+            ✕
+          </button>
 
-        {/* Header / Search Bar */}
-        <div className="p-8 pb-2 shrink-0">
-          <div className="relative">
-            <input
-              type="text"
-              className="w-full py-3 px-12 text-lg rounded-full border border-gray-400 bg-white text-gray-800 focus:outline-none focus:border-[#082722] shadow-inner placeholder-gray-500 transition-all"
-              placeholder="I'm Looking for..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              autoFocus
-            />
-            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </div>
-            {isLoading && (
-              <div className="absolute right-5 top-1/2 -translate-y-1/2">
-                <div className="w-5 h-5 border-2 border-[#082722] border-t-transparent rounded-full animate-spin"></div>
+          {/* ── Search Input Row ── */}
+          <div className="px-6 pt-5 pb-3 pr-12 relative">
+            <div className="relative">
+              {/* Magnifier icon */}
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
               </div>
-            )}
 
-            {/* Autofill Suggestions Dropdown */}
-            {query.length > 2 && results.length > 0 && (
-              <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-b-xl border border-t-0 border-gray-200 z-50 overflow-hidden">
-                {results.slice(0, 5).map((item, index) => (
-                  <Link
-                    key={index}
-                    href={
-                      item.type === "category"
-                        ? `/${item.data.slug}`
-                        : `/product/${item.data.slug}`
-                    }
-                    onClick={() => {
-                      addClickedItem(
+              <input
+                ref={inputRef}
+                type="text"
+                className="w-full py-2.5 pl-11 pr-10 text-sm rounded-full border border-gray-300 bg-white text-gray-800 focus:outline-none focus:border-[#b3a660] shadow-sm placeholder-gray-400 transition-all"
+                placeholder="I'm Looking for..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+
+              {/* Spinner while loading */}
+              {isLoading && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-[#b3a660] border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+
+              {/* Inline autocomplete dropdown */}
+              {query.length > 2 && results.length > 0 && (
+                <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-b-xl border border-t-0 border-gray-200 z-50 overflow-hidden">
+                  {results.slice(0, 5).map((item, index) => (
+                    <Link
+                      key={index}
+                      href={
                         item.type === "category"
-                          ? {
-                            type: "category",
-                            name: item.data.name,
-                            categoryName: item.data.name,
-                          }
-                          : {
-                            type: "product",
-                            name: item.data.name,
-                            slug: item.data.slug,
-                          },
-                      );
-                      onClose();
-                    }}
-                    className="block px-6 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#082722] transition-colors border-b last:border-0 border-gray-100"
-                  >
-                    <span className="font-medium">{item.data.name}</span>
-                    <span className="text-xs text-gray-400 ml-2 capitalize">
-                      in {item.type}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
-          {/* Search History */}
-          {!isLoading && previousSearches.length > 0 && (
-            <div className="mb-6 border-b border-gray-200 pb-4 mt-4">
-              <div className="flex justify-between items-baseline mb-3">
-                <h4 className="text-base font-semibold text-gray-800">
-                  Search History:
-                </h4>
-                <span className="text-xs text-gray-500 italic hidden sm:inline">
-                  you searched below keywords in the last session
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
-                {previousSearches.map((item, i) => (
-                  <Link
-                    key={i}
-                    href={
-                      item.type === "product"
-                        ? `/product/${item.slug}`
-                        : `/product-list?category=${encodeURIComponent(item.categoryName || "")}`
-                    }
-                    onClick={() => {
-                      handlePreviousSearchClick(item);
-                      onClose(); // Ensure close
-                    }}
-                    className="text-[#8c7e4e] hover:text-[#082722] underline decoration-transparent hover:decoration-[#082722] transition-all text-sm font-medium"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Logic for Empty Query vs Results */}
-          {query.length <= 2 ? (
-            <>
-              {/* Suggestions / Popular Categories */}
-              <div className="mb-6 border-b border-gray-200 pb-4">
-                <div className="flex justify-between items-baseline mb-3">
-                  <h4 className="text-base font-semibold text-gray-800">
-                    Suggestions:
-                  </h4>
-                  <span className="text-xs text-gray-500 italic hidden sm:inline">
-                    10,000+ of the products are in our store
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-x-6 gap-y-2">
-                  {trendingCategories.map((cat, i) => (
-                    <Link
-                      key={i}
-                      href={`/${cat.slug}`}
-                      onClick={onClose}
-                      className="text-[#8c7e4e] hover:text-[#082722] underline decoration-transparent hover:decoration-[#082722] transition-all text-sm font-medium"
-                    >
-                      {cat.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Trending Products */}
-              <div>
-                <h4 className="text-base font-semibold text-gray-800 mb-4">
-                  Trending Products:
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {trendingProducts.map((product) => (
-                    <Link
-                      key={product._id}
-                      href={`/product/${product.slug}`}
-                      className="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100"
+                          ? `/${item.data.slug}`
+                          : `/product/${item.data.slug}`
+                      }
                       onClick={() => {
-                        addClickedItem({
-                          type: "product",
-                          name: product.name,
-                          slug: product.slug,
-                        });
+                        addClickedItem(
+                          item.type === "category"
+                            ? {
+                              type: "category",
+                              name: item.data.name,
+                              categoryName: item.data.name,
+                            }
+                            : {
+                              type: "product",
+                              name: item.data.name,
+                              slug: item.data.slug,
+                            },
+                        );
                         onClose();
                       }}
+                      className="block px-5 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-[#082722] transition-colors border-b last:border-0 border-gray-100"
                     >
-                      <div className="relative aspect-[3/4] bg-gray-100">
-                        <Image
-                          src={getProductImageUrl(product)}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="p-3">
-                        <h5 className="text-sm text-gray-800 font-medium group-hover:text-[#b3a660] transition-colors line-clamp-2">
-                          {product.name}
-                        </h5>
-                        {/* Use Helper to Display Computed Price */}
-                        {getPriceDisplay(product)}
-                      </div>
+                      <span className="font-medium">{item.data.name}</span>
+                      <span className="text-xs text-gray-400 ml-2 capitalize">
+                        in {item.type}
+                      </span>
                     </Link>
                   ))}
                 </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Matched Categories (Suggestions) */}
-              {matchedCategories.length > 0 && (
-                <div className="mb-6 border-b border-gray-200 pb-4">
-                  <div className="flex justify-between items-baseline mb-3">
-                    <h4 className="text-base font-semibold text-gray-800">
-                      Suggestions:
+              )}
+            </div>
+          </div>
+
+          {/* ── Scrollable Content inside white card ── */}
+          <div className="mx-4 mb-4 bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 pb-5 pt-3 overflow-y-auto max-h-[60vh] custom-scrollbar">
+
+              {/* Popular Searches — always visible when no query */}
+              {query.length <= 2 && trendingCategories.length > 0 && (
+                <div className="mb-5 border-b border-gray-200 pb-4">
+                  <div className="flex justify-between items-baseline mb-2">
+                    <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide">
+                      Popular Searches:
                     </h4>
+                    <span className="text-[11px] text-gray-400 italic hidden sm:inline">
+                      10,000+ of the products are in our store
+                    </span>
                   </div>
-                  <div className="flex flex-wrap gap-4">
-                    {matchedCategories.map((item, i) => (
+                  <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                    {trendingCategories.map((cat, i) => (
                       <Link
                         key={i}
-                        href={`/${item.data.slug}`}
-                        onClick={() => {
-                          addClickedItem({
-                            type: "category",
-                            name: item.data.name,
-                            categoryName: item.data.name,
-                          });
-                          onClose();
-                        }}
-                        className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200"
+                        href={`/${cat.slug}`}
+                        onClick={onClose}
+                        className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
                       >
-                        <div className="relative w-10 h-10 rounded-md overflow-hidden bg-gray-200 shrink-0">
-                          <Image
-                            src={getImageUrl(item)}
-                            alt={item.data.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <span className="text-[#8c7e4e] hover:text-[#082722] text-sm font-medium capitalize">
-                          {item.data.name}
-                        </span>
+                        {cat.name}
                       </Link>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Matched Products */}
-              {matchedProducts.length > 0 ? (
-                <div>
-                  <h4 className="text-base font-semibold text-gray-800 mb-4">
-                    Products for "{query}":
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {matchedProducts.map((item) => (
-                      <Link
-                        key={item.data._id}
-                        href={`/product/${item.data.slug}`}
-                        className="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100"
-                        onClick={() => {
-                          addClickedItem({
-                            type: "product",
-                            name: item.data.name,
-                            slug: item.data.slug,
-                          });
-                          onClose();
-                        }}
-                      >
-                        <div className="relative aspect-[3/4] bg-gray-100">
-                          <Image
-                            src={getImageUrl(item)} // Uses helper
-                            alt={item.data.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        </div>
-                        <div className="p-3">
-                          <h5 className="text-sm text-gray-800 font-medium group-hover:text-[#b3a660] transition-colors line-clamp-2">
-                            {item.data.name}
-                          </h5>
-                          {/* Use Helper to Display Computed Price */}
-                          {getPriceDisplay(item.data)}
-                        </div>
-                      </Link>
-                    ))}
+              {/* Search History */}
+              {!isLoading && previousSearches.length > 0 && (
+                <div className="mb-5 border-b border-gray-200 pb-4">
+                  <div className="flex justify-between items-baseline mb-2">
+                    <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide">
+                      Search History:
+                    </h4>
+                    <span className="text-[11px] text-gray-400 italic hidden sm:inline">
+                      you searched below keywords in the last session
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                    {previousSearches.map((item, i) => {
+                      // Query-type items re-populate the search input
+                      if (item.type === "query") {
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => setQuery(item.name)}
+                            className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                          >
+                            {/* Search icon for query items */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60 shrink-0">
+                              <circle cx="11" cy="11" r="8" />
+                              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            {item.name}
+                          </button>
+                        );
+                      }
+                      // Product / category items navigate away
+                      return (
+                        <Link
+                          key={i}
+                          href={
+                            item.type === "product"
+                              ? `/product/${item.slug}`
+                              : `/product-list?category=${encodeURIComponent(item.categoryName || "")}`
+                          }
+                          onClick={() => {
+                            addClickedItem(item);
+                            onClose();
+                          }}
+                          className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                        >
+                          {item.name}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
-              ) : (
-                !isLoading &&
-                matchedCategories.length === 0 && (
-                  <p className="text-gray-500 text-center py-10 italic">
-                    No products found for "{query}".
-                  </p>
-                )
               )}
-            </>
-          )}
+
+              {/* Default state: Suggestions + Trending Products */}
+              {query.length <= 2 ? (
+                <>
+                  {/* Suggestions */}
+                  {trendingCategories.length > 0 && (
+                    <div className="mb-5 border-b border-gray-200 pb-4">
+                      <div className="flex justify-between items-baseline mb-2">
+                        <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide">
+                          Suggestions:
+                        </h4>
+                        <span className="text-[11px] text-gray-400 italic hidden sm:inline">
+                          10,000+ of the products are in our store
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                        {trendingCategories.map((cat, i) => (
+                          <Link
+                            key={i}
+                            href={`/${cat.slug}`}
+                            onClick={onClose}
+                            className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                          >
+                            {cat.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Trending Products */}
+                  {trendingProducts.length > 0 && (
+                    <div>
+                      <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide mb-3">
+                        Trending Products:
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {trendingProducts.map((product) => (
+                          <Link
+                            key={product._id}
+                            href={`/product/${product.slug}`}
+                            className="group block rounded-lg transition-shadow overflow-hidden cursor-pointer"
+                            onClick={() => {
+                              addClickedItem({
+                                type: "product",
+                                name: product.name,
+                                slug: product.slug,
+                              });
+                              onClose();
+                            }}
+                          >
+                            <div className="relative aspect-[3/4] bg-gray-100">
+                              <Image
+                                src={getProductImageUrl(product)}
+                                alt={product.name}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            </div>
+                            <div className="p-2.5">
+                              <h5 className="text-xs text-gray-800 font-medium group-hover:text-[#b3a660] transition-colors line-clamp-2">
+                                {product.name}
+                              </h5>
+                              {getPriceDisplay(product)}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Matched Categories */}
+                  {matchedCategories.length > 0 && (
+                    <div className="mb-5 border-b border-gray-200 pb-4">
+                      <div className="flex justify-between items-baseline mb-2">
+                        <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide">
+                          Suggestions:
+                        </h4>
+                      </div>
+                      <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                        {matchedCategories.map((item, i) => (
+                          <Link
+                            key={i}
+                            href={`/${item.data.slug}`}
+                            onClick={() => {
+                              addClickedItem({
+                                type: "category",
+                                name: item.data.name,
+                                categoryName: item.data.name,
+                              });
+                              onClose();
+                            }}
+                            className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                          >
+                            {item.data.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Trending/Matched Products for query */}
+                  {matchedProducts.length > 0 ? (
+                    <div>
+                      <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide mb-3">
+                        Trending Products for &ldquo;{query}&rdquo;:
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {matchedProducts.map((item) => (
+                          <Link
+                            key={item.data._id}
+                            href={`/product/${item.data.slug}`}
+                            className="group block hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+                            onClick={() => {
+                              addClickedItem({
+                                type: "product",
+                                name: item.data.name,
+                                slug: item.data.slug,
+                              });
+                              onClose();
+                            }}
+                          >
+                            <div className="relative aspect-[3/4] bg-gray-100">
+                              <Image
+                                src={getImageUrl(item)}
+                                alt={item.data.name}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            </div>
+                            <div className="p-2.5">
+                              <h5 className="text-xs text-gray-800 font-medium group-hover:text-[#b3a660] transition-colors line-clamp-2">
+                                {item.data.name}
+                              </h5>
+                              {getPriceDisplay(item.data)}
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    !isLoading && matchedCategories.length === 0 && (
+                      <p className="text-gray-400 text-center py-8 text-sm italic">
+                        No results found for &ldquo;{query}&rdquo;.
+                      </p>
+                    )
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

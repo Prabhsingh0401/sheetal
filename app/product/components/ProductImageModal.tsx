@@ -88,7 +88,7 @@ const ProductImageModal: React.FC<ProductImageModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-[80]">
+    <div className="fixed inset-0 flex items-center justify-center z-[11000]">
       <div className="relative bg-white w-full h-full p-4 flex gap-4">
         {/* Close Button */}
         <button

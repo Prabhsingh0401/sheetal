@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import { auth, googleProvider, signInWithPopup } from "../../services/firebase";
 import { verifyIdToken, login } from "../../services/authService";
+import { mergeGuestCartOnLogin } from "../../hooks/useCart";
 import toast from "react-hot-toast";
 
 declare global {
@@ -51,8 +52,8 @@ const LoginForm = () => {
       "recaptcha-container",
       {
         size: "invisible",
-        callback: () => {},
-        "expired-callback": () => {},
+        callback: () => { },
+        "expired-callback": () => { },
       },
     );
 
@@ -108,6 +109,8 @@ const LoginForm = () => {
 
       if (data.success && data.token) {
         login(data.token, data.user);
+        // Merge any guest cart into the user's server cart
+        await mergeGuestCartOnLogin();
         toast.success("Logged in successfully!");
         const redirectUrl = sessionStorage.getItem("redirect");
         if (redirectUrl) {

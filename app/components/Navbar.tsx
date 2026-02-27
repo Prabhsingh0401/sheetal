@@ -109,8 +109,9 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                       <li key={tag}>
                         <Link
                           href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
-                          className="text-gray-700 hover:text-gray-900 transition-colors capitalize"
+                          className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors capitalize"
                         >
+                          <span className="text-gray-900 text-[20px] leading-none">•</span>
                           {tag}
                         </Link>
                       </li>
@@ -274,7 +275,10 @@ const DesktopSubMenuItem = ({ item }: { item: any }) => {
         href={item.href || "#"}
         className="block py-2 !text-[#b3a660] hover:text-[#aa8c6a] transition-colors flex items-center justify-between"
       >
-        {item.label}
+        <span className="flex items-center gap-1.5">
+          <span className="text-white text-[20px] leading-none">•</span>
+          {item.label}
+        </span>
         {hasChildren && <span className="-rotate-90 text-[8px]">▼</span>}
       </Link>
 
@@ -901,7 +905,7 @@ const Navbar = () => {
         </div>
       </header>
 
-      <SearchModal isOpen={searchOpen} onClose={closeSearch} />
+      <SearchModal isOpen={searchOpen} onClose={closeSearch} navbarBottom={scrolled ? 70 : 99} />
 
       {/* Mobile Menu Drawer */}
       <MobileMenuOverlay

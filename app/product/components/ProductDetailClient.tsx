@@ -207,12 +207,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   };
 
   const handleAddToCart = async () => {
-    if (!checkLoginStatus()) {
-      sessionStorage.setItem("redirect", `/product/${slug}`);
-      router.push(`/login`);
-      return;
-    }
-
     if (product && selectedVariantData && selectedSizeObject) {
       const selectedVariant = product.variants.find(
         (variant: ProductVariant) => variant.color?.name === selectedColor,
@@ -231,8 +225,14 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           selectedSize,
           price,
           discountPrice,
-          selectedColor,
-          variantImageUrl,
+          variantImageUrl,   // 7th: variantImage
+          selectedColor,     // 8th: color
+          {
+            _id: product._id,
+            name: product.name,
+            slug: product.slug,
+            mainImage: product.mainImage,
+          },
         );
       } else {
         console.error("Selected variant not found");
