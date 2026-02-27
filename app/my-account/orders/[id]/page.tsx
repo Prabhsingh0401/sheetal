@@ -175,7 +175,7 @@ const OrderProgress = ({
                         className={`relative z-10 flex flex-col items-center ${i === 0 ? "mr-auto" : i === 1 ? "mx-auto" : "ml-auto"}`}
                     >
                         <div
-                            className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center transition-colors ${s.done ? "border-[#a97f0f] bg-[#a97f0f]" : "border-gray-300 bg-white"
+                            className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center transition-colors ${s.done ? "border-[#a97f0f] bg-[#a97f0f]" : "border-gray-300"
                                 }`}
                         >
                             {s.done && (
@@ -255,7 +255,7 @@ const TrackingTimeline = ({ order }: { order: RawOrder }) => {
                 <div key={i} className="flex gap-3">
                     <div className="flex flex-col items-center">
                         <div
-                            className={`w-3.5 h-3.5 rounded-full border-2 shrink-0 flex items-center justify-center ${t.done ? "border-[#a97f0f] bg-[#a97f0f]" : "border-gray-300 bg-white"
+                            className={`w-3.5 h-3.5 rounded-full border-2 shrink-0 flex items-center justify-center ${t.done ? "border-[#a97f0f] bg-[#a97f0f]" : "border-gray-300"
                                 }`}
                         >
                             {t.done && (
@@ -559,92 +559,102 @@ const OrderDetailPage = () => {
                 </div>
             ))}
 
-            {/* ── Delivery Details ── */}
-            <div className="mb-6">
-                <SectionHead>Delivery Details</SectionHead>
+            {/* ── Delivery Details card ── */}
+            <div className="border border-gray-200 rounded-xl mb-4 overflow-hidden">
+                <div className="px-4 pt-4 pb-3">
+                    <p className="text-sm font-bold text-gray-900 mb-3">Delivery Details</p>
 
-                {/* Person */}
-                <div className="flex items-center gap-3 mb-3">
-                    <img
-                        src="/assets/icons/person-1.svg"
-                        alt="Person"
-                        width={18}
-                        height={18}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
-                    <span className="text-sm text-gray-700">
-                        <strong className="text-gray-900">{order.shippingAddress.fullName}</strong>{" "}
-                        {order.shippingAddress.phoneNumber}
-                    </span>
-                </div>
+                    {/* Person row */}
+                    <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-3 py-2.5 mb-2">
+                        <img
+                            src="/assets/icons/person-1.svg"
+                            alt="Person"
+                            width={18}
+                            height={18}
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                        <span className="text-sm font-semibold text-gray-900">
+                            {order.shippingAddress.fullName}
+                        </span>
+                        <span className="text-sm text-gray-500 ml-2">
+                            {order.shippingAddress.phoneNumber}
+                        </span>
+                    </div>
 
-                {/* Address */}
-                <div className="flex items-start gap-3">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a97f0f" strokeWidth="1.8" strokeLinecap="round" className="shrink-0 mt-0.5">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                        <polyline points="9 22 9 12 15 12 15 22" />
-                    </svg>
-                    <div>
-                        <p className="text-sm text-gray-700 font-medium">Home</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                    {/* Home / address row */}
+                    <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-3 py-2.5">
+                        <img
+                            src="/assets/icons/home-button.svg"
+                            alt="Home"
+                            width={18}
+                            height={18}
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                        <span className="text-sm font-semibold text-gray-900 shrink-0">Home</span>
+                        <span className="text-sm text-gray-500 truncate">
                             {order.shippingAddress.addressLine1}, {order.shippingAddress.city},{" "}
                             {order.shippingAddress.state} — {order.shippingAddress.postalCode}
-                        </p>
+                        </span>
                     </div>
                 </div>
             </div>
 
-            {/* ── Price Details ── */}
-            <div className="mb-6">
-                <SectionHead>Price Details</SectionHead>
+            {/* ── Price Details card ── */}
+            <div className="border border-gray-200 rounded-xl mb-4 overflow-hidden">
+                <div className="px-4 pt-4 pb-3">
+                    <p className="text-sm font-bold text-gray-900 mb-3">Price Details</p>
 
-                <div className="space-y-2.5">
-                    <div className="flex justify-between text-sm text-gray-600">
-                        <span>Listing Price</span>
-                        <span>₹{order.itemsPrice.toLocaleString("en-IN")}</span>
-                    </div>
-                    {order.shippingPrice > 0 && (
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>Shipping Charges</span>
-                            <span>₹{order.shippingPrice.toLocaleString("en-IN")}</span>
+                    {/* Price rows with thin dividers */}
+                    <div className="divide-y divide-gray-100">
+                        <div className="flex justify-between items-center py-2.5 text-sm text-gray-600">
+                            <span>Listing Price</span>
+                            <span>₹{order.itemsPrice.toLocaleString("en-IN")}</span>
                         </div>
-                    )}
-                    {order.shippingPrice === 0 && (
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>Shipping Charges</span>
-                            <span className="text-green-600 font-medium">FREE</span>
-                        </div>
-                    )}
-                    {order.taxPrice > 0 && (
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>Tax</span>
-                            <span>₹{order.taxPrice.toLocaleString("en-IN")}</span>
-                        </div>
-                    )}
-                </div>
-
-                <div className="my-3 border-t border-gray-200" />
-
-                <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-gray-900">Total Amount</span>
-                    <span className="text-base font-bold text-gray-900">
-                        ₹{order.totalPrice.toLocaleString("en-IN")}
-                    </span>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                    <span className="text-xs text-gray-500">Payment method</span>
-                    <span className="text-xs font-semibold text-gray-700">
-                        {order.paymentInfo.method}
-                        {order.paymentInfo.status === "Paid" && (
-                            <span className="ml-1.5 text-green-600">· Paid</span>
+                        {order.shippingPrice > 0 && (
+                            <div className="flex justify-between items-center py-2.5 text-sm text-gray-600">
+                                <span>Shipping Charges</span>
+                                <span>₹{order.shippingPrice.toLocaleString("en-IN")}</span>
+                            </div>
                         )}
-                        {order.paymentInfo.status === "Pending" &&
-                            order.paymentInfo.method === "COD" && (
-                                <span className="ml-1.5 text-amber-600">· Pay on delivery</span>
+                        {order.shippingPrice === 0 && (
+                            <div className="flex justify-between items-center py-2.5 text-sm text-gray-600">
+                                <span>Shipping Charges</span>
+                                <span className="text-green-600 font-medium">FREE</span>
+                            </div>
+                        )}
+                        {order.taxPrice > 0 && (
+                            <div className="flex justify-between items-center py-2.5 text-sm text-gray-600">
+                                <span>Tax</span>
+                                <span>₹{order.taxPrice.toLocaleString("en-IN")}</span>
+                            </div>
+                        )}
+
+                        {/* Total Amount row */}
+                        <div className="flex justify-between items-center py-3">
+                            <span className="text-sm font-bold text-gray-900">Total Amount</span>
+                            <span className="text-base font-bold text-gray-900">
+                                ₹{order.totalPrice.toLocaleString("en-IN")}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Payment method — gray boxed row */}
+                    <div className="flex justify-between items-center mt-1 border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50">
+                        <span className="text-sm text-gray-600">Payment method</span>
+                        <span className="text-sm font-semibold text-gray-800">
+                            {order.paymentInfo.method}
+                            {order.paymentInfo.status === "Paid" && (
+                                <span className="ml-1.5 text-green-600">· Paid</span>
                             )}
-                    </span>
+                            {order.paymentInfo.status === "Pending" &&
+                                order.paymentInfo.method === "COD" && (
+                                    <span className="ml-1.5 text-amber-600">· Pay on delivery</span>
+                                )}
+                        </span>
+                    </div>
                 </div>
             </div>
+
 
             {/* ── Order ID bottom ── */}
             <div className="flex items-center py-4 border-t border-gray-100">
