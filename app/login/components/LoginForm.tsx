@@ -28,6 +28,7 @@ const LoginForm = () => {
   const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(
     null,
   );
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -62,6 +63,11 @@ const LoginForm = () => {
   };
 
   const handleContinue = async () => {
+    if (!acceptedTerms) {
+      toast.error("Please agree to the Terms of Use and Privacy Policy.");
+      return;
+    }
+
     if (!/^[6-9]\d{9}$/.test(phoneNumber)) {
       toast.error("Enter a valid 10-digit mobile number");
       return;
@@ -98,6 +104,11 @@ const LoginForm = () => {
   };
 
   const handleGoogleLogin = async () => {
+    if (!acceptedTerms) {
+      toast.error("Please agree to the Terms of Use and Privacy Policy.");
+      return;
+    }
+
     try {
       setLoading(true);
       setLoadingType("google");
@@ -177,6 +188,8 @@ const LoginForm = () => {
                 <input
                   type="checkbox"
                   required
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
                   className="mt-1 accent-[#6b4a1f]"
                 />
                 <p>
