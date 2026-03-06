@@ -180,7 +180,12 @@ export const useCart = (): UseCartReturn => {
         // ── Authenticated: fetch from server ──
         const response: CartApiResponse = await fetchCart();
         if (response.success && response.data && Array.isArray(response.data.items)) {
-          setCart(response.data.items);
+          // Guard: filter out items whose product was deleted (product === null).
+          // The backend also strips these, but we defend here in case of timing issues.
+          const validItems = response.data.items.filter(
+            (item: CartItem) => item.product != null,
+          );
+          setCart(validItems);
         } else {
           setError("Failed to fetch cart");
         }
@@ -196,6 +201,7 @@ export const useCart = (): UseCartReturn => {
       setLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     loadCart();
@@ -395,8 +401,8 @@ export const useCart = (): UseCartReturn => {
 
           if (response.data.offerType === "BOGO") {
             setBogoMessage(`Congrats! Your BOGO offer has been applied. You saved ₹${discountAmount.toFixed(2)}!`);
-          } else if (response.data.offerType === "Fixed") {
-            setBogoMessage(`₹${discountAmount.toFixed(2)} discount applied!`);
+          } else if (response.data.offerType === "FixedAmount") {
+            setBogoMessage(`₹${discountAmount.toFixed(2)} flat discount applied!`);
           }
 
           toast.success("Coupon applied successfully!");

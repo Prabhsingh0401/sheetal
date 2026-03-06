@@ -136,19 +136,109 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
             }
           }
 
-          // Fetch Similar Products
-          if (res.data.category && res.data.category._id) {
-            fetchProducts({ category: res.data.category._id, limit: 6 })
-              .then((simRes) => {
-                if (simRes.success) {
-                  const filtered = simRes.products.filter(
-                    (p: Product) => p._id !== res.data._id,
-                  );
-                  setSimilarProducts(filtered);
-                }
-              })
-              .catch(console.error);
+          // ── Similar Products: 3-tier smart fetch ─────────────────────
+          // Tier 1: same fabric + price ±₹2000
+          // Tier 2: same fabric only  (if tier 1 returns < 2 results)
+          // Tier 3: same category     (final fallback)
+          // ─────────────────────────────────────────────────────────────
+
+          const productFabrics: string[] = (res.data.fabric ?? [])
+            .map((f: string) => f?.trim().toLowerCase())
+            .filter(Boolean);
+
+          // Derive min effective price across all variants/sizes
+          let currentMinPrice = 0;
+          res.data.variants?.forEach((v: ProductVariant) => {
+            v.sizes?.forEach((s) => {
+              const effective = s.discountPrice > 0 ? s.discountPrice : s.price;
+              if (effective > 0 && (currentMinPrice === 0 || effective < currentMinPrice)) {
+                currentMinPrice = effective;
+              }
+            });
+          });
+
+          let fetchedSimilar: Product[] = [];
+          const selfId = res.data._id;
+          const dedup = (list: Product[]) => list.filter((p) => p._id !== selfId);
+          const hasFabric = productFabrics.length > 0;
+
+          // ── Tier 1: fabric + price range ──────────────────────────────
+          if (hasFabric && currentMinPrice > 0) {
+            try {
+              const r = await fetchProducts({
+                fabric: productFabrics[0],
+                minPrice: Math.max(0, currentMinPrice - 2000),
+                maxPrice: currentMinPrice + 2000,
+                limit: 10,
+                status: "Active",
+              });
+              if (r.success) fetchedSimilar = dedup(r.products ?? []);
+            } catch { /* continue to tier 2 */ }
           }
+
+          // ── Tier 2: fabric only (no price restriction) ─────────────────
+          if (fetchedSimilar.length < 2 && hasFabric) {
+            try {
+              const r = await fetchProducts({
+                fabric: productFabrics[0],
+                limit: 10,
+                status: "Active",
+              });
+              if (r.success) {
+                const matched = dedup(r.products ?? []);
+                if (matched.length > fetchedSimilar.length) fetchedSimilar = matched;
+              }
+            } catch { /* continue to tier 3 */ }
+          }
+
+          // ── Tier 3: same category (final fallback) ─────────────────────
+          if (fetchedSimilar.length < 2 && res.data.category?._id) {
+            try {
+              const r = await fetchProducts({
+                category: res.data.category._id,
+                limit: 10,
+                status: "Active",
+              });
+              if (r.success) fetchedSimilar = dedup(r.products ?? []);
+            } catch { /* silent */ }
+          }
+
+          setSimilarProducts(fetchedSimilar);
+
+
+          // ── Persist to recently-viewed (for RelatedProducts) ──
+          try {
+            const RV_KEY = "__rv__";
+            const minPrice = (() => {
+              let p = 0;
+              res.data.variants?.forEach((v: ProductVariant) => {
+                v.sizes?.forEach((s: { price: number; discountPrice: number }) => {
+                  const eff = s.discountPrice > 0 ? s.discountPrice : s.price;
+                  if (eff > 0 && (p === 0 || eff < p)) p = eff;
+                });
+              });
+              return p;
+            })();
+            const entry = {
+              id: res.data.slug,
+              name: res.data.name,
+              image: getProductImageUrl(res.data),
+              hoverImage: res.data.hoverImage?.url
+                ? getApiImageUrl(res.data.hoverImage.url)
+                : getProductImageUrl(res.data),
+              price: minPrice,
+              mrp: minPrice,
+              discount: "0%",
+              soldOut: res.data.stock <= 0,
+            };
+            const prev = JSON.parse(localStorage.getItem(RV_KEY) || "[]") as typeof entry[];
+            const deduped = [entry, ...prev.filter((p) => p.id !== entry.id)].slice(0, 12);
+            localStorage.setItem(RV_KEY, JSON.stringify(deduped));
+          } catch {
+            // localStorage unavailable — safe to ignore
+          }
+
+
 
           // Increment View Count
           incrementProductView(slug).catch(console.error);

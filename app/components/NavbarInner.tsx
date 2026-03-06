@@ -151,42 +151,16 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                   </div>
                 ))
               ) : (
-                <>
-                  <div className="text-center">
-                    <div className="mb-2 overflow-hidden rounded-lg">
-                      <Image
-                        src="/assets/deals2.jpg"
-                        alt="New Arrivals"
-                        width={250}
-                        height={300}
-                        className="w-full h-[250px] object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <p className="font-semibold text-sm text-gray-800 mb-1">
-                      New Collection
-                    </p>
-                    <button className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium">
-                      Explore
-                    </button>
-                  </div>
-                  <div className="text-center">
-                    <div className="mb-2 overflow-hidden rounded-lg">
-                      <Image
-                        src="/assets/deals1.jpg"
-                        alt="Best Sellers"
-                        width={250}
-                        height={300}
-                        className="w-full h-[250px] object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <p className="font-semibold text-sm text-gray-800 mb-1">
-                      Best Sellers
-                    </p>
-                    <button className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium">
-                      Shop Now
-                    </button>
-                  </div>
-                </>
+                // Fallback: centered logo on white background
+                <div className="col-span-2 flex items-center justify-center h-[250px] bg-white rounded-lg border border-gray-100">
+                  <Image
+                    src="/assets/625030871.png"
+                    alt="Sheetal"
+                    width={180}
+                    height={120}
+                    className="object-contain"
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -661,9 +635,11 @@ const NavbarInner = () => {
 
   const getDisplayName = () => {
     if (!currentUser) return "Guest";
-    if (currentUser.name) return currentUser.name;
+    if (currentUser.name && currentUser.name.trim() !== "") {
+      return currentUser.name.trim().split(" ")[0];
+    }
     if (currentUser.phoneNumber) return currentUser.phoneNumber;
-    if (currentUser.email) return currentUser.email;
+    if (currentUser.email) return currentUser.email.split("@")[0] || currentUser.email;
     return "User";
   };
 

@@ -110,6 +110,9 @@ export interface ProductQueryParams {
   brand?: string;
   status?: string;
   color?: string;
+  fabric?: string;   // comma-separated or single value
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export interface ProductResponse {
@@ -132,6 +135,9 @@ export const fetchProducts = async (
   if (params.subCategory) query.append("subCategory", params.subCategory);
   if (params.brand) query.append("brand", params.brand);
   if (params.color) query.append("color", params.color);
+  if (params.fabric) query.append("fabric", params.fabric);
+  if (params.minPrice != null) query.append("minPrice", params.minPrice.toString());
+  if (params.maxPrice != null) query.append("maxPrice", params.maxPrice.toString());
 
   // Default to Active products if not specified
   if (!params.status) query.append("status", "Active");
