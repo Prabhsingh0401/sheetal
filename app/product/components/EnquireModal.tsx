@@ -1,17 +1,20 @@
-import React from "react";
+import React, {useState} from "react";
 import Image from "next/image";
 
 interface EnquireModalProps {
   isOpen: boolean;
   onClose: () => void;
   productTitle: string;
+  sizes?: { name: string }[];
 }
 
 const EnquireModal: React.FC<EnquireModalProps> = ({
   isOpen,
   onClose,
   productTitle,
+  sizes = [],
 }) => {
+  const [selectedSize, setSelectedSize] = useState("")
   if (!isOpen) return null;
 
   return (
@@ -41,6 +44,21 @@ const EnquireModal: React.FC<EnquireModalProps> = ({
             disabled
             className="w-full rounded-full border border-gray-700 px-4 py-2 bg-transparent text-center text-xs"
           />
+
+          {sizes.length > 0 && (
+            <select
+              value={selectedSize}
+              onChange={(e) => setSelectedSize(e.target.value)}
+              className="w-full rounded-full border border-gray-700 px-4 py-2 bg-transparent text-sm text-gray-700"
+            >
+              <option value="">Select Size</option>
+              {sizes.map((s) => (
+                <option key={s.name} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          )}
 
           <input
             type="text"

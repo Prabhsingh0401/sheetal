@@ -7,6 +7,7 @@ interface ProductInfoProps {
   product: {
     title: string;
     rating: number;
+    productCode: string;
     mainDescription: string;
     selectedPrice: number;
     selectedOriginalPrice: number;
@@ -54,11 +55,13 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   isOutOfStock, // Destructure new prop
   selectedVariantData,
 }) => {
-  const priceToDisplay = product.selectedPrice;
+  const priceToDisplay = product.selectedPrice || product.selectedOriginalPrice;
   const originalPriceToDisplay = product.selectedOriginalPrice;
   const discountPercentageToDisplay = product.selectedDiscount
     ? Number(product.selectedDiscount)
     : 0;
+
+  console.log(product);
 
   return (
     <div className="p-6 md:p-8">
@@ -67,8 +70,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           {product.title}
         </h1>
 
-        <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-4 mb-2">
           <StarRating rating={product.rating} />
+        </div>
+        <div className="text-emerald-900 text-sm mb-4">
+          <span className="font-semibold">Product Code:</span>{" "}
+          {product.productCode}{" "}
         </div>
       </div>
 
@@ -92,7 +99,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       </div>
 
       <div className="mb-6">
-        <span className="inline-block bg-green-50 text-green-700 text-xs px-2 py-1 rounded border border-green-200">
+        <span
+          className={`inline-block ${isOutOfStock ? "bg-red-50 text-red-700 border-red-200" : "bg-green-50 text-green-700 border-green-200"} text-s px-2 py-1 rounded border`}
+        >
           {isOutOfStock ? "Out of Stock" : "In Stock"}
         </span>
       </div>

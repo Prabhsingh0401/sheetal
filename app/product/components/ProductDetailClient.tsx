@@ -43,6 +43,7 @@ interface SizeOption {
 interface ProductInfoData {
   title: string;
   rating: number;
+  productCode : string;
   mainDescription: string;
   price?: number; // Made optional
   originalPrice?: number; // Made optional
@@ -151,7 +152,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           res.data.variants?.forEach((v: ProductVariant) => {
             v.sizes?.forEach((s) => {
               const effective = s.discountPrice > 0 ? s.discountPrice : s.price;
-              if (effective > 0 && (currentMinPrice === 0 || effective < currentMinPrice)) {
+              if (
+                effective > 0 &&
+                (currentMinPrice === 0 || effective < currentMinPrice)
+              ) {
                 currentMinPrice = effective;
               }
             });
@@ -159,7 +163,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
           let fetchedSimilar: Product[] = [];
           const selfId = res.data._id;
-          const dedup = (list: Product[]) => list.filter((p) => p._id !== selfId);
+          const dedup = (list: Product[]) =>
+            list.filter((p) => p._id !== selfId);
           const hasFabric = productFabrics.length > 0;
 
           // ── Tier 1: fabric + price range ──────────────────────────────
@@ -173,7 +178,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
                 status: "Active",
               });
               if (r.success) fetchedSimilar = dedup(r.products ?? []);
-            } catch { /* continue to tier 2 */ }
+            } catch {
+              /* continue to tier 2 */
+            }
           }
 
           // ── Tier 2: fabric only (no price restriction) ─────────────────
@@ -186,9 +193,12 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               });
               if (r.success) {
                 const matched = dedup(r.products ?? []);
-                if (matched.length > fetchedSimilar.length) fetchedSimilar = matched;
+                if (matched.length > fetchedSimilar.length)
+                  fetchedSimilar = matched;
               }
-            } catch { /* continue to tier 3 */ }
+            } catch {
+              /* continue to tier 3 */
+            }
           }
 
           // ── Tier 3: same category (final fallback) ─────────────────────
@@ -200,11 +210,12 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
                 status: "Active",
               });
               if (r.success) fetchedSimilar = dedup(r.products ?? []);
-            } catch { /* silent */ }
+            } catch {
+              /* silent */
+            }
           }
 
           setSimilarProducts(fetchedSimilar);
-
 
           // ── Persist to recently-viewed (for RelatedProducts) ──
           try {
@@ -212,10 +223,12 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
             const minPrice = (() => {
               let p = 0;
               res.data.variants?.forEach((v: ProductVariant) => {
-                v.sizes?.forEach((s: { price: number; discountPrice: number }) => {
-                  const eff = s.discountPrice > 0 ? s.discountPrice : s.price;
-                  if (eff > 0 && (p === 0 || eff < p)) p = eff;
-                });
+                v.sizes?.forEach(
+                  (s: { price: number; discountPrice: number }) => {
+                    const eff = s.discountPrice > 0 ? s.discountPrice : s.price;
+                    if (eff > 0 && (p === 0 || eff < p)) p = eff;
+                  },
+                );
               });
               return p;
             })();
@@ -231,14 +244,17 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               discount: "0%",
               soldOut: res.data.stock <= 0,
             };
-            const prev = JSON.parse(localStorage.getItem(RV_KEY) || "[]") as typeof entry[];
-            const deduped = [entry, ...prev.filter((p) => p.id !== entry.id)].slice(0, 12);
+            const prev = JSON.parse(
+              localStorage.getItem(RV_KEY) || "[]",
+            ) as (typeof entry)[];
+            const deduped = [
+              entry,
+              ...prev.filter((p) => p.id !== entry.id),
+            ].slice(0, 12);
             localStorage.setItem(RV_KEY, JSON.stringify(deduped));
           } catch {
             // localStorage unavailable — safe to ignore
           }
-
-
 
           // Increment View Count
           incrementProductView(slug).catch(console.error);
@@ -261,7 +277,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     };
     loadProduct();
   }, [slug]);
-
   // Fetch Size Chart data
   useEffect(() => {
     const loadSizeChart = async () => {
@@ -315,8 +330,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           selectedSize,
           price,
           discountPrice,
-          variantImageUrl,   // 7th: variantImage
-          selectedColor,     // 8th: color
+          variantImageUrl, // 7th: variantImage
+          selectedColor, // 8th: color
           {
             _id: product._id,
             name: product.name,
@@ -479,19 +494,23 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     }
   };
   // Transformed Product Object for ProductInfo
+  const fallbackSize = product.variants?.[0]?.sizes?.[0];
+  const resolvedSize = selectedSizeObject ?? fallbackSize;
+
   const currentSelectedPrice =
-    selectedSizeObject?.discountPrice > 0
-      ? selectedSizeObject.discountPrice
-      : selectedSizeObject?.price || 0;
-  const currentSelectedOriginalPrice = selectedSizeObject?.price || 0;
+    resolvedSize?.discountPrice > 0
+      ? resolvedSize.discountPrice
+      : resolvedSize?.price || 0;
+  const currentSelectedOriginalPrice = resolvedSize?.price || 0;
   const currentSelectedDiscount =
     currentSelectedOriginalPrice > 0 &&
-      currentSelectedPrice < currentSelectedOriginalPrice
+    currentSelectedPrice < currentSelectedOriginalPrice
       ? `${Math.round(((currentSelectedOriginalPrice - currentSelectedPrice) / currentSelectedOriginalPrice) * 100)}`
       : "0";
 
   const productInfoData: ProductInfoData = {
     title: product.name,
+    productCode : product.sku,
     rating: product.averageRating || 0,
     mainDescription: product.shortDescription || "",
     selectedPrice: currentSelectedPrice,
@@ -631,6 +650,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         isOpen={enquireModalOpen}
         onClose={() => setEnquireModalOpen(false)}
         productTitle={product.name}
+        sizes={productInfoData.allSizes}
       />
 
       <SizeChartModal
