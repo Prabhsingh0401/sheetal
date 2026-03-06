@@ -606,7 +606,7 @@ const Navbar = () => {
   // const { data: settings } = useSWR("/settings", getSettings);
 
   const [navItems, setNavItems] = useState<any[]>([]);
-
+  
   useEffect(() => {
     if (categories) {
       // Filter top-level categories
@@ -667,7 +667,7 @@ const Navbar = () => {
     }
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isClient]);
 
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
   const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
@@ -684,7 +684,7 @@ const Navbar = () => {
 
   const getDisplayName = () => {
     if (!currentUser) return "Guest";
-    if (currentUser.name) return currentUser.name;
+    if (currentUser.fullName) return currentUser.fullName;
     if (currentUser.phoneNumber) return currentUser.phoneNumber;
     if (currentUser.email) return currentUser.email;
     return "User";
