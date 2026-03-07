@@ -115,9 +115,9 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-20">
+    <section className="max-w-6xl mx-auto px-4 py-10">
       {/* Heading */}
-      <h3 className="text-center text-4xl text-[#653f1b] mb-6 font-[family-name:var(--font-optima)]">
+      <h3 className="text-center text-3xl text-[#a2690f] mb-6 font-[family-name:var(--font-optima)]">
         Customer Reviews
       </h3>
       <div className="border-t border-gray-300 mb-10" />

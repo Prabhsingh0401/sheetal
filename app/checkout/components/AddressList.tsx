@@ -34,6 +34,7 @@ const AddressList: React.FC<AddressListProps> = ({
   onAddNew,
   onEdit,
 }) => {
+  console.log(addresses);
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!confirm("Are you sure you want to delete this address?")) return;
@@ -60,7 +61,7 @@ const AddressList: React.FC<AddressListProps> = ({
         </h4>
         <button
           onClick={onAddNew}
-          className="border border-black text-black text-sm font-semibold px-4 py-2 hover:bg-gray-50 transition-colors uppercase tracking-wide"
+          className="border border-black cursor-pointer text-black text-sm font-semibold px-4 py-2 hover:bg-gray-50 transition-colors uppercase tracking-wide"
         >
           Add New Address
         </button>
@@ -85,12 +86,14 @@ const AddressList: React.FC<AddressListProps> = ({
                     Default
                   </span>
                 )}
-                <div className="font-bold text-gray-800">
-                  {addr.firstName} {addr.lastName}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-gray-800">
+                    {addr.firstName} {addr.lastName}
+                  </span>
+                  <span className="text-xs text-white uppercase bg-[#956a2c] px-1.5 py-0.5 rounded tracking-wide">
+                    {addr.addressType}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-500 uppercase border border-gray-200 px-1 rounded ml-2 hidden">
-                  {addr.addressType}
-                </span>
               </div>
 
               <div className="text-sm text-gray-600 mb-3 leading-relaxed">
@@ -101,7 +104,7 @@ const AddressList: React.FC<AddressListProps> = ({
               </div>
 
               {isSelected && (
-                <button className="w-full bg-[#bd9951] text-white text-xs font-bold py-2 rounded mb-3">
+                <button className="w-full cursor-pointer bg-[#bd9951] text-white text-xs font-bold py-2 rounded mb-3">
                   DELIVER TO THIS ADDRESS
                 </button>
               )}
@@ -144,13 +147,13 @@ const AddressList: React.FC<AddressListProps> = ({
                     e.stopPropagation();
                     onEdit(addr);
                   }}
-                  className="flex-1 py-1 px-2 border border-gray-200 rounded text-center hover:bg-gray-50 text-gray-600"
+                  className="cursor-pointer flex-1 py-1 px-2 border border-gray-200 rounded text-center hover:bg-gray-50 text-gray-600"
                 >
                   Edit
                 </button>
                 <button
                   onClick={(e) => handleDelete(e, addr._id)}
-                  className="flex-1 py-1 px-2 border border-gray-200 rounded text-center hover:text-red-500 hover:border-red-200 text-gray-600"
+                  className="cursor-pointer flex-1 py-1 px-2 border border-gray-200 rounded text-center hover:text-red-500 hover:border-red-200 text-gray-600"
                 >
                   Delete
                 </button>
@@ -206,8 +209,13 @@ const AddressList: React.FC<AddressListProps> = ({
                       Default
                     </span>
                   )}
-                  <div className="font-bold text-gray-800">
-                    {addr.firstName} {addr.lastName}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-gray-800">
+                      {addr.firstName} {addr.lastName}
+                    </span>
+                    <span className="text-xs text-white uppercase bg-[#956a2c] px-1.5 py-0.5 rounded tracking-wide">
+                      {addr.addressType}
+                    </span>
                   </div>
                 </div>
 
@@ -219,7 +227,7 @@ const AddressList: React.FC<AddressListProps> = ({
                 </div>
 
                 {isBillingSelected && (
-                  <button className="w-full bg-[#bd9951] text-white text-xs font-bold py-2 rounded mb-3">
+                  <button className="w-full cursor-pointer bg-[#bd9951] text-white text-xs font-bold py-2 rounded mb-3">
                     DELIVER TO THIS ADDRESS
                   </button>
                 )}

@@ -63,7 +63,7 @@ const TimelessWomenCollection = () => {
           <div className="w-full max-w-xl mx-auto">
             <Slider {...sliderSettings} autoplaySpeed={3000}>
               {leftSliderData.map((img, i) => (
-                <div key={i} className="px-2">
+                <div key={i} className="px-2 cursor-pointer">
                   <div className="relative aspect-[16/9] rounded-lg overflow-hidden shadow-lg">
                     <Image
                       src={img.url}
@@ -108,7 +108,7 @@ const TimelessWomenCollection = () => {
           <div className="w-full max-w-xl mx-auto">
             <Slider {...sliderSettings} autoplaySpeed={3500}>
               {rightSliderData.map((img, i) => (
-                <div key={i} className="px-2">
+                <div key={i} className="px-2 cursor-pointer">
                   <div className="relative aspect-[16/9] rounded-lg overflow-hidden shadow-lg">
                     <Image
                       src={img.url}

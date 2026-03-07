@@ -157,10 +157,29 @@ const ProductListContent = ({
     const filterLabel = `${type}: ${value}`;
     const existing = activeFilters.find((f) => f.label === filterLabel);
 
-    if (existing) {
-      setActiveFilters(activeFilters.filter((f) => f.label !== filterLabel));
+    // Single-select filter types — new value replaces the old one
+    const singleSelectTypes = ["price"];
+
+    if (singleSelectTypes.includes(type)) {
+      // If same value clicked again, remove it (deselect); otherwise replace
+      if (existing) {
+        setActiveFilters(activeFilters.filter((f) => f.type !== type));
+      } else {
+        setActiveFilters([
+          ...activeFilters.filter((f) => f.type !== type),
+          { label: filterLabel, type, value },
+        ]);
+      }
     } else {
-      setActiveFilters([...activeFilters, { label: filterLabel, type, value }]);
+      // Multi-select — toggle behaviour unchanged
+      if (existing) {
+        setActiveFilters(activeFilters.filter((f) => f.label !== filterLabel));
+      } else {
+        setActiveFilters([
+          ...activeFilters,
+          { label: filterLabel, type, value },
+        ]);
+      }
     }
   };
 
@@ -236,49 +255,56 @@ const ProductListContent = ({
   ======================= */
   let filteredProducts = [...gridProducts];
 
-// Apply filters - group by type and use OR within same type, AND across types
-const filtersByType = activeFilters.reduce((acc, filter) => {
-  if (!acc[filter.type]) acc[filter.type] = [];
-  acc[filter.type].push(filter.value);
-  return acc;
-}, {} as Record<string, string[]>);
+  // Apply filters - group by type and use OR within same type, AND across types
+  const filtersByType = activeFilters.reduce(
+    (acc, filter) => {
+      if (!acc[filter.type]) acc[filter.type] = [];
+      acc[filter.type].push(filter.value);
+      return acc;
+    },
+    {} as Record<string, string[]>,
+  );
 
-
-Object.entries(filtersByType).forEach(([type, values]) => {
-  if (type === "size") {
-    filteredProducts = filteredProducts.filter((p) =>
-      products.find((prod) => prod._id === p._id)
-        ?.variants?.some((v) => v.sizes?.some((s) => values.includes(s.name)))
-    );
-  } else if (type === "color") {
-    filteredProducts = filteredProducts.filter((p) =>
-      products.find((prod) => prod._id === p._id)
-        ?.variants?.some((v) => values.includes(v.color?.name ?? ""))
-    );
-  } else if (type === "price") {
-    filteredProducts = filteredProducts.filter((p) =>
-      values.some((val) => {
-        const [min, max] = val.split("-").map(Number);
-        return p.price >= min && (isNaN(max) || p.price < max);
-      })
-    );
-  } else if (type === "availability") {
-    filteredProducts = filteredProducts.filter((p) => {
-      const product = products.find((prod) => prod._id === p._id);
-      return values.some((val) => {
-        if (val === "In Stock") return product && product.stock > 10;
-        if (val === "Low Stock (≤10)") return product && product.stock > 0 && product.stock <= 10;
-        return false;
+  Object.entries(filtersByType).forEach(([type, values]) => {
+    if (type === "size") {
+      filteredProducts = filteredProducts.filter((p) =>
+        products
+          .find((prod) => prod._id === p._id)
+          ?.variants?.some((v) =>
+            v.sizes?.some((s) => values.includes(s.name)),
+          ),
+      );
+    } else if (type === "color") {
+      filteredProducts = filteredProducts.filter((p) =>
+        products
+          .find((prod) => prod._id === p._id)
+          ?.variants?.some((v) => values.includes(v.color?.name ?? "")),
+      );
+    } else if (type === "price") {
+      filteredProducts = filteredProducts.filter((p) =>
+        values.some((val) => {
+          const [min, max] = val.split("-").map(Number);
+          return p.price >= min && (isNaN(max) || p.price < max);
+        }),
+      );
+    } else if (type === "availability") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return values.some((val) => {
+          if (val === "In Stock") return product && product.stock > 10;
+          if (val === "Low Stock (≤10)")
+            return product && product.stock > 0 && product.stock <= 10;
+          return false;
+        });
       });
-    });
-  } else {
-    // wearType, occasion, tags, style, work, fabric, productType
-    filteredProducts = filteredProducts.filter((p) => {
-      const product = products.find((prod) => prod._id === p._id);
-      return values.some((val) => (product as any)?.[type]?.includes(val));
-    });
-  }
-});
+    } else {
+      // wearType, occasion, tags, style, work, fabric, productType
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return values.some((val) => (product as any)?.[type]?.includes(val));
+      });
+    }
+  });
 
   // Apply sorting
   if (sortOption === "price_asc") {

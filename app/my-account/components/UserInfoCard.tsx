@@ -55,7 +55,7 @@ const UserInfoCard: React.FC<UserInfoCardProps> = ({
           <div className="mt-2">
             <button
               onClick={() => onSelectSection("edit-profile")}
-              className="border p-1 px-2 text-sm rounded-[2px] border-gray-200 hover:bg-gray-100 transition-colors"
+              className="border p-1 px-2 text-sm rounded-[2px] cursor-pointer border-gray-200 hover:bg-gray-100 transition-colors"
             >
               Edit Profile
             </button>

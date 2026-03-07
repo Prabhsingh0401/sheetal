@@ -18,6 +18,7 @@ import { getSettings } from "../services/settingsService";
 import {
   fetchProducts,
   getProductImageUrl,
+  getProductHoverImageUrl,
   Product,
 } from "../services/productService";
 
@@ -93,15 +94,15 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
       style={{ top: "calc(15px + 63px)" }}
     >
       <div className="bg-white/98 backdrop-blur-md border-t border-gray-200 shadow-2xl">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container px-4 py-8">
           <div className="grid grid-cols-12 gap-6">
             {/* Tag Groups Section */}
             <div
-              className={`col-span-8 ${isGrid ? "grid grid-cols-3 gap-y-8" : "grid grid-cols-4 gap-4"}`}
+              className={`col-span-8 grid grid-cols-4 gap-4`}
             >
               {tagGroups.map((group, idx) => (
-                <div key={idx} className={isGrid ? "col-span-1" : "col-span-1"}>
-                  <h3 className="font-semibold text-sm mb-3 text-[#f4be40] uppercase tracking-wide">
+                <div key={idx} className={`bg-gray-50 p-4 rounded-lg shadow-sxl ${isGrid ? "col-span-1" : "col-span-1"}`}>
+                  <h3 className="font-medium text-lg mb-3 text-[#c18a08] tracking-wide">
                     {group.title}
                   </h3>
                   <ul className="space-y-2 text-sm">
@@ -109,10 +110,10 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                       <li key={tag}>
                         <Link
                           href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
-                          className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors capitalize"
+                          className="flex items-center font-medium gap-1.5 text-gray-900 hover:text-[#c18a08] transition-colors capitalize"
                         >
                           <span className="text-gray-900 text-[20px] leading-none">•</span>
-                          {tag}
+                          {tag} 
                         </Link>
                       </li>
                     ))}
@@ -139,7 +140,14 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                           alt={product.name}
                           width={250}
                           height={300}
-                          className="w-full h-[250px] object-cover group-hover/product:scale-105 transition-transform duration-300"
+                          className="w-full h-[250px] object-cover opacity-100 group-hover/product:opacity-0 transition-opacity duration-500"
+                        />
+                        <Image
+                          src={getProductHoverImageUrl(product)}
+                          alt={product.name}
+                          width={250}
+                          height={300}
+                          className="absolute inset-0 w-full h-[250px] object-cover opacity-0 group-hover/product:opacity-100 transition-opacity duration-500"
                         />
                       </Link>
                     </div>

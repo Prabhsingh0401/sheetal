@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { FilterOptions } from "../../hooks/useProductFilters";
+import { PriceRangeSlider } from "./PriceRangeSlider";
 
 interface ProductFilterBarProps {
   filtersOpen: boolean;
@@ -66,7 +67,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           <div className="relative">
             <button
               onClick={toggleSortBy}
-              className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
+              className="flex cursor-pointer items-center gap-2 text-sm font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
             >
               <Image
                 src="/assets/icons/sort.svg"
@@ -157,7 +158,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           {/* Filters and View Mode - Positioned Absolutely */}
           <button
             onClick={toggleFilters}
-            className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-lg font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
+            className="absolute left-0 top-1/2 cursor-pointer -translate-y-1/2 flex items-center gap-2 text-lg font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
           >
             <Image
               src="/assets/icons/filter.svg"
@@ -171,7 +172,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3 border-l border-gray-200 pl-6">
             <button
               onClick={() => setViewMode("grid")}
-              className={`transition-opacity ${viewMode === "grid" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
+              className={`transition-opacity cursor-pointer ${viewMode === "grid" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
             >
               <Image
                 src="/assets/icons/grid.svg"
@@ -182,7 +183,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`transition-opacity ${viewMode === "list" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
+              className={`transition-opacity cursor-pointer ${viewMode === "list" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
             >
               <Image
                 src="/assets/icons/list.svg"
@@ -269,7 +270,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("size")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Size
                   <svg
@@ -318,7 +319,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("color")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full flex cursor-pointer justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Color
                   <svg
@@ -372,7 +373,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("price")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full flex cursor-pointer justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Price
                   <svg
@@ -391,30 +392,23 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                 </button>
 
                 <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("price") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                  className={`pt-4 transition-all duration-300 overflow-hidden ${
+                    openSections.includes("price")
+                      ? "max-h-[200px] opacity-100"
+                      : "max-h-0 opacity-0"
+                  }`}
                 >
-                  {filterOptions.priceRanges.map((range, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-price-${idx}`}
-                        onChange={() =>
-                          onFilterChange("price", `${range.min}-${range.max}`)
-                        }
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-price-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
-                      >
-                        {range.label}{" "}
-                        <span className="text-gray-400">({range.count})</span>
-                      </label>
-                    </div>
-                  ))}
+                  <PriceRangeSlider
+                    min={filterOptions.priceRanges[0]?.min ?? 0}
+                    max={
+                      filterOptions.priceRanges[
+                        filterOptions.priceRanges.length - 1
+                      ]?.max ?? 10000
+                    }
+                    onChange={(min: number, max: number) =>
+                      onFilterChange("price", `${min}-${max}`)
+                    }
+                  />
                 </div>
               </div>
             )}
@@ -424,7 +418,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4 last:border-0">
                 <button
                   onClick={() => toggleSection("availability")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full flex cursor-pointer justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Availability
                   <svg
@@ -476,7 +470,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("wearType")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full flex cursor-pointer justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Wear Type
                   <svg
@@ -530,7 +524,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("occasion")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Occasion
                   <svg
@@ -584,7 +578,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("tags")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Tags
                   <svg
@@ -634,7 +628,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("style")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Style
                   <svg
@@ -684,7 +678,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("work")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Work
                   <svg
@@ -734,7 +728,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4">
                 <button
                   onClick={() => toggleSection("fabric")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Fabric
                   <svg
@@ -784,7 +778,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-100 pb-4 last:border-0">
                 <button
                   onClick={() => toggleSection("productType")}
-                  className="w-full flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
                 >
                   Product Type
                   <svg

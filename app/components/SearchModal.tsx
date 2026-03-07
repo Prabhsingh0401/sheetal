@@ -6,6 +6,7 @@ import {
   fetchProducts,
   Product,
   getProductImageUrl,
+  getProductHoverImageUrl,
 } from "../services/productService";
 import { fetchAllCategories, Category } from "../services/categoryService";
 import Image from "next/image";
@@ -69,14 +70,22 @@ interface SearchModalProps {
   navbarBottom?: number;
 }
 
-const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom = 63 }) => {
+const SearchModal: React.FC<SearchModalProps> = ({
+  isOpen,
+  onClose,
+  navbarBottom = 63,
+}) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [previousSearches, setPreviousSearches] = useState<PreviousSearchItem[]>([]);
+  const [previousSearches, setPreviousSearches] = useState<
+    PreviousSearchItem[]
+  >([]);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [trendingCategories, setTrendingCategories] = useState<Category[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  console.log(trendingProducts)
 
   // Load data when modal opens
   useEffect(() => {
@@ -98,7 +107,9 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
               setTrendingCategories(topCats);
             }
           })
-          .catch((err) => console.error("Failed to load trending suggestions", err));
+          .catch((err) =>
+            console.error("Failed to load trending suggestions", err),
+          );
       }
     } else {
       // Reset query when closed
@@ -139,7 +150,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
 
   /** Returns a safe image URL for search result items */
   const getImageUrl = (item: any): string => {
-    if (item.mainImage) return item.mainImage.url || "/assets/default-image.png";
+    if (item.mainImage)
+      return item.mainImage.url || "/assets/default-image.png";
     if (item.image) return item.image.url || "/assets/default-image.png";
     if (item.data?.mainImage?.url) return item.data.mainImage.url;
     if (item.data?.image?.url) return item.data.image.url;
@@ -179,11 +191,15 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
 
     return (
       <div className="flex items-center gap-2 mt-1 flex-wrap">
-        <span className="font-bold text-gray-900 text-sm">₹{minPrice}</span>
+        <span className="font-semibold text-gray-900 text-sm">₹{minPrice}</span>
         {relatedMrp > minPrice && (
           <>
-            <span className="line-through text-xs text-gray-400">₹{relatedMrp}</span>
-            <span className="text-xs text-[#B78D65] font-semibold">{discount}% OFF</span>
+            <span className="line-through text-xs text-gray-400">
+              ₹{relatedMrp}
+            </span>
+            <span className="text-xs text-[#B78D65] font-semibold">
+              {discount}% OFF
+            </span>
           </>
         )}
       </div>
@@ -208,7 +224,9 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
       >
         <div
           className="relative w-full shadow-2xl rounded-b-xl overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #e2f7cf 0%, #f7efbe 100%)' }}
+          style={{
+            background: "linear-gradient(135deg, #e2f7cf 0%, #f7efbe 100%)",
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* ── Close button — top right of panel ── */}
@@ -272,15 +290,15 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
                         addClickedItem(
                           item.type === "category"
                             ? {
-                              type: "category",
-                              name: item.data.name,
-                              categoryName: item.data.name,
-                            }
+                                type: "category",
+                                name: item.data.name,
+                                categoryName: item.data.name,
+                              }
                             : {
-                              type: "product",
-                              name: item.data.name,
-                              slug: item.data.slug,
-                            },
+                                type: "product",
+                                name: item.data.name,
+                                slug: item.data.slug,
+                              },
                         );
                         onClose();
                       }}
@@ -300,7 +318,6 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
           {/* ── Scrollable Content inside white card ── */}
           <div className="mx-4 mb-4 bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="px-5 pb-5 pt-3 overflow-y-auto max-h-[60vh] custom-scrollbar">
-
               {/* Popular Searches — always visible when no query */}
               {query.length <= 2 && trendingCategories.length > 0 && (
                 <div className="mb-5 border-b border-gray-200 pb-4">
@@ -349,7 +366,18 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
                             className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
                           >
                             {/* Search icon for query items */}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60 shrink-0">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="11"
+                              height="11"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="opacity-60 shrink-0"
+                            >
                               <circle cx="11" cy="11" r="8" />
                               <line x1="21" y1="21" x2="16.65" y2="16.65" />
                             </svg>
@@ -415,12 +443,12 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
                       <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide mb-3">
                         Trending Products:
                       </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {trendingProducts.map((product) => (
                           <Link
                             key={product._id}
                             href={`/product/${product.slug}`}
-                            className="group block rounded-lg transition-shadow overflow-hidden cursor-pointer"
+                            className="group block rounded-lg m-4 transition-shadow overflow-hidden cursor-pointer"
                             onClick={() => {
                               addClickedItem({
                                 type: "product",
@@ -430,20 +458,32 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
                               onClose();
                             }}
                           >
-                            <div className="relative aspect-[3/4] bg-gray-100">
+                            <div className="relative aspect-[3/4] bg-transparent">
                               <Image
                                 src={getProductImageUrl(product)}
                                 alt={product.name}
                                 fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                className="object-cover opacity-100 group-hover:opacity-0 transition-opacity duration-500 rounded-lg"
+                              />
+                              <Image
+                                src={getProductHoverImageUrl(product)}
+                                alt={product.name}
+                                fill
+                                className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 rounded-lg"
                               />
                             </div>
                             <div className="p-2.5">
-                              <h5 className="text-xs text-gray-800 font-medium group-hover:text-[#b3a660] transition-colors line-clamp-2">
+                              <h5 className="text-sm truncate text-gray-800 font-medium transition-colors line-clamp-2">
                                 {product.name}
                               </h5>
                               {getPriceDisplay(product)}
                             </div>
+                            <Link
+                              href={`/product/${product._id}`}
+                              className="inline-block border-b text-xs text-left border-black text-black py-2 pl-1 uppercase transition-all duration-500 hover:tracking-[1px] hover:text-red-500"
+                            >
+                              View Details
+                            </Link>
                           </Link>
                         ))}
                       </div>
@@ -522,7 +562,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, navbarBottom
                       </div>
                     </div>
                   ) : (
-                    !isLoading && matchedCategories.length === 0 && (
+                    !isLoading &&
+                    matchedCategories.length === 0 && (
                       <p className="text-gray-400 text-center py-8 text-sm italic">
                         No results found for &ldquo;{query}&rdquo;.
                       </p>

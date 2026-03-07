@@ -11,6 +11,7 @@ import InstagramDiaries from "./components/InstagramDiaries";
 import Testimonials from "./components/Testimonials";
 import Blogs from "./components/Blogs";
 import Footer from "./components/Footer";
+import BookAppointmentWidget from "./components/BookAppointmentWidget";
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
       <TimelessWomenCollection />
       <InstagramDiaries />
       <Testimonials />
+      <BookAppointmentWidget/>
       <Blogs />
       <Footer />
     </>
