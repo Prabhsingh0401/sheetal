@@ -436,7 +436,7 @@ const EditProfile: React.FC = () => {
                           setIsPhoneVerified(false);
                           setShowOtpInput(false);
                         }}
-                        className="ml-auto text-xs text-[#8b6b2f] underline hover:text-[#7a5f29]"
+                        className="ml-auto text-xs text-[#8b6b2f] underline hover:text-[#7a5f29] cursor-pointer"
                       >
                         CHANGE
                       </button>
@@ -542,7 +542,7 @@ const EditProfile: React.FC = () => {
                           setIsEmailVerified(false);
                           setShowEmailOtpInput(false);
                         }}
-                        className="ml-auto text-xs text-[#8b6b2f] underline hover:text-[#7a5f29]"
+                        className="ml-auto text-xs text-[#8b6b2f] underline hover:text-[#7a5f29] cursor-pointer"
                       >
                         CHANGE
                       </button>
@@ -637,7 +637,7 @@ const EditProfile: React.FC = () => {
               <div className="flex gap-3 pt-6">
                 <button
                   onClick={() => setGender("Male")}
-                  className={`px-4 py-2 border rounded text-sm transition-all ${
+                  className={`px-4 py-2 border rounded text-sm transition-all cursor-pointer ${
                     gender === "Male"
                       ? "border-black bg-gray-50 font-semibold shadow-sm"
                       : "border-gray-300 text-gray-600 hover:border-gray-400"
@@ -647,7 +647,7 @@ const EditProfile: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setGender("Female")}
-                  className={`px-4 py-2 border rounded text-sm transition-all ${
+                  className={`px-4 py-2 border rounded text-sm transition-all cursor-pointer ${
                     gender === "Female"
                       ? "border-black bg-gray-50 font-semibold shadow-sm"
                       : "border-gray-300 text-gray-600 hover:border-gray-400"
@@ -695,7 +695,7 @@ const EditProfile: React.FC = () => {
         <div className="pt-6">
           <button
             onClick={handleSave}
-            className="w-full bg-[#8b6b2f] hover:bg-[#7a5f29] text-white py-4 text-sm font-bold tracking-widest rounded transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full bg-[#8b6b2f] cursor-pointer hover:bg-[#7a5f29] text-white py-4 text-sm font-bold tracking-widest rounded transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
             disabled={
               loading ||
               (showOtpInput && !isPhoneVerified) ||

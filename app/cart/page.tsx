@@ -95,6 +95,11 @@ const CartPage = () => {
   };
 
   const handleMoveToWishlist = async () => {
+    if (!isAuthenticated()) {
+      sessionStorage.setItem("redirect", "/checkout/address");
+      router.push("/login");
+      return;
+    }
     if (isBulkAction) {
       // Bulk Move
       for (const id of selectedItemIds) {

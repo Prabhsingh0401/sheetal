@@ -133,6 +133,7 @@ const AddressPage = () => {
       return;
     }
 
+
     // Normalise: order schema needs fullName, user address stores firstName + lastName
     const shippingAddress = {
       fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
@@ -268,7 +269,7 @@ const AddressPage = () => {
                 BAG
               </Link>
               <div className="text-[#bd9951]">ADDRESS</div>
-              <div className="text-gray-400">PAYMENT</div>
+              <div className="text-gray-400 cursor-not-allowed">PAYMENT</div>
             </div>
             <div className="flex items-center space-x-2 text-sm font-semibold">
               <Image

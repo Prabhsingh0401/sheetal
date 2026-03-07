@@ -177,6 +177,15 @@ export const getProductImageUrl = (
   if (!product) return fallback;
   return getApiImageUrl(product.mainImage, fallback);
 };
+
+export const getProductHoverImageUrl = (
+  product: Product | undefined,
+  fallback: string = "/assets/default-image.png",
+) => {
+  if (!product) return fallback;
+  return getApiImageUrl(product.hoverImage, fallback);
+};
+
 export const checkCanReview = async (productId: string) => {
   return apiFetch(`/products/can-review?productId=${productId}`, {
     method: "GET",

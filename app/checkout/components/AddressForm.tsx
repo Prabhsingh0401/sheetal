@@ -287,7 +287,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 bg-[#bd9951] text-white py-3 rounded text-sm font-semibold hover:bg-[#a38038] transition-colors disabled:opacity-50"
+          className="flex-1 cursor-pointer bg-[#bd9951] text-white py-3 rounded text-sm font-semibold hover:bg-[#a38038] transition-colors disabled:opacity-50"
         >
           {loading
             ? "Saving..."
@@ -298,7 +298,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 bg-gray-200 text-gray-800 py-3 rounded text-sm font-semibold hover:bg-gray-300 transition-colors"
+          className="flex-1 cursor-pointer bg-gray-200 text-gray-800 py-3 rounded text-sm font-semibold hover:bg-gray-300 transition-colors"
         >
           CANCEL
         </button>

@@ -237,7 +237,7 @@ const TrendingThisWeek = () => {
           {/* Nav Buttons */}
           <button
             onClick={scrollPrev}
-            className="absolute left-[-15px] top-[35%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
+            className="absolute left-[-15px] cursor-pointer top-[35%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
             aria-label="Previous product"
           >
             <svg
@@ -257,7 +257,7 @@ const TrendingThisWeek = () => {
           </button>
           <button
             onClick={scrollNext}
-            className="absolute right-[-15px] top-[35%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
+            className="absolute right-[-15px] cursor-pointer top-[35%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
             aria-label="Next product"
           >
             <svg

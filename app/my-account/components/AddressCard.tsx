@@ -86,7 +86,7 @@ const AddressCard: React.FC<AddressCardProps> = ({
         {!address.isDefault && (
           <button
             onClick={() => onSetDefault(address.id)}
-            className="text-[#48b02c] text-sm mb-4 hover:underline text-left block"
+            className="text-[#48b02c] text-sm mb-4 hover:underline text-left block cursor-pointer"
           >
             Make This Default
           </button>

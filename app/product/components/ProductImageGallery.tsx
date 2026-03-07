@@ -23,6 +23,8 @@ interface ProductImageGalleryProps {
   videoUrl?: string;
 }
 
+const ZOOM_SCALE = 2.5; // How much to zoom in on hover
+
 const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   images,
   selectedImage,
@@ -34,8 +36,13 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   videoUrl,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+
+  // Zoom state — just track transform-origin as a CSS string
+  const [isZooming, setIsZooming] = useState(false);
+  const [transformOrigin, setTransformOrigin] = useState("50% 50%");
 
   const media = videoUrl ? [...images, videoUrl] : images;
 
@@ -58,7 +65,6 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on("select", onSelect);
-    // Sync embla if selectedImage changes from outside
     const index = images.indexOf(selectedImage);
     if (index !== -1 && emblaApi.selectedScrollSnap() !== index) {
       emblaApi.scrollTo(index);
@@ -67,13 +73,39 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
   const scroll = (direction: "up" | "down") => {
     if (scrollRef.current) {
-      const scrollAmount = 150;
       scrollRef.current.scrollBy({
-        top: direction === "up" ? -scrollAmount : scrollAmount,
+        top: direction === "up" ? -150 : 150,
         behavior: "smooth",
       });
     }
   };
+
+  // ─── Zoom handlers ──────────────────────────────────────────────────────────
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent<HTMLDivElement>) => {
+      if (showVideo) return;
+      const container = imageContainerRef.current;
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+      setTransformOrigin(`${x}% ${y}%`);
+    },
+    [showVideo]
+  );
+
+  const handleMouseEnter = () => {
+    if (!showVideo) setIsZooming(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsZooming(false);
+    setTransformOrigin("50% 50%");
+  };
+
 
   return (
     <>
@@ -95,7 +127,11 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             {images.map((img, idx) => (
               <div
                 key={idx}
-                className={`border cursor-pointer transition-all flex-shrink-0 ${selectedImage === img && !showVideo ? "border-[#bd9951]" : "border-gray-200 hover:border-gray-300"}`}
+                className={`border cursor-pointer transition-all flex-shrink-0 ${
+                  selectedImage === img && !showVideo
+                    ? "border-[#bd9951]"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
                 onClick={() => {
                   onImageChange(img);
                   setShowVideo(false);
@@ -112,7 +148,11 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             ))}
             {videoUrl && (
               <div
-                className={`border cursor-pointer transition-all flex-shrink-0 flex items-center justify-center h-24 ${showVideo ? "border-[#bd9951]" : "border-gray-200 hover:border-gray-300"}`}
+                className={`border cursor-pointer transition-all flex-shrink-0 flex items-center justify-center h-24 ${
+                  showVideo
+                    ? "border-[#bd9951]"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
                 onClick={() => {
                   setShowVideo(true);
                   onImageChange("");
@@ -147,7 +187,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
         {/* Main Image Container */}
         <div className="flex-1 relative">
-          {/* Mobile Carousel Wrapper */}
+          {/* Mobile Carousel */}
           <div className="md:hidden">
             <div className="overflow-hidden" ref={emblaRef}>
               <div className="flex">
@@ -181,22 +221,38 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 ))}
               </div>
             </div>
-
-            {/* Mobile Dots - Now below the image */}
             <div className="flex justify-center gap-2 py-4">
               {media.map((item, i) => (
                 <div
                   key={i}
-                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${(selectedImage === item && !showVideo) || (item === videoUrl && showVideo) ? "bg-[#bd9951]" : "bg-gray-300"}`}
-                ></div>
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    (selectedImage === item && !showVideo) ||
+                    (item === videoUrl && showVideo)
+                      ? "bg-[#bd9951]"
+                      : "bg-gray-300"
+                  }`}
+                />
               ))}
             </div>
           </div>
 
-          {/* Desktop Main Image */}
+          {/* ── Desktop Main Image with Inline Zoom ── */}
           <div
-            className="hidden md:block relative aspect-[3/4] w-full overflow-hidden cursor-pointer bg-white"
-            onClick={() => setIsModalOpen(true)}
+            ref={imageContainerRef}
+            className="hidden md:block relative aspect-[3/4] w-full overflow-hidden bg-white"
+            style={{
+              cursor: showVideo
+                ? "default"
+                : isZooming
+                ? "zoom-in"
+                : "crosshair",
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onClick={() => {
+              if (!showVideo) setIsModalOpen(true);
+            }}
           >
             {showVideo ? (
               <video
@@ -211,20 +267,42 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 Your browser does not support the video tag.
               </video>
             ) : (
-              <Image
-                src={selectedImage || "/assets/placeholder-product.jpg"}
-                alt={title}
-                fill
-                className="object-cover"
-                priority
-              />
+              /*
+               * The wrapper div scales up on hover.
+               * transform-origin is updated every mousemove to match cursor position,
+               * so the point under the cursor stays fixed while everything else pans —
+               * exactly like Myntra/Sheetal's zoom behaviour.
+               * overflow-hidden on the parent clips anything outside the frame.
+               */
+              <div
+                className="w-full h-full"
+                style={{
+                  transform: isZooming ? `scale(${ZOOM_SCALE})` : "scale(1)",
+                  transformOrigin,
+                  // No transition on transform-origin so it tracks the cursor instantly.
+                  // Short transition on scale for a smooth enter/exit.
+                  transition: isZooming
+                    ? "transform 0.12s ease-out"
+                    : "transform 0.2s ease-out",
+                  willChange: "transform",
+                }}
+              >
+                <Image
+                  src={selectedImage || "/assets/placeholder-product.jpg"}
+                  alt={title}
+                  fill
+                  className="object-cover"
+                  priority
+                  draggable={false}
+                />
+              </div>
             )}
           </div>
 
           {/* Floating Icons */}
           <div className="absolute top-4 right-0 bg-white flex flex-col gap-3 z-10 pointer-events-none rounded-md">
             <button
-              className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto"
+              className="bg-white p-3 cursor-pointer rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto"
               onClick={onToggleWishlist}
             >
               <Image
@@ -239,8 +317,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
               />
             </button>
             <button
-              className="bg-white p-3 rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto"
-              onClick={onScrollToSimilar} // Attach the scroll function here
+              className="bg-white p-3 cursor-pointer rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto"
+              onClick={onScrollToSimilar}
             >
               <Image
                 src="/assets/icons/view-similar.png"
