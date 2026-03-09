@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCart } from "../hooks/useCart";
 import {
@@ -599,6 +599,8 @@ const NavbarInner = () => {
     }
   }, [categories]);
 
+  const pathname = usePathname();
+
   useEffect(() => {
     setIsClient(true);
     const handleScroll = () => {
@@ -618,7 +620,7 @@ const NavbarInner = () => {
     }
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [pathname]);
 
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
   const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);

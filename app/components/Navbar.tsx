@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useWishlist } from "../hooks/useWishlist";
 import { useCart } from "../hooks/useCart";
 import {
@@ -113,7 +113,7 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                           className="flex items-center font-medium gap-1.5 text-gray-900 hover:text-[#c18a08] transition-colors capitalize"
                         >
                           <span className="text-gray-900 text-[20px] leading-none">•</span>
-                          {tag} 
+                          {tag}
                         </Link>
                       </li>
                     ))}
@@ -584,7 +584,7 @@ const Navbar = () => {
   // const { data: settings } = useSWR("/settings", getSettings);
 
   const [navItems, setNavItems] = useState<any[]>([]);
-  
+
   useEffect(() => {
     if (categories) {
       // Filter top-level categories
@@ -626,6 +626,8 @@ const Navbar = () => {
     }
   }, [categories]);
 
+  const pathname = usePathname();
+
   useEffect(() => {
     setIsClient(true);
     const handleScroll = () => {
@@ -645,7 +647,7 @@ const Navbar = () => {
     }
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isClient]);
+  }, [isClient, pathname]);
 
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
   const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
