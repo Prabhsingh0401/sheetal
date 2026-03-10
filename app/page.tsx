@@ -13,22 +13,39 @@ import Blogs from "./components/Blogs";
 import Footer from "./components/Footer";
 import BookAppointmentWidget from "./components/BookAppointmentWidget";
 
-export default function Home() {
+import { API_BASE_URL } from "./services/api";
+
+async function getHomepageSections() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/homepage/sections`, {
+      next: { revalidate: 60 }, // revalidate every 60s
+    });
+    const data = await res.json();
+    return data.sections;
+  } catch {
+    // Return all visible as fallback
+    return null;
+  }
+}
+
+export default async function Home() {
+  const s = await getHomepageSections();
+  console.log(s)
   return (
     <>
       <TopInfo />
       <Navbar />
-      <HomeBanner />
-      <AboutSBS />
-      <HiddenBeauty />
-      <TrendingThisWeek />
-      <NewArrivals />
-      <Collections />
-      <TimelessWomenCollection />
-      <InstagramDiaries />
-      <Testimonials />
-      <BookAppointmentWidget/>
-      <Blogs />
+      {(s?.homeBanner) && <HomeBanner />}
+      {(s?.aboutSBS) && <AboutSBS />}
+      {(s?.hiddenBeauty) && <HiddenBeauty />}
+      {(s?.trendingThisWeek) && <TrendingThisWeek />}
+      {(s?.newArrivals) && <NewArrivals />}
+      {(s?.collections) && <Collections />}
+      {(s?.timelessWomenCollection) && <TimelessWomenCollection />}
+      {(s?.instagramDiaries) && <InstagramDiaries />}
+      {(s?.testimonials) && <Testimonials />}
+      {(s?.bookAppointmentWidget) && <BookAppointmentWidget />}
+      {(s?.blogs) && <Blogs />}
       <Footer />
     </>
   );
