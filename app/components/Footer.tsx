@@ -257,7 +257,7 @@ const Footer = () => {
         <a
           href="#"
           className="fixed right-[30px] bottom-[90px] z-50 w-[38px] h-[38px] flex items-center justify-center
-                   text-white rounded-full bg-[#1e3b37]
+                   text-white rounded-full  bg-[#1e3b37]
                    hover:bg-[#90c03e] hover:text-white transition-colors"
         >
           ↑

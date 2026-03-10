@@ -30,7 +30,6 @@ async function getHomepageSections() {
 
 export default async function Home() {
   const s = await getHomepageSections();
-  console.log(s)
   return (
     <>
       <TopInfo />
