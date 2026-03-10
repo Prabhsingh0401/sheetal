@@ -1,12 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { API_BASE_URL } from "../services/api";
+
+const fallbackTestimonials = [
+  {
+    _id: "1",
+    name: "Pragati Rastogi",
+    comment: "I was looking for lightweight sarees with a glamorous touch for a summer wedding, and Koskii had the perfect collection. I received so many compliments and was very happy with my purchases.",
+    image: { url: "/assets/278065131.jpg", alt: "Pragati Rastogi" },
+  },
+  {
+    _id: "2",
+    name: "Dr Ritika Aggarwal",
+    comment: "I was looking for lightweight sarees with a glamorous touch for a summer wedding, and Koskii had the perfect collection. I received so many compliments and was very happy with my purchases.",
+    image: { url: "/assets/727955468.jpg", alt: "Dr Ritika" },
+  },
+];
 
 const Testimonials = () => {
+  const [testimonials, setTestimonials] = useState(fallbackTestimonials);
+
   const settings = {
     dots: true,
     infinite: true,
@@ -16,27 +34,25 @@ const Testimonials = () => {
     autoplay: true,
     autoplaySpeed: 5000,
     arrows: false,
-    dotsClass: "slick-dots custom-dots", // Custom class for styling dots if needed
+    dotsClass: "slick-dots custom-dots",
   };
 
-  const testimonials = [
-    {
-      id: 1,
-      name: "Pragati Rastogi",
-      location: "", // Optional if you want to add location
-      quote:
-        "I was looking for lightweight sarees with a glamorous touch for a summer wedding, and Koskii had the perfect collection. I received so many compliments and was very happy with my purchases.",
-      image: "/assets/278065131.jpg",
-    },
-    {
-      id: 2,
-      name: "Dr Ritika, Gurugram",
-      location: "",
-      quote:
-        "I was looking for lightweight sarees with a glamorous touch for a summer wedding, and Koskii had the perfect collection. I received so many compliments and was very happy with my purchases.",
-      image: "/assets/727955468.jpg",
-    },
-  ];
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/testimonials`);
+        const data = await response.json();
+        if (data.success && data.testimonials?.length > 0) {
+          setTestimonials(data.testimonials);
+        }
+      } catch (error) {
+        console.error("Error fetching testimonials:", error);
+        // fallback already set as default state
+      }
+    };
+
+    fetchTestimonials();
+  }, []);
 
   return (
     <div className="w-full py-16 md:py-16 bg-[#f9f9f9]">
@@ -67,25 +83,31 @@ const Testimonials = () => {
 
             <Slider {...settings} className="relative z-10 testimonial-slider">
               {testimonials.map((item) => (
-                <div key={item.id} className="outline-none">
+                <div key={item._id} className="outline-none">
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10">
-                    {/* User Image */}
-                    <div className="flex-shrink-0">
-                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          width={128}
-                          height={128}
-                          className="w-full h-full object-cover"
-                        />
+                    {/* Avatar */}
+                    <div className="shrink-0">
+                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-100 flex items-center justify-center">
+                        {item.image?.url ? (
+                          <Image
+                            src={item.image.url}
+                            alt={item.image.alt || item.name}
+                            width={128}
+                            height={128}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-2xl font-black text-slate-400">
+                            {item.name?.charAt(0).toUpperCase()}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     {/* Content */}
                     <div className="text-center md:text-left pt-2">
                       <p className="text-lg md:text-xl text-gray-600 italic leading-relaxed mb-6 font-[family-name:var(--font-optima)]">
-                        &quot;{item.quote}&quot;
+                        &quot;{item.comment}&quot;
                       </p>
                       <p className="text-[#333] font-semibold text-lg uppercase tracking-wide">
                         {item.name}
@@ -110,16 +132,15 @@ const Testimonials = () => {
         </div>
       </div>
 
-      {/* Custom CSS for Slick Dots to match design colors (optional, can be put in global css or here as a style tag) */}
       <style jsx global>{`
         .testimonial-slider .slick-dots {
           bottom: -40px;
-          text-align: left; /* Align dots to left or center as per design preference */
+          text-align: left;
         }
         @media (min-width: 768px) {
           .testimonial-slider .slick-dots {
             text-align: left;
-            padding-left: 170px; /* Align with text content roughly */
+            padding-left: 170px;
           }
         }
         .testimonial-slider .slick-dots li button:before {

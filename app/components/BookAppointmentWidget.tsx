@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { bookAppointment } from "../services/appointmentServices";
 
 interface AppointmentForm {
   name: string;
@@ -29,6 +30,7 @@ const BookAppointmentWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState<AppointmentForm>(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -36,15 +38,42 @@ const BookAppointmentWidget: React.FC = () => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = () => {
-    // Replace with your actual API call
-    console.log("Appointment submitted:", form);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setIsOpen(false);
-      setForm(INITIAL_FORM);
-    }, 2500);
+  const handleSubmit = async () => {
+    if (
+      !form.name.trim() ||
+      !form.email.trim() ||
+      !form.contact.trim() ||
+      !form.address.trim() ||
+      !form.city.trim() ||
+      !form.pincode.trim()
+    ) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await bookAppointment({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        contact: form.contact.trim(),
+        address: form.address.trim(),
+        city: form.city.trim(),
+        pincode: form.pincode.trim(),
+        requirements: form.requirement.trim(), // note: frontend uses "requirement", backend uses "requirements"
+      });
+
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setIsOpen(false);
+        setForm(INITIAL_FORM);
+      }, 2500);
+    } catch (err: any) {
+      alert(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -61,11 +90,12 @@ const BookAppointmentWidget: React.FC = () => {
           {/* Top border label */}
           <span
             className="absolute -top-2 left- px-1.5 text-[10px] uppercase text-black font-bold whitespace-nowrap"
-            style={{  background: "rgba(189, 153, 81, 0.15)",
+            style={{
+              background: "rgba(189, 153, 81, 0.15)",
               backdropFilter: "blur(80px)",
               WebkitBackdropFilter: "blur(80px)",
-                zIndex : "99"
-             }}
+              zIndex: "99",
+            }}
           >
             For Customization
           </span>
@@ -211,9 +241,10 @@ const BookAppointmentWidget: React.FC = () => {
                 <div className="flex justify-center mt-2">
                   <button
                     onClick={handleSubmit}
-                    className="px-8 py-2.5 border border-gray-800 text-gray-800 text-sm font-medium rounded-sm hover:bg-gray-800 hover:text-white transition-colors tracking-wide cursor-pointer"
+                    disabled={isSubmitting}
+                    className="px-8 py-2.5 border border-gray-800 text-gray-800 text-sm font-medium rounded-sm hover:bg-gray-800 hover:text-white transition-colors tracking-wide cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Book Appointment
+                    {isSubmitting ? "Booking..." : "Book Appointment"}
                   </button>
                 </div>
               </div>
