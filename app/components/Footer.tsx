@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getSettings } from "../services/settingsService";
+import { usePathname } from "next/navigation";
 
 interface FooterLink {
   id: string;
@@ -55,6 +56,14 @@ const defaultSections: FooterSection[] = [
 const Footer = () => {
   const [sectionsToRender, setSectionsToRender] =
     useState<FooterSection[]>(defaultSections);
+  const [showBackToTop, setShowBackToTop] = useState(true);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname === "/") {
+      setShowBackToTop(false);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const fetchFooterLayout = async () => {
@@ -244,14 +253,16 @@ const Footer = () => {
       </footer>
 
       {/* BACK TO TOP */}
-      <a
-        href="#"
-        className="fixed right-[30px] bottom-[90px] z-50 w-[38px] h-[38px] flex items-center justify-center
-                   text-white rounded-full bg-[#1e3b37]
+      {showBackToTop && (
+        <a
+          href="#"
+          className="fixed right-[30px] bottom-[90px] z-50 w-[38px] h-[38px] flex items-center justify-center
+                   text-white rounded-full  bg-[#1e3b37]
                    hover:bg-[#90c03e] hover:text-white transition-colors"
-      >
-        ↑
-      </a>
+        >
+          ↑
+        </a>
+      )}
 
       {/* WHATSAPP */}
       <a

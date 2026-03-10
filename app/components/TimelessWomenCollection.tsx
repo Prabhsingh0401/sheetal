@@ -8,9 +8,19 @@ import "slick-carousel/slick/slick-theme.css";
 import Link from "next/link";
 import { API_BASE_URL } from "../services/api";
 
+const DEFAULT_CENTER = {
+  label: "Exclusive Deal • Few Days Left",
+  heading: "Timeless Women's Collection",
+  description:
+    "<p>Beautifully crafted pieces blending comfort, elegance, and effortless everyday style.</p>",
+  buttonText: "View More",
+  buttonLink: "#",
+};
+
 const TimelessWomenCollection = () => {
   const [leftImages, setLeftImages] = useState([]);
   const [rightImages, setRightImages] = useState([]);
+  const [centerContent, setCenterContent] = useState(DEFAULT_CENTER);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +31,15 @@ const TimelessWomenCollection = () => {
         if (data.success && data.lookbook) {
           setLeftImages(data.lookbook.leftSliderImages);
           setRightImages(data.lookbook.rightSliderImages);
+          if (data.lookbook.centerContent) {
+            setCenterContent({
+              ...DEFAULT_CENTER,
+              ...data.lookbook.centerContent,
+            });
+          }
         }
+
+        console.log(data.lookbook)
       } catch (error) {
         console.error("Error fetching lookbook images", error);
       } finally {
@@ -77,31 +95,35 @@ const TimelessWomenCollection = () => {
             </Slider>
           </div>
 
-          {/* CENTER CONTENT – SAME HEIGHT, MORE VERTICAL PADDING */}
+          {/* CENTER CONTENT */}
           <div className="w-full max-w-xl mx-auto px-2">
-            <div className="relative aspect-[16/9] border border-[#cc8a00] rounded-lg shadow-lg flex items-center justify-center">
+            <Link
+              href={centerContent.buttonLink || "#"}
+              className="block relative aspect-[16/9] border border-[#cc8a00] rounded-lg shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow duration-300"
+            >
               <div className="text-center px-6 py-10 md:py-5">
-                <p className="text-[11px] uppercase tracking-[0.18em] mb-2 text-gray-600">
-                  Exclusive Deal • Few Days Left
-                </p>
+                {centerContent.label && (
+                  <p className="text-[11px] uppercase tracking-[0.18em] mb-2 text-gray-600">
+                    {centerContent.label}
+                  </p>
+                )}
 
-                <h2 className="text-2xl lg:text-3xl font-serif mb-2 text-[#cc8a00] leading-snug">
-                  Timeless Women’s Collection
-                </h2>
+                {centerContent.heading && (
+                  <h2 className="text-2xl lg:text-3xl font-serif mb-2 text-[#cc8a00] leading-snug">
+                    {centerContent.heading}
+                  </h2>
+                )}
 
-                <p className="text-sm text-gray-600 mb-2 leading-relaxed max-w-sm mx-auto">
-                  Beautifully crafted pieces blending comfort, elegance, and
-                  effortless everyday style.
-                </p>
-
-                <Link
-                  href="#"
-                  className="inline-block border-y border-black text-black py-2 px-6 uppercase text-xs transition-all duration-500 hover:tracking-[2px]"
-                >
-                  View More
-                </Link>
+                {centerContent.description && (
+                  <div
+                    className="text-sm text-gray-600 mb-2 leading-relaxed max-w-sm mx-auto"
+                    dangerouslySetInnerHTML={{
+                      __html: centerContent.description,
+                    }}
+                  />
+                )}
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* RIGHT SLIDER */}
