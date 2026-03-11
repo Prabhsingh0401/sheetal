@@ -10,7 +10,7 @@ export interface EnquiryPayload {
 }
 
 export const submitEnquiry = async (payload: EnquiryPayload) => {
-    const res = await fetch(`${API_BASE_URL}/enquiries`, {
+    const res = await fetch(`${API_BASE_URL}/enquiry`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
