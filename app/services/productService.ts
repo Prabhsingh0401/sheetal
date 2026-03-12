@@ -210,7 +210,7 @@ export const fetchProductReviews = async (productId: string) => {
 
 export const incrementProductView = async (slug : string) => {
   try {
-    await apiFetch(`/api/products/view/${slug}`, { method: "PATCH" });
+    await apiFetch(`/products/view/${slug}`, { method: "PATCH" });
   } catch (err) {
     // Silent fail — don't block UX for a view count
     console.error("View increment failed:", err);
