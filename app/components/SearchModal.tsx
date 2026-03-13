@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { searchService } from "@/app/services/searchService";
 import {
   fetchProducts,
@@ -71,6 +72,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
   onClose,
   navbarBottom = 63,
 }) => {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,15 +125,38 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+
       if (e.key === "Enter" && query.trim().length > 1) {
         addSearchQuery(query);
         setPreviousSearches(getPreviousSearches());
+
+        // Navigate to the top result if one is available
+        const topResult = results[0];
+        if (topResult) {
+          const href =
+            topResult.type === "category"
+              ? `/${topResult.data.slug}`
+              : `/product/${topResult.data.slug}`;
+
+          addClickedItem(
+            topResult.type === "category"
+              ? { type: "category", name: topResult.data.name, categoryName: topResult.data.name }
+              : { type: "product", name: topResult.data.name, slug: topResult.data.slug }
+          );
+
+          onClose();
+          router.push(href);
+        }
       }
     };
+
     if (isOpen) window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose, query]);
+  }, [isOpen, onClose, query, results, router]);
 
   const getImageUrl = (item: any): string => {
     if (item.mainImage) return item.mainImage.url || "/assets/default-image.png";

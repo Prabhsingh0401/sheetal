@@ -21,6 +21,7 @@ interface ProductInfoProps {
   selectedSize: string;
   setSelectedSize: (size: string) => void;
   selectedColor: string;
+  onBuyNow: () => void;
   onColorChange: (color: { name: string; image: string }) => void;
   quantity: number;
   setQuantity: (qty: number) => void;
@@ -47,6 +48,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   onEnquire,
   onSizeChartOpen,
   onAddToCart,
+  onBuyNow,
   pincode,
   setPincode,
   pincodeMessage,
@@ -261,7 +263,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             >
               Add to Cart
             </button>
-            <button className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
+            <button
+              onClick={onBuyNow}
+              disabled={!selectedSize}
+              className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg"
+            >
               Buy Now
             </button>
           </div>

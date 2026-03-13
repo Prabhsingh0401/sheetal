@@ -27,7 +27,7 @@ import { getApiImageUrl } from "../../services/api";
 import { useWishlist } from "../../hooks/useWishlist";
 import Cookies from "js-cookie";
 import { useCart } from "../../hooks/useCart";
-import toast from "react-hot-toast"; // Added toast import
+import toast from "react-hot-toast";
 
 interface ColorOption {
   name: string;
@@ -43,11 +43,11 @@ interface SizeOption {
 interface ProductInfoData {
   title: string;
   rating: number;
-  productCode : string;
+  productCode: string;
   mainDescription: string;
-  price?: number; // Made optional
-  originalPrice?: number; // Made optional
-  discount?: string; // Made optional
+  price?: number;
+  originalPrice?: number;
+  discount?: string;
   selectedPrice: number;
   selectedOriginalPrice: number;
   selectedDiscount: string;
@@ -93,7 +93,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [sizeChartData, setSizeChartData] = useState<SizeChartData | null>(
     null,
-  ); // New state for size chart
+  );
   const [pincode, setPincode] = useState("");
   const [pincodeMessage, setPincodeCheckMessage] = useState("");
   const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
@@ -119,7 +119,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           );
 
           if (firstAvailableVariant) {
-            setSelectedVariantData(firstAvailableVariant); // Set selected variant data
+            setSelectedVariantData(firstAvailableVariant);
             if (firstAvailableVariant.color?.name) {
               setSelectedColor(firstAvailableVariant.color.name);
             }
@@ -133,16 +133,11 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
             );
             if (firstAvailableSize) {
               setSelectedSize(firstAvailableSize.name);
-              setSelectedSizeObject(firstAvailableSize); // Set selected size object
+              setSelectedSizeObject(firstAvailableSize);
             }
           }
 
-          // ── Similar Products: 3-tier smart fetch ─────────────────────
-          // Tier 1: same fabric + price ±₹2000
-          // Tier 2: same fabric only  (if tier 1 returns < 2 results)
-          // Tier 3: same category     (final fallback)
-          // ─────────────────────────────────────────────────────────────
-
+          // ── Similar Products: always scoped to same category ──────────
           const productFabrics: string[] = (res.data.fabric ?? [])
             .map((f: string) => f?.trim().toLowerCase())
             .filter(Boolean);
@@ -161,63 +156,84 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
             });
           });
 
-          let fetchedSimilar: Product[] = [];
           const selfId = res.data._id;
-          const dedup = (list: Product[]) =>
-            list.filter((p) => p._id !== selfId);
-          const hasFabric = productFabrics.length > 0;
+          const categoryId = res.data.category?._id;
 
-          // ── Tier 1: fabric + price range ──────────────────────────────
-          if (hasFabric && currentMinPrice > 0) {
-            try {
-              const r = await fetchProducts({
-                fabric: productFabrics[0],
-                minPrice: Math.max(0, currentMinPrice - 2000),
-                maxPrice: currentMinPrice + 2000,
-                limit: 10,
-                status: "Active",
-              });
-              if (r.success) fetchedSimilar = dedup(r.products ?? []);
-            } catch {
-              /* continue to tier 2 */
-            }
-          }
+          const [tier1Res, tier2Res, tier3Res] = await Promise.allSettled([
+            // Tier 1: same category + same fabric + price ±₹2000
+            categoryId && productFabrics.length > 0 && currentMinPrice > 0
+              ? fetchProducts({
+                  category: categoryId,
+                  fabric: productFabrics[0],
+                  minPrice: Math.max(0, currentMinPrice - 2000),
+                  maxPrice: currentMinPrice + 2000,
+                  limit: 10,
+                  status: "Active",
+                })
+              : Promise.resolve(null),
 
-          // ── Tier 2: fabric only (no price restriction) ─────────────────
-          if (fetchedSimilar.length < 2 && hasFabric) {
-            try {
-              const r = await fetchProducts({
-                fabric: productFabrics[0],
-                limit: 10,
-                status: "Active",
-              });
-              if (r.success) {
-                const matched = dedup(r.products ?? []);
-                if (matched.length > fetchedSimilar.length)
-                  fetchedSimilar = matched;
+            // Tier 2: same category + price ±₹2000 (no fabric restriction)
+            categoryId && currentMinPrice > 0
+              ? fetchProducts({
+                  category: categoryId,
+                  minPrice: Math.max(0, currentMinPrice - 2000),
+                  maxPrice: currentMinPrice + 2000,
+                  limit: 10,
+                  status: "Active",
+                })
+              : Promise.resolve(null),
+
+            // Tier 3: same category + price ±₹2000 (broadest — no fabric)
+            categoryId && currentMinPrice > 0
+              ? fetchProducts({
+                  category: categoryId,
+                  minPrice: Math.max(0, currentMinPrice - 2000),
+                  maxPrice: currentMinPrice + 2000,
+                  limit: 15,
+                  status: "Active",
+                })
+              : Promise.resolve(null),
+          ]);
+
+          const seen = new Set<string>();
+          const allFetched: Product[] = [];
+
+          for (const result of [tier1Res, tier2Res]) {
+            if (result.status === "fulfilled" && result.value?.success) {
+              for (const p of result.value.products ?? []) {
+                if (p._id !== selfId && !seen.has(p._id)) {
+                  seen.add(p._id);
+                  allFetched.push(p);
+                }
               }
-            } catch {
-              /* continue to tier 3 */
             }
           }
 
-          // ── Tier 3: same category (final fallback) ─────────────────────
-          if (fetchedSimilar.length < 2 && res.data.category?._id) {
-            try {
-              const r = await fetchProducts({
-                category: res.data.category._id,
-                limit: 10,
-                status: "Active",
-              });
-              if (r.success) fetchedSimilar = dedup(r.products ?? []);
-            } catch {
-              /* silent */
-            }
-          }
+          setSimilarProducts(allFetched);
 
-          setSimilarProducts(fetchedSimilar);
+          console.log("currentMinPrice:", currentMinPrice);
+          console.log(
+            "priceRange:",
+            Math.max(0, currentMinPrice - 2000),
+            "to",
+            currentMinPrice + 2000,
+          );
+          console.log(
+            "allFetched prices:",
+            allFetched.map((p) => {
+              const min = Math.min(
+                ...p.variants.flatMap((v) =>
+                  v.sizes.map((s) =>
+                    s.discountPrice > 0 ? s.discountPrice : s.price,
+                  ),
+                ),
+              );
+              return `${p.name} | ₹${min}`;
+            }),
+          );
+          // ─────────────────────────────────────────────────────────────
 
-          // ── Persist to recently-viewed (for RelatedProducts) ──
+          // ── Persist to recently-viewed ────────────────────────────────
           try {
             const RV_KEY = "__rv__";
             const minPrice = (() => {
@@ -277,6 +293,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     };
     loadProduct();
   }, [slug]);
+
   // Fetch Size Chart data
   useEffect(() => {
     const loadSizeChart = async () => {
@@ -292,7 +309,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       }
     };
     loadSizeChart();
-  }, []); // Empty dependency array means it runs once on mount
+  }, []);
 
   const handleImageChange = (img: string) => {
     setSelectedImage(img);
@@ -330,8 +347,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           selectedSize,
           price,
           discountPrice,
-          variantImageUrl, // 7th: variantImage
-          selectedColor, // 8th: color
+          variantImageUrl,
+          selectedColor,
           {
             _id: product._id,
             name: product.name,
@@ -345,6 +362,52 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     } else {
       toast.error("Please select a size to add to cart.");
     }
+  };
+
+  const handleBuyNow = () => {
+    if (!product) {
+      toast.error("Product not available");
+      return;
+    }
+    if (!selectedSize || !selectedSizeObject) {
+      toast.error("Please select a size");
+      return;
+    }
+    if (!selectedColor) {
+      toast.error("Please select a color");
+      return;
+    }
+
+    const selectedVariant = product.variants.find(
+      (v: ProductVariant) => v.color?.name === selectedColor,
+    );
+
+    const variantImageUrl = selectedVariant
+      ? getApiImageUrl(
+          selectedVariant.v_image,
+          product.mainImage?.url || "/assets/placeholder-product.jpg",
+        )
+      : product.mainImage?.url || "";
+
+    const buyNowItem = {
+      product: {
+        _id: product._id,
+        name: product.name,
+        mainImage: product.mainImage,
+        sku: product.sku,
+        category: product.category,
+      },
+      size: selectedSize,
+      color: selectedColor,
+      quantity,
+      price: selectedSizeObject.price || 0,
+      discountPrice:
+        selectedSizeObject.discountPrice || selectedSizeObject.price || 0,
+      variantImage: variantImageUrl,
+    };
+
+    const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
+    router.push(`/checkout/address?buynow=${encoded}`);
   };
 
   const scrollToSimilarProducts = useCallback(() => {
@@ -445,12 +508,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     setSelectedColor(color.name);
     setSelectedImage(color.image);
 
-    // Find the newly selected variant
     const newlySelectedVariant =
       product?.variants.find((v) => v.color?.name === color.name) || null;
     setSelectedVariantData(newlySelectedVariant);
 
-    // Check if previously selected size is available for the new color
     const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
     if (
       selectedSize &&
@@ -458,9 +519,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       !availableSizesForNewColor.has(selectedSize)
     ) {
       setSelectedSize("");
-      setSelectedSizeObject(null); // Reset selected size object if not available
+      setSelectedSizeObject(null);
     }
-    // Optionally, auto-select the first available size for the new color if no size is selected
     if (
       !selectedSize &&
       availableSizesForNewColor &&
@@ -468,7 +528,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     ) {
       const autoSelectedSizeName = Array.from(availableSizesForNewColor)[0];
       setSelectedSize(autoSelectedSizeName);
-      // Find the full size object for the auto-selected size
       if (newlySelectedVariant) {
         const autoSelectedSizeObject = newlySelectedVariant.sizes.find(
           (s) => s.name === autoSelectedSizeName,
@@ -476,7 +535,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         setSelectedSizeObject(autoSelectedSizeObject || null);
       }
     } else if (selectedSize && newlySelectedVariant) {
-      // If selectedSize is still valid, ensure selectedSizeObject is updated for the new variant
       const currentSelectedSizeObject = newlySelectedVariant.sizes.find(
         (s) => s.name === selectedSize,
       );
@@ -493,6 +551,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       setSelectedSizeObject(foundSize || null);
     }
   };
+
   // Transformed Product Object for ProductInfo
   const fallbackSize = product.variants?.[0]?.sizes?.[0];
   const resolvedSize = selectedSizeObject ?? fallbackSize;
@@ -510,7 +569,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
   const productInfoData: ProductInfoData = {
     title: product.name,
-    productCode : product.sku,
+    productCode: product.sku,
     rating: product.averageRating || 0,
     mainDescription: product.shortDescription || "",
     selectedPrice: currentSelectedPrice,
@@ -527,16 +586,31 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     specifications: product.specifications || [],
   };
 
-  const relatedProductsData: RelatedProduct[] = similarProducts.map(
-    (p: Product) => {
+  // ── Related Products: map + score-sort ───────────────────────────────
+  const getMinPrice = (p: Product): number => {
+    let min = Infinity;
+    p.variants.forEach((v) => {
+      v.sizes.forEach((s) => {
+        const eff = s.discountPrice > 0 ? s.discountPrice : s.price;
+        if (eff > 0 && eff < min) min = eff;
+      });
+    });
+    return min === Infinity ? 0 : min;
+  };
+
+  const currentMinPrice = getMinPrice(product);
+  const productFabricSet = new Set(
+    (product.fabric ?? []).map((f: string) => f.trim().toLowerCase()),
+  );
+
+  const relatedProductsData: RelatedProduct[] = similarProducts
+    .map((p: Product) => {
       let minPrice: number = Infinity;
       let minMRP: number = Infinity;
 
       p.variants.forEach((variant) => {
         variant.sizes.forEach((size) => {
-          if (size.price < minMRP) {
-            minMRP = size.price;
-          }
+          if (size.price < minMRP) minMRP = size.price;
           if (size.discountPrice > 0 && size.discountPrice < minPrice) {
             minPrice = size.discountPrice;
           } else if (size.discountPrice === 0 && size.price < minPrice) {
@@ -545,14 +619,13 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         });
       });
 
-      // Handle case where no prices are found (e.g., product has no variants/sizes or all are 0)
       if (minPrice === Infinity) minPrice = 0;
       if (minMRP === Infinity) minMRP = 0;
 
       const currentDiscount =
         minMRP > 0 && minPrice < minMRP
           ? `${Math.round(((minMRP - minPrice) / minMRP) * 100)}%`
-          : "0%"; // Default to 0% if no discount
+          : "0%";
 
       return {
         id: p.slug,
@@ -565,9 +638,19 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         mrp: minMRP,
         discount: currentDiscount,
         soldOut: p.stock <= 0,
+        _sameCategory: p.category?._id === product.category?._id,
+        _sameFabric: (p.fabric ?? []).some((f: string) =>
+          productFabricSet.has(f.trim().toLowerCase()),
+        ),
       };
-    },
-  );
+    })
+    .sort((a, b) => {
+      const score = (x: typeof a) =>
+        (x._sameCategory ? 4 : 0) + (x._sameFabric ? 2 : 0);
+      return score(b) - score(a);
+    })
+    .map(({ _sameCategory, _sameFabric, ...rest }) => rest);
+  // ─────────────────────────────────────────────────────────────────────
 
   return (
     <div className="font-[family-name:var(--font-montserrat)] bg-[#f9f9f9]">
@@ -618,6 +701,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               onEnquire={() => setEnquireModalOpen(true)}
               onSizeChartOpen={() => setSizeChartOpen(true)}
               onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
               pincode={pincode}
               setPincode={setPincode}
               pincodeMessage={pincodeMessage}
@@ -660,7 +744,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         colorToAvailableSizesMap={productInfoData.colorToAvailableSizesMap}
         selectedSize={selectedSize}
         setSelectedSize={setSelectedSize}
-        sizeChartData={sizeChartData} // Pass the fetched data
+        sizeChartData={sizeChartData}
       />
     </div>
   );

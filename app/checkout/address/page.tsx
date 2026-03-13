@@ -13,6 +13,7 @@ import { getSettings } from "../../services/settingsService";
 import toast from "react-hot-toast";
 import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
+import { useSearchParams } from "next/navigation";
 
 const AddressPage = () => {
   const router = useRouter();
@@ -50,6 +51,39 @@ const AddressPage = () => {
   const [shippingCharges, setShippingCharges] = useState(0);
   const [baseShippingFee, setBaseShippingFee] = useState(0);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
+
+  const searchParams = useSearchParams();
+
+  const buyNowItem = (() => {
+    const param = searchParams.get("buynow");
+    if (!param) return null;
+    try {
+      return JSON.parse(decodeURIComponent(param));
+    } catch {
+      return null;
+    }
+  })();
+
+  const isBuyNow = !!buyNowItem;
+  const activeItems = isBuyNow ? [buyNowItem] : cart;
+
+  const activeTotalMrp = isBuyNow
+    ? activeItems.reduce((sum, i) => sum + i.price * i.quantity, 0)
+    : totalMrp;
+
+  const activeTotalDiscount = isBuyNow
+    ? activeItems.reduce(
+        (sum, i) => sum + (i.price - (i.discountPrice || i.price)) * i.quantity,
+        0,
+      )
+    : totalDiscount;
+
+  const activeFinalAmount = isBuyNow
+    ? activeItems.reduce(
+        (sum, i) => sum + (i.discountPrice || i.price) * i.quantity,
+        0,
+      )
+    : finalAmount;
 
   const fetchAddresses = async () => {
     setLoadingAddresses(true);
@@ -96,7 +130,7 @@ const AddressPage = () => {
 
         // Initial calculation
         const threshold = Number(settings.freeShippingThreshold) || 0;
-        if (finalAmount > threshold && threshold > 0) {
+        if (activeFinalAmount > threshold && threshold > 0) {
           setShippingCharges(0);
         } else {
           setShippingCharges(Number(settings.shippingFee) || 0);
@@ -106,16 +140,19 @@ const AddressPage = () => {
       }
     };
     fetchSettingsData();
-  }, [finalAmount]);
+  }, [activeFinalAmount]);
 
   /* Recalculate Shipping on Amount Change - Same as Cart Page */
   useEffect(() => {
-    if (finalAmount > freeShippingThreshold && freeShippingThreshold > 0) {
+    if (
+      activeFinalAmount > freeShippingThreshold &&
+      freeShippingThreshold > 0
+    ) {
       setShippingCharges(0);
     } else {
       setShippingCharges(baseShippingFee);
     }
-  }, [finalAmount, freeShippingThreshold, baseShippingFee]);
+  }, [activeFinalAmount, freeShippingThreshold, baseShippingFee]);
 
   const handleEditAddress = (address: Address) => {
     setEditingAddress(address);
@@ -133,10 +170,10 @@ const AddressPage = () => {
       return;
     }
 
-
     // Normalise: order schema needs fullName, user address stores firstName + lastName
     const shippingAddress = {
-      fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
+      fullName:
+        `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
       phoneNumber: selectedAddress.phoneNumber,
       addressLine1: selectedAddress.addressLine1,
       city: selectedAddress.city,
@@ -148,16 +185,26 @@ const AddressPage = () => {
     try {
       setIsSubmitting(true);
       toast.loading("Initiating payment...");
-      const response = await createRazorpayPaymentLink(selectedAddressId, shippingAddress);
+      const response = await createRazorpayPaymentLink(
+        selectedAddressId,
+        shippingAddress,
+      );
       toast.dismiss();
-      if (response && response.success && response.data && response.data.short_url) {
+      if (
+        response &&
+        response.success &&
+        response.data &&
+        response.data.short_url
+      ) {
         window.location.href = response.data.short_url;
       } else {
         toast.error(response.message || "Failed to create payment link");
       }
     } catch (error: any) {
       toast.dismiss();
-      toast.error(error.message || "Something went wrong while initiating payment");
+      toast.error(
+        error.message || "Something went wrong while initiating payment",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -180,7 +227,8 @@ const AddressPage = () => {
 
     // Normalise: order schema needs fullName, user address stores firstName + lastName
     const shippingAddress = {
-      fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
+      fullName:
+        `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
       phoneNumber: selectedAddress.phoneNumber,
       addressLine1: selectedAddress.addressLine1,
       city: selectedAddress.city,
@@ -208,16 +256,12 @@ const AddressPage = () => {
     try {
       setIsSubmitting(true);
       toast.loading("Placing your order...");
-      const response = await createCODOrder(
-        shippingAddress,
-        orderItems,
-        {
-          itemsPrice: finalAmount,
-          shippingPrice: shippingCharges,
-          taxPrice: platformFee,
-          totalPrice: totalAmount,
-        }
-      );
+      const response = await createCODOrder(shippingAddress, orderItems, {
+        itemsPrice: finalAmount,
+        shippingPrice: shippingCharges,
+        taxPrice: platformFee,
+        totalPrice: totalAmount,
+      });
       toast.dismiss();
       if (response && response.success) {
         toast.success("Order placed successfully!");
@@ -227,7 +271,9 @@ const AddressPage = () => {
       }
     } catch (error: any) {
       toast.dismiss();
-      toast.error(error.message || "Something went wrong while placing your order");
+      toast.error(
+        error.message || "Something went wrong while placing your order",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -237,12 +283,12 @@ const AddressPage = () => {
   const categoryNames =
     applicableCategories.length > 0
       ? cart
-        .filter(
-          (item) =>
-            item.product.category &&
-            applicableCategories.includes(item.product.category._id),
-        )
-        .map((item) => item.product.category.name)
+          .filter(
+            (item) =>
+              item.product.category &&
+              applicableCategories.includes(item.product.category._id),
+          )
+          .map((item) => item.product.category.name)
       : [];
   const uniqueCategoryNames = Array.from(new Set(categoryNames));
   const displayCategoryName =
@@ -339,7 +385,7 @@ const AddressPage = () => {
                     </p>
                     <button
                       onClick={() => setShowAddForm(true)}
-                      className="bg-[#bd9951] text-white px-6 py-2 rounded font-semibold hover:bg-[#a38038]"
+                      className="bg-[#bd9951] text-white px-6 py-2 rounded font-semibold hover:bg-[#a38038] cursor-pointer"
                     >
                       Add New Address
                     </button>
@@ -364,7 +410,7 @@ const AddressPage = () => {
           {/* RIGHT COLUMN: SUMMARY */}
           <div className="w-full lg:w-4/12">
             {/* Product List Summary */}
-            <MiniCartSummary cartItems={cart} />
+            <MiniCartSummary cartItems={activeItems} />
 
             {/* Price Details */}
             <PriceDetails
@@ -379,13 +425,13 @@ const AddressPage = () => {
               categoryName={displayCategoryName}
               couponCode={couponCode}
               onRemoveCoupon={removeCoupon}
-              cartLength={cart.length}
-              totalMrp={totalMrp}
-              totalDiscount={totalDiscount}
+              cartLength={activeItems.length}
+              totalMrp={activeTotalMrp}
+              totalDiscount={activeTotalDiscount}
               couponDiscount={couponDiscount}
               shippingCharges={shippingCharges}
               platformFee={platformFee}
-              totalAmount={finalAmount + shippingCharges + platformFee}
+              totalAmount={activeFinalAmount + shippingCharges + platformFee}
               hideProceedButton={true}
             />
 
