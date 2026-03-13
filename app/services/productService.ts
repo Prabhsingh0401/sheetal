@@ -157,7 +157,7 @@ export const getNewArrivals = async (): Promise<{
 
 export const fetchTrendingProducts = async (): Promise<{
   success: boolean;
-  data: Product[];
+  products : Product[];
 }> => {
   return apiFetch("/products/trending");
 };
