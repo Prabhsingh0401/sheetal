@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AddressList, { Address } from "../components/AddressList";
 import AddressForm from "../components/AddressForm";
 import MiniCartSummary from "../components/MiniCartSummary";
-import PriceDetails from "../../cart/components/PriceDetails"; // Import existing component
+import PriceDetails from "../../cart/components/PriceDetails";
 import { useCart } from "../../hooks/useCart";
 import { getCurrentUser } from "../../services/userService";
 import { getSettings } from "../../services/settingsService";
@@ -15,7 +15,8 @@ import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
 import { useSearchParams } from "next/navigation";
 
-const AddressPage = () => {
+// ── Inner component that uses useSearchParams ─────────────────────────────
+const AddressPageInner = () => {
   const router = useRouter();
   const {
     cart,
@@ -31,27 +32,22 @@ const AddressPage = () => {
     applicableCategories,
   } = useCart();
 
-  // Local state for addresses
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
-    null,
-  );
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isEmailFromProfile, setIsEmailFromProfile] = useState(false);
-
-  // For Coupon Input in Price Details (if needed to pass down)
   const [couponInput, setCouponInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /* Settings State - Same as Cart Page */
   const [platformFee, setPlatformFee] = useState(0);
   const [shippingCharges, setShippingCharges] = useState(0);
   const [baseShippingFee, setBaseShippingFee] = useState(0);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
 
+  // ── Buy Now param ─────────────────────────────────────────────────────────
   const searchParams = useSearchParams();
 
   const buyNowItem = (() => {
@@ -84,6 +80,7 @@ const AddressPage = () => {
         0,
       )
     : finalAmount;
+  // ─────────────────────────────────────────────────────────────────────────
 
   const fetchAddresses = async () => {
     setLoadingAddresses(true);
@@ -93,18 +90,15 @@ const AddressPage = () => {
         const userAddresses = response.data.addresses || [];
         setAddresses(userAddresses);
 
-        // Check if user has email
         if (response.data.email) {
           setUserEmail(response.data.email);
           setIsEmailFromProfile(true);
         }
 
-        // Select default if any
         const defaultAddr = userAddresses.find((a: Address) => a.isDefault);
         if (defaultAddr && !selectedAddressId) {
           setSelectedAddressId(defaultAddr._id);
         } else if (userAddresses.length > 0 && !selectedAddressId) {
-          // Or first one
           setSelectedAddressId(userAddresses[0]._id);
         }
       }
@@ -119,7 +113,6 @@ const AddressPage = () => {
     fetchAddresses();
   }, []);
 
-  /* Fetch Settings Once - Same as Cart Page */
   useEffect(() => {
     const fetchSettingsData = async () => {
       try {
@@ -128,7 +121,6 @@ const AddressPage = () => {
         setBaseShippingFee(Number(settings.shippingFee) || 0);
         setFreeShippingThreshold(Number(settings.freeShippingThreshold) || 0);
 
-        // Initial calculation
         const threshold = Number(settings.freeShippingThreshold) || 0;
         if (activeFinalAmount > threshold && threshold > 0) {
           setShippingCharges(0);
@@ -142,12 +134,8 @@ const AddressPage = () => {
     fetchSettingsData();
   }, [activeFinalAmount]);
 
-  /* Recalculate Shipping on Amount Change - Same as Cart Page */
   useEffect(() => {
-    if (
-      activeFinalAmount > freeShippingThreshold &&
-      freeShippingThreshold > 0
-    ) {
+    if (activeFinalAmount > freeShippingThreshold && freeShippingThreshold > 0) {
       setShippingCharges(0);
     } else {
       setShippingCharges(baseShippingFee);
@@ -158,6 +146,16 @@ const AddressPage = () => {
     setEditingAddress(address);
     setShowAddForm(true);
   };
+
+  const buildShippingAddress = (selectedAddress: Address) => ({
+    fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
+    phoneNumber: selectedAddress.phoneNumber,
+    addressLine1: selectedAddress.addressLine1,
+    city: selectedAddress.city,
+    state: selectedAddress.state,
+    postalCode: selectedAddress.postalCode,
+    country: selectedAddress.country || "India",
+  });
 
   const handlePayOnline = async () => {
     if (!selectedAddressId) {
@@ -170,17 +168,7 @@ const AddressPage = () => {
       return;
     }
 
-    // Normalise: order schema needs fullName, user address stores firstName + lastName
-    const shippingAddress = {
-      fullName:
-        `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
-      phoneNumber: selectedAddress.phoneNumber,
-      addressLine1: selectedAddress.addressLine1,
-      city: selectedAddress.city,
-      state: selectedAddress.state,
-      postalCode: selectedAddress.postalCode,
-      country: selectedAddress.country || "India",
-    };
+    const shippingAddress = buildShippingAddress(selectedAddress);
 
     try {
       setIsSubmitting(true);
@@ -188,23 +176,17 @@ const AddressPage = () => {
       const response = await createRazorpayPaymentLink(
         selectedAddressId,
         shippingAddress,
+        isBuyNow ? activeItems : undefined,
       );
       toast.dismiss();
-      if (
-        response &&
-        response.success &&
-        response.data &&
-        response.data.short_url
-      ) {
+      if (response?.success && response?.data?.short_url) {
         window.location.href = response.data.short_url;
       } else {
         toast.error(response.message || "Failed to create payment link");
       }
     } catch (error: any) {
       toast.dismiss();
-      toast.error(
-        error.message || "Something went wrong while initiating payment",
-      );
+      toast.error(error.message || "Something went wrong while initiating payment");
     } finally {
       setIsSubmitting(false);
     }
@@ -220,25 +202,14 @@ const AddressPage = () => {
       toast.error("Invalid address selected.");
       return;
     }
-    if (cart.length === 0) {
-      toast.error("Your cart is empty.");
+    if (activeItems.length === 0) {
+      toast.error(isBuyNow ? "No item to order." : "Your cart is empty.");
       return;
     }
 
-    // Normalise: order schema needs fullName, user address stores firstName + lastName
-    const shippingAddress = {
-      fullName:
-        `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
-      phoneNumber: selectedAddress.phoneNumber,
-      addressLine1: selectedAddress.addressLine1,
-      city: selectedAddress.city,
-      state: selectedAddress.state,
-      postalCode: selectedAddress.postalCode,
-      country: selectedAddress.country || "India",
-    };
+    const shippingAddress = buildShippingAddress(selectedAddress);
 
-    // Map cart items to the backend order schema
-    const orderItems = cart.map((item) => ({
+    const orderItems = activeItems.map((item) => ({
       product: item.product._id,
       name: item.product.name,
       image: item.product.mainImage?.url || item.variantImage || "",
@@ -251,19 +222,24 @@ const AddressPage = () => {
       },
     }));
 
-    const totalAmount = finalAmount + shippingCharges + platformFee;
+    const totalAmount = activeFinalAmount + shippingCharges + platformFee;
 
     try {
       setIsSubmitting(true);
       toast.loading("Placing your order...");
-      const response = await createCODOrder(shippingAddress, orderItems, {
-        itemsPrice: finalAmount,
-        shippingPrice: shippingCharges,
-        taxPrice: platformFee,
-        totalPrice: totalAmount,
-      });
+      const response = await createCODOrder(
+        shippingAddress,
+        orderItems,
+        {
+          itemsPrice: activeFinalAmount,
+          shippingPrice: shippingCharges,
+          taxPrice: platformFee,
+          totalPrice: totalAmount,
+        },
+        isBuyNow ? activeItems : undefined,
+      );
       toast.dismiss();
-      if (response && response.success) {
+      if (response?.success) {
         toast.success("Order placed successfully!");
         router.push("/checkout/success?payment_method=cod");
       } else {
@@ -271,15 +247,12 @@ const AddressPage = () => {
       }
     } catch (error: any) {
       toast.dismiss();
-      toast.error(
-        error.message || "Something went wrong while placing your order",
-      );
+      toast.error(error.message || "Something went wrong while placing your order");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  /* Logic for display name (Copied from CartPage logic for consistency) */
   const categoryNames =
     applicableCategories.length > 0
       ? cart
@@ -334,7 +307,6 @@ const AddressPage = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* LEFT COLUMN: ADDRESS */}
           <div className="w-full lg:w-8/12">
-            {/* Customer Information - Email */}
             <div className="mb-6">
               <h4 className="text-xl text-[#785e32] mb-4 font-montserrat">
                 Customer Information
@@ -359,8 +331,6 @@ const AddressPage = () => {
                 </p>
               </div>
             </div>
-
-            {/* If no addresses and not adding new (initial empty state handling could be here) */}
 
             {showAddForm ? (
               <AddressForm
@@ -409,26 +379,25 @@ const AddressPage = () => {
 
           {/* RIGHT COLUMN: SUMMARY */}
           <div className="w-full lg:w-4/12">
-            {/* Product List Summary */}
             <MiniCartSummary cartItems={activeItems} />
 
-            {/* Price Details */}
             <PriceDetails
-              couponInput={couponInput}
+              couponInput={isBuyNow ? "" : couponInput}
               setCouponInput={setCouponInput}
               handleApplyCoupon={(userId) => {
-                if (couponInput && userId) applyCoupon(couponInput, userId);
+                if (!isBuyNow && couponInput && userId)
+                  applyCoupon(couponInput, userId);
               }}
-              couponError={couponError}
-              bogoMessage={bogoMessage}
-              applicableCategories={applicableCategories}
-              categoryName={displayCategoryName}
-              couponCode={couponCode}
+              couponError={isBuyNow ? "" : couponError}
+              bogoMessage={isBuyNow ? "" : bogoMessage}
+              applicableCategories={isBuyNow ? [] : applicableCategories}
+              categoryName={isBuyNow ? null : displayCategoryName}
+              couponCode={isBuyNow ? "" : couponCode}
               onRemoveCoupon={removeCoupon}
               cartLength={activeItems.length}
               totalMrp={activeTotalMrp}
               totalDiscount={activeTotalDiscount}
-              couponDiscount={couponDiscount}
+              couponDiscount={isBuyNow ? 0 : couponDiscount}
               shippingCharges={shippingCharges}
               platformFee={platformFee}
               totalAmount={activeFinalAmount + shippingCharges + platformFee}
@@ -504,6 +473,15 @@ const AddressPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// ── Outer component wraps inner in Suspense ───────────────────────────────
+const AddressPage = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+      <AddressPageInner />
+    </Suspense>
   );
 };
 
