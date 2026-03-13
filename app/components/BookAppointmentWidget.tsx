@@ -91,9 +91,7 @@ const BookAppointmentWidget: React.FC = () => {
           <span
             className="absolute -top-2 left- px-1.5 text-[10px] uppercase text-black font-bold whitespace-nowrap"
             style={{
-              background: "rgba(189, 153, 81, 0.15)",
-              backdropFilter: "blur(80px)",
-              WebkitBackdropFilter: "blur(80px)",
+              background: "#ffffff",
               zIndex: "99",
             }}
           >

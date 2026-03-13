@@ -110,7 +110,7 @@ export interface ProductQueryParams {
   brand?: string;
   status?: string;
   color?: string;
-  fabric?: string;   // comma-separated or single value
+  fabric?: string; // comma-separated or single value
   minPrice?: number;
   maxPrice?: number;
 }
@@ -136,8 +136,10 @@ export const fetchProducts = async (
   if (params.brand) query.append("brand", params.brand);
   if (params.color) query.append("color", params.color);
   if (params.fabric) query.append("fabric", params.fabric);
-  if (params.minPrice != null) query.append("minPrice", params.minPrice.toString());
-  if (params.maxPrice != null) query.append("maxPrice", params.maxPrice.toString());
+  if (params.minPrice != null)
+    query.append("minPrice", params.minPrice.toString());
+  if (params.maxPrice != null)
+    query.append("maxPrice", params.maxPrice.toString());
 
   // Default to Active products if not specified
   if (!params.status) query.append("status", "Active");
@@ -158,12 +160,6 @@ export const fetchTrendingProducts = async (): Promise<{
   data: Product[];
 }> => {
   return apiFetch("/products/trending");
-};
-
-export const incrementProductView = async (productIdOrSlug: string) => {
-  return apiFetch(`/products/view/${productIdOrSlug}`, {
-    method: "POST",
-  });
 };
 
 export const fetchProductBySlug = async (slug: string) => {
@@ -211,3 +207,14 @@ export const fetchProductReviews = async (productId: string) => {
     method: "GET",
   });
 };
+
+export const incrementProductView = async (slug : string) => {
+  try {
+    await apiFetch(`/products/view/${slug}`, { method: "PATCH" });
+  } catch (err) {
+    // Silent fail — don't block UX for a view count
+    console.error("View increment failed:", err);
+  }
+};
+
+

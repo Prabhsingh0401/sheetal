@@ -109,7 +109,7 @@ const EnquireModal: React.FC<EnquireModalProps> = ({
               type="text" placeholder="Name" required
               value={name} onChange={(e) => setName(e.target.value)}
               className="w-full rounded-full border border-gray-700 px-4 py-2 bg-transparent"
-            />se
+            />
             <input
               type="email" placeholder="Email" required
               value={email} onChange={(e) => setEmail(e.target.value)}
@@ -129,7 +129,7 @@ const EnquireModal: React.FC<EnquireModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="mx-auto mt-3 block w-40 py-2 text-sm font-medium border-y border-black text-black uppercase transition-all duration-500 hover:tracking-[2px] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="mx-auto mt-3 cursor-pointer block w-40 py-2 text-sm font-medium border-y border-black text-black uppercase transition-all duration-500 hover:tracking-[2px] disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Sending..." : "Enquire Now"}
             </button>
