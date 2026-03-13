@@ -1,20 +1,22 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AddressList, { Address } from "../components/AddressList";
 import AddressForm from "../components/AddressForm";
 import MiniCartSummary from "../components/MiniCartSummary";
-import PriceDetails from "../../cart/components/PriceDetails"; // Import existing component
+import PriceDetails from "../../cart/components/PriceDetails";
 import { useCart } from "../../hooks/useCart";
 import { getCurrentUser } from "../../services/userService";
 import { getSettings } from "../../services/settingsService";
 import toast from "react-hot-toast";
 import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
+import { useSearchParams } from "next/navigation";
 
-const AddressPage = () => {
+// ── Inner component that uses useSearchParams ─────────────────────────────
+const AddressPageInner = () => {
   const router = useRouter();
   const {
     cart,
@@ -30,26 +32,55 @@ const AddressPage = () => {
     applicableCategories,
   } = useCart();
 
-  // Local state for addresses
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
-    null,
-  );
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isEmailFromProfile, setIsEmailFromProfile] = useState(false);
-
-  // For Coupon Input in Price Details (if needed to pass down)
   const [couponInput, setCouponInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /* Settings State - Same as Cart Page */
   const [platformFee, setPlatformFee] = useState(0);
   const [shippingCharges, setShippingCharges] = useState(0);
   const [baseShippingFee, setBaseShippingFee] = useState(0);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
+
+  // ── Buy Now param ─────────────────────────────────────────────────────────
+  const searchParams = useSearchParams();
+
+  const buyNowItem = (() => {
+    const param = searchParams.get("buynow");
+    if (!param) return null;
+    try {
+      return JSON.parse(decodeURIComponent(param));
+    } catch {
+      return null;
+    }
+  })();
+
+  const isBuyNow = !!buyNowItem;
+  const activeItems = isBuyNow ? [buyNowItem] : cart;
+
+  const activeTotalMrp = isBuyNow
+    ? activeItems.reduce((sum, i) => sum + i.price * i.quantity, 0)
+    : totalMrp;
+
+  const activeTotalDiscount = isBuyNow
+    ? activeItems.reduce(
+        (sum, i) => sum + (i.price - (i.discountPrice || i.price)) * i.quantity,
+        0,
+      )
+    : totalDiscount;
+
+  const activeFinalAmount = isBuyNow
+    ? activeItems.reduce(
+        (sum, i) => sum + (i.discountPrice || i.price) * i.quantity,
+        0,
+      )
+    : finalAmount;
+  // ─────────────────────────────────────────────────────────────────────────
 
   const fetchAddresses = async () => {
     setLoadingAddresses(true);
@@ -59,18 +90,15 @@ const AddressPage = () => {
         const userAddresses = response.data.addresses || [];
         setAddresses(userAddresses);
 
-        // Check if user has email
         if (response.data.email) {
           setUserEmail(response.data.email);
           setIsEmailFromProfile(true);
         }
 
-        // Select default if any
         const defaultAddr = userAddresses.find((a: Address) => a.isDefault);
         if (defaultAddr && !selectedAddressId) {
           setSelectedAddressId(defaultAddr._id);
         } else if (userAddresses.length > 0 && !selectedAddressId) {
-          // Or first one
           setSelectedAddressId(userAddresses[0]._id);
         }
       }
@@ -85,7 +113,6 @@ const AddressPage = () => {
     fetchAddresses();
   }, []);
 
-  /* Fetch Settings Once - Same as Cart Page */
   useEffect(() => {
     const fetchSettingsData = async () => {
       try {
@@ -94,9 +121,8 @@ const AddressPage = () => {
         setBaseShippingFee(Number(settings.shippingFee) || 0);
         setFreeShippingThreshold(Number(settings.freeShippingThreshold) || 0);
 
-        // Initial calculation
         const threshold = Number(settings.freeShippingThreshold) || 0;
-        if (finalAmount > threshold && threshold > 0) {
+        if (activeFinalAmount > threshold && threshold > 0) {
           setShippingCharges(0);
         } else {
           setShippingCharges(Number(settings.shippingFee) || 0);
@@ -106,21 +132,30 @@ const AddressPage = () => {
       }
     };
     fetchSettingsData();
-  }, [finalAmount]);
+  }, [activeFinalAmount]);
 
-  /* Recalculate Shipping on Amount Change - Same as Cart Page */
   useEffect(() => {
-    if (finalAmount > freeShippingThreshold && freeShippingThreshold > 0) {
+    if (activeFinalAmount > freeShippingThreshold && freeShippingThreshold > 0) {
       setShippingCharges(0);
     } else {
       setShippingCharges(baseShippingFee);
     }
-  }, [finalAmount, freeShippingThreshold, baseShippingFee]);
+  }, [activeFinalAmount, freeShippingThreshold, baseShippingFee]);
 
   const handleEditAddress = (address: Address) => {
     setEditingAddress(address);
     setShowAddForm(true);
   };
+
+  const buildShippingAddress = (selectedAddress: Address) => ({
+    fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
+    phoneNumber: selectedAddress.phoneNumber,
+    addressLine1: selectedAddress.addressLine1,
+    city: selectedAddress.city,
+    state: selectedAddress.state,
+    postalCode: selectedAddress.postalCode,
+    country: selectedAddress.country || "India",
+  });
 
   const handlePayOnline = async () => {
     if (!selectedAddressId) {
@@ -133,24 +168,18 @@ const AddressPage = () => {
       return;
     }
 
-
-    // Normalise: order schema needs fullName, user address stores firstName + lastName
-    const shippingAddress = {
-      fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
-      phoneNumber: selectedAddress.phoneNumber,
-      addressLine1: selectedAddress.addressLine1,
-      city: selectedAddress.city,
-      state: selectedAddress.state,
-      postalCode: selectedAddress.postalCode,
-      country: selectedAddress.country || "India",
-    };
+    const shippingAddress = buildShippingAddress(selectedAddress);
 
     try {
       setIsSubmitting(true);
       toast.loading("Initiating payment...");
-      const response = await createRazorpayPaymentLink(selectedAddressId, shippingAddress);
+      const response = await createRazorpayPaymentLink(
+        selectedAddressId,
+        shippingAddress,
+        isBuyNow ? activeItems : undefined,
+      );
       toast.dismiss();
-      if (response && response.success && response.data && response.data.short_url) {
+      if (response?.success && response?.data?.short_url) {
         window.location.href = response.data.short_url;
       } else {
         toast.error(response.message || "Failed to create payment link");
@@ -173,24 +202,14 @@ const AddressPage = () => {
       toast.error("Invalid address selected.");
       return;
     }
-    if (cart.length === 0) {
-      toast.error("Your cart is empty.");
+    if (activeItems.length === 0) {
+      toast.error(isBuyNow ? "No item to order." : "Your cart is empty.");
       return;
     }
 
-    // Normalise: order schema needs fullName, user address stores firstName + lastName
-    const shippingAddress = {
-      fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
-      phoneNumber: selectedAddress.phoneNumber,
-      addressLine1: selectedAddress.addressLine1,
-      city: selectedAddress.city,
-      state: selectedAddress.state,
-      postalCode: selectedAddress.postalCode,
-      country: selectedAddress.country || "India",
-    };
+    const shippingAddress = buildShippingAddress(selectedAddress);
 
-    // Map cart items to the backend order schema
-    const orderItems = cart.map((item) => ({
+    const orderItems = activeItems.map((item) => ({
       product: item.product._id,
       name: item.product.name,
       image: item.product.mainImage?.url || item.variantImage || "",
@@ -203,7 +222,7 @@ const AddressPage = () => {
       },
     }));
 
-    const totalAmount = finalAmount + shippingCharges + platformFee;
+    const totalAmount = activeFinalAmount + shippingCharges + platformFee;
 
     try {
       setIsSubmitting(true);
@@ -212,14 +231,15 @@ const AddressPage = () => {
         shippingAddress,
         orderItems,
         {
-          itemsPrice: finalAmount,
+          itemsPrice: activeFinalAmount,
           shippingPrice: shippingCharges,
           taxPrice: platformFee,
           totalPrice: totalAmount,
-        }
+        },
+        isBuyNow ? activeItems : undefined,
       );
       toast.dismiss();
-      if (response && response.success) {
+      if (response?.success) {
         toast.success("Order placed successfully!");
         router.push("/checkout/success?payment_method=cod");
       } else {
@@ -233,16 +253,15 @@ const AddressPage = () => {
     }
   };
 
-  /* Logic for display name (Copied from CartPage logic for consistency) */
   const categoryNames =
     applicableCategories.length > 0
       ? cart
-        .filter(
-          (item) =>
-            item.product.category &&
-            applicableCategories.includes(item.product.category._id),
-        )
-        .map((item) => item.product.category.name)
+          .filter(
+            (item) =>
+              item.product.category &&
+              applicableCategories.includes(item.product.category._id),
+          )
+          .map((item) => item.product.category.name)
       : [];
   const uniqueCategoryNames = Array.from(new Set(categoryNames));
   const displayCategoryName =
@@ -288,7 +307,6 @@ const AddressPage = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* LEFT COLUMN: ADDRESS */}
           <div className="w-full lg:w-8/12">
-            {/* Customer Information - Email */}
             <div className="mb-6">
               <h4 className="text-xl text-[#785e32] mb-4 font-montserrat">
                 Customer Information
@@ -314,8 +332,6 @@ const AddressPage = () => {
               </div>
             </div>
 
-            {/* If no addresses and not adding new (initial empty state handling could be here) */}
-
             {showAddForm ? (
               <AddressForm
                 onSuccess={() => {
@@ -339,7 +355,7 @@ const AddressPage = () => {
                     </p>
                     <button
                       onClick={() => setShowAddForm(true)}
-                      className="bg-[#bd9951] text-white px-6 py-2 rounded font-semibold hover:bg-[#a38038]"
+                      className="bg-[#bd9951] text-white px-6 py-2 rounded font-semibold hover:bg-[#a38038] cursor-pointer"
                     >
                       Add New Address
                     </button>
@@ -363,29 +379,28 @@ const AddressPage = () => {
 
           {/* RIGHT COLUMN: SUMMARY */}
           <div className="w-full lg:w-4/12">
-            {/* Product List Summary */}
-            <MiniCartSummary cartItems={cart} />
+            <MiniCartSummary cartItems={activeItems} />
 
-            {/* Price Details */}
             <PriceDetails
-              couponInput={couponInput}
+              couponInput={isBuyNow ? "" : couponInput}
               setCouponInput={setCouponInput}
               handleApplyCoupon={(userId) => {
-                if (couponInput && userId) applyCoupon(couponInput, userId);
+                if (!isBuyNow && couponInput && userId)
+                  applyCoupon(couponInput, userId);
               }}
-              couponError={couponError}
-              bogoMessage={bogoMessage}
-              applicableCategories={applicableCategories}
-              categoryName={displayCategoryName}
-              couponCode={couponCode}
+              couponError={isBuyNow ? "" : couponError}
+              bogoMessage={isBuyNow ? "" : bogoMessage}
+              applicableCategories={isBuyNow ? [] : applicableCategories}
+              categoryName={isBuyNow ? null : displayCategoryName}
+              couponCode={isBuyNow ? "" : couponCode}
               onRemoveCoupon={removeCoupon}
-              cartLength={cart.length}
-              totalMrp={totalMrp}
-              totalDiscount={totalDiscount}
-              couponDiscount={couponDiscount}
+              cartLength={activeItems.length}
+              totalMrp={activeTotalMrp}
+              totalDiscount={activeTotalDiscount}
+              couponDiscount={isBuyNow ? 0 : couponDiscount}
               shippingCharges={shippingCharges}
               platformFee={platformFee}
-              totalAmount={finalAmount + shippingCharges + platformFee}
+              totalAmount={activeFinalAmount + shippingCharges + platformFee}
               hideProceedButton={true}
             />
 
@@ -458,6 +473,15 @@ const AddressPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// ── Outer component wraps inner in Suspense ───────────────────────────────
+const AddressPage = () => {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+      <AddressPageInner />
+    </Suspense>
   );
 };
 

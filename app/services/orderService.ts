@@ -9,27 +9,29 @@ import { apiFetch } from "./api";
  * @param pricing         - Price breakdown (itemsPrice, shippingPrice, taxPrice, totalPrice)
  */
 export const createCODOrder = async (
-    shippingAddress: object,
-    orderItems: object[],
-    pricing: {
-        itemsPrice: number;
-        shippingPrice: number;
-        taxPrice: number;
-        totalPrice: number;
-    }
+  shippingAddress: object,
+  orderItems: object[],
+  pricing: {
+    itemsPrice: number;
+    shippingPrice: number;
+    taxPrice: number;
+    totalPrice: number;
+  },
+  buyNowItems?: object[],
 ) => {
-    return apiFetch("/orders/create", {
-        method: "POST",
-        body: JSON.stringify({
-            orderItems,
-            shippingAddress,
-            paymentInfo: {
-                method: "COD",
-                status: "Pending",
-            },
-            ...pricing,
-        }),
-    });
+  return apiFetch("/orders/create", {
+    method: "POST",
+    body: JSON.stringify({
+      orderItems,
+      shippingAddress,
+      paymentInfo: {
+        method: "COD",
+        status: "Pending",
+      },
+      ...(buyNowItems ? { buyNowItems } : {}),
+      ...pricing,
+    }),
+  });
 };
 
 /**
@@ -40,13 +42,13 @@ export const createCODOrder = async (
  * @returns API response: { success, data: { orders, totalOrders, currentPage, totalPages, hasNextPage, hasPrevPage }, message }
  */
 export const getMyOrders = async (
-    page: number = 1,
-    limit: number = 10,
-    status?: string,
+  page: number = 1,
+  limit: number = 10,
+  status?: string,
 ) => {
-    let url = `/orders/my-orders?page=${page}&limit=${limit}`;
-    if (status && status !== "all") url += `&status=${status}`;
-    return apiFetch(url, { method: "GET" });
+  let url = `/orders/my-orders?page=${page}&limit=${limit}`;
+  if (status && status !== "all") url += `&status=${status}`;
+  return apiFetch(url, { method: "GET" });
 };
 
 /**
@@ -56,7 +58,5 @@ export const getMyOrders = async (
  * @returns API response: { success, data: Order, message }
  */
 export const getOrderById = async (orderId: string) => {
-    return apiFetch(`/orders/${orderId}`, { method: "GET" });
+  return apiFetch(`/orders/${orderId}`, { method: "GET" });
 };
-
-

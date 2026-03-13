@@ -32,8 +32,8 @@ const TrendingThisWeek = () => {
     const loadTrending = async () => {
       try {
         const res = await fetchTrendingProducts();
-        if (res.success && res.data) {
-          const formattedProducts = res.data.map((p: Product) => {
+        if (res.success && res.products) {
+          const formattedProducts = res.products.map((p: Product) => {
             let minPrice = Infinity;
             let relatedMrp = 0;
             let discountStr = "";
