@@ -217,4 +217,25 @@ export const incrementProductView = async (slug : string) => {
   }
 };
 
+// In productService.ts — replace the existing getCollectionProducts function
+// and add the CollectionProduct interface
 
+export interface CollectionProduct {
+  _id: string;
+  name: string;
+  slug: string;
+  image: string;
+  imageAlt: string;
+  hoverImage: string;
+  hoverImageAlt: string;
+  price: string | null;
+  mrp: string | null;
+  discount: string | null;
+  soldOut: boolean;
+}
+
+export const getCollectionProducts = async (): Promise<CollectionProduct[]> => {
+  const res: { success: boolean; products: CollectionProduct[] } =
+    await apiFetch("/products/collections");
+  return res?.products ?? [];
+};
