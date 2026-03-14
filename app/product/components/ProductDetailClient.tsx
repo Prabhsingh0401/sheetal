@@ -412,7 +412,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     const isLoggedIn = !!Cookies.get("token");
 
     if (!isLoggedIn) {
-      sessionStorage.setItem("redirect", checkoutUrl); 
+      sessionStorage.setItem("redirect", checkoutUrl);
       router.push("/login");
       return;
     }
@@ -755,6 +755,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         selectedSize={selectedSize}
         setSelectedSize={setSelectedSize}
         sizeChartData={sizeChartData}
+        onAddToCart={handleAddToCart}
+        onAddToWishlist={() => toggleProductInWishlist(product._id)}
+        isWishlisted={isProductInWishlist(product._id)}
       />
     </div>
   );
