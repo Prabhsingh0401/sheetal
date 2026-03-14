@@ -94,7 +94,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
       setTransformOrigin(`${x}% ${y}%`);
     },
-    [showVideo]
+    [showVideo],
   );
 
   const handleMouseEnter = () => {
@@ -105,7 +105,6 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     setIsZooming(false);
     setTransformOrigin("50% 50%");
   };
-
 
   return (
     <>
@@ -148,7 +147,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             ))}
             {videoUrl && (
               <div
-                className={`border cursor-pointer transition-all flex-shrink-0 flex items-center justify-center h-24 ${
+                className={`border cursor-pointer transition-all flex-shrink-0 relative ${
                   showVideo
                     ? "border-[#bd9951]"
                     : "border-gray-200 hover:border-gray-300"
@@ -158,21 +157,27 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                   onImageChange("");
                 }}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-video text-gray-400"
-                >
-                  <path d="m22 8-6 4 6 4V8Z" />
-                  <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
-                </svg>
+                <Image
+                  src={images[0] || "/assets/placeholder-product.jpg"}
+                  alt="video-thumbnail"
+                  width={100}
+                  height={133}
+                  className="w-full h-auto object-cover"
+                />
+                {/* Play icon overlay */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <div className="bg-white/80 rounded-full p-1.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="#bd9951"
+                    >
+                      <polygon points="5,3 19,12 5,21" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -244,8 +249,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
               cursor: showVideo
                 ? "default"
                 : isZooming
-                ? "zoom-in"
-                : "crosshair",
+                  ? "zoom-in"
+                  : "crosshair",
             }}
             onMouseMove={handleMouseMove}
             onMouseEnter={handleMouseEnter}
