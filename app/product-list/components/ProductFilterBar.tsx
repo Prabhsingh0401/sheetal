@@ -857,7 +857,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           ))}
           <button
             onClick={clearFilters}
-            className="text-sm text-orange-600 hover:text-orange-700 font-medium underline ml-2 transition-colors"
+            className="text-sm text-orange-600 cursor-pointer hover:text-orange-700 font-medium underline ml-2 transition-colors"
           >
             Clear Filters
           </button>

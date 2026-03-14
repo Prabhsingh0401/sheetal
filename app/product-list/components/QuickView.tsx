@@ -6,9 +6,11 @@ import {
   getProductImageUrl,
 } from "../../services/productService";
 import ProductImageGallery from "../../product/components/ProductImageGallery";
+import { useRouter } from "next/navigation";
 import { getApiImageUrl } from "../../services/api";
 import Image from "next/image";
 import { useWishlist } from "../../hooks/useWishlist";
+import toast from "react-hot-toast";
 
 import { useCart } from "../../hooks/useCart";
 
@@ -27,6 +29,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
   // Removed lowestPrice and lowestMrp states
   const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const router = useRouter()
 
   useEffect(() => {
     if (productSlug) {
@@ -87,7 +90,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
           if (selectedSizeInfo) {
             price =
               selectedSizeInfo.discountPrice &&
-                selectedSizeInfo.discountPrice > 0
+              selectedSizeInfo.discountPrice > 0
                 ? selectedSizeInfo.discountPrice
                 : selectedSizeInfo.price;
             originalPrice = selectedSizeInfo.price;
@@ -132,6 +135,67 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
       };
     }, [product, selectedColor, selectedSize]);
 
+  const handleBuyNow = () => {
+    if (!product) return;
+    if (!selectedSize) {
+      toast.error("Please select a size");
+      return;
+    }
+    if (!selectedColor) {
+      toast.error("Please select a color");
+      return;
+    }
+
+    const selectedVariant = product.variants.find(
+      (v) => v.color?.name === selectedColor,
+    );
+    const selectedSizeObject = selectedVariant?.sizes.find(
+      (s) => s.name === selectedSize,
+    );
+
+    if (!selectedVariant || !selectedSizeObject) {
+      toast.error("Selected variant not available");
+      return;
+    }
+
+    const variantImageUrl = getApiImageUrl(
+      selectedVariant.v_image,
+      product.mainImage?.url || "/assets/placeholder-product.jpg",
+    );
+
+    const buyNowItem = {
+      product: {
+        _id: product._id,
+        name: product.name,
+        mainImage: product.mainImage,
+        sku: product.sku,
+        category: product.category,
+      },
+      size: selectedSize,
+      color: selectedColor,
+      quantity,
+      price: selectedSizeObject.price || 0,
+      discountPrice:
+        selectedSizeObject.discountPrice || selectedSizeObject.price || 0,
+      variantImage: variantImageUrl,
+    };
+
+    const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
+    const checkoutUrl = `/checkout/address?buynow=${encoded}`;
+
+    const isLoggedIn = !!localStorage.getItem("token"); // adapt to your auth check
+
+    if (!isLoggedIn) {
+      sessionStorage.setItem("redirect", checkoutUrl);
+      onClose(); // close the modal before navigating
+      router.push("/login");
+      return;
+    }
+
+    onClose();
+    router.push(checkoutUrl);
+  };
+
   const handleAddToCart = async () => {
     if (product) {
       const selectedVariant = product.variants.find(
@@ -158,8 +222,8 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
             selectedSize,
             selectedSizeInfo.price,
             selectedSizeInfo.discountPrice,
-            variantImageUrl,   // 7th: variantImage
-            selectedColor,     // 8th: color
+            variantImageUrl, // 7th: variantImage
+            selectedColor, // 8th: color
             {
               _id: product._id,
               name: product.name,
@@ -260,7 +324,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className="absolute top-4 right-4 text-gray-500 border px-2 hover:text-gray-700 text-2xl font-bold z-10"
+          className="absolute cursor-pointer top-4 right-4 text-gray-500 border px-2 hover:text-gray-700 text-2xl font-bold z-10"
           onClick={onClose}
         >
           &times;
@@ -280,7 +344,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                   title={product.name}
                   isWishlisted={isProductInWishlist(product._id)}
                   onToggleWishlist={() => toggleProductInWishlist(product._id)}
-                  onScrollToSimilar={() => { }}
+                  onScrollToSimilar={() => {}}
                 />
               </div>
               <div className="w-full sm:w-1/2 px-2 text-left relative">
@@ -368,16 +432,18 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                             className={`
                                                                 ${sizeName === "One Size" ? "px-3 py-2 rounded-md" : "w-10 h-10 rounded-full"}
                                                                 flex items-center justify-center border text-sm font-medium transition-colors relative overflow-hidden
-                                                                ${isDisabled
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                : ""
-                              }
-                                                                ${selectedSize ===
-                                sizeName &&
-                                !isDisabled
-                                ? "border-[#bd9951]"
-                                : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-                              }
+                                                                ${
+                                                                  isDisabled
+                                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                                    : ""
+                                                                }
+                                                                ${
+                                                                  selectedSize ===
+                                                                    sizeName &&
+                                                                  !isDisabled
+                                                                    ? "border-[#bd9951]"
+                                                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+                                                                }
                                                             `}
                           >
                             {sizeName}
@@ -415,7 +481,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                     >
                       Add to Cart
                     </button>
-                    <button className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
+                    <button onClick={handleBuyNow} className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
                       Buy Now
                     </button>
                   </div>

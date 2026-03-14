@@ -62,9 +62,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </Link>
 
             {/* Action Icons (Grid Mode Only usually, but let's keep for both or hide in list if preferred. Keeping for now) */}
-            <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
+            <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 cursor-pointer">
               <button
-                className="w-10 h-10 rounded-full flex items-center justify-cente group/icon"
+                className="w-10 h-10 rounded-full flex items-center justify-cente group/icon cursor-pointer"
                 onClick={() => onToggleWishlist(product._id)} // Add onClick handler
               >
                 <Image

@@ -98,7 +98,7 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
           <div className="grid grid-cols-12 gap-6">
             {/* Tag Groups Section */}
             <div
-              className={`col-span-8 grid grid-cols-4 gap-4`}
+              className={`col-span-8 grid grid-cols-5 gap-4`}
             >
               {tagGroups.map((group, idx) => (
                 <div key={idx} className={`bg-gray-50 p-4 rounded-lg shadow-sxl ${isGrid ? "col-span-1" : "col-span-1"}`}>
