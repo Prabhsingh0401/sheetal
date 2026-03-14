@@ -97,11 +97,12 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
         <div className="container px-4 py-8">
           <div className="grid grid-cols-12 gap-6">
             {/* Tag Groups Section */}
-            <div
-              className={`col-span-8 grid grid-cols-5 gap-4`}
-            >
+            <div className={`col-span-8 grid grid-cols-5 gap-4`}>
               {tagGroups.map((group, idx) => (
-                <div key={idx} className={`bg-gray-50 p-4 rounded-lg shadow-sxl ${isGrid ? "col-span-1" : "col-span-1"}`}>
+                <div
+                  key={idx}
+                  className={`bg-gray-50 p-4 rounded-lg shadow-sxl ${isGrid ? "col-span-1" : "col-span-1"}`}
+                >
                   <h3 className="font-medium text-lg mb-3 text-[#c18a08] tracking-wide">
                     {group.title}
                   </h3>
@@ -112,7 +113,9 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                           href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
                           className="flex items-center font-medium gap-1.5 text-gray-900 hover:text-[#c18a08] transition-colors capitalize"
                         >
-                          <span className="text-gray-900 text-[20px] leading-none">•</span>
+                          <span className="text-gray-900 text-[20px] leading-none">
+                            •
+                          </span>
                           {tag}
                         </Link>
                       </li>
@@ -397,7 +400,9 @@ const MobileSubMenuView = ({
         {/* LATEST PRODUCTS SECTION (Mobile Mega Menu) */}
         {(loadingProducts || latestProducts.length > 0) && (
           <div className="mt-8 border-t border-gray-200 pt-8">
-            <h3 className="text-[#082722] font-serif text-xl mb-4 tracking-wide">New Arrivals</h3>
+            <h3 className="text-[#082722] font-serif text-xl mb-4 tracking-wide">
+              New Arrivals
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               {loadingProducts ? (
                 <>
@@ -405,7 +410,7 @@ const MobileSubMenuView = ({
                   <div className="bg-gray-200 h-48 rounded-lg animate-pulse"></div>
                 </>
               ) : (
-                latestProducts.map(product => (
+                latestProducts.map((product) => (
                   <Link
                     key={product._id}
                     href={`/product/${product.slug}`}
@@ -424,7 +429,9 @@ const MobileSubMenuView = ({
                     <p className="text-sm font-medium text-gray-800 line-clamp-1 group-hover:text-[#b3a660] transition-colors">
                       {product.name}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Shop Now</p>
+                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">
+                      Shop Now
+                    </p>
                   </Link>
                 ))
               )}
@@ -587,24 +594,19 @@ const Navbar = () => {
 
   useEffect(() => {
     if (categories) {
-      // Filter top-level categories
-      const topLevel = categories.filter(
-        (c) => !c.parentCategory || c.parentCategory === "null",
-      );
+      const topLevel = categories.filter((c) => !c.parentCategory);
 
-      // Recursive function to build menu tree
       const buildMenuTree = (cats: Category[]): any[] => {
         return cats.map((cat) => {
           const childrenCats = categories.filter(
             (c) =>
               c.parentCategory &&
-              (typeof c.parentCategory === "object"
-                ? (c.parentCategory as any)._id === cat._id
-                : c.parentCategory === cat._id),
+              typeof c.parentCategory === "object" &&
+              (c.parentCategory as any)._id === cat._id,
           );
 
           return {
-            ...cat, // Spread category data to access tags in MegaMenu
+            ...cat,
             label: cat.name,
             href: `/${cat.slug}`,
             id: cat._id,
@@ -616,7 +618,6 @@ const Navbar = () => {
 
       const dynamicNavItems = buildMenuTree(topLevel);
 
-      // Add static items
       const finalNavItems = [
         ...dynamicNavItems,
         { label: "Our Story", href: "/about-us", id: "about" },
@@ -668,7 +669,8 @@ const Navbar = () => {
       return currentUser.name.trim().split(" ")[0];
     }
     if (currentUser.phoneNumber) return currentUser.phoneNumber;
-    if (currentUser.email) return currentUser.email.split("@")[0] || currentUser.email;
+    if (currentUser.email)
+      return currentUser.email.split("@")[0] || currentUser.email;
     return "User";
   };
 
@@ -887,7 +889,11 @@ const Navbar = () => {
         </div>
       </header>
 
-      <SearchModal isOpen={searchOpen} onClose={closeSearch} navbarBottom={scrolled ? 70 : 99} />
+      <SearchModal
+        isOpen={searchOpen}
+        onClose={closeSearch}
+        navbarBottom={scrolled ? 70 : 99}
+      />
 
       {/* Mobile Menu Drawer */}
       <MobileMenuOverlay
