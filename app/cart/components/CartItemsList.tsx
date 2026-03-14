@@ -66,32 +66,32 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             My Cart{" "}
             <span className="text-sm font-light">({cartLength} items)</span>
           </h2>
-          <div className="flex justfiy-center items-center">
-            <div>
+          <div className="flex gap-4 justfiy-center items-center">
+            <div className="cursor-pointer">
               <Image
                 src="/assets/icons/share.svg"
                 alt="Info"
-                width={16}
-                height={16}
+                width={17}
+                height={17}
                 className="inline-block mr-2"
               />
             </div>
-            <div>
+            <div className="cursor-pointer">
               <Image
                 src="/assets/icons/delete.svg"
                 alt="Delete Selected"
-                width={16}
-                height={16}
+                width={20}
+                height={20}
                 className="inline-block mr-2 cursor-pointer hover:opacity-80"
                 onClick={onBulkRemove}
               />
             </div>
-            <div>
+            <div className="cursor-pointer">
               <Image
                 src="/assets/icons/heart-b.svg"
                 alt="Wishlist Selected"
-                width={16}
-                height={16}
+                width={20}
+                height={20}
                 className="inline-block mr-2 cursor-pointer hover:opacity-80"
                 onClick={onBulkHeart}
               />
@@ -171,13 +171,6 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                     )}
 
                   <div className="flex items-center gap-2 text-sm text-[#bd9951] mt-2">
-                    <Link
-                      href={`/product/${item.product.slug}`}
-                      className="hover:underline"
-                    >
-                      Edit
-                    </Link>
-                    <span className="text-gray-300">|</span>
                     <button
                       className="hover:underline"
                       onClick={() =>
