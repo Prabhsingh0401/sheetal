@@ -29,10 +29,10 @@ const CartPage = () => {
     applicableCategories,
     itemWiseDiscount,
     updateCartItemQuantity,
-    removeCoupon, // Add this
+    removeCoupon,
   } = useCart();
 
-  /* Settings State - Moved to top to avoid hook ordering issues */
+  /* Settings State */
   const [platformFee, setPlatformFee] = useState(0);
   const [shippingCharges, setShippingCharges] = useState(0);
   const [baseShippingFee, setBaseShippingFee] = useState(0);
@@ -80,13 +80,11 @@ const CartPage = () => {
 
   const confirmRemoveItem = async () => {
     if (isBulkAction) {
-      // Bulk Delete
       for (const id of selectedItemIds) {
         await removeFromCart(id);
       }
-      setSelectedItemIds([]); // Clear selection
+      setSelectedItemIds([]);
     } else if (itemToRemove) {
-      // Single Delete
       await removeFromCart(itemToRemove._id);
       setItemToRemove(null);
     }
@@ -101,17 +99,14 @@ const CartPage = () => {
       return;
     }
     if (isBulkAction) {
-      // Bulk Move
       for (const id of selectedItemIds) {
-        // Find product ID from cart items
         const item = cartItems.find((i) => i._id === id);
         if (item) {
           await moveFromCartToWishlist(id, item.product._id);
         }
       }
-      setSelectedItemIds([]); // Clear selection
+      setSelectedItemIds([]);
     } else if (itemToRemove) {
-      // Single Move
       await moveFromCartToWishlist(itemToRemove._id, itemToRemove.product._id);
       setItemToRemove(null);
     }
@@ -130,16 +125,13 @@ const CartPage = () => {
       toast.error("Please login to apply coupons.");
       return;
     }
-
     if (!couponInput.trim()) {
       toast.error("Please enter a coupon code.");
       return;
     }
-
     applyCoupon(couponInput.trim().toUpperCase(), userId);
   };
 
-  /** Navigates to checkout if signed in, otherwise redirects to login */
   const handleProceedToBuy = () => {
     if (!isAuthenticated()) {
       sessionStorage.setItem("redirect", "/checkout/address");
@@ -158,7 +150,6 @@ const CartPage = () => {
         setBaseShippingFee(Number(settings.shippingFee) || 0);
         setFreeShippingThreshold(Number(settings.freeShippingThreshold) || 0);
 
-        // Initial calculation
         const threshold = Number(settings.freeShippingThreshold) || 0;
         if (finalAmount > threshold && threshold > 0) {
           setShippingCharges(0);
@@ -191,20 +182,16 @@ const CartPage = () => {
 
   const totalAmount = finalAmount + shippingCharges + platformFee;
 
-  /* Removed client-side cheapestItem calculation to rely on server response */
-
-  /* Logic for display name */
   const categoryNames =
     applicableCategories.length > 0
       ? cartItems
-        .filter(
-          (item) =>
-            item.product.category &&
-            applicableCategories.includes(item.product.category._id),
-        )
-        .map((item) => item.product.category.name)
+          .filter(
+            (item) =>
+              item.product.category &&
+              applicableCategories.includes(item.product.category._id),
+          )
+          .map((item) => item.product.category.name)
       : [];
-  // Unique names
   const uniqueCategoryNames = Array.from(new Set(categoryNames));
   const displayCategoryName =
     uniqueCategoryNames.length > 0 ? uniqueCategoryNames.join(", ") : null;
@@ -212,38 +199,41 @@ const CartPage = () => {
   return (
     <div className="font-montserrat">
       {/* Header */}
-      <div className="">
-        <div className="container mx-10">
-          <div className="flex justify-between items-center py-3">
-            <div className="flex items-center">
-              <Link href="/">
-                <Image
-                  src="/assets/335014072.png"
-                  alt="Studio By Sheetal"
-                  width={40}
-                  height={40}
-                />
-              </Link>
-            </div>
-            <div className="hidden md:flex items-center space-x-8 text-sm font-medium mx-20">
-              <div className="text-[#bd9951]">BAG</div>
-              <Link
-                href="/checkout/address"
-                className="text-gray-400 hover:text-[#bd9951]"
-              >
-                ADDRESS
-              </Link>
-              <div className="text-gray-400">PAYMENT</div>
-            </div>
-            <div className="flex items-center space-x-2 text-sm font-semibold">
+      <div className="w-full border-b border-gray-100">
+        <div className="flex justify-between items-center py-3 px-6 md:px-10">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link href="/">
               <Image
-                src="/assets/icons/shield.svg"
-                alt="Secure"
-                width={20}
-                height={20}
+                src="/assets/335014072.png"
+                alt="Studio By Sheetal"
+                width={40}
+                height={40}
               />
-              <span>100% SECURE</span>
-            </div>
+            </Link>
+          </div>
+
+          {/* Checkout Steps */}
+          <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+            <div className="text-[#bd9951]">BAG</div>
+            <Link
+              href="/checkout/address"
+              className="text-gray-400 hover:text-[#bd9951]"
+            >
+              ADDRESS
+            </Link>
+            <div className="text-gray-400">PAYMENT</div>
+          </div>
+
+          {/* Secure Badge */}
+          <div className="flex items-center space-x-2 text-sm font-semibold">
+            <Image
+              src="/assets/icons/shield.svg"
+              alt="Secure"
+              width={20}
+              height={20}
+            />
+            <span>100% SECURE</span>
           </div>
         </div>
       </div>
@@ -270,7 +260,6 @@ const CartPage = () => {
             <div className="flex flex-col lg:flex-row gap-8">
               <CartItemsList
                 cartItems={cartItems}
-                // cheapestItem prop removed
                 applicableCategories={applicableCategories}
                 itemWiseDiscount={itemWiseDiscount}
                 couponOfferType={couponOfferType}

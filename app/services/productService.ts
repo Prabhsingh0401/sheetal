@@ -113,6 +113,7 @@ export interface ProductQueryParams {
   fabric?: string; // comma-separated or single value
   minPrice?: number;
   maxPrice?: number;
+  ids?: string;
 }
 
 export interface ProductResponse {
@@ -128,6 +129,7 @@ export const fetchProducts = async (
 ): Promise<ProductResponse> => {
   const query = new URLSearchParams();
   if (params.page) query.append("page", params.page.toString());
+  if (params.ids) query.append("ids", params.ids);
   if (params.limit) query.append("limit", params.limit.toString());
   if (params.search) query.append("search", params.search);
   if (params.sort) query.append("sort", params.sort);
@@ -157,7 +159,7 @@ export const getNewArrivals = async (): Promise<{
 
 export const fetchTrendingProducts = async (): Promise<{
   success: boolean;
-  products : Product[];
+  products: Product[];
 }> => {
   return apiFetch("/products/trending");
 };
@@ -179,7 +181,8 @@ export const getProductHoverImageUrl = (
   fallback: string = "/assets/default-image.png",
 ) => {
   if (!product) return fallback;
-  return getApiImageUrl(product.hoverImage, fallback);
+  if (!product.hoverImage) return fallback;
+  return getApiImageUrl(product.hoverImage, fallback); // pass the whole object, same as mainImage
 };
 
 export const checkCanReview = async (productId: string) => {
@@ -208,7 +211,7 @@ export const fetchProductReviews = async (productId: string) => {
   });
 };
 
-export const incrementProductView = async (slug : string) => {
+export const incrementProductView = async (slug: string) => {
   try {
     await apiFetch(`/products/view/${slug}`, { method: "PATCH" });
   } catch (err) {

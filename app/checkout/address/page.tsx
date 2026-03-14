@@ -270,40 +270,43 @@ const AddressPageInner = () => {
   return (
     <div className="font-montserrat">
       {/* Header */}
-      <div className="">
-        <div className="container mx-10">
-          <div className="flex justify-between items-center py-3 px-4 md:px-0">
-            <div className="flex items-center">
-              <Link href="/">
-                <Image
-                  src="/assets/335014072.png"
-                  alt="Studio By Sheetal"
-                  width={40}
-                  height={40}
-                />
-              </Link>
-            </div>
-            <div className="hidden md:flex items-center space-x-8 text-sm font-medium mx-20">
-              <Link href="/cart" className="text-black hover:text-[#bd9951]">
-                BAG
-              </Link>
-              <div className="text-[#bd9951]">ADDRESS</div>
-              <div className="text-gray-400 cursor-not-allowed">PAYMENT</div>
-            </div>
-            <div className="flex items-center space-x-2 text-sm font-semibold">
+      <div className="w-full border-b border-gray-100">
+        <div className="flex justify-between items-center py-3 px-6 md:px-10">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link href="/" className="cursor-pointer">
               <Image
-                src="/assets/icons/shield.svg"
-                alt="Secure"
-                width={20}
-                height={20}
+                src="/assets/335014072.png"
+                alt="Studio By Sheetal"
+                width={40}
+                height={40}
               />
-              <span>100% SECURE</span>
-            </div>
+            </Link>
+          </div>
+
+          {/* Checkout Steps */}
+          <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+            <Link href="/cart" className="text-black hover:text-[#bd9951] cursor-pointer">
+              BAG
+            </Link>
+            <div className="text-[#bd9951]">ADDRESS</div>
+            <div className="text-gray-400 cursor-not-allowed">PAYMENT</div>
+          </div>
+
+          {/* Secure Badge */}
+          <div className="flex items-center space-x-2 text-sm font-semibold">
+            <Image
+              src="/assets/icons/shield.svg"
+              alt="Secure"
+              width={20}
+              height={20}
+            />
+            <span>100% SECURE</span>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto py-8 px-4 md:px-0">
+      <div className="container mx-auto py-8 px-4 md:px-8 lg:px-12">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* LEFT COLUMN: ADDRESS */}
           <div className="w-full lg:w-8/12">
@@ -312,7 +315,7 @@ const AddressPageInner = () => {
                 Customer Information
               </h4>
               <div className="mb-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1 cursor-default">
                   Enter Email Address *
                 </label>
                 <input
@@ -323,7 +326,11 @@ const AddressPageInner = () => {
                   }
                   readOnly={isEmailFromProfile}
                   placeholder="Email Id"
-                  className={`w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951] ${isEmailFromProfile ? "bg-gray-50 cursor-not-allowed" : ""}`}
+                  className={`w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951] ${
+                    isEmailFromProfile
+                      ? "bg-gray-50 cursor-not-allowed"
+                      : "cursor-text"
+                  }`}
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -355,7 +362,7 @@ const AddressPageInner = () => {
                     </p>
                     <button
                       onClick={() => setShowAddForm(true)}
-                      className="bg-[#bd9951] text-white px-6 py-2 rounded font-semibold hover:bg-[#a38038] cursor-pointer"
+                      className="bg-[#bd9951] text-white px-6 py-2 rounded font-semibold hover:bg-[#a38038] cursor-pointer transition-colors"
                     >
                       Add New Address
                     </button>
@@ -479,7 +486,13 @@ const AddressPageInner = () => {
 // ── Outer component wraps inner in Suspense ───────────────────────────────
 const AddressPage = () => {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          Loading...
+        </div>
+      }
+    >
       <AddressPageInner />
     </Suspense>
   );

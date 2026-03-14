@@ -106,7 +106,9 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                           href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
                           className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors capitalize"
                         >
-                          <span className="text-gray-900 text-[20px] leading-none">•</span>
+                          <span className="text-gray-900 text-[20px] leading-none">
+                            •
+                          </span>
                           {tag}
                         </Link>
                       </li>
@@ -377,7 +379,9 @@ const MobileSubMenuView = ({
         {/* LATEST PRODUCTS SECTION (Mobile Mega Menu) */}
         {(loadingProducts || latestProducts.length > 0) && (
           <div className="mt-8 border-t border-gray-200 pt-8">
-            <h3 className="text-[#082722] font-serif text-xl mb-4 tracking-wide">New Arrivals</h3>
+            <h3 className="text-[#082722] font-serif text-xl mb-4 tracking-wide">
+              New Arrivals
+            </h3>
             <div className="grid grid-cols-2 gap-4">
               {loadingProducts ? (
                 <>
@@ -385,7 +389,7 @@ const MobileSubMenuView = ({
                   <div className="bg-gray-200 h-48 rounded-lg animate-pulse"></div>
                 </>
               ) : (
-                latestProducts.map(product => (
+                latestProducts.map((product) => (
                   <Link
                     key={product._id}
                     href={`/product/${product.slug}`}
@@ -404,7 +408,9 @@ const MobileSubMenuView = ({
                     <p className="text-sm font-medium text-gray-800 line-clamp-1 group-hover:text-[#b3a660] transition-colors">
                       {product.name}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Shop Now</p>
+                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">
+                      Shop Now
+                    </p>
                   </Link>
                 ))
               )}
@@ -560,24 +566,19 @@ const NavbarInner = () => {
 
   useEffect(() => {
     if (categories) {
-      // Filter top-level categories
-      const topLevel = categories.filter(
-        (c) => !c.parentCategory || c.parentCategory === "null",
-      );
+      const topLevel = categories.filter((c) => !c.parentCategory);
 
-      // Recursive function to build menu tree
       const buildMenuTree = (cats: Category[]): any[] => {
         return cats.map((cat) => {
           const childrenCats = categories.filter(
             (c) =>
               c.parentCategory &&
-              (typeof c.parentCategory === "object"
-                ? (c.parentCategory as any)._id === cat._id
-                : c.parentCategory === cat._id),
+              typeof c.parentCategory === "object" &&
+              (c.parentCategory as any)._id === cat._id,
           );
 
           return {
-            ...cat, // Spread category data to access tags in MegaMenu
+            ...cat,
             label: cat.name,
             href: `/${cat.slug}`,
             id: cat._id,
@@ -589,7 +590,6 @@ const NavbarInner = () => {
 
       const dynamicNavItems = buildMenuTree(topLevel);
 
-      // Add static items
       const finalNavItems = [
         ...dynamicNavItems,
         { label: "Our Story", href: "/about-us", id: "about" },
@@ -641,7 +641,8 @@ const NavbarInner = () => {
       return currentUser.name.trim().split(" ")[0];
     }
     if (currentUser.phoneNumber) return currentUser.phoneNumber;
-    if (currentUser.email) return currentUser.email.split("@")[0] || currentUser.email;
+    if (currentUser.email)
+      return currentUser.email.split("@")[0] || currentUser.email;
     return "User";
   };
 
@@ -720,8 +721,9 @@ const NavbarInner = () => {
   return (
     <>
       <div
-        className={`hidden md:block fixed w-full z-[1003] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm py-4 font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[27px]"
-          }`}
+        className={`hidden md:block fixed w-full z-[1003] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm py-4 font-[family-name:var(--font-montserrat)] ${
+          scrolled ? "top-0 shadow-lg" : "top-[27px]"
+        }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center w-full">
@@ -797,8 +799,9 @@ const NavbarInner = () => {
       </div>
 
       <header
-        className={`md:hidden fixed w-full z-40 bg-[#112f23] backdrop-blur-sm shadow-sm py-2 transition-all duration-300 ${scrolled ? "top-0" : "top-[27px]"
-          }`}
+        className={`md:hidden fixed w-full z-40 bg-[#112f23] backdrop-blur-sm shadow-sm py-2 transition-all duration-300 ${
+          scrolled ? "top-0" : "top-[27px]"
+        }`}
       >
         <div className="container mx-auto px-4 flex justify-between items-center h-[50px]">
           {/* Logo for Mobile */}
@@ -848,7 +851,11 @@ const NavbarInner = () => {
         </div>
       </header>
 
-      <SearchModal isOpen={searchOpen} onClose={closeSearch} navbarBottom={scrolled ? 70 : 99} />
+      <SearchModal
+        isOpen={searchOpen}
+        onClose={closeSearch}
+        navbarBottom={scrolled ? 70 : 99}
+      />
       <MobileMenuOverlay
         isOpen={isMobileMenuOpen}
         onClose={toggleMobileMenu}

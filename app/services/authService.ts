@@ -45,13 +45,24 @@ export const verifyIdToken = async (
 export const sendEmailOtp = async (email: string) => {
   return apiFetch("/client/auth/send-email-otp", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
   });
 };
 
 export const verifyEmailOtp = async (email: string, otp: string) => {
+  const currentToken = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (currentToken) {
+    headers["Authorization"] = `Bearer ${currentToken}`;
+  }
+
   return apiFetch("/client/auth/verify-email-otp", {
     method: "POST",
+    headers,
     body: JSON.stringify({ email, otp }),
   });
 };

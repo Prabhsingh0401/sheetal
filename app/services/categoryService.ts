@@ -10,26 +10,38 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
-  mainImage?: CategoryImage;
-  bannerImage?: CategoryImage;
-  categoryBanner?: string;
-  parentCategory?: string | null;
-  isFeatured?: boolean;
-  isActive?: boolean;
-  status?: string;
+  mainImage?: {
+    url: string;
+    public_id?: string;
+  };
+  bannerImage?: {
+    url: string;
+    public_id?: string;
+  };
+  parentCategory?: {
+    _id: string;
+    name: string;
+  } | null;
+  // SEO fields
   metaTitle?: string;
   metaDescription?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  subCategories?: string[]; // Added support for subcategories
+  metaKeywords?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  // rest of your existing fields
+  categoryBanner?: string;
+  isFeatured?: boolean;
+  isActive?: boolean;
+  status?: "Active" | "Inactive";
+  subCategories?: string[];
   style?: string[];
   work?: string[];
   fabric?: string[];
   productType?: string[];
   wearType?: string[];
   occasion?: string[];
+  order?: number;
 }
-
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -94,4 +106,18 @@ export const getCategoryBannerUrl = (
 
   // Prioritize bannerImage for category banners
   return getApiImageUrl(category.bannerImage, fallback);
+};
+
+export const fetchCategoryBySlugServer = async (
+  slug: string,
+): Promise<Category | null> => {
+  try {
+    const res = await apiFetch(`/categories/${slug}`, {
+      next: { revalidate: 3600 },
+    });
+    return res?.data ?? null;
+  } catch (error) {
+    console.error("Error fetching category by slug (server):", error);
+    return null;
+  }
 };

@@ -407,7 +407,17 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     };
 
     const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
-    router.push(`/checkout/address?buynow=${encoded}`);
+    const checkoutUrl = `/checkout/address?buynow=${encoded}`;
+
+    const isLoggedIn = !!Cookies.get("token");
+
+    if (!isLoggedIn) {
+      sessionStorage.setItem("redirect", checkoutUrl);
+      router.push("/login");
+      return;
+    }
+
+    router.push(checkoutUrl);
   };
 
   const scrollToSimilarProducts = useCallback(() => {
@@ -745,6 +755,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         selectedSize={selectedSize}
         setSelectedSize={setSelectedSize}
         sizeChartData={sizeChartData}
+        onAddToCart={handleAddToCart}
+        onAddToWishlist={() => toggleProductInWishlist(product._id)}
+        isWishlisted={isProductInWishlist(product._id)}
       />
     </div>
   );
