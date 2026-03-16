@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { FilterOptions } from "../../hooks/useProductFilters";
 import { PriceRangeSlider } from "./PriceRangeSlider";
-
+import {ChevronDown} from 'lucide-react'
+ 
 interface ProductFilterBarProps {
   filtersOpen: boolean;
   toggleFilters: () => void;
@@ -61,21 +62,23 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
   return (
     <>
       {/* Top Filter Bar */}
-      <div className="border-t border-b border-gray-200 py-4 mb-6 relative hidden lg:block">
+      <div className="border-t border-b border-[#e7b96bb8] py-4 mb-6 relative hidden lg:block">
         <div className="flex flex-col items-center gap-4">
           {/* Centered Sort By */}
           <div className="relative">
             <button
               onClick={toggleSortBy}
-              className="flex cursor-pointer items-center gap-2 text-sm font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
+              className="flex cursor-pointer items-center gap-2 text-md font-medium tracking-normal hover:text-[#bd9951] transition-colors"
             >
               <Image
                 src="/assets/icons/sort.svg"
                 alt="Sort"
-                width={16}
-                height={16}
+                width={20}
+                height={20}
+                className="w-6 h-6"
               />
               Sort By
+              <ChevronDown className="w-6 h-6"/>
             </button>
 
             {/* Sort Dropdown */}
@@ -158,7 +161,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           {/* Filters and View Mode - Positioned Absolutely */}
           <button
             onClick={toggleFilters}
-            className="absolute left-0 top-1/2 cursor-pointer -translate-y-1/2 flex items-center gap-2 text-lg font-medium uppercase tracking-wider hover:text-[#bd9951] transition-colors"
+            className="absolute left-0 top-1/2 cursor-pointer -translate-y-1/2 flex items-center gap-2 text-md font-normal tracking-wider hover:text-[#bd9951] transition-colors"
           >
             <Image
               src="/assets/icons/filter.svg"
@@ -216,61 +219,43 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
       >
         <div className="p-6">
           {/* Sidebar Header */}
-          <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+          <div className="flex justify-between items-center pb-4">
             <h4 className="text-xl font-medium uppercase tracking-wide">
               Filters
             </h4>
             <button
               onClick={toggleFilters}
-              className="text-gray-400 hover:text-black transition-colors"
+              className="text-gray-400 hover:text-black transition-colors cursor-pointer"
             >
               <span className="text-2xl">×</span>
             </button>
           </div>
 
           {/* Clear Filters (Top) */}
-          <div className="mb-6 flex justify-between items-center">
+          <div className="mb-4 flex justify-between items-center pb-4 border-b border-gray-700">
             <span className="text-sm text-gray-500">
               {totalProducts} Product{totalProducts !== 1 ? "s" : ""}
             </span>
             {activeFilters.length > 0 && (
               <button
                 onClick={clearFilters}
-                className="text-sm text-[#bd9951] underline uppercase tracking-wider"
+                className="text-[13px] text-[#d10e00] cursor-pointer underline tracking-wider"
               >
-                Clear All
+                Clear Filters
               </button>
             )}
           </div>
 
-          {/* Active Filters inside Sidebar */}
-          {activeFilters.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              {activeFilters.map((filter, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-1 bg-gray-100 px-2 py-1 text-[10px] uppercase tracking-wide text-gray-600 rounded-sm"
-                >
-                  {filter.label}
-                  <button
-                    onClick={() => removeFilter(filter.label)}
-                    className="hover:text-red-500 font-bold ml-1"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          
 
           {/* Filter Categories Accordion */}
-          <div className="space-y-4">
+          <div className="space-y-4 font-[family-name:var(--font-montserrat)]">
             {/* Size Filter */}
             {filterOptions.sizes.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("size")}
-                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Size
                   <svg
@@ -304,7 +289,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-size-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {size}
                       </label>
@@ -316,10 +301,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Color Filter */}
             {filterOptions.colors.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("color")}
-                  className="w-full flex cursor-pointer justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Color
                   <svg
@@ -353,7 +338,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-color-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         <span
                           className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
@@ -370,10 +355,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Price Filter */}
             {filterOptions.priceRanges.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("price")}
-                  className="w-full flex cursor-pointer justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Price
                   <svg
@@ -415,10 +400,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Availability Filter */}
             {filterOptions.availability.length > 0 && (
-              <div className="border-b border-gray-100 pb-4 last:border-0">
+              <div className="border-b border-gray-300 pb-2 last:border-0">
                 <button
                   onClick={() => toggleSection("availability")}
-                  className="w-full flex cursor-pointer justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Availability
                   <svg
@@ -454,7 +439,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-availability-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {avail.label}{" "}
                         <span className="text-gray-400">({avail.count})</span>
@@ -467,10 +452,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Wear Type Filter */}
             {filterOptions.wearTypes.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("wearType")}
-                  className="w-full flex cursor-pointer justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Wear Type
                   <svg
@@ -506,7 +491,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-wearType-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {toSentenceCase(wearType.label)}{" "}
                         <span className="text-gray-400">
@@ -521,10 +506,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Occasion Filter */}
             {filterOptions.occasions.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("occasion")}
-                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Occasion
                   <svg
@@ -560,7 +545,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-occasion-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {toSentenceCase(occasion.label)}{" "}
                         <span className="text-gray-400">
@@ -575,10 +560,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Tags Filter */}
             {filterOptions.tags.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("tags")}
-                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Tags
                   <svg
@@ -612,7 +597,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-tag-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {toSentenceCase(tag.label)}{" "}
                         <span className="text-gray-400">({tag.count})</span>
@@ -625,10 +610,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Style Filter */}
             {filterOptions.styles.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("style")}
-                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Style
                   <svg
@@ -662,7 +647,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-style-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {toSentenceCase(item.label)}{" "}
                         <span className="text-gray-400">({item.count})</span>
@@ -675,10 +660,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Work Filter */}
             {filterOptions.works.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("work")}
-                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Work
                   <svg
@@ -712,7 +697,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-work-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {toSentenceCase(item.label)}{" "}
                         <span className="text-gray-400">({item.count})</span>
@@ -725,10 +710,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Fabric Filter */}
             {filterOptions.fabrics.length > 0 && (
-              <div className="border-b border-gray-100 pb-4">
+              <div className="border-b border-gray-300 pb-2">
                 <button
                   onClick={() => toggleSection("fabric")}
-                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Fabric
                   <svg
@@ -762,7 +747,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-fabric-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {toSentenceCase(item.label)}{" "}
                         <span className="text-gray-400">({item.count})</span>
@@ -775,10 +760,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
             {/* Product Type Filter */}
             {filterOptions.productTypes.length > 0 && (
-              <div className="border-b border-gray-100 pb-4 last:border-0">
+              <div className="border-b border-gray-300 pb-2 last:border-0">
                 <button
                   onClick={() => toggleSection("productType")}
-                  className="w-full cursor-pointer flex justify-between items-center font-semibold uppercase tracking-widest text-sm py-2 hover:text-[#bd9951] transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-semibold  tracking-widest text-sm   transition-colors"
                 >
                   Product Type
                   <svg
@@ -835,9 +820,9 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
             <button
               key={index}
               onClick={() => removeFilter(filter.label)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-full text-sm hover:bg-gray-50 hover:border-[#bd9951] transition-all group cursor-pointer"
+              className="inline-flex items-center gap-2 px-2 py-0.5 bg-white border border-black rounded-full text-[13px] hover:bg-gray-50 hover:border-[#bd9951] transition-all group cursor-pointer"
             >
-              <span className="font-normal">{filter.label}</span>
+              <span className="font-normal capitalize">{filter.label}</span>
               <span className="flex items-center justify-center w-4 h-4 rounded-full border border-[#bd9951] bg-[#bd9951]/10 group-hover:bg-[#bd9951]/20 transition-colors">
                 <svg
                   className="w-2.5 h-2.5 text-[#bd9951] transition-colors"
@@ -857,7 +842,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           ))}
           <button
             onClick={clearFilters}
-            className="text-sm text-orange-600 cursor-pointer hover:text-orange-700 font-medium underline ml-2 transition-colors"
+            className="text-[13px] text-orange-600 cursor-pointer bg-gray-100 px-1 hover:text-orange-700 underline ml-2 transition-colors"
           >
             Clear Filters
           </button>

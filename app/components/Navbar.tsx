@@ -749,32 +749,21 @@ const Navbar = () => {
 
   return (
     <>
-      <div
-        className={`flex fixed w-full ${scrolled ? "z-[1004]" : "z-[1002]"} transition-all duration-500 pointer-events-none
-          text-[#f2bf42] items-center
-          ${scrolled ? "top-[25px] justify-start px-4 h-[70px]" : "top-[120px] md:top-[120px] justify-center"}
-        `}
-      >
-        <Link
-          href="/"
-          className="pointer-events-auto inline-block flex items-center h-full"
-        >
-          <Image
-            src="/assets/625030871.png"
-            alt="Studio By Sheetal"
-            width={300}
-            height={100}
-            className={`transition-all duration-500 w-auto ${scrolled ? "-mt-5 h-[40px] md:h-[70px]" : "h-[200px] md:h-[250px]"}`}
-          />
-        </Link>
-      </div>
-
       {/* Top Header (Desktop) - Links & Icons */}
       <div
-        className={`hidden md:block fixed w-full z-[1003] transition-all duration-500 bg-[#082722]/90 backdrop-blur-sm py-[25px] font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[24px]"}`}
+        className={`hidden md:flex justify-center fixed w-full z-[1003] transition-all duration-100 bg-[#082722]/90 backdrop-blur-sm py-[16px] font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[24px]"}`}
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-5">
           <div className="flex justify-end items-center w-full">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/assets/icons/icon-1.png"
+                alt="Studio By Sheetal"
+                width={300}
+                height={100}
+                className="w-auto h-[50px]"
+              />
+            </Link>
             <div
               className={`flex-1 flex justify-end items-center transition-all duration-300`}
             >
@@ -840,7 +829,16 @@ const Navbar = () => {
       <header
         className={`md:hidden fixed w-full z-40 bg-[#112f23] backdrop-blur-sm shadow-sm py-2 transition-all duration-500 ${scrolled ? "top-0" : "top-[27px]"}`}
       >
-        <div className="container mx-auto px-4 relative flex justify-end items-center h-[40px]">
+        <div className="container px-4 relative flex justify-between items-center h-[60px]">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/assets/icons/icon-1.png"
+              alt="Studio By Sheetal"
+              width={300}
+              height={100}
+              className="w-auto h-[50px]"
+            />
+          </Link>
           <div className="flex items-center gap-4">
             <button onClick={toggleSearch}>
               <Image
@@ -870,9 +868,9 @@ const Navbar = () => {
                 alt="Cart"
                 width={24}
                 height={24}
-                className="w-6 h-6"
+                className="w-9 h-9 mb-2"
               />
-              <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+              <span className="absolute top-0.5 -right-1 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                 {cart.length}
               </span>
             </Link>

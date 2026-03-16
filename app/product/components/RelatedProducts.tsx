@@ -4,9 +4,19 @@ import ProductCard from "./ProductCard";
 
 interface RelatedProductsProps {
   similarProducts: any[];
+  isProductInWishlist: (id: string) => boolean;
+  onToggleWishlist: (id: string) => void;
 }
 
-const EmblaSlider = ({ products }: { products: any[] }) => {
+const EmblaSlider = ({
+  products,
+  isProductInWishlist,
+  onToggleWishlist,
+}: {
+  products: any[];
+  isProductInWishlist: (id: string) => boolean;
+  onToggleWishlist: (id: string) => void;
+}) => {
   const [emblaRef] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
@@ -21,7 +31,13 @@ const EmblaSlider = ({ products }: { products: any[] }) => {
             key={product.id}
             className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_50%] md:flex-[0_0_33.33%] lg:flex-[0_0_25%]"
           >
-            <ProductCard product={product} />
+            <ProductCard
+              product={product}
+              isWishlisted={isProductInWishlist(
+                product.productId || product._id || product.id,
+              )}
+              onToggleWishlist={onToggleWishlist}
+            />
           </div>
         ))}
       </div>
@@ -31,26 +47,34 @@ const EmblaSlider = ({ products }: { products: any[] }) => {
 
 const RelatedProducts: React.FC<RelatedProductsProps> = ({
   similarProducts,
+  isProductInWishlist,
+  onToggleWishlist,
 }) => {
   return (
     <>
-      {/* Similar Products */}
       <div
         id="similar-products-section"
-        className="container mx-auto px-4 py-12 border-t border-gray-200"
+        className="container mx-auto px-4 py-12"
       >
-        <h3 className="text-4xl text-[#653f1b] mb-8 font-[family-name:var(--font-optima)]">
+        <h3 className="text-3xl text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
           Similar Products
         </h3>
-        <EmblaSlider products={similarProducts} />
+        <EmblaSlider
+          products={similarProducts}
+          isProductInWishlist={isProductInWishlist}
+          onToggleWishlist={onToggleWishlist}
+        />
       </div>
 
-      {/* Recently Viewed */}
-      <div className="container mx-auto px-4 py-12 border-t border-gray-200 mb-12">
-        <h3 className="text-4xl text-[#653f1b] mb-8 font-[family-name:var(--font-optima)]">
+      <div className="container mx-auto px-4 py-12 mb-12">
+        <h3 className="text-3xl text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
           Recently Viewed
         </h3>
-        <EmblaSlider products={similarProducts.slice(0, 3)} />
+        <EmblaSlider
+          products={similarProducts.slice(0, 3)}
+          isProductInWishlist={isProductInWishlist}
+          onToggleWishlist={onToggleWishlist}
+        />
       </div>
     </>
   );

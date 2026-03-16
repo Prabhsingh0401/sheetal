@@ -315,7 +315,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                       </svg>
                     )}
                   </span>
-                  <span className="text-[13px] text-gray-700 group-hover:text-[#4a3f1a] font-medium transition-colors truncate">
+                  <span className="text-[16px] text-gray-700 group-hover:text-[#4a3f1a] font-medium transition-colors truncate">
                     {item.data.name}
                   </span>
                   <span className="ml-auto text-[11px] text-gray-400 capitalize shrink-0">
@@ -330,7 +330,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
         {/* ── Popular Searches — plain text links, unchanged ── */}
         {trendingCategories.length > 0 && (
           <div className={compact ? "mb-3" : "mb-5"}>
-            <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide mb-0.5">
+            <h4 className="text-[16px] text-black tracking-wide mb-0.5">
               Popular Searches:
             </h4>
             {!compact && (
@@ -362,7 +362,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
         {/* ── Search History ── */}
         {previousSearches.length > 0 && (
           <div>
-            <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide mb-0.5">
+            <h4 className="text-[16px] text-black tracking-wide mb-0.5">
               Search History:
             </h4>
             {!compact && (
@@ -452,7 +452,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
   ) => (
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-3 mb-4">
-        <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide whitespace-nowrap">
+        <h4 className="text-[16px] font-normal text-black tracking-wide whitespace-nowrap">
           {title}
         </h4>
         <hr className="flex-1 border-gray-200" />
@@ -563,7 +563,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
           </Link>
 
           {/* ── Categories as product-style grid ── */}
-          {matchedCategories.length > 0 && (
+          {/* {matchedCategories.length > 0 && (
             <div className="mt-4">
               <div className="flex items-center gap-3 mb-3">
                 <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide whitespace-nowrap">
@@ -657,7 +657,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                 );
               })()}
             </div>
-          )}
+          )} */}
         </div>
       )}
     </div>

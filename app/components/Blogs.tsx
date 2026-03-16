@@ -97,7 +97,7 @@ const Blogs = () => {
                 </h3>
                 <Link
                   href="/blog/banarasi-saree-guide"
-                  className="inline-block border-y border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-sm"
+                  className="inline-block border-y border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:border-[#a2690f] rounded text-sm"
                 >
                   Explore More
                 </Link>
@@ -134,7 +134,7 @@ const Blogs = () => {
                   </h4>
                   <Link
                     href="/blog/wedding-wardrobe-magic"
-                    className="inline-block border-y border-black text-black font-normal py-1 px-4 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-xs"
+                    className="inline-block border-y border-black text-black font-normal py-1 px-4 uppercase transition-all duration-500 hover:text-black hover:border-[#a2690f] rounded text-xs"
                   >
                     Explore more
                   </Link>
@@ -170,7 +170,7 @@ const Blogs = () => {
                   </h4>
                   <Link
                     href="/blog/colour-trends-2025"
-                    className="inline-block border-y border-black text-black font-normal py-1 px-4 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-xs"
+                    className="inline-block border-y border-black text-black font-normal py-1 px-4 uppercase transition-all duration-500 hover:text-black hover:border-[#a2690f] rounded text-xs"
                   >
                     Explore more
                   </Link>
@@ -224,7 +224,7 @@ const Blogs = () => {
                 </h3>
                 <Link
                   href={`/blog/${featuredBlog.slug}`}
-                  className="inline-block border-y border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-sm"
+                  className="inline-block border-y border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:border-[#a2690f] rounded text-sm"
                 >
                   Explore More
                 </Link>
@@ -265,7 +265,7 @@ const Blogs = () => {
                   </h4>
                   <Link
                     href={`/blog/${blog.slug}`}
-                    className="inline-block border-y border-black text-black font-normal py-1 px-4 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px] text-xs"
+                    className="inline-block border-y border-black text-black font-normal py-1 px-4 uppercase transition-all duration-500 hover:text-black hover:border-[#a2690f] rounded text-xs"
                   >
                     Explore more
                   </Link>

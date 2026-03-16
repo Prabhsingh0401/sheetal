@@ -149,14 +149,28 @@ const HomeBanner = () => {
             </Slider>
           </div>
 
-          <div className="absolute bottom-[-4px] z-[9] left-0 w-full pointer-events-none">
-            <Image
-              src="/assets/shape-bt.png"
-              alt="Shape"
-              width={1920}
-              height={100}
-              className="w-full h-auto"
-            />
+          <div className="z-1000 absolute inset-0">
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/assets/icons/icon-1.png"
+                alt="Studio By Sheetal"
+                width={300}
+                height={100}
+                className="w-auto h-[50px]"
+              />
+            </Link>
+          </div>
+
+          <div className="absolute inset-0 z-1000 flex items-start py-28 justify-center pointer-events-none">
+            <Link href="/" className="pointer-events-auto">
+              <Image
+                src="/assets/625030871.png"
+                alt="Studio By Sheetal"
+                width={300}
+                height={100}
+                className="w-auto h-[260px]"
+              />
+            </Link>
           </div>
         </div>
       )}
@@ -171,16 +185,15 @@ const HomeBanner = () => {
                 className="banner-carousel-item outline-none"
               >
                 <Link href={banner.link || "#"}>
-                  <div className="relative w-full h-[1000px]">
+                  <div className="relative w-full h-[100svh]">
                     <Image
                       src={getApiImageUrl(
                         banner.image.mobile,
                         "/assets/default-image.png",
                       )}
                       alt={banner.title}
-                      width={800}
-                      height={1000}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover object-top"
                       priority={index === 0}
                     />
                   </div>
@@ -188,6 +201,19 @@ const HomeBanner = () => {
               </div>
             ))}
           </Slider>
+
+          {/* Logo centered over mobile banner */}
+          <div className="absolute inset-0 z-10 flex items-start justify-center pt-24 pointer-events-none">
+            <Link href="/" className="pointer-events-auto">
+              <Image
+                src="/assets/625030871.png"
+                alt="Studio By Sheetal"
+                width={300}
+                height={100}
+                className="w-auto h-[160px]"
+              />
+            </Link>
+          </div>
         </div>
       )}
     </div>

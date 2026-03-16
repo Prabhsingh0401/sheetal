@@ -110,7 +110,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     <>
       <div className="flex flex-col md:flex-row gap-4">
         {/* Desktop Thumbnails (Vertical) */}
-        <div className="hidden md:flex flex-col items-center w-24 flex-shrink-0 gap-2">
+        <div className="hidden md:flex flex-col items-center w-16 lg:w-24 flex-shrink-0 gap-2">
           <button
             onClick={() => scroll("up")}
             className="w-full py-1 text-[#bd9951] hover:bg-gray-100 rounded transition-colors flex justify-center items-center h-8"
@@ -120,7 +120,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
           <div
             ref={scrollRef}
-            className="flex flex-col gap-3 h-[500px] overflow-y-auto scroll-smooth no-scrollbar"
+            className="flex flex-col gap-3 h-[400px] lg:h-[500px] overflow-y-auto scroll-smooth no-scrollbar"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {images.map((img, idx) => (
@@ -304,10 +304,10 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             )}
           </div>
 
-          {/* Floating Icons */}
-          <div className="absolute top-4 right-0 bg-white flex flex-col gap-3 z-10 pointer-events-none rounded-md">
+          {/* Floating Icons — hide on mobile, show on md+ */}
+          <div className="flex md:hidden justify-end gap-2 px-2 pb-2">
             <button
-              className="bg-white p-3 cursor-pointer rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto"
+              className="bg-white p-2.5 rounded-md shadow-sm border border-gray-100"
               onClick={onToggleWishlist}
             >
               <Image
@@ -316,19 +316,19 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                     ? "/assets/icons/heart-solid.svg"
                     : "/assets/icons/heart-pink.svg"
                 }
-                width={20}
-                height={20}
+                width={18}
+                height={18}
                 alt="wishlist"
               />
             </button>
             <button
-              className="bg-white p-3 cursor-pointer rounded-md hover:text-white transition-colors text-gray-600 pointer-events-auto"
+              className="bg-white p-2.5 rounded-md shadow-sm border border-gray-100"
               onClick={onScrollToSimilar}
             >
               <Image
                 src="/assets/icons/view-similar.png"
-                width={20}
-                height={20}
+                width={18}
+                height={18}
                 alt="similar"
               />
             </button>

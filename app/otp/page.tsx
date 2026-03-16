@@ -1,5 +1,5 @@
 import Footer from "../components/Footer";
-import NavbarInner from "../components/NavbarInner";
+import Navbar from "../components/Navbar";
 import TopInfo from "../components/TopInfo";
 import OtpForm from "./components/OtpForm";
 
@@ -7,7 +7,7 @@ const OtpPage = () => {
   return (
     <>
       <TopInfo />
-      <NavbarInner />
+      <Navbar />
       <OtpForm />
       <Footer />
     </>

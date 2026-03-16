@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import TopInfo from "../../components/TopInfo";
 import Footer from "../../components/Footer";
-import NavbarInner from "../../components/NavbarInner";
+import Navbar from "../../components/Navbar";
+import WishlistLoginModal from "../../components/WishlistLoginModal";
 import Breadcrumb from "../components/Breadcrumb";
 import ProductImageGallery from "./ProductImageGallery";
 import ProductInfo from "./ProductInfo";
@@ -96,7 +97,13 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   );
   const [pincode, setPincode] = useState("");
   const [pincodeMessage, setPincodeCheckMessage] = useState("");
-  const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
+  const {
+    isProductInWishlist,
+    toggleProductInWishlist,
+    isLoginModalOpen,
+    closeLoginModal,
+    handleLoginRedirect,
+  } = useWishlist();
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -665,7 +672,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   return (
     <div className="font-[family-name:var(--font-montserrat)] bg-[#f9f9f9]">
       <TopInfo />
-      <NavbarInner />
+      <Navbar />
 
       <Breadcrumb
         title={product.name}
@@ -673,7 +680,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         categorySlug={product.category?.slug}
       />
 
-      <div className="container mx-auto px-4 pb-12">
+      <div className="container mx-auto px-4 md:px-8 lg:px-16 pb-12">
         {/* Mobile Title */}
         <div className="lg:hidden mb-4 mt-2">
           <h1 className="text-2xl font-medium text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
@@ -736,7 +743,11 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         overallRating={product.averageRating || 0}
         totalReviews={product.totalReviews || 0}
       />
-      <RelatedProducts similarProducts={relatedProductsData} />
+      <RelatedProducts
+        similarProducts={relatedProductsData}
+        isProductInWishlist={isProductInWishlist}
+        onToggleWishlist={toggleProductInWishlist}
+      />
 
       <Footer />
 
@@ -758,6 +769,12 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         onAddToCart={handleAddToCart}
         onAddToWishlist={() => toggleProductInWishlist(product._id)}
         isWishlisted={isProductInWishlist(product._id)}
+      />
+
+      <WishlistLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={closeLoginModal}
+        onLogin={handleLoginRedirect}
       />
     </div>
   );

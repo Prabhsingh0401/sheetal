@@ -42,7 +42,7 @@ const AboutSBS = () => {
             <div className="lg:col-span-7">
               <div className="w-full lg:w-[92%] mx-auto mt-1 text-center lg:text-right flex flex-col justify-center h-full">
                 <div className="mb-8 lg:mb-[50px]">
-                  <p className="text-[16px] md:text-[20px] font-normal leading-relaxed md:leading-8 font-[family-name:var(--font-montserrat)] px-2 lg:px-0">
+                  <p className="text-[16px] text-[#a2690f] md:text-[20px] font-normal leading-relaxed md:leading-8 font-[family-name:var(--font-montserrat)] px-2 lg:px-0">
                     Studio By Sheetal: a designer studio passionate about
                     timeless elegance. Sheetal crafts exquisite sarees, suits,
                     and Indo-Western outfits with meticulous attention to
@@ -54,7 +54,7 @@ const AboutSBS = () => {
                 <div className="flex justify-center lg:justify-end">
                   <Link
                     href="/about-us"
-                    className="inline-block border-y border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px]"
+                    className="inline-block border-y rounded-sm border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:border-[#a2690f] duration-300"
                   >
                     Explore More
                   </Link>

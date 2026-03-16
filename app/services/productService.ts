@@ -159,7 +159,7 @@ export const getNewArrivals = async (): Promise<{
 
 export const fetchTrendingProducts = async (): Promise<{
   success: boolean;
-  products: Product[];
+  data: Product[];
 }> => {
   return apiFetch("/products/trending");
 };

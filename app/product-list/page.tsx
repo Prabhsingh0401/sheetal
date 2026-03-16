@@ -8,6 +8,7 @@ import MobileSortSheet from "./components/MobileSortSheet";
 import TopInfo from "../components/TopInfo";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import WishlistLoginModal from "../components/WishlistLoginModal";
 import ProductListBanner from "./components/ProductListBanner";
 import ProductFilterBar from "./components/ProductFilterBar";
 import ProductGrid from "./components/ProductGrid";
@@ -90,7 +91,13 @@ const ProductListContent = ({
   /* =======================
      Wishlist
   ======================= */
-  const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
+  const {
+    isProductInWishlist,
+    toggleProductInWishlist,
+    isLoginModalOpen,
+    closeLoginModal,
+    handleLoginRedirect,
+  } = useWishlist();
 
   /* =======================
      Resolve Category Slug → ID
@@ -326,7 +333,7 @@ const ProductListContent = ({
 
       <ProductListBanner categorySlug={categorySlug || undefined} />
 
-      <div className="container mx-auto px-4 pb-20 mt-8">
+      <div className="container mx-auto">
         <ProductFilterBar
           filtersOpen={filtersOpen}
           toggleFilters={() => setFiltersOpen(!filtersOpen)}
@@ -353,7 +360,7 @@ const ProductListContent = ({
             <p className="text-red-500">{error}</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="flex justify-center py-20">
+          <div className="flex justify-center py-12 md:py-20 px-4 text-center">
             <p className="text-gray-500">
               {activeFilters.length > 0
                 ? "No products match your filters. Try adjusting your selection."
@@ -372,11 +379,13 @@ const ProductListContent = ({
 
       <Footer />
 
-      <FilterSortMobile
-        onFilterClick={() => setFiltersOpen(true)}
-        onSortClick={() => setMobileSortOpen(true)}
-        activeFilterCount={activeFilters.length}
-      />
+      <div className="md:hidden">
+        <FilterSortMobile
+          onFilterClick={() => setFiltersOpen(true)}
+          onSortClick={() => setMobileSortOpen(true)}
+          activeFilterCount={activeFilters.length}
+        />
+      </div>
 
       <MobileSortSheet
         isOpen={mobileSortOpen}
@@ -391,6 +400,12 @@ const ProductListContent = ({
           onClose={() => setSelectedProductSlug(null)}
         />
       )}
+
+      <WishlistLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={closeLoginModal}
+        onLogin={handleLoginRedirect}
+      />
     </>
   );
 };

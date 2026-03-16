@@ -27,17 +27,12 @@ const HiddenBeauty = () => {
   // Show loading state
   if (loading) {
     return (
-      <div className="container mx-auto py-12 px-4 text-center font-[family-name:var(--font-optima)]">
-        <h2 className="text-[1.5rem] lg:text-[40px] font-medium text-[#5d4112] mb-2">
+      <div className="flex gap-8 items-center justify-center">
+        <div className="h-[1px] bg-[#a2690f] w-15" />
+        <h2 className="text-[1rem] lg:text-[36px] font-light text-[#6a3f07]">
           Bring Out The Hidden Beauty
         </h2>
-        <p className="max-w-2xl mx-auto text-[16px] lg:text-[18px] font-semibold mb-8">
-          Designer pieces that blend traditional charm with modern silhouettes
-          for every occasion.
-        </p>
-        <div className="flex justify-center items-center h-[400px]">
-          <div className="w-12 h-12 border-4 border-gray-200 border-t-[#5d4112] rounded-full animate-spin"></div>
-        </div>
+        <div className="h-[1px] bg-[#a2690f] w-15" />
       </div>
     );
   }
@@ -46,10 +41,14 @@ const HiddenBeauty = () => {
   if (error || !categories || categories.length === 0) {
     return (
       <div className="container mx-auto py-12 px-4 text-center font-[family-name:var(--font-optima)]">
-        <h2 className="text-[1.5rem] lg:text-[40px] font-medium text-[#5d4112] mb-2">
-          Bring Out The Hidden Beauty
-        </h2>
-        <p className="max-w-2xl mx-auto text-[16px] lg:text-[18px] font-semibold mb-8">
+        <div className="flex gap-8 items-center justify-center">
+          <div className="h-[1px] bg-[#a2690f] w-15" />
+          <h2 className="text-[1rem] lg:text-[36px] font-light text-[#6a3f07]">
+            Bring Out The Hidden Beauty
+          </h2>
+          <div className="h-[1px] bg-[#a2690f] w-15" />
+        </div>
+        <p className="max-w-2xl mx-auto text-[16px] lg:text-[18px] mb-8 text-[#a2690f]">
           Designer pieces that blend traditional charm with modern silhouettes
           for every occasion.
         </p>
@@ -83,10 +82,14 @@ const HiddenBeauty = () => {
 
   return (
     <div className="container mx-auto py-12 px-4 text-center font-[family-name:var(--font-optima)]">
-      <h2 className="text-[1.5rem] lg:text-[40px] font-medium text-[#5d4112] mb-2">
-        Bring Out The Hidden Beauty
-      </h2>
-      <p className="max-w-2xl mx-auto text-[16px] lg:text-[18px] font-semibold mb-8">
+      <div className="flex gap-8 items-center justify-center">
+        <div className="h-[1px] bg-[#a2690f] w-15" />
+        <h2 className="text-[1rem] lg:text-[36px] font-light text-[#6a3f07]">
+          Bring Out The Hidden Beauty
+        </h2>
+        <div className="h-[1px] bg-[#a2690f] w-15" />
+      </div>
+      <p className="max-w-2xl mx-auto text-[14px] lg:text-[16px] mb-8 text-[#a2690f] font-[family-name:var(--font-montserrat)] font-serif">
         Designer pieces that blend traditional charm with modern silhouettes for
         every occasion.
       </p>
@@ -94,7 +97,7 @@ const HiddenBeauty = () => {
       {/* Embla Wrapper */}
       <div className="relative group/slider">
         <div ref={emblaRef} className="overflow-hidden">
-          <div className="flex gap-4">
+          <div className="flex gap-4 px-4">
             {categories.map((cat) => (
               <div
                 key={cat._id}
@@ -130,11 +133,11 @@ const HiddenBeauty = () => {
                       text-center text-white text-[22px]
                       bg-gradient-to-t from-[#251d05] to-transparent
                       pt-[120px] pb-[30px]
-                      transition-all duration-300
-                      group-hover:text-[#ffc107]
-                    "
+                      transition-all duration-300"
                   >
-                    {cat.name}
+                    <span className="inline-block group-hover:text-[#ffc107] group-hover:-translate-y-3 transition-transform duration-300">
+                      {cat.name}
+                    </span>
                   </Link>
                 </div>
               </div>
