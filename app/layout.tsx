@@ -85,7 +85,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${outfit.variable} ${optima.variable} antialiased`}
       >
-        <Toaster position="top-center" reverseOrder={false} />
+        <Toaster
+          position="top-center"
+          reverseOrder={false}
+          containerStyle={{ zIndex: 999999 }}
+        />
         {children}
       </body>
     </html>

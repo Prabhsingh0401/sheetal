@@ -1,7 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import TopInfo from "../../components/TopInfo";
-import NavbarInner from "../../components/NavbarInner";
+import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import BlogBanner from "../components/BlogBanner";
 import BlogContent from "../components/BlogContent";
@@ -35,7 +35,7 @@ const BlogDetail = async ({ params }: PageProps) => {
   return (
     <div className="font-[family-name:var(--font-montserrat)] bg-white">
       <TopInfo />
-      <NavbarInner />
+      <Navbar />
 
       <BlogBanner title={blog.title} image={getBlogImageUrl(blog)} />
 

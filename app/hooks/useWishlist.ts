@@ -1,23 +1,41 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import {
   fetchWishlist,
   toggleWishlist as toggleWishlistApi,
   Product,
-} from "../services/productService"; // Assuming Product is exported from productService
+} from "../services/productService";
+import {
+  dispatchWishlistUpdated,
+  WISHLIST_UPDATED_EVENT,
+} from "./shopEvents";
 
-interface UseWishlistReturn {
-  wishlist: Product[]; // Changed from wishlistIds
+export interface UseWishlistReturn {
+  wishlist: Product[];
   loading: boolean;
   error: string | null;
   toggleProductInWishlist: (productId: string) => Promise<void>;
   isProductInWishlist: (productId: string) => boolean;
+  isLoginModalOpen: boolean;
+  closeLoginModal: () => void;
+  handleLoginRedirect: () => void;
 }
 
+/** Detects 401-style errors from axios, fetch, or plain Error messages */
+const isUnauthorized = (err: any): boolean =>
+  err?.response?.status === 401 ||
+  err?.status === 401 ||
+  err?.message?.toLowerCase().includes("unauthorized") ||
+  err?.message?.toLowerCase().includes("not logged in") ||
+  err?.message?.toLowerCase().includes("token");
+
 export const useWishlist = (): UseWishlistReturn => {
-  const [wishlist, setWishlist] = useState<Product[]>([]); // Changed from wishlistIds
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [wishlist, setWishlist]                 = useState<Product[]>([]);
+  const [loading, setLoading]                   = useState<boolean>(true);
+  const [error, setError]                       = useState<string | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const loadWishlist = useCallback(async () => {
     setLoading(true);
@@ -25,13 +43,19 @@ export const useWishlist = (): UseWishlistReturn => {
     try {
       const response = await fetchWishlist();
       if (response.success && Array.isArray(response.data)) {
-        setWishlist(response.data); // Store full product objects
+        setWishlist(response.data);
       } else {
-        setError("Failed to fetch wishlist");
+        setWishlist([]);
       }
     } catch (err: any) {
-      console.error("Error loading wishlist:", err);
-      setError(err.message || "An error occurred while fetching wishlist");
+      // Unauthenticated users get a 401 fetching wishlist — that's expected,
+      // just show an empty wishlist rather than treating it as an error.
+      if (isUnauthorized(err)) {
+        setWishlist([]);
+      } else {
+        console.error("Error loading wishlist:", err);
+        setError(err.message || "An error occurred while fetching wishlist");
+      }
     } finally {
       setLoading(false);
     }
@@ -41,18 +65,48 @@ export const useWishlist = (): UseWishlistReturn => {
     loadWishlist();
   }, [loadWishlist]);
 
+  useEffect(() => {
+    const handleWishlistUpdated = () => {
+      loadWishlist();
+    };
+
+    window.addEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdated);
+
+    return () => {
+      window.removeEventListener(
+        WISHLIST_UPDATED_EVENT,
+        handleWishlistUpdated,
+      );
+    };
+  }, [loadWishlist]);
+
   const toggleProductInWishlist = useCallback(
     async (productId: string) => {
       try {
         const response = await toggleWishlistApi(productId);
         if (response.success) {
           toast.success(response.message || "Wishlist updated!");
-          await loadWishlist(); // Reload the wishlist to get fresh data
+          dispatchWishlistUpdated();
+          await loadWishlist();
         } else {
+          // Some backends return HTTP 200 with success: false when not logged in
+          const msg = response.message?.toLowerCase() || "";
+          if (
+            msg.includes("login") ||
+            msg.includes("unauthorized") ||
+            msg.includes("not logged")
+          ) {
+            setIsLoginModalOpen(true);
+            return;
+          }
           toast.error(response.message || "Failed to update wishlist.");
         }
       } catch (err: any) {
-        console.error("Error toggling wishlist item:", err);
+        // HTTP 401 thrown by axios / fetch wrapper
+        if (isUnauthorized(err)) {
+          setIsLoginModalOpen(true);
+          return;
+        }
         toast.error("Could not update wishlist. Please try again.");
       }
     },
@@ -60,11 +114,20 @@ export const useWishlist = (): UseWishlistReturn => {
   );
 
   const isProductInWishlist = useCallback(
-    (productId: string) => {
-      return wishlist.some((p) => p._id === productId);
-    },
+    (productId: string) => wishlist.some((p) => p._id === productId),
     [wishlist],
   );
+
+  const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
+
+  const handleLoginRedirect = useCallback(() => {
+    setIsLoginModalOpen(false);
+    if (typeof window !== "undefined") {
+      // Persist current page so the user returns here after login
+      sessionStorage.setItem("redirect", window.location.pathname);
+      window.location.href = "/login";
+    }
+  }, []);
 
   return {
     wishlist,
@@ -72,5 +135,8 @@ export const useWishlist = (): UseWishlistReturn => {
     error,
     toggleProductInWishlist,
     isProductInWishlist,
+    isLoginModalOpen,
+    closeLoginModal,
+    handleLoginRedirect,
   };
 };

@@ -6,7 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCollectionProducts, CollectionProduct } from "../services/productService";
 
-const MIN_FOR_CAROUSEL = 5;
+const MIN_FOR_CAROUSEL_DESKTOP = 5;
+const MIN_FOR_CAROUSEL_MOBILE  = 2;
 
 const FALLBACK_PRODUCTS: CollectionProduct[] = [
   {
@@ -65,23 +66,34 @@ const FALLBACK_PRODUCTS: CollectionProduct[] = [
 
 const Collections = () => {
   const [products, setProducts] = useState<CollectionProduct[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading]   = useState<boolean>(true);
+  const [isCarousel, setIsCarousel] = useState(false);
 
-  const isCarousel = products.length >= MIN_FOR_CAROUSEL;
-
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "start", skipSnaps: false },
-    // Pass no plugins — active prop not needed, we conditionally render instead
-  );
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "start",
+    skipSnaps: false,
+  });
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+
+  // Recompute isCarousel whenever products or viewport changes
+  useEffect(() => {
+    const update = () => {
+      const isMobile = window.innerWidth < 768;
+      const min = isMobile ? MIN_FOR_CAROUSEL_MOBILE : MIN_FOR_CAROUSEL_DESKTOP;
+      setIsCarousel(products.length >= min);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [products]);
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await getCollectionProducts();
-        // Use live data if any exists, otherwise show fallbacks
         setProducts(data?.length > 0 ? data : FALLBACK_PRODUCTS);
       } catch (err) {
         console.error("Collections fetch error:", err);
@@ -105,7 +117,7 @@ const Collections = () => {
 
         {/* HEADING */}
         <div className="flex flex-col items-center mb-10">
-          <div className="flex items-center gap-10 w-full">
+          <div className="flex items-center justify-center gap-10 w-full">
             <div className="h-[1px] bg-[#68400f] flex-1" />
             <h2 className="text-[2rem] lg:text-[40px] font-[family-name:var(--font-optima)] font-medium text-[#5d4112] whitespace-nowrap">
               Collections
@@ -118,15 +130,15 @@ const Collections = () => {
           </p>
         </div>
 
-        {/* CAROUSEL — 5 or more products */}
+        {/* CAROUSEL */}
         {isCarousel ? (
           <div className="relative group/slider">
             <div ref={emblaRef} className="overflow-hidden">
-              <div className="flex gap-4">
+              <div className="flex gap-4 px-4">
                 {products.map((product) => (
                   <div
                     key={product._id}
-                    className="flex-shrink-0 w-[85%] sm:w-[48%] md:w-[32%] lg:w-[25%]"
+                    className="flex-shrink-0 w-[75%] sm:w-[48%] md:w-[32%] lg:w-[25%]"
                   >
                     <ProductCard product={product} />
                   </div>
@@ -154,7 +166,7 @@ const Collections = () => {
             </button>
           </div>
         ) : (
-          /* STATIC GRID — fewer than 5 products, no scrolling */
+          /* STATIC GRID */
           <div className="flex flex-wrap gap-4 justify-center">
             {products.map((product) => (
               <div
@@ -178,7 +190,6 @@ function ProductCard({ product }: { product: CollectionProduct }) {
 
   return (
     <div className="rounded-xl overflow-hidden group">
-
       <div className="relative aspect-[3/4] overflow-hidden">
         {product.soldOut && (
           <div className="absolute -top-1 left-0 z-20">
@@ -226,9 +237,9 @@ function ProductCard({ product }: { product: CollectionProduct }) {
           ))}
         </div>
 
-        <div className="mb-4 flex justify-center items-center gap-2">
+        <div className="mb-4 flex justify-center items-center gap-2 flex-wrap">
           {product.price && (
-            <span className="text-lg text-[#281b00] font-bold">{product.price}</span>
+            <span className="text-base md:text-lg text-[#281b00] font-bold">{product.price}</span>
           )}
           {product.mrp && (
             <span className="text-xs text-gray-400 line-through">{product.mrp}</span>
@@ -240,12 +251,11 @@ function ProductCard({ product }: { product: CollectionProduct }) {
 
         <Link
           href={href}
-          className="inline-block border-y border-black text-black py-2 px-8 uppercase transition-all duration-500 hover:tracking-[1px]"
+          className="inline-block rounded border-y border-black text-black py-2 px-6 md:px-8 text-xs md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
         >
           View Product
         </Link>
       </div>
-
     </div>
   );
 }

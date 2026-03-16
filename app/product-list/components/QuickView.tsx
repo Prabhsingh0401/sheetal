@@ -11,6 +11,7 @@ import { getApiImageUrl } from "../../services/api";
 import Image from "next/image";
 import { useWishlist } from "../../hooks/useWishlist";
 import toast from "react-hot-toast";
+import WishlistLoginModal from "../../components/WishlistLoginModal";
 
 import { useCart } from "../../hooks/useCart";
 
@@ -27,7 +28,13 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   // Removed lowestPrice and lowestMrp states
-  const { isProductInWishlist, toggleProductInWishlist } = useWishlist();
+  const {
+    isProductInWishlist,
+    toggleProductInWishlist,
+    isLoginModalOpen,
+    closeLoginModal,
+    handleLoginRedirect,
+  } = useWishlist();
   const { addToCart } = useCart();
   const router = useRouter()
 
@@ -493,6 +500,11 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
           )}
         </div>
       </div>
+      <WishlistLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={closeLoginModal}
+        onLogin={handleLoginRedirect}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { bookAppointment } from "../services/appointmentServices";
+import toast from "react-hot-toast";
 
 interface AppointmentForm {
   name: string;
@@ -26,6 +27,13 @@ const INITIAL_FORM: AppointmentForm = {
 const inputClass =
   "w-full bg-transparent border-b border-[#ffa624] text-sm text-gray-700 placeholder-gray-400 py-2 outline-none focus:border-[#8a6e2f] transition-colors";
 
+// Field label with required asterisk
+const Label = ({ text }: { text: string }) => (
+  <span className="text-xs text-gray-500 mb-0.5 block">
+    {text} <span className="text-red-500">*</span>
+  </span>
+);
+
 const BookAppointmentWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState<AppointmentForm>(INITIAL_FORM);
@@ -38,18 +46,49 @@ const BookAppointmentWidget: React.FC = () => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async () => {
-    if (
-      !form.name.trim() ||
-      !form.email.trim() ||
-      !form.contact.trim() ||
-      !form.address.trim() ||
-      !form.city.trim() ||
-      !form.pincode.trim()
-    ) {
-      alert("Please fill in all required fields.");
-      return;
+  const validate = (): boolean => {
+    if (!form.name.trim()) {
+      toast.error("Name is required.");
+      return false;
     }
+    if (!form.email.trim()) {
+      toast.error("Email is required.");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email.trim())) {
+      toast.error("Please enter a valid email address.");
+      return false;
+    }
+    if (!form.contact.trim()) {
+      toast.error("Contact number is required.");
+      return false;
+    }
+    if (!/^\d{10}$/.test(form.contact.trim())) {
+      toast.error("Contact must be a 10-digit number.");
+      return false;
+    }
+    if (!form.address.trim()) {
+      toast.error("Address is required.");
+      return false;
+    }
+    if (!form.city.trim()) {
+      toast.error("City is required.");
+      return false;
+    }
+    if (!form.pincode.trim()) {
+      toast.error("Pincode is required.");
+      return false;
+    }
+    if (!/^\d{6}$/.test(form.pincode.trim())) {
+      toast.error("Pincode must be a 6-digit number.");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
 
     setIsSubmitting(true);
     try {
@@ -60,7 +99,7 @@ const BookAppointmentWidget: React.FC = () => {
         address: form.address.trim(),
         city: form.city.trim(),
         pincode: form.pincode.trim(),
-        requirements: form.requirement.trim(), // note: frontend uses "requirement", backend uses "requirements"
+        requirements: form.requirement.trim(),
       });
 
       setSubmitted(true);
@@ -70,7 +109,7 @@ const BookAppointmentWidget: React.FC = () => {
         setForm(INITIAL_FORM);
       }, 2500);
     } catch (err: any) {
-      alert(err.message || "Something went wrong. Please try again.");
+      toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -87,18 +126,12 @@ const BookAppointmentWidget: React.FC = () => {
       {/* ── Floating trigger ── */}
       <div className="fixed bottom-6 right-6" style={{ zIndex: 9998 }}>
         <div className="relative inline-block">
-          {/* Top border label */}
           <span
-            className="absolute -top-2 left- px-1.5 text-[10px] uppercase text-black font-bold whitespace-nowrap"
-            style={{
-              background: "#ffffff",
-              zIndex: "99",
-            }}
+            className="absolute -top-2 left-0 px-1.5 text-[10px] uppercase text-black font-bold whitespace-nowrap"
+            style={{ background: "#ffffff", zIndex: "99" }}
           >
             For Customization
           </span>
-
-          {/* Button */}
           <button
             onClick={() => setIsOpen(true)}
             className="border border-black rounded-sm shadow-lg px-5 py-2.5 text-[11px] font-bold text-black hover:text-[#705004] transition-colors tracking-wide whitespace-nowrap cursor-pointer"
@@ -118,8 +151,8 @@ const BookAppointmentWidget: React.FC = () => {
         <div
           className="fixed inset-0 flex items-center justify-center"
           style={{
-            zIndex: 99999, // just below navbar's z-10000
-            backgroundColor: "#362000d1", // gold tint
+            zIndex: 99999,
+            backgroundColor: "#362000d1",
             backdropFilter: "blur(6px)",
             WebkitBackdropFilter: "blur(6px)",
           }}
@@ -127,7 +160,7 @@ const BookAppointmentWidget: React.FC = () => {
         >
           {/* ── Modal ── */}
           <div
-            className="relative w-full max-w-lg mx-4 rounded-4xl border-4 border-[#ffa624] p-8 overflow-y-hidden max-h-[90vh]"
+            className="relative w-full max-w-lg mx-4 rounded-4xl border-4 border-[#ffa624] p-8 overflow-y-auto max-h-[90vh]"
             style={{ backgroundColor: "#f7f0e3" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -141,9 +174,12 @@ const BookAppointmentWidget: React.FC = () => {
             </button>
 
             {/* Title */}
-            <h2 className="text-xl font-semibold text-[#5a3e10] mb-7 tracking-wide">
+            <h2 className="text-xl font-semibold text-[#5a3e10] mb-1 tracking-wide">
               Book An Appointment
             </h2>
+            <p className="text-xs text-gray-400 mb-6">
+              Fields marked <span className="text-red-500">*</span> are required
+            </p>
 
             {submitted ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -171,69 +207,95 @@ const BookAppointmentWidget: React.FC = () => {
             ) : (
               <div className="flex flex-col gap-5">
                 {/* Name */}
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Name"
-                  className={inputClass}
-                />
-
-                {/* Email */}
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  className={inputClass}
-                />
-
-                {/* Contact */}
-                <input
-                  name="contact"
-                  value={form.contact}
-                  onChange={handleChange}
-                  placeholder="Contact"
-                  className={inputClass}
-                />
-
-                {/* Address */}
-                <input
-                  name="address"
-                  value={form.address}
-                  onChange={handleChange}
-                  placeholder="Address"
-                  className={inputClass}
-                />
-
-                {/* City + Pincode */}
-                <div className="flex gap-4">
+                <div>
+                  <Label text="Name" />
                   <input
-                    name="city"
-                    value={form.city}
+                    name="name"
+                    value={form.name}
                     onChange={handleChange}
-                    placeholder="City*"
-                    className={inputClass}
-                  />
-                  <input
-                    name="pincode"
-                    value={form.pincode}
-                    onChange={handleChange}
-                    placeholder="Pincode*"
+                    placeholder="Your full name"
                     className={inputClass}
                   />
                 </div>
 
-                {/* Requirement textarea */}
-                <textarea
-                  name="requirement"
-                  value={form.requirement}
-                  onChange={handleChange}
-                  placeholder="Your Requirement..."
-                  rows={3}
-                  className={`${inputClass}`}
-                />
+                {/* Email */}
+                <div>
+                  <Label text="Email" />
+                  <input
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    placeholder="you@example.com"
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* Contact */}
+                <div>
+                  <Label text="Contact" />
+                  <input
+                    name="contact"
+                    value={form.contact}
+                    onChange={handleChange}
+                    placeholder="10-digit mobile number"
+                    maxLength={10}
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* Address */}
+                <div>
+                  <Label text="Address" />
+                  <input
+                    name="address"
+                    value={form.address}
+                    onChange={handleChange}
+                    placeholder="Street / locality"
+                    className={inputClass}
+                  />
+                </div>
+
+                {/* City + Pincode */}
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Label text="City" />
+                    <input
+                      name="city"
+                      value={form.city}
+                      onChange={handleChange}
+                      placeholder="City"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Label text="Pincode" />
+                    <input
+                      name="pincode"
+                      value={form.pincode}
+                      onChange={handleChange}
+                      placeholder="6-digit pincode"
+                      maxLength={6}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+
+                {/* Requirement — optional */}
+                <div>
+                  <span className="text-xs text-gray-500 mb-0.5 block">
+                    Your Requirement{" "}
+                    <span className="text-gray-400 text-[10px]">(optional)</span>
+                  </span>
+                  <textarea
+                    name="requirement"
+                    value={form.requirement}
+                    onChange={handleChange}
+                    placeholder="Describe what you're looking for..."
+                    rows={3}
+                    className={inputClass}
+                  />
+                </div>
 
                 {/* Submit */}
                 <div className="flex justify-center mt-2">

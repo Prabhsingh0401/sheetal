@@ -302,51 +302,39 @@ const CartPage = () => {
               </div>
             </div>
 
-            <div className="flex justify-around items-center mt-12 py-4">
-              <div className="flex items-center text-sm">
-                <Image
-                  src="/assets/icons/secure-payment.svg"
-                  alt="Secure Payments"
-                  width={30}
-                  height={30}
-                />
-                <span className="ml-2 text-xl text-[#706a42] font-semibold">
-                  Secure Payments
-                </span>
-              </div>
-              <div className="flex items-center text-sm">
-                <Image
-                  src="/assets/icons/transaction.svg"
-                  alt="Cash on delivery"
-                  width={30}
-                  height={30}
-                />
-                <span className="ml-2 text-xl text-[#706a42] font-semibold">
-                  Cash on delivery
-                </span>
-              </div>
-              <div className="flex items-center text-sm">
-                <Image
-                  src="/assets/icons/quality-assurance.svg"
-                  alt="Assured Quality"
-                  width={30}
-                  height={30}
-                />
-                <span className="ml-2 text-xl text-[#706a42] font-semibold">
-                  Assured Quality
-                </span>
-              </div>
-              <div className="flex items-center text-sm">
-                <Image
-                  src="/assets/icons/product-return1.svg"
-                  alt="Easy returns"
-                  width={30}
-                  height={30}
-                />
-                <span className="ml-2 text-xl text-[#706a42] font-semibold">
-                  Easy returns
-                </span>
-              </div>
+            <div className="flex flex-wrap justify-around items-center mt-12 py-4 gap-y-6">
+              {[
+                {
+                  src: "/assets/icons/secure-payment.svg",
+                  alt: "Secure Payments",
+                  label: "Secure Payments",
+                },
+                {
+                  src: "/assets/icons/transaction.svg",
+                  alt: "Cash on delivery",
+                  label: "Cash on delivery",
+                },
+                {
+                  src: "/assets/icons/quality-assurance.svg",
+                  alt: "Assured Quality",
+                  label: "Assured Quality",
+                },
+                {
+                  src: "/assets/icons/product-return1.svg",
+                  alt: "Easy returns",
+                  label: "Easy returns",
+                },
+              ].map(({ src, alt, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center text-sm w-1/2 md:w-auto justify-center px-2"
+                >
+                  <Image src={src} alt={alt} width={30} height={30} />
+                  <span className="ml-2 text-sm md:text-xl text-[#706a42] font-semibold whitespace-nowrap">
+                    {label}
+                  </span>
+                </div>
+              ))}
             </div>
           </>
         )}

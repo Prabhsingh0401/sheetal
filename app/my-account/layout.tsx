@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import TopInfo from "../components/TopInfo";
-import NavbarInner from "../components/NavbarInner";
+import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import UserInfoCard from "./components/UserInfoCard";
 import DashboardSidebar from "./components/DashboardSidebar";
@@ -90,7 +90,7 @@ const MyAccountLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <TopInfo />
-      <NavbarInner />
+      <Navbar />
 
       <main className="container relative mt-30 mx-auto px-4 lg:px-0 mb-40 w-full font-[family-name:var(--font-montserrat)] flex justify-center items-center">
         <div className="dashboard-wrapper">

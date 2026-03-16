@@ -1,4 +1,6 @@
 "use client";
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import {
@@ -15,6 +17,11 @@ import {
   Product,
 } from "../services/productService";
 import { isAuthenticated } from "../services/authService";
+import {
+  CART_UPDATED_EVENT,
+  dispatchCartUpdated,
+  dispatchWishlistUpdated,
+} from "./shopEvents";
 
 // ─── Guest cart localStorage key ────────────────────────────────────────────
 const GUEST_CART_KEY = "guest_cart";
@@ -207,6 +214,18 @@ export const useCart = (): UseCartReturn => {
     loadCart();
   }, [loadCart]);
 
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      loadCart();
+    };
+
+    window.addEventListener(CART_UPDATED_EVENT, handleCartUpdated);
+
+    return () => {
+      window.removeEventListener(CART_UPDATED_EVENT, handleCartUpdated);
+    };
+  }, [loadCart]);
+
   /**
    * Adds a product to the cart.
    * For guests, persists to localStorage with productMeta for display.
@@ -233,6 +252,7 @@ export const useCart = (): UseCartReturn => {
           if (response.success) {
             toast.success(response.message || "Product added to cart!");
             await loadCart();
+            dispatchCartUpdated();
           } else {
             toast.error(response.message || "Failed to add to cart.");
           }
@@ -270,6 +290,7 @@ export const useCart = (): UseCartReturn => {
 
           writeGuestCart(guestItems);
           setCart(guestToCartItems(guestItems));
+          dispatchCartUpdated();
           toast.success("Added to cart!");
         }
       } catch (err: any) {
@@ -291,6 +312,7 @@ export const useCart = (): UseCartReturn => {
           if (response.success) {
             toast.success(response.message || "Item removed from cart!");
             await loadCart();
+            dispatchCartUpdated();
             resetCoupon();
           } else {
             toast.error(response.message || "Failed to remove item from cart.");
@@ -300,6 +322,7 @@ export const useCart = (): UseCartReturn => {
           const guestItems = readGuestCart().filter((g) => g._id !== itemId);
           writeGuestCart(guestItems);
           setCart(guestToCartItems(guestItems));
+          dispatchCartUpdated();
           toast.success("Item removed from cart!");
           resetCoupon();
         }
@@ -318,10 +341,12 @@ export const useCart = (): UseCartReturn => {
         if (removeResponse.success) {
           toast.success("Item removed from cart!");
           await loadCart();
+          dispatchCartUpdated();
           resetCoupon();
 
           const wishlistResponse = await toggleWishlistApi(productId);
           if (wishlistResponse.success) {
+            dispatchWishlistUpdated();
             toast.success("Item added to wishlist!");
           } else {
             toast.error(wishlistResponse.message || "Failed to add to wishlist.");
@@ -433,6 +458,7 @@ export const useCart = (): UseCartReturn => {
               if (quantity <= 0) return prevCart.filter((item) => item._id !== itemId);
               return prevCart.map((item) => item._id === itemId ? { ...item, quantity } : item);
             });
+            dispatchCartUpdated();
             resetCoupon();
           } else {
             toast.error(response.message || "Failed to update quantity.");
@@ -445,6 +471,7 @@ export const useCart = (): UseCartReturn => {
           }).filter((g) => g.quantity > 0);
           writeGuestCart(guestItems);
           setCart(guestToCartItems(guestItems));
+          dispatchCartUpdated();
           resetCoupon();
         }
       } catch (err: any) {
@@ -473,6 +500,7 @@ export const useCart = (): UseCartReturn => {
           setTotalMrp(0);
           setTotalDiscount(0);
           setFinalAmount(0);
+          dispatchCartUpdated();
           removeCoupon();
           toast.success("Cart cleared successfully");
         } else {
@@ -484,6 +512,7 @@ export const useCart = (): UseCartReturn => {
         setTotalMrp(0);
         setTotalDiscount(0);
         setFinalAmount(0);
+        dispatchCartUpdated();
         removeCoupon();
         toast.success("Cart cleared");
       }

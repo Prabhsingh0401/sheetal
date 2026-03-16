@@ -119,7 +119,7 @@ const Footer = () => {
       >
         <div className="container mx-auto px-6 py-12">
           {/* TOP GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 text-left">
             {/* LOGO + SOCIAL */}
             <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
               <Link href="/" className="mb-4">
