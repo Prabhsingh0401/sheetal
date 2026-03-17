@@ -121,14 +121,14 @@ const Footer = () => {
           {/* TOP GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 text-left">
             {/* LOGO + SOCIAL */}
-            <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
+            <div className="text-center lg:text-left flex flex-col items-center lg:items-start md:border-r px-4">
               <Link href="/" className="mb-4">
                 <Image
                   src="/assets/625030871.png"
                   alt="Studio By Sheetal"
                   width={280}
                   height={140}
-                  className="mx-auto lg:mx-0"
+                  className=" lg:mx-0"
                 />
               </Link>
 
@@ -164,6 +164,8 @@ const Footer = () => {
               </div>
             </div>
 
+            
+
             {/* DYNAMIC FOOTER SECTIONS */}
             {sectionsToRender.map((section) => (
               <div key={section.id}>
@@ -171,12 +173,12 @@ const Footer = () => {
                   {section.title}
                 </h3>
 
-                <div className="flex flex-col gap-2 text-[#f8f0b6]">
+                <div className="flex flex-col gap-2  text-[#f8f0b6]">
                   {section.links.map((link) => (
                     <Link
                       key={link.id}
                       href={link.href}
-                      className="hover:text-white transition-colors text-[16px] font-light tracking-wide"
+                      className="hover:text-white my-1 transition-colors text-[16px] font-light tracking-wide"
                     >
                       {link.label}
                     </Link>
@@ -246,7 +248,7 @@ const Footer = () => {
 
         {/* COPYRIGHT */}
         <div className="bg-[#faf8fc0d] border-t border-dashed border-[#2c2c2c] py-3">
-          <div className="container mx-auto px-6 text-[#f8f0b4] text-sm text-left">
+          <div className="container mx-auto px-6 text-[#f8f0b4] text-[13px] text-left">
             Copyright 2026 © Studio By Sheetal, All Rights Reserved.
           </div>
         </div>

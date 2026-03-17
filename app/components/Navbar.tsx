@@ -30,18 +30,20 @@ const hasTags = (category: Category) => {
     (category.style && category.style.length > 0) ||
     (category.work && category.work.length > 0) ||
     (category.wearType && category.wearType.length > 0) ||
-    (category.productType && category.productType.length > 0)
+    (category.productType && category.productType.length > 0) ||
+    (category.byPrice && category.byPrice.length > 0)
   );
 };
 
 // Dynamic Mega Menu Component
-const DynamicMegaMenu = ({ category }: { category: Category }) => {
+const DynamicMegaMenu = ({ category }: { category: Category }) => {``
   const tagGroups = [
     { title: "By Occasion", items: category.occasion, type: "occasion" },
     { title: "By Fabric", items: category.fabric, type: "fabric" },
     { title: "By Style", items: category.style, type: "style" },
     { title: "By Work", items: category.work, type: "work" },
     { title: "By Wear Type", items: category.wearType, type: "wearType" },
+    { title: "By Price", items: category.byPrice, type: "price" },
     {
       title: "By Product Type",
       items: category.productType,

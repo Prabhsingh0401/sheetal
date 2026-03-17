@@ -146,7 +146,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
               ) : (
                 <div className="text-sm text-gray-500 italic max-w-xs">
                   {!Cookies.get("token") ? (
-                    <p>Please log in to write a review.</p>
+                    <a href="/login" className="cursor-pointer">Please log in to write a review.</a>
                   ) : reviewReason === "Already reviewed" ? (
                     <p>You have already reviewed this product.</p>
                   ) : (

@@ -40,6 +40,7 @@ export interface Category {
   productType?: string[];
   wearType?: string[];
   occasion?: string[];
+  byPrice?: string[];
   order?: number;
 }
 export interface ApiResponse<T> {

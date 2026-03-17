@@ -34,7 +34,7 @@ const EmblaSlider = ({
             <ProductCard
               product={product}
               isWishlisted={isProductInWishlist(
-                product.productId || product._id || product.id,
+                product.productId || product._id || product.id, // productId now exists
               )}
               onToggleWishlist={onToggleWishlist}
             />
@@ -56,7 +56,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
         id="similar-products-section"
         className="container mx-auto px-4 py-12"
       >
-        <h3 className="text-3xl text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
+        <h3 className="text-[26px] text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
           Similar Products
         </h3>
         <EmblaSlider
@@ -67,7 +67,7 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
       </div>
 
       <div className="container mx-auto px-4 py-12 mb-12">
-        <h3 className="text-3xl text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
+        <h3 className="text-[26px] text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
           Recently Viewed
         </h3>
         <EmblaSlider
