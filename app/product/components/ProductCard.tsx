@@ -16,7 +16,10 @@ const ProductCard = ({
   isWishlisted = false,
   onToggleWishlist,
 }: ProductCardProps) => {
-  const wishlistProductId = product.productId || product._id || product.id;
+  // productId = real MongoDB _id (passed explicitly from RelatedProducts)
+  // _id       = real MongoDB _id (passed from other contexts)
+  // id        = slug (used for routing only — never for wishlist)
+  const wishlistProductId = product.productId || product._id;
 
   return (
     <div className="p-2 group">
@@ -30,10 +33,10 @@ const ProductCard = ({
         )}
 
         {/* Wishlist button */}
-        <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-2 right-2 z-10">
           <button
             type="button"
-            className="bg-gray-500 p-2 rounded-full shadow-md cursor-pointer hover:bg-[#bd9951] hover:text-white transition-colors"
+            className=" p-2 rounded-full shadow-md cursor-pointer hover:text-white transition-colors"
             onClick={() => {
               if (wishlistProductId && onToggleWishlist) {
                 onToggleWishlist(wishlistProductId);
@@ -47,9 +50,9 @@ const ProductCard = ({
                   : "/assets/icons/heart.svg"
               }
               alt="wishlist"
-              width={16}
-              height={16}
-              className="w-4 h-4"
+              width={20}
+              height={20}
+              className="w-5 h-5"
             />
           </button>
         </div>
@@ -73,7 +76,7 @@ const ProductCard = ({
       </div>
 
       <div className="text-left">
-        <h6 className="mb-2 text-sm font-medium line-clamp-2 h-[40px] leading-tight">
+        <h6 className="mb-1 text-[16px] font-medium line-clamp-2 h-[40px] leading-tight font-[family-name:var(--font-montserrat)]">
           <Link
             href={`/product/${product.id}`}
             className="hover:text-[#bd9951] transition-colors"
@@ -83,24 +86,24 @@ const ProductCard = ({
         </h6>
 
         <div className="flex justify-between items-center mb-1">
-          <span className="text-xs text-gray-500">Size: XL</span>
+          <span className="text-[16px] text-gray-800">Size: XL</span>
           <StarRating rating={4} />
         </div>
 
         <div className="flex items-center gap-2 text-sm">
-          <span className="font-bold text-[#bd9951]">
+          <span className="font-normal text-[16px] text-[#281b00]">
             ₹ {product.price?.toFixed(2)}
           </span>
-          <span className="line-through text-gray-400 text-xs">
+          <span className="line-through text-gray-400 text-[14px]">
             ₹ {product.mrp?.toFixed(2)}
           </span>
-          <span className="text-[#bd9951] text-xs">[{product.discount}]</span>
+          <span className="text-[#6a3f0b] text-[16px]">[{product.discount}]</span>
         </div>
 
-        <div className="mt-5 flex">
+        <div className="mt-5 flex justify-start">
           <Link
             href={`/product/${product.id}`}
-            className="inline-block border-b border-black text-black py-2 px-8 uppercase text-[12px] font-medium transition-all duration-500"
+            className="inline-block border-b border-black text-left text-black py-2 pr-4 uppercase text-[12px] font-medium transition-all duration-500"
           >
             View Detail
           </Link>

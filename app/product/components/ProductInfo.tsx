@@ -68,19 +68,19 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
       {/* Desktop Title / Rating / Code */}
       <div className="hidden lg:block mb-4">
-        <h1 className="text-2xl md:text-3xl font-normal text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
+        <h1 className="text-[26px] md:text-[30px] font-normal text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
           {product.title}
         </h1>
         <div className="flex items-center gap-4 mb-2">
           <StarRating rating={product.rating} />
         </div>
-        <div className="text-emerald-900 text-sm">
+        <div className="text-emerald-900 text-sm hidden md:block">
           <span className="font-semibold">Product Code:</span> {product.productCode}
         </div>
       </div>
 
       {/* Short description */}
-      <p className="text-sm mb-5 leading-relaxed text-gray-600">
+      <p className="text-[15px] mb-5 leading-relaxed text-gray-800 hidden md:block">
         {product.mainDescription}
       </p>
 
@@ -347,16 +347,17 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             { icon: "cash-on-delivery.svg", text: "Pay on delivery available" },
             { icon: "product-return.svg",   text: "Easy 7 days return & exchange available" },
           ].map(({ icon, text }) => (
-            <div key={text} className="flex items-center text-sm gap-3">
-              <Image src={`/assets/icons/${icon}`} width={24} height={24} alt={icon} className="shrink-0" />
+            <div key={text} className="flex items-center text-[15px] gap-3">
+              <Image src={`/assets/icons/${icon}`} width={38} height={38} alt={icon} className="shrink-0" />
               <span>{text}</span>
             </div>
           ))}
         </div>
+        <div className="mt-4 px-1 text-gray-800">100% Original Products</div>
       </div>
 
       {/* Trust badges */}
-      <div className="flex flex-wrap justify-around items-center py-4 gap-y-4 border-t border-gray-100">
+      {/* <div className="flex flex-wrap justify-around items-center py-4 gap-y-4 border-t border-gray-100">
         {[
           { src: "/assets/icons/secure-payment.svg",   label: "Secure Payments" },
           { src: "/assets/icons/transaction.svg",       label: "Cash on delivery" },
@@ -370,12 +371,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             </span>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Accordion */}
       <div className="rounded mt-2">
         <details open className="group border-b border-gray-200">
-          <summary className="flex justify-between items-center text-[#fc5823] px-2 py-2 cursor-pointer font-bold hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase text-sm">
+          <summary className="flex justify-between items-center text-[#fc5823] px-2 py-2 cursor-pointer font-bold hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase text-[16px]">
             Specifications
             <span className="text-xl font-semibold">
               <span className="group-open:hidden">+</span>
@@ -387,8 +388,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 md:gap-x-8">
                 {product.specifications.map((spec: any, idx: number) => (
                   <div key={idx} className="flex flex-col border-b border-gray-200 pb-2">
-                    <span className="font-semibold text-gray-700 text-xs md:text-sm">{spec.key}</span>
-                    <span className="text-gray-900 text-xs md:text-sm">{spec.value}</span>
+                    <span className="font-semibold text-gray-700 text-xs md:text-[15px]">{spec.key}</span>
+                    <span className="text-gray-900 text-xs md:text-[16px]">{spec.value}</span>
                   </div>
                 ))}
               </div>
@@ -399,7 +400,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </details>
 
         <details className="group">
-          <summary className="flex justify-between items-center px-2 py-2 cursor-pointer font-bold text-[#fc5823] hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase text-sm">
+          <summary className="flex justify-between items-center px-2 py-2 cursor-pointer font-bold text-[#fc5823] hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase text-[15px]">
             Delivery & Returns
             <span className="text-xl font-semibold">
               <span className="group-open:hidden">+</span>
@@ -459,15 +460,15 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </h4>
         <div className="flex flex-col gap-3 text-sm">
           <a href="mailto:info@studiobysheetal.com" className="flex items-center hover:text-[#5f3c20] gap-2">
-            <Image src="/assets/icons/email.svg" width={16} height={16} alt="email" />
-            <span className="break-all">info@studiobysheetal.com</span>
+            <Image src="/assets/icons/email.svg" width={27} height={27} alt="email" />
+            <span className="break-all text-[15px]">Email us at info@studiobysheetal.com</span>
           </a>
           <a
             href="https://wa.me/919958813913"
             className="flex items-center hover:text-[#5f3c20] border w-fit px-3 py-2 font-semibold gap-2"
           >
-            <Image src="/assets/icons/whatsapp.svg" width={16} height={16} alt="wa" />
-            Click to chat
+            <Image src="/assets/icons/whatsapp.svg" width={27} height={27} alt="wa" />
+            <span className="text-[15px]">Click to chat</span>
           </a>
         </div>
       </div>

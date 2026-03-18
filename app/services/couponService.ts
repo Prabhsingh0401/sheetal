@@ -2,13 +2,14 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api/v1/coupons";
 
-export const getAllCouponsClient = async (token: string) => {
+export const getAllCouponsClient = async (token?: string) => {
   try {
-    const response = await axios.get(API_URL + "/all", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const headers = token
+      ? {
+          Authorization: `Bearer ${token}`,
+        }
+      : undefined;
+    const response = await axios.get(API_URL, { headers });
     return response.data;
   } catch (error) {
     throw error;

@@ -305,9 +305,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           </div>
 
           {/* Floating Icons — hide on mobile, show on md+ */}
-          <div className="flex md:hidden justify-end gap-2 px-2 pb-2">
+          <div className="absolute top-4 right-0 rounded-l-xl z-20 flex flex-col gap-2 bg-[#f9f9f9]">
             <button
-              className="bg-white p-2.5 rounded-md shadow-sm border border-gray-100"
+              className="p-2.5 rounded-md cursor-pointer"
               onClick={onToggleWishlist}
             >
               <Image
@@ -315,21 +315,24 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                   isWishlisted
                     ? "/assets/icons/heart-solid.svg"
                     : "/assets/icons/heart-pink.svg"
+                    
                 }
-                width={18}
-                height={18}
+                className="md:w-[30px] w-[22px]"
+                width={3}
+                height={3}
                 alt="wishlist"
               />
             </button>
             <button
-              className="bg-white p-2.5 rounded-md shadow-sm border border-gray-100"
+              className="p-2.5 rounded-md cursor-pointer"
               onClick={onScrollToSimilar}
             >
               <Image
                 src="/assets/icons/view-similar.png"
-                width={18}
-                height={18}
+                width={3}
+                height={3}
                 alt="similar"
+                className="md:w-[30px] w-[22px]"
               />
             </button>
           </div>

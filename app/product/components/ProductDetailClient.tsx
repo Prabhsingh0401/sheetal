@@ -460,7 +460,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   // To store overall stock for each size for `allUniqueSizes`
   const sizeOverallStockMap = new Map<
     string,
-    { totalStock: number; minLeft: number }
+    { totalStock: number }
   >();
 
   product.variants?.forEach((v: ProductVariant) => {
@@ -487,10 +487,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
           const currentStock = sizeOverallStockMap.get(s.name) || {
             totalStock: 0,
-            minLeft: Infinity,
           };
           currentStock.totalStock += s.stock || 0;
-          currentStock.minLeft = Math.min(currentStock.minLeft, s.stock || 0);
           sizeOverallStockMap.set(s.name, currentStock);
 
           // Populate colorToAvailableSizesMap
@@ -516,7 +514,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       return {
         name: sizeName,
         available: stockInfo ? stockInfo.totalStock > 0 : false,
-        left: stockInfo ? stockInfo.minLeft : 0,
+        left: stockInfo ? stockInfo.totalStock : 0,
       };
     },
   );
@@ -646,6 +644,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
       return {
         id: p.slug,
+        productId: p._id,
         name: p.name,
         image: getProductImageUrl(p),
         hoverImage: p.hoverImage?.url

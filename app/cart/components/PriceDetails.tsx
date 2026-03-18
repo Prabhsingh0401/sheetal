@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { getToken, getUserDetails } from "@/app/services/authService";
 import { getAllCouponsClient } from "@/app/services/couponService";
@@ -48,6 +49,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   hideProceedButton = false,
   onProceed,
 }) => {
+  const router = useRouter();
   const [openCouponModal, setOpenCouponModal] = useState(false);
   const [coupons, setCoupons] = useState<any[]>([]);
   const [selectedCouponCode, setSelectedCouponCode] = useState<string | null>(
@@ -57,23 +59,17 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   useEffect(() => {
     if (openCouponModal) {
       const token = getToken();
-      if (token) {
-        const fetchCoupons = async () => {
-          try {
-            const response = await getAllCouponsClient(token);
-            const list = response?.data?.data || response?.data || [];
-            setCoupons(Array.isArray(list) ? list : []);
-          } catch (error) {
-            console.error("Error fetching coupons:", error);
-          }
-        };
-        fetchCoupons();
-      } else {
-        toast.error("Please login to view coupons.");
-      }
-      // Reset selection when modal opens
-      setSelectedCouponCode(couponCode || null);
-      setCouponInput(couponCode || "");
+      const fetchCoupons = async () => {
+        try {
+          const response = await getAllCouponsClient(token);
+          const list = response?.data?.data || response?.data || [];
+          setCoupons(Array.isArray(list) ? list : []);
+        } catch (error) {
+          console.error("Error fetching coupons:", error);
+          setCoupons([]);
+        }
+      };
+      fetchCoupons();
     }
   }, [openCouponModal, couponCode]);
 
@@ -81,6 +77,11 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
     const user = getUserDetails();
     if (!couponInput.trim()) {
       toast.error("Please select a coupon to apply.");
+      return;
+    }
+    if (!user?.id) {
+      setOpenCouponModal(false);
+      router.push("/login");
       return;
     }
     handleApplyCoupon(user?.id);
@@ -131,7 +132,11 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
             ) : null}
 
             <button
-              onClick={() => setOpenCouponModal(true)}
+              onClick={() => {
+                setSelectedCouponCode(couponCode || null);
+                setCouponInput(couponCode || "");
+                setOpenCouponModal(true);
+              }}
               className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded-[2px] px-4 py-1 text-sm cursor-pointer"
             >
               {couponCode ? "CHANGE" : "APPLY"}
