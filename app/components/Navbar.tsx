@@ -36,7 +36,7 @@ const hasTags = (category: Category) => {
 };
 
 // Dynamic Mega Menu Component
-const DynamicMegaMenu = ({ category }: { category: Category }) => {``
+const DynamicMegaMenu = ({ category }: { category: Category }) => {
   const tagGroups = [
     { title: "By Occasion", items: category.occasion, type: "occasion" },
     { title: "By Fabric", items: category.fabric, type: "fabric" },
