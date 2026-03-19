@@ -107,7 +107,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
   }, [isOpen]);
 
   useEffect(() => {
-    if (query.length > 2) {
+    if (query.length >= 1) {
       const debounce = setTimeout(() => {
         setIsLoading(true);
         searchService(query)
@@ -243,7 +243,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
   };
 
   const renderLeftPanelContent = (compact = false) => {
-    const showingQuery = query.length > 2;
+    const showingQuery = query.length >= 1;
 
     return (
       <>
@@ -432,7 +432,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
   );
 
   const renderMobilePanel = () => {
-    const showingQuery = query.length > 2;
+    const showingQuery = query.length >= 1;
     const hasContent =
       (showingQuery && results.length > 0) ||
       trendingCategories.length > 0 ||
@@ -561,103 +561,6 @@ const SearchModal: React.FC<SearchModalProps> = ({
               <polyline points="12 5 19 12 12 19" />
             </svg>
           </Link>
-
-          {/* ── Categories as product-style grid ── */}
-          {/* {matchedCategories.length > 0 && (
-            <div className="mt-4">
-              <div className="flex items-center gap-3 mb-3">
-                <h4 className="text-[13px] font-semibold text-gray-800 tracking-wide whitespace-nowrap">
-                  Categories for &ldquo;{query}&rdquo;:
-                </h4>
-                <hr className="flex-1 border-gray-200" />
-              </div>
-
-              {(() => {
-                // Best matched category from search results
-                const bestMatch = matchedCategories[0];
-
-                // All other categories from allCategories, excluding any that appear in matchedCategories
-                const matchedSlugs = new Set(
-                  matchedCategories.map((m: any) => m.data.slug),
-                );
-                const otherCategories = trendingCategories
-                  .filter((c) => !matchedSlugs.has(c.slug))
-                  .slice(0, 4); // fill up to 4 more so total is 5
-
-                // Combined: best match first, then others
-                const displayCategories = [
-                  {
-                    slug: bestMatch.data.slug,
-                    name: bestMatch.data.name,
-                    isBestMatch: true,
-                    catObj: allCategories.find(
-                      (c) =>
-                        c.slug === bestMatch.data.slug ||
-                        c.name.toLowerCase() ===
-                          bestMatch.data.name.toLowerCase(),
-                    ),
-                  },
-                  ...otherCategories.map((c) => ({
-                    slug: c.slug,
-                    name: c.name,
-                    isBestMatch: false,
-                    catObj: c,
-                  })),
-                ];
-
-                return (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-                    {displayCategories.map((entry, i) => {
-                      const catImageUrl = entry.catObj
-                        ? getCategoryImageUrl(
-                            entry.catObj,
-                            "/assets/default-image.png",
-                          )
-                        : "/assets/default-image.png";
-
-                      return (
-                        <Link
-                          key={i}
-                          href={`/${entry.slug}`}
-                          onClick={() => {
-                            addClickedItem({
-                              type: "category",
-                              name: entry.name,
-                              categoryName: entry.name,
-                            });
-                            onClose();
-                          }}
-                          className="group block cursor-pointer"
-                        >
-                          <div className="relative aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
-                            <Image
-                              src={catImageUrl}
-                              alt={entry.name}
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            {entry.isBestMatch && (
-                              <span className="absolute top-2 left-2 text-[10px] bg-[#8c7e4e] text-white px-1.5 py-0.5 rounded font-semibold z-10">
-                                Best Match
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-2 px-0.5">
-                            <h5 className="text-[12px] text-gray-800 font-medium line-clamp-2 leading-snug">
-                              {entry.name}
-                            </h5>
-                            <span className="inline-block mt-1.5 border-b border-black text-[11px] text-black uppercase tracking-wide transition-all duration-300 group-hover:tracking-widest group-hover:text-[#b3a660]">
-                              Shop Now
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
-          )} */}
         </div>
       )}
     </div>
@@ -665,7 +568,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
   if (!isOpen) return null;
 
-  const showingQuery = query.length > 2;
+  const showingQuery = query.length >= 1;
   const productTitle = showingQuery
     ? `Trending Products for "${query}":`
     : "Trending Products:";
