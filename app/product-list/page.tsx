@@ -34,6 +34,7 @@ const ProductListContent = ({
   const pathname = usePathname();
   const categorySlug = propCategorySlug || searchParams.get("category");
   const subCategory = searchParams.get("subCategory");
+  const searchQuery = searchParams.get("search");
 
   // Redirect /product-list?category=xyz to /xyz
   useEffect(() => {
@@ -138,6 +139,8 @@ const ProductListContent = ({
   } = useProducts({
     category: categoryId,
     subCategory: subCategory || undefined,
+    search: searchQuery || undefined,
+    sort: sortOption,
     limit: 50,
   });
 

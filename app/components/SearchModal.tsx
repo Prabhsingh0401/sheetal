@@ -172,7 +172,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
           const href =
             topResult.type === "category"
               ? `/${topResult.data.slug}`
-              : `/product/${topResult.data.slug}`;
+              : `/product-list?search=${encodeURIComponent(query)}`;
           addClickedItem(
             topResult.type === "category"
               ? {
@@ -181,9 +181,8 @@ const SearchModal: React.FC<SearchModalProps> = ({
                   categoryName: topResult.data.name,
                 }
               : {
-                  type: "product",
-                  name: topResult.data.name,
-                  slug: topResult.data.slug,
+                  type: "query",
+                  name: query,
                 },
           );
           onClose();
@@ -445,6 +444,70 @@ const SearchModal: React.FC<SearchModalProps> = ({
     );
   };
 
+  const renderCategoryGrid = (cats: any[]) => (
+    <div className="flex-1 min-w-0 mt-8">
+      <div className="flex items-center gap-3 mb-4">
+        <h4 className="text-[16px] font-normal text-black tracking-wide whitespace-nowrap">
+          Collections:
+        </h4>
+        <hr className="flex-1 border-gray-200" />
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        {cats.slice(0, 4).map((cat) => (
+          <div key={cat._id} className="relative aspect-[3/4] rounded-lg overflow-hidden group">
+            <Link
+              href={`/product-list?category=${cat.slug}`}
+              className="block h-full w-full"
+              onClick={() => {
+                addClickedItem({
+                  type: "category",
+                  name: cat.name,
+                  categoryName: cat.name,
+                });
+                onClose();
+              }}
+            >
+              <Image
+                src={getCategoryImageUrl(cat, "/assets/default-image.png")}
+                alt={cat.name}
+                fill
+                className="object-cover w-full h-full"
+              />
+            </Link>
+
+            <Link
+              href={`/product-list?category=${cat.slug}`}
+              className="absolute bottom-0 left-0 w-full text-center text-white text-[16px] bg-gradient-to-t from-[#251d05] to-transparent pt-[60px] pb-[15px] transition-all duration-300 pointer-events-auto"
+              onClick={() => {
+                addClickedItem({
+                  type: "category",
+                  name: cat.name,
+                  categoryName: cat.name,
+                });
+                onClose();
+              }}
+            >
+              <span className="inline-block group-hover:text-[#ffc107] group-hover:-translate-y-1.5 transition-transform duration-300 font-medium">
+                {cat.name}
+              </span>
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Link
+          href="/product-list"
+          onClick={onClose}
+          className="inline-block border border-black text-black px-6 py-2.5 text-[12px] uppercase tracking-[0.15em] font-medium transition-colors duration-300 rounded-[2px]"
+        >
+          VIEW ALL COLLECTIONS
+        </Link>
+      </div>
+    </div>
+  );
+
   const renderProductGrid = (
     products: any[],
     isRaw: boolean,
@@ -468,7 +531,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
             <Link
               key={product._id}
               href={`/product/${product.slug}`}
-              className="group block cursor-pointer"
+              className="group flex flex-col h-full cursor-pointer"
               onClick={() => {
                 addClickedItem({
                   type: "product",
@@ -478,7 +541,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                 onClose();
               }}
             >
-              <div className="relative aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+              <div className="relative aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden shrink-0">
                 <Image
                   src={imageUrl}
                   alt={product.name}
@@ -486,14 +549,16 @@ const SearchModal: React.FC<SearchModalProps> = ({
                   className="object-cover opacity-100"
                 />
               </div>
-              <div className="mt-2 px-0.5">
-                <h5 className="text-[12px] text-gray-800 font-medium line-clamp-2 leading-snug">
+              <div className="mt-2 px-0.5 flex flex-col flex-grow">
+                <h5 className="text-[12px] text-gray-800 font-medium line-clamp-2 leading-snug min-h-[36px]">
                   {product.name}
                 </h5>
-                {getPriceDisplay(product)}
-                <span className="inline-block mt-1.5 border-b border-black text-[11px] text-black uppercase tracking-wide transition-all duration-300 group-hover:tracking-widest group-hover:text-[#b3a660]">
-                  View Detail
-                </span>
+                <div className="mt-auto flex flex-col items-start">
+                  {getPriceDisplay(product)}
+                  <span className="inline-block mt-1.5 border-b border-black text-[11px] text-black uppercase tracking-wide transition-all duration-300 group-hover:tracking-widest group-hover:text-[#b3a660]">
+                    View Detail
+                  </span>
+                </div>
               </div>
             </Link>
           );
@@ -502,12 +567,12 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
       {/* ── View All + Categories (query mode only) ── */}
       {showingQuery && (
-        <div className="mt-5 pt-4 border-t border-gray-100">
+        <div className="mt-8 flex justify-center">
           <Link
             href={
               results[0]?.type === "category"
                 ? `/${results[0].data.slug}`
-                : `/product/${results[0]?.data?.slug}`
+                : `/product-list?search=${encodeURIComponent(query)}`
             }
             onClick={() => {
               if (results[0]) {
@@ -519,47 +584,17 @@ const SearchModal: React.FC<SearchModalProps> = ({
                         categoryName: results[0].data.name,
                       }
                     : {
-                        type: "product",
-                        name: results[0].data.name,
-                        slug: results[0].data.slug,
+                        type: "query",
+                        name: query,
                       },
                 );
               }
               addSearchQuery(query);
               onClose();
             }}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-[#8c7e4e] text-[#8c7e4e] hover:bg-[#8c7e4e] hover:text-white text-[13px] font-semibold tracking-wide transition-all duration-200 group"
+            className="inline-block border border-black text-black px-6 py-2.5 text-[12px] uppercase tracking-[0.15em] font-medium transition-colors duration-300 rounded-[2px]"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
             View all results for &ldquo;{query}&rdquo;
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="transition-transform duration-200 group-hover:translate-x-1"
-            >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
           </Link>
         </div>
       )}
@@ -582,11 +617,11 @@ const SearchModal: React.FC<SearchModalProps> = ({
       />
 
       <div
-        className="fixed left-0 right-0 z-[9999] font-[family-name:var(--font-montserrat)] px-0 md:px-[5%] transition-all duration-300"
-        style={{ top: `${navbarBottom + 12}px` }}
+        className="fixed left-0 right-0 z-[9999] font-[family-name:var(--font-montserrat)] px-0 md:px-[5%] transition-all duration-300 flex justify-center"
+        style={{ top: `${navbarBottom + 10}px` }}
       >
         <div
-          className="relative w-full shadow-2xl md:rounded-b-2xl overflow-hidden"
+          className="relative w-full max-w-[850px] shadow-2xl md:rounded-b-2xl overflow-hidden"
           style={{
             background: "linear-gradient(135deg, #e2f7cf 0%, #f7efbe 100%)",
           }}
@@ -648,8 +683,12 @@ const SearchModal: React.FC<SearchModalProps> = ({
                             No results found for &ldquo;{query}&rdquo;.
                           </p>
                         )
-                    : trendingProducts.length > 0 &&
-                      renderProductGrid(trendingProducts, true, productTitle)}
+                    : trendingProducts.length > 0 && (
+                        <div className="flex flex-col gap-6">
+                          {renderProductGrid(trendingProducts, true, productTitle)}
+                          {trendingCategories.length > 0 && renderCategoryGrid(trendingCategories)}
+                        </div>
+                      )}
                 </div>
               </div>
             </div>
