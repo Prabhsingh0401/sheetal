@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { searchService } from "@/app/services/searchService";
@@ -58,6 +58,9 @@ const addSearchQuery = (queryText: string) => {
   if (!trimmed || trimmed.length < 2) return;
   addClickedItem({ type: "query", name: trimmed });
 };
+
+const getSearchResultsHref = (queryText: string) =>
+  `/product-list?search=${encodeURIComponent(queryText.trim())}`;
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -158,44 +161,32 @@ const SearchModal: React.FC<SearchModalProps> = ({
     }
   }, [query]);
 
+  const matchedCategories = results.filter((r) => r.type === "category");
+  const matchedProducts = results.filter((r) => r.type === "product");
+
+  const handleSearchSubmit = useCallback(() => {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery.length <= 1) {
+      return;
+    }
+
+    addSearchQuery(trimmedQuery);
+    setPreviousSearches(getPreviousSearches());
+    onClose();
+    router.push(getSearchResultsHref(trimmedQuery));
+  }, [onClose, query, router]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
-        return;
-      }
-      if (e.key === "Enter" && query.trim().length > 1) {
-        addSearchQuery(query);
-        setPreviousSearches(getPreviousSearches());
-        const topResult = results[0];
-        if (topResult) {
-          const href =
-            topResult.type === "category"
-              ? `/${topResult.data.slug}`
-              : `/product-list?search=${encodeURIComponent(query)}`;
-          addClickedItem(
-            topResult.type === "category"
-              ? {
-                  type: "category",
-                  name: topResult.data.name,
-                  categoryName: topResult.data.name,
-                }
-              : {
-                  type: "query",
-                  name: query,
-                },
-          );
-          onClose();
-          router.push(href);
-        }
       }
     };
+
     if (isOpen) window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose, query, results, router]);
-
-  const matchedCategories = results.filter((r) => r.type === "category");
-  const matchedProducts = results.filter((r) => r.type === "product");
+  }, [isOpen, onClose]);
 
   const getPriceDisplay = (product: any) => {
     let minPrice = Infinity;
@@ -575,7 +566,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
             href={
               results[0]?.type === "category"
                 ? `/${results[0].data.slug}`
-                : `/product-list?search=${encodeURIComponent(query)}`
+                : getSearchResultsHref(query)
             }
             onClick={() => {
               if (results[0]) {
@@ -663,6 +654,12 @@ const SearchModal: React.FC<SearchModalProps> = ({
                 placeholder="I'm Looking for..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSearchSubmit();
+                  }
+                }}
               />
               {isLoading && (
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -743,7 +740,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                           {/* View all collections button */}
                           <div className="mt-8 flex justify-center">
                             <Link
-                              href={`/product-list?search=${encodeURIComponent(query)}`}
+                              href={getSearchResultsHref(query)}
                               onClick={() => {
                                 addSearchQuery(query);
                                 onClose();

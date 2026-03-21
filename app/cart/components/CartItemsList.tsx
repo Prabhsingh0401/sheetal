@@ -26,6 +26,7 @@ interface CartItemsListProps {
   onBulkRemove: () => void;
   onBulkHeart: () => void;
   isBulkAction: boolean;
+  modalAction: "remove" | "wishlist";
 }
 
 const CartItemsList: React.FC<CartItemsListProps> = ({
@@ -47,6 +48,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   onBulkRemove,
   onBulkHeart,
   isBulkAction,
+  modalAction,
 }) => {
   return (
     <>
@@ -57,6 +59,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
           onMoveToWishlist={handleMoveToWishlist}
           isBulkAction={isBulkAction}
           itemCount={selectedItemIds.length}
+          mode={modalAction}
         />
       )}
 
@@ -187,11 +190,11 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                     {/* Price row */}
                     <div className="flex flex-wrap items-center gap-1 md:gap-2 md:justify-end">
                       <span className="font-semibold text-[13px] md:text-[15px]">
-                        ₹ {displayDiscountPrice.toFixed(2)}
+                        ₹ {(displayDiscountPrice*item.quantity).toFixed(2)}
                       </span>
                       {displayOriginalPrice > displayDiscountPrice && (
                         <span className="text-xs text-gray-500 line-through">
-                          ₹ {displayOriginalPrice.toFixed(2)}
+                          ₹ {(displayOriginalPrice*item.quantity).toFixed(2)}
                         </span>
                       )}
                       {discountPercentage > 0 && (

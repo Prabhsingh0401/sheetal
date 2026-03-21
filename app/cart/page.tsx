@@ -43,6 +43,9 @@ const CartPage = () => {
   const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkAction, setIsBulkAction] = useState(false);
+  const [modalAction, setModalAction] = useState<"remove" | "wishlist">(
+    "remove",
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponInput, setCouponInput] = useState("");
 
@@ -61,6 +64,7 @@ const CartPage = () => {
       return;
     }
     setIsBulkAction(true);
+    setModalAction("remove");
     setIsModalOpen(true);
   };
 
@@ -70,11 +74,13 @@ const CartPage = () => {
       return;
     }
     setIsBulkAction(true);
+    setModalAction("wishlist");
     setIsModalOpen(true);
   };
 
   const handleRemoveItem = (item: CartItem) => {
     setIsBulkAction(false);
+    setModalAction("remove");
     setItemToRemove(item);
     setIsModalOpen(true);
   };
@@ -98,6 +104,7 @@ const CartPage = () => {
       }
       setIsModalOpen(false);
       setIsBulkAction(false);
+      setModalAction("remove");
     } finally {
       setIsProcessing(false);
     }
@@ -131,6 +138,7 @@ const CartPage = () => {
       }
       setIsModalOpen(false);
       setIsBulkAction(false);
+      setModalAction("remove");
     } finally {
       setIsProcessing(false);
     }
@@ -140,6 +148,7 @@ const CartPage = () => {
     setIsModalOpen(false);
     setItemToRemove(null);
     setIsBulkAction(false);
+    setModalAction("remove");
   };
 
   const handleApplyCoupon = (userId: string | undefined) => {
@@ -299,6 +308,7 @@ const CartPage = () => {
                 onBulkRemove={handleBulkRemove}
                 isBulkAction={isBulkAction}
                 onBulkHeart={handleBulkHeart}
+                modalAction={modalAction}
               />
 
               <div className="w-full lg:w-4/12">

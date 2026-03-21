@@ -17,6 +17,7 @@ interface UseProductsReturn {
 
 export const useProducts = (
   initialParams: ProductQueryParams = {},
+  enabled: boolean = true,
 ): UseProductsReturn => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -47,8 +48,14 @@ export const useProducts = (
   }, []);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     loadProducts(initialParams);
   }, [
+    enabled,
     initialParams.page,
     initialParams.limit,
     initialParams.search,

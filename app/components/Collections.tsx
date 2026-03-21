@@ -5,6 +5,8 @@ import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import Link from "next/link";
 import { getCollectionProducts, CollectionProduct } from "../services/productService";
+import { useWishlist } from "../hooks/useWishlist";
+import WishlistLoginModal from "./WishlistLoginModal";
 
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
 const MIN_FOR_CAROUSEL_MOBILE  = 2;
@@ -68,6 +70,13 @@ const Collections = () => {
   const [products, setProducts] = useState<CollectionProduct[]>([]);
   const [loading, setLoading]   = useState<boolean>(true);
   const [isCarousel, setIsCarousel] = useState(false);
+  const {
+    wishlist,
+    toggleProductInWishlist,
+    isLoginModalOpen,
+    closeLoginModal,
+    handleLoginRedirect,
+  } = useWishlist();
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -140,7 +149,11 @@ const Collections = () => {
                     key={product._id}
                     className="flex-shrink-0 w-[75%] sm:w-[48%] md:w-[32%] lg:w-[25%]"
                   >
-                    <ProductCard product={product} />
+                    <ProductCard
+                      product={product}
+                      isWishlisted={wishlist.some((p) => p._id === product._id)}
+                      onToggleWishlist={toggleProductInWishlist}
+                    />
                   </div>
                 ))}
               </div>
@@ -173,19 +186,37 @@ const Collections = () => {
                 key={product._id}
                 className="w-[85%] sm:w-[48%] md:w-[32%] lg:w-[23%]"
               >
-                <ProductCard product={product} />
+                <ProductCard
+                  product={product}
+                  isWishlisted={wishlist.some((p) => p._id === product._id)}
+                  onToggleWishlist={toggleProductInWishlist}
+                />
               </div>
             ))}
           </div>
         )}
 
       </div>
+
+      <WishlistLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={closeLoginModal}
+        onLogin={handleLoginRedirect}
+      />
     </div>
   );
 };
 
 // ─── Individual card ───────────────────────────────────────────────────────────
-function ProductCard({ product }: { product: CollectionProduct }) {
+function ProductCard({
+  product,
+  isWishlisted,
+  onToggleWishlist,
+}: {
+  product: CollectionProduct;
+  isWishlisted: boolean;
+  onToggleWishlist: (productId: string) => void;
+}) {
   const href = `/product/${product.slug}`;
 
   return (
@@ -199,8 +230,31 @@ function ProductCard({ product }: { product: CollectionProduct }) {
           </div>
         )}
 
-        <div className="absolute top-3 right-3 z-30 rounded-full p-1.5 cursor-pointer">
-          <Image src="/assets/icons/heart.svg" alt="Wishlist" width={18} height={18} />
+        <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 z-20">
+          <button
+            className="w-10 h-10 rounded-full flex items-center justify-center group/icon cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleWishlist(product._id);
+            }}
+          >
+            <Image
+              src={
+                isWishlisted
+                  ? "/assets/icons/heart-solid.svg"
+                  : "/assets/icons/heart.svg"
+              }
+              alt="Wishlist"
+              width={18}
+              height={18}
+              className={
+                isWishlisted
+                  ? ""
+                  : "group-hover/icon:brightness-0 group-hover/icon:invert"
+              }
+            />
+          </button>
         </div>
 
         <Link href={href} className="block h-full w-full relative">

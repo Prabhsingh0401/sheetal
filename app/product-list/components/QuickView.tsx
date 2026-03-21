@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from "react";
 import {
   Product,
+  ProductVariant,
   fetchProductBySlug,
   getProductImageUrl,
+  getVariantGalleryUrls,
 } from "../../services/productService";
 import { isAuthenticated } from "../../services/authService";
 import ProductImageGallery from "../../product/components/ProductImageGallery";
@@ -28,6 +30,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedVariantId, setSelectedVariantId] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   // Removed lowestPrice and lowestMrp states
   const {
@@ -53,21 +56,32 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
 
             // Default size and color logic: find first available variant, its color, and its size
             const firstAvailableVariant = response.data.variants?.find(
-              (v: any) =>
+              (v: ProductVariant) =>
                 Array.isArray(v.sizes) &&
                 v.sizes.length > 0 &&
-                v.sizes.some((s: any) => s.stock > 0),
+                v.sizes.some((s) => s.stock > 0),
             );
             if (firstAvailableVariant) {
+              setSelectedVariantId(firstAvailableVariant._id);
               if (firstAvailableVariant.color?.name) {
                 setSelectedColor(firstAvailableVariant.color.name);
               }
+              const initialGallery = getVariantGalleryUrls(
+                response.data,
+                firstAvailableVariant,
+              );
+              setSelectedImage(
+                initialGallery[0] || getProductImageUrl(response.data),
+              );
               const firstAvailableSize = firstAvailableVariant.sizes.find(
-                (s: any) => s.stock > 0,
+                (s: ProductVariant["sizes"][number]) => s.stock > 0,
               );
               if (firstAvailableSize) {
                 setSelectedSize(firstAvailableSize.name);
               }
+            } else {
+              const mainImg = getProductImageUrl(response.data);
+              setSelectedImage(mainImg);
             }
           }
         } catch (error) {
@@ -248,18 +262,25 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     }
   };
 
-  if (!productSlug) {
-    return null;
-  }
-
   const displayPrice = currentPrice;
   const displayOriginalPrice = currentOriginalPrice;
   const discount = currentDiscount;
+  const selectedVariant =
+    product?.variants.find((variant) => variant._id === selectedVariantId) ||
+    product?.variants.find((variant) => variant.color?.name === selectedColor) ||
+    null;
+  const galleryImages = getVariantGalleryUrls(product, selectedVariant);
 
-  const galleryImages = [
-    getProductImageUrl(product || undefined),
-    ...(product?.images?.map((img) => getApiImageUrl(img.url)) || []),
-  ].filter(Boolean) as string[];
+  useEffect(() => {
+    if (!galleryImages.length) return;
+    if (!selectedImage || !galleryImages.includes(selectedImage)) {
+      setSelectedImage(galleryImages[0]);
+    }
+  }, [galleryImages, selectedImage]);
+
+  if (!productSlug) {
+    return null;
+  }
 
   const allUniqueColors: { name: string; image: string }[] = [];
   const allUniqueSizeNames = new Set<string>();
@@ -302,7 +323,12 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
 
   const handleColorChange = (color: { name: string; image: string }) => {
     setSelectedColor(color.name);
-    setSelectedImage(color.image);
+    const nextVariant =
+      product?.variants.find((variant) => variant.color?.name === color.name) ||
+      null;
+    setSelectedVariantId(nextVariant?._id || "");
+    const nextGallery = getVariantGalleryUrls(product, nextVariant);
+    setSelectedImage(nextGallery[0] || color.image);
 
     const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
     if (
@@ -418,7 +444,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                     Select Color:
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {allUniqueColors.map((color: any, i: number) => (
+                    {allUniqueColors.map((color, i: number) => (
                       <div
                         key={i}
                         className={`w-10 h-14 md:w-12 md:h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative flex-shrink-0 ${

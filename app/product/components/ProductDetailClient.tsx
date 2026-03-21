@@ -19,6 +19,7 @@ import {
   fetchProducts,
   Product,
   getProductImageUrl,
+  getVariantGalleryUrls,
   ProductVariant,
   incrementProductView,
   fetchProductReviews,
@@ -86,9 +87,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedVariantData, setSelectedVariantData] =
     useState<ProductVariant | null>(null);
-  const [selectedSizeObject, setSelectedSizeObject] = useState<any | null>(
-    null,
-  );
+  const [selectedSizeObject, setSelectedSizeObject] = useState<
+    ProductVariant["sizes"][number] | null
+  >(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [enquireModalOpen, setEnquireModalOpen] = useState(false);
@@ -114,10 +115,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         if (res.success && res.data) {
           setProduct(res.data);
 
-          // Set initial image
-          const mainImg = getProductImageUrl(res.data);
-          setSelectedImage(mainImg);
-
           // Default size logic: find first available size
           const firstAvailableVariant = res.data.variants?.find(
             (v: ProductVariant) =>
@@ -131,6 +128,11 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
             if (firstAvailableVariant.color?.name) {
               setSelectedColor(firstAvailableVariant.color.name);
             }
+            const initialGallery = getVariantGalleryUrls(
+              res.data,
+              firstAvailableVariant,
+            );
+            setSelectedImage(initialGallery[0] || getProductImageUrl(res.data));
             const firstAvailableSize = firstAvailableVariant.sizes.find(
               (s: {
                 name: string;
@@ -143,6 +145,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               setSelectedSize(firstAvailableSize.name);
               setSelectedSizeObject(firstAvailableSize);
             }
+          } else {
+            const mainImg = getProductImageUrl(res.data);
+            setSelectedImage(mainImg);
           }
 
           // ── Similar Products: always scoped to same category ──────────
@@ -430,6 +435,15 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     return () => window.clearTimeout(timeoutId);
   }, [loading, searchParams, scrollToSimilarProducts]);
 
+  const galleryImages = getVariantGalleryUrls(product, selectedVariantData);
+
+  useEffect(() => {
+    if (!galleryImages.length) return;
+    if (!selectedImage || !galleryImages.includes(selectedImage)) {
+      setSelectedImage(galleryImages[0]);
+    }
+  }, [galleryImages, selectedImage]);
+
   if (loading)
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -442,12 +456,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         {error || "Product not found"}
       </div>
     );
-
-  // Transform Data for View
-  const galleryImages = [
-    getProductImageUrl(product),
-    ...(product.images?.map((img) => getApiImageUrl(img.url)) || []),
-  ].filter(Boolean);
 
   // Derive all unique colors, all unique sizes, and a map of color to available sizes
   const allUniqueColors: ColorOption[] = [];
@@ -518,11 +526,12 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
   const handleColorChange = (color: ColorOption) => {
     setSelectedColor(color.name);
-    setSelectedImage(color.image);
 
     const newlySelectedVariant =
       product?.variants.find((v) => v.color?.name === color.name) || null;
     setSelectedVariantData(newlySelectedVariant);
+    const nextGallery = getVariantGalleryUrls(product, newlySelectedVariant);
+    setSelectedImage(nextGallery[0] || color.image);
 
     const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
     if (
