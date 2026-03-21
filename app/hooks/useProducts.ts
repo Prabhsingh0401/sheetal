@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   fetchProducts,
   Product,
@@ -19,18 +19,32 @@ export const useProducts = (
   initialParams: ProductQueryParams = {},
   enabled: boolean = true,
 ): UseProductsReturn => {
+  const {
+    page,
+    limit,
+    search,
+    sort,
+    category,
+    subCategory,
+    brand,
+    status,
+    color,
+  } = initialParams;
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [totalProducts, setTotalProducts] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const requestIdRef = useRef(0);
 
   const loadProducts = useCallback(async (params: ProductQueryParams = {}) => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError(null);
     try {
       const response = await fetchProducts(params);
+      if (requestId !== requestIdRef.current) return;
       if (response.success) {
         setProducts(response.products);
         setTotalProducts(response.totalProducts);
@@ -40,31 +54,48 @@ export const useProducts = (
         setError("Failed to fetch products");
       }
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       console.error(err);
       setError("An error occurred while fetching products");
     } finally {
+      if (requestId !== requestIdRef.current) return;
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     if (!enabled) {
+      requestIdRef.current += 1;
       setLoading(false);
       return;
     }
 
-    loadProducts(initialParams);
+    loadProducts({
+      page,
+      limit,
+      search,
+      sort,
+      category,
+      subCategory,
+      brand,
+      status,
+      color,
+    });
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [
     enabled,
-    initialParams.page,
-    initialParams.limit,
-    initialParams.search,
-    initialParams.sort,
-    initialParams.category,
-    initialParams.subCategory,
-    initialParams.brand,
-    initialParams.status,
-    initialParams.color,
+    loadProducts,
+    page,
+    limit,
+    search,
+    sort,
+    category,
+    subCategory,
+    brand,
+    status,
+    color,
   ]);
 
   return {

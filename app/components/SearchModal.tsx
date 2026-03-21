@@ -563,26 +563,9 @@ const SearchModal: React.FC<SearchModalProps> = ({
       {showingQuery && (
         <div className="mt-8 flex justify-center">
           <Link
-            href={
-              results[0]?.type === "category"
-                ? `/${results[0].data.slug}`
-                : getSearchResultsHref(query)
-            }
+            href={getSearchResultsHref(query)}
             onClick={() => {
-              if (results[0]) {
-                addClickedItem(
-                  results[0].type === "category"
-                    ? {
-                        type: "category",
-                        name: results[0].data.name,
-                        categoryName: results[0].data.name,
-                      }
-                    : {
-                        type: "query",
-                        name: query,
-                      },
-                );
-              }
+              addClickedItem({ type: "query", name: query });
               addSearchQuery(query);
               onClose();
             }}
@@ -678,17 +661,13 @@ const SearchModal: React.FC<SearchModalProps> = ({
                   {showingQuery ? (
                     <div className="flex flex-col gap-6">
                       {/* Matched products */}
-                      {matchedProducts.length > 0
-                        ? renderProductGrid(
-                            matchedProducts,
-                            false,
-                            productTitle,
-                          )
-                        : !isLoading && (
-                            <p className="text-gray-400 text-center py-8 text-sm italic">
-                              No results found for &ldquo;{query}&rdquo;.
-                            </p>
-                          )}
+                      {matchedProducts.length > 0 ? (
+                        renderProductGrid(matchedProducts, false, productTitle)
+                      ) : !isLoading && matchedCategories.length === 0 ? (
+                        <p className="text-gray-400 text-center py-8 text-sm italic">
+                          No results found for &ldquo;{query}&rdquo;.
+                        </p>
+                      ) : null}
 
                       {/* Matched categories — same card dimensions as products */}
                       {matchedCategories.length > 0 && (

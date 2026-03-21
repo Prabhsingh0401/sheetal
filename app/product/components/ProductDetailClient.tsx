@@ -1,6 +1,6 @@
 // app/product/[id]/ProductDetailClient.tsx
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import TopInfo from "../../components/TopInfo";
 import Footer from "../../components/Footer";
@@ -435,7 +435,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     return () => window.clearTimeout(timeoutId);
   }, [loading, searchParams, scrollToSimilarProducts]);
 
-  const galleryImages = getVariantGalleryUrls(product, selectedVariantData);
+  const galleryImages = useMemo(
+    () => getVariantGalleryUrls(product, selectedVariantData),
+    [product, selectedVariantData],
+  );
 
   useEffect(() => {
     if (!galleryImages.length) return;

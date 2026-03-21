@@ -118,9 +118,11 @@ const ProductListContent = ({
           setCategoryId(category._id);
         } else {
           console.warn("Category not found:", categorySlug);
+          setCategoryId(undefined);
         }
       } catch (error) {
         console.error("Error resolving category:", error);
+        setCategoryId(undefined);
       } finally {
         setIsResolvingCategory(false);
       }

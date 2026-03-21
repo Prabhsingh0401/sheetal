@@ -32,6 +32,11 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({
 
   useEffect(() => {
     const loadBannerCategory = async () => {
+      const trimmedSearchQuery = searchQuery?.trim();
+      if (!categorySlug && !trimmedSearchQuery) {
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
@@ -47,7 +52,6 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({
           return;
         }
 
-        const trimmedSearchQuery = searchQuery?.trim();
         if (!trimmedSearchQuery) {
           return;
         }
