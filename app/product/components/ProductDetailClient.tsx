@@ -219,26 +219,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
           setSimilarProducts(allFetched);
 
-          console.log("currentMinPrice:", currentMinPrice);
-          console.log(
-            "priceRange:",
-            Math.max(0, currentMinPrice - 2000),
-            "to",
-            currentMinPrice + 2000,
-          );
-          console.log(
-            "allFetched prices:",
-            allFetched.map((p) => {
-              const min = Math.min(
-                ...p.variants.flatMap((v) =>
-                  v.sizes.map((s) =>
-                    s.discountPrice > 0 ? s.discountPrice : s.price,
-                  ),
-                ),
-              );
-              return `${p.name} | ₹${min}`;
-            }),
-          );
           // ─────────────────────────────────────────────────────────────
 
           // ── Persist to recently-viewed ────────────────────────────────

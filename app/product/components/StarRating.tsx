@@ -14,8 +14,8 @@ const StarRating = ({ rating, onRatingChange }: StarRatingProps) => {
           key={i}
           src={i < rating ? "/assets/y-star.png" : "/assets/gray-star.png"}
           alt="star"
-          width={14}
-          height={14}
+          width={20}
+          height={20}
           className={`w-[20px] h-[20px] ${onRatingChange ? "cursor-pointer hover:scale-110 transition-transform" : ""}`}
           onClick={() => onRatingChange && onRatingChange(i + 1)}
         />

@@ -853,7 +853,7 @@ const Navbar = () => {
               />
             </button>
             <UserIcon />
-            <Link href="/wishlist" className="relative hidden md:block">
+            <Link href="/wishlist" className="relative">
               <Image
                 src="/assets/icons/heart.svg"
                 alt="Wishlist"

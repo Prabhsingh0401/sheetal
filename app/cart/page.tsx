@@ -43,6 +43,7 @@ const CartPage = () => {
   const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkAction, setIsBulkAction] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [couponInput, setCouponInput] = useState("");
 
   /* Selection Handlers */
@@ -79,49 +80,60 @@ const CartPage = () => {
   };
 
   const confirmRemoveItem = async () => {
-    if (isBulkAction) {
-      await new Promise((res) => setTimeout(res, 1000));
-      for (const id of selectedItemIds) {
-        await removeFromCart(id, { silent: true });
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+    try {
+      if (isBulkAction) {
+        for (const id of selectedItemIds) {
+          await removeFromCart(id, { silent: true });
+        }
+        toast.success(
+          `${selectedItemIds.length} item${selectedItemIds.length > 1 ? "s" : ""} removed from cart!`,
+        );
+        setSelectedItemIds([]);
+      } else if (itemToRemove) {
+        await removeFromCart(itemToRemove._id);
+        setItemToRemove(null);
       }
-      toast.success(
-        `${selectedItemIds.length} item${selectedItemIds.length > 1 ? "s" : ""} removed from cart!`,
-      );
-      setSelectedItemIds([]);
-    } else if (itemToRemove) {
-      await new Promise((res) => setTimeout(res, 1000));
-      await removeFromCart(itemToRemove._id);
-      setItemToRemove(null);
+      setIsModalOpen(false);
+      setIsBulkAction(false);
+    } finally {
+      setIsProcessing(false);
     }
-    setIsModalOpen(false);
-    setIsBulkAction(false);
   };
 
   const handleMoveToWishlist = async () => {
+    if (isProcessing) return;
+
     if (!isAuthenticated()) {
       sessionStorage.setItem("redirect", "/checkout/address");
       router.push("/login");
       return;
     }
-    if (isBulkAction) {
-      await new Promise((res) => setTimeout(res, 1000));
-      for (const id of selectedItemIds) {
-        const item = cartItems.find((i) => i._id === id);
-        if (item) {
-          await moveFromCartToWishlist(id, item.product._id, { silent: true });
+
+    setIsProcessing(true);
+    try {
+      if (isBulkAction) {
+        for (const id of selectedItemIds) {
+          const item = cartItems.find((i) => i._id === id);
+          if (item) {
+            await moveFromCartToWishlist(id, item.product._id, { silent: true });
+          }
         }
+        toast.success(
+          `${selectedItemIds.length} item${selectedItemIds.length > 1 ? "s" : ""} moved to wishlist!`,
+        );
+        setSelectedItemIds([]);
+      } else if (itemToRemove) {
+        await moveFromCartToWishlist(itemToRemove._id, itemToRemove.product._id);
+        setItemToRemove(null);
       }
-      toast.success(
-        `${selectedItemIds.length} item${selectedItemIds.length > 1 ? "s" : ""} moved to wishlist!`,
-      );
-      setSelectedItemIds([]);
-    } else if (itemToRemove) {
-      await new Promise((res) => setTimeout(res, 1000));
-      await moveFromCartToWishlist(itemToRemove._id, itemToRemove.product._id);
-      setItemToRemove(null);
+      setIsModalOpen(false);
+      setIsBulkAction(false);
+    } finally {
+      setIsProcessing(false);
     }
-    setIsModalOpen(false);
-    setIsBulkAction(false);
   };
 
   const cancelRemoveItem = () => {

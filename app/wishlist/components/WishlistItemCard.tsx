@@ -12,12 +12,14 @@ interface WishlistItemCardProps {
   };
   onRemove: (productId: string) => void;
   onMoveToCart: (product: Product) => void;
+  isMovingToCart?: boolean;
 }
 
 const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
   product,
   onRemove,
   onMoveToCart,
+  isMovingToCart = false,
 }) => {
   return (
     <div className="group p-2 flex flex-col">
@@ -90,10 +92,11 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
         <div className="mt-auto">
           {product.stock > 0 ? (
             <button
+              disabled={isMovingToCart}
               onClick={() => onMoveToCart(product)}
-              className="cursor-pointer text-left text-sm border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
+              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 text-left text-sm border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
             >
-              Move to Cart
+              {isMovingToCart ? "Moving..." : "Move to Cart"}
             </button>
           ) : (
             <Link

@@ -39,7 +39,6 @@ const TimelessWomenCollection = () => {
           }
         }
 
-        console.log(data.lookbook);
       } catch (error) {
         console.error("Error fetching lookbook images", error);
       } finally {
@@ -91,6 +90,7 @@ const TimelessWomenCollection = () => {
                       src={img.url}
                       alt={`Deal ${i + 1}`}
                       fill
+                      sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
                       className="object-cover rounded-lg"
                     />
                   </div>
@@ -150,6 +150,7 @@ const TimelessWomenCollection = () => {
                       src={img.url}
                       alt={`Deal ${i + 1}`}
                       fill
+                      sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
                       className="object-cover rounded-lg"
                     />
                   </div>

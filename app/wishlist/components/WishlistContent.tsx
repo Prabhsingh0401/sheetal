@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useWishlist } from "../../hooks/useWishlist";
 import WishlistItemCard from "./WishlistItemCard";
 import Link from "next/link";
@@ -20,8 +20,11 @@ import {
 const WishlistContent = () => {
   const { wishlist, loading, toggleProductInWishlist } = useWishlist();
   const router = useRouter();
+  const [movingToCart, setMovingToCart] = useState<string | null>(null);
 
   const handleMoveToCart = async (product: Product) => {
+    if (movingToCart) return;
+
     if (!isAuthenticated()) {
       sessionStorage.setItem("redirect", window.location.pathname);
       router.push("/login");
@@ -44,6 +47,7 @@ const WishlistContent = () => {
     );
 
     try {
+      setMovingToCart(product._id);
       const cartResponse = await addToCartApi(
         product._id,
         selectedVariant._id,
@@ -77,6 +81,8 @@ const WishlistContent = () => {
     } catch (error) {
       console.error("Failed to move wishlist item to cart:", error);
       toast.error("Could not move item to cart. Please try again.");
+    } finally {
+      setMovingToCart(null);
     }
   };
 
@@ -157,6 +163,7 @@ const WishlistContent = () => {
             product={product}
             onRemove={toggleProductInWishlist}
             onMoveToCart={handleMoveToCart}
+            isMovingToCart={movingToCart === product._id}
           />
         ))}
       </div>
