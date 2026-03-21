@@ -28,11 +28,11 @@ const HiddenBeauty = () => {
   if (loading) {
     return (
       <div className="flex gap-8 items-center justify-center">
-        <div className="h-[1px] bg-[#a2690f] w-15" />
+        <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
         <h2 className="text-[1rem] lg:text-[36px] font-light text-[#6a3f07]">
           Bring Out The Hidden Beauty
         </h2>
-        <div className="h-[1px] bg-[#a2690f] w-15" />
+        <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
       </div>
     );
   }
@@ -42,11 +42,11 @@ const HiddenBeauty = () => {
     return (
       <div className="container mx-auto py-12 px-4 text-center font-[family-name:var(--font-optima)]">
         <div className="flex gap-8 items-center justify-center">
-          <div className="h-[1px] bg-[#a2690f] w-15" />
+          <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
           <h2 className="text-[1rem] lg:text-[36px] font-light text-[#6a3f07]">
             Bring Out The Hidden Beauty
           </h2>
-          <div className="h-[1px] bg-[#a2690f] w-15" />
+          <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
         </div>
         <p className="max-w-2xl mx-auto text-[16px] lg:text-[18px] mb-8 text-[#a2690f]">
           Designer pieces that blend traditional charm with modern silhouettes
@@ -81,15 +81,15 @@ const HiddenBeauty = () => {
   }
 
   return (
-    <div className="container mx-auto py-12 px-4 text-center font-[family-name:var(--font-optima)]">
+    <div className="container mx-auto pb-12 px-4 text-center font-[family-name:var(--font-optima)]">
       <div className="flex gap-8 items-center justify-center">
-        <div className="h-[1px] bg-[#a2690f] w-15" />
-        <h2 className="text-[1rem] lg:text-[36px] font-light text-[#6a3f07]">
+        <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
+        <h2 className="text-[26px] font-optima lg:text-[36px] font-light text-[#6a3f07]">
           Bring Out The Hidden Beauty
         </h2>
-        <div className="h-[1px] bg-[#a2690f] w-15" />
+        <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
       </div>
-      <p className="max-w-2xl mx-auto text-[14px] lg:text-[16px] mb-8 text-[#a2690f] font-[family-name:var(--font-montserrat)] font-serif">
+      <p className="max-w-2xl mx-auto text-[15px] lg:text-[16px] mb-8 text-black font-[family-name:var(--font-montserrat)]">
         Designer pieces that blend traditional charm with modern silhouettes for
         every occasion.
       </p>

@@ -792,7 +792,7 @@ const Navbar = () => {
                   <UserIcon />
                   <Link
                     href="/wishlist"
-                    className="relative hover:opacity-80 transition-opacity"
+                    className="relative hover:opacity-80 transition-opacity hidden md:block"
                   >
                     <Image
                       src="/assets/icons/heart.svg"
@@ -852,7 +852,7 @@ const Navbar = () => {
               />
             </button>
             <UserIcon />
-            <Link href="/wishlist" className="relative">
+            <Link href="/wishlist" className="relative hidden md:block">
               <Image
                 src="/assets/icons/heart.svg"
                 alt="Wishlist"

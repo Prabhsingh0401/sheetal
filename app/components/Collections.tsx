@@ -112,19 +112,19 @@ const Collections = () => {
   if (loading) return null;
 
   return (
-    <div className="container-fluid py-12 home-page-product font-[family-name:var(--font-montserrat)]">
-      <div className="container mx-auto px-4 py-10">
+    <div className="container-fluid pb-12 home-page-product font-[family-name:var(--font-montserrat)]">
+      <div className="container mx-auto px-4 pb-10">
 
         {/* HEADING */}
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center justify-center gap-10 w-full">
-            <div className="h-[1px] bg-[#68400f] flex-1" />
-            <h2 className="text-[2rem] lg:text-[40px] font-[family-name:var(--font-optima)] font-medium text-[#5d4112] whitespace-nowrap">
+            <div className="h-[1px] bg-[#68400f] flex-1 hidden md:flex" />
+            <h2 className="text-[26px] lg:text-[40px] font-[family-name:var(--font-optima)] font-medium text-[#6a3f0e] whitespace-nowrap">
               Collections
             </h2>
-            <div className="h-[1px] bg-[#68400f] flex-1" />
+            <div className="h-[1px] bg-[#68400f] flex-1 hidden md:flex" />
           </div>
-          <p className="text-center max-w-2xl text-lg mt-2">
+          <p className="text-center max-w-2xl text-[15px] mt-2">
             Best-Selling Gems: Signature sarees, ensembles, and Indo-Western
             pieces that define Studio By Sheetal.
           </p>
@@ -225,7 +225,7 @@ function ProductCard({ product }: { product: CollectionProduct }) {
         <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
           <Link
             href={href}
-            className="text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2 leading-tight"
+            className="text-[15px] text-black hover:text-[#B78D65] font-medium line-clamp-2 leading-tight"
           >
             {product.name}
           </Link>
@@ -239,19 +239,19 @@ function ProductCard({ product }: { product: CollectionProduct }) {
 
         <div className="mb-4 flex justify-center items-center gap-2 flex-wrap">
           {product.price && (
-            <span className="text-base md:text-lg text-[#281b00] font-bold">{product.price}</span>
+            <span className="text-[15px] md:text-lg text-[#281b00] font-medium">{product.price}</span>
           )}
           {product.mrp && (
-            <span className="text-xs text-gray-400 line-through">{product.mrp}</span>
+            <span className="text-[13px] text-gray-400 line-through">{product.mrp}</span>
           )}
           {product.discount && (
-            <span className="text-xs text-[#B78D65] font-bold">{product.discount}</span>
+            <span className="text-[15pxs] text-[#6a3f0e] font-normal">{product.discount}</span>
           )}
         </div>
 
         <Link
           href={href}
-          className="inline-block rounded border-y border-black text-black py-2 px-6 md:px-8 text-xs md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
+          className="inline-block rounded border-y border-black text-black py-2 px-6 md:px-8 text-[10px] md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
         >
           View Product
         </Link>

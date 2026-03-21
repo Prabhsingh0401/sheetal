@@ -106,10 +106,10 @@ const InstagramDiaries = () => {
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="text-center mb-10 md:mb-14">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium text-[#cc8a00] mb-3 font-[family-name:var(--font-optima)]">
+          <h2 className="text-[26px] md:text-4xl lg:text-5xl font-normal text-[#6a3f07] mb-1 font-[family-name:var(--font-optima)]">
             Visit Our Instagram Diaries
           </h2>
-          <p className="text-[#666] text-base md:text-lg tracking-wide">
+          <p className="text-[#666] text-[15px] md:text-lg tracking-wide">
             Follow To Know More @sbsinstagram
           </p>
         </div>

@@ -9,12 +9,12 @@ const AboutSBS = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-0">
         <div className="lg:col-span-1">
           <div className="h-full flex flex-col justify-center items-center lg:items-start">
-            <div className="flex items-center justify-center gap-4 mb-2 w-full">
-              <h2 className="text-[2rem] md:text-[2rem] lg:text-[40px] font-light text-[#68400f] font-[family-name:var(--font-optima)] whitespace-nowrap">
+            <div className="flex items-center justify-center gap-4 w-full">
+              <h2 className="text-[26px] md:text-[30px] lg:text-[40px] font-light text-[#6a3f07] font-[family-name:var(--font-optima)] whitespace-nowrap">
                 About SBS
               </h2>
             </div>
-            <h3 className="text-[1.25rem] md:text-[1.75rem] lg:text-[28px] font-medium text-[#916e44] font-[family-name:var(--font-outfit)] text-center lg:text-left">
+            <h3 className="text-[26px] font-light font-optima text-[#a2690f] font-[family-name:var(--font-outfit)] text-center lg:text-left">
               Innovate the Outfit
             </h3>
           </div>
@@ -32,7 +32,7 @@ const AboutSBS = () => {
                 />
                 <Image
                   src="/assets/roud-img.png"
-                  className="absolute bottom-4 -right-0 md:bottom-9 md:-right-[60px] animate-[circle_6s_linear_infinite] w-[100px] h-[100px] md:w-[150px] md:h-[150px]"
+                  className="absolute -bottom-5 -right-0 md:bottom-9 md:-right-[60px] animate-[circle_6s_linear_infinite] w-[100px] h-[100px] md:w-[150px] md:h-[150px]"
                   alt="Decoration"
                   width={150}
                   height={150}
@@ -42,7 +42,7 @@ const AboutSBS = () => {
             <div className="lg:col-span-7">
               <div className="w-full lg:w-[92%] mx-auto mt-1 text-center lg:text-right flex flex-col justify-center h-full">
                 <div className="mb-8 lg:mb-[50px]">
-                  <p className="text-[16px] text-[#a2690f] md:text-[20px] font-normal leading-relaxed md:leading-8 font-[family-name:var(--font-montserrat)] px-2 lg:px-0">
+                  <p className="text-[15px] text-black md:text-[20px] font-normal leading-relaxed md:leading-8 font-[family-name:var(--font-montserrat)] px-2 lg:px-0">
                     Studio By Sheetal: a designer studio passionate about
                     timeless elegance. Sheetal crafts exquisite sarees, suits,
                     and Indo-Western outfits with meticulous attention to
@@ -54,7 +54,7 @@ const AboutSBS = () => {
                 <div className="flex justify-center lg:justify-end">
                   <Link
                     href="/about-us"
-                    className="inline-block border-y rounded-sm border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 hover:text-black hover:border-[#a2690f] duration-300"
+                    className="inline-block border-y rounded-sm border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 font-[family-name:var(--font-montserrat)] hover:text-black hover:border-[#a2690f] duration-300"
                   >
                     Explore More
                   </Link>

@@ -40,12 +40,12 @@ const Blogs = () => {
   // Show loading state or fallback to static content if no blogs
   if (loading) {
     return (
-      <div className="w-full py-16 md:py-24 relative">
+      <div className="w-full pb-16 md:py-24 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-[40px] font-medium text-[#d18702] font-[family-name:var(--font-optima)] relative inline-block">
+            <h2 className="text-[26px] lg:text-[40px] font-normal text-[#6a3f07] font-[family-name:var(--font-optima)] relative inline-block">
               Latest Articles & Blogs
-            </h2>
+            </h2>text-[26px] lg:text-[40px] font-normal text-[#6a3f07]
           </div>
           <div className="flex justify-center items-center py-20">
             <div className="relative w-12 h-12">
@@ -65,7 +65,7 @@ const Blogs = () => {
         <div className="container mx-auto px-4">
           {/* Section Header */}
           <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-[40px] font-medium text-[#d18702] font-[family-name:var(--font-optima)] relative inline-block">
+            <h2 className="text-[26px] lg:text-[40px] font-normal text-[#6a3f07] font-[family-name:var(--font-optima)] relative inline-block">
               Latest Articles & Blogs
             </h2>
           </div>
@@ -187,11 +187,11 @@ const Blogs = () => {
   const [featuredBlog, ...otherBlogs] = blogs;
 
   return (
-    <div className="w-full py-16 md:py-24 relative">
+    <div className="w-full pb-16 pt-8 md:py-24 relative border-t border-[#6a3f07]">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-[40px] font-medium text-[#d18702] font-[family-name:var(--font-optima)] relative inline-block">
+          <h2 className="text-[26px] lg:text-[40px] font-normal text-[#6a3f07] font-[family-name:var(--font-optima)] relative inline-block">
             Latest Articles & Blogs
           </h2>
         </div>
