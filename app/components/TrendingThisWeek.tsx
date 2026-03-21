@@ -10,12 +10,15 @@ import {
   Product,
 } from "../services/productService";
 import { getApiImageUrl } from "../services/api";
+import { useWishlist } from "../hooks/useWishlist";
+import WishlistLoginModal from "./WishlistLoginModal";
 
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
 const MIN_FOR_CAROUSEL_MOBILE  = 2;
 
 interface TrendingProduct {
   id: string;
+  productId: string;
   name: string;
   image: string;
   hoverImage: string;
@@ -26,7 +29,15 @@ interface TrendingProduct {
 }
 
 // ─── Individual card ───────────────────────────────────────────────────────────
-function ProductCard({ product }: { product: TrendingProduct }) {
+function ProductCard({
+  product,
+  isWishlisted,
+  onToggleWishlist,
+}: {
+  product: TrendingProduct;
+  isWishlisted: boolean;
+  onToggleWishlist: (productId: string) => void;
+}) {
   const href = `/product/${product.id}`;
 
   return (
@@ -39,6 +50,33 @@ function ProductCard({ product }: { product: TrendingProduct }) {
             </span>
           </div>
         )}
+
+        <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100 z-20">
+          <button
+            className="w-10 h-10 rounded-full flex items-center justify-center group/icon cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleWishlist(product.productId);
+            }}
+          >
+            <Image
+              src={
+                isWishlisted
+                  ? "/assets/icons/heart-solid.svg"
+                  : "/assets/icons/heart.svg"
+              }
+              alt="Wishlist"
+              width={18}
+              height={18}
+              className={
+                isWishlisted
+                  ? ""
+                  : "group-hover/icon:brightness-0 group-hover/icon:invert"
+              }
+            />
+          </button>
+        </div>
 
         <Link href={href} className="block h-full w-full relative">
           <Image
@@ -62,7 +100,7 @@ function ProductCard({ product }: { product: TrendingProduct }) {
         <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
           <Link
             href={href}
-            className="text-[14px] md:text-[17px] text-black hover:text-[#B78D65] font-medium line-clamp-2 leading-tight"
+            className="text-[15px] md:text-[17px] text-black hover:text-[#B78D65] font-normal line-clamp-2 leading-tight"
           >
             {product.name}
           </Link>
@@ -80,13 +118,13 @@ function ProductCard({ product }: { product: TrendingProduct }) {
         >
           {product.discount ? (
             <>
-              <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
+              <span className="text-[16px] text-[#281b00] font-medium whitespace-nowrap">
                 {product.price}
               </span>
-              <span className="text-[clamp(9px,4cqw,14px)] text-gray-400 line-through whitespace-nowrap">
+              <span className="text-[13px] text-gray-400 line-through whitespace-nowrap">
                 {product.mrp}
               </span>
-              <span className="text-[clamp(9px,4cqw,14px)] text-[#B78D65] font-bold whitespace-nowrap">
+              <span className="text-[16px] text-[#6a3f0e] font-normal whitespace-nowrap">
                 {product.discount}
               </span>
             </>
@@ -99,7 +137,7 @@ function ProductCard({ product }: { product: TrendingProduct }) {
 
         <Link
           href={href}
-          className="inline-block rounded border-y border-black text-black py-2 px-6 md:px-8 text-xs md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
+          className="inline-block rounded border-y border-black text-black py-2 px-6 md:px-8 text-[10px] md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
         >
           View Product
         </Link>
@@ -113,6 +151,13 @@ const TrendingThisWeek = () => {
   const [products, setProducts]     = useState<TrendingProduct[]>([]);
   const [loading, setLoading]       = useState(true);
   const [isCarousel, setIsCarousel] = useState(false);
+  const {
+    wishlist,
+    toggleProductInWishlist,
+    isLoginModalOpen,
+    closeLoginModal,
+    handleLoginRedirect,
+  } = useWishlist();
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
@@ -170,6 +215,7 @@ const TrendingThisWeek = () => {
 
             return {
               id:         p.slug,
+              productId:  p._id,
               name:       p.name,
               image:      getProductImageUrl(p),
               hoverImage: p.hoverImage?.url
@@ -203,14 +249,14 @@ const TrendingThisWeek = () => {
       <div className="container mx-auto px-4 py-10">
         {/* Heading */}
         <div className="flex flex-col items-center mb-10">
-          <div className="flex items-center gap-10 w-full">
-            <div className="h-[1px] bg-[#68400f] flex-1" />
-            <h2 className="text-[2rem] lg:text-[40px] font-medium text-[#5d4112] whitespace-nowrap font-[family-name:var(--font-optima)]">
+          <div className="flex items-center justify-center gap-10 w-full">
+            <div className="h-[1px] bg-[#68400f] hidden md:flex-1" />
+            <h2 className="text-[26px] lg:text-[40px] font-medium text-[#6a3f07] whitespace-nowrap font-[family-name:var(--font-optima)]">
               Trending This Week
             </h2>
-            <div className="h-[1px] bg-[#68400f] flex-1" />
+            <div className="h-[1px] bg-[#68400f] hidden md:flex-1" />
           </div>
-          <p className="text-center max-w-2xl text-lg mt-2">
+          <p className="text-center max-w-2xl text-[15px] mt-1 font-[family-name:var(--font-montserrat)]">
             Best-Selling Gems: Signature sarees, ensembles, and Indo-Western
             pieces that define Studio By Sheetal.
           </p>
@@ -226,7 +272,11 @@ const TrendingThisWeek = () => {
                     key={product.id}
                     className="flex-shrink-0 w-[75%] sm:w-[45%] lg:w-[25%]"
                   >
-                    <ProductCard product={product} />
+                    <ProductCard
+                      product={product}
+                      isWishlisted={wishlist.some((p) => p._id === product.productId)}
+                      onToggleWishlist={toggleProductInWishlist}
+                    />
                   </div>
                 ))}
               </div>
@@ -259,12 +309,22 @@ const TrendingThisWeek = () => {
                 key={product.id}
                 className="w-[85%] sm:w-[48%] md:w-[32%] lg:w-[23%]"
               >
-                <ProductCard product={product} />
+                <ProductCard
+                  product={product}
+                  isWishlisted={wishlist.some((p) => p._id === product.productId)}
+                  onToggleWishlist={toggleProductInWishlist}
+                />
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <WishlistLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={closeLoginModal}
+        onLogin={handleLoginRedirect}
+      />
     </div>
   );
 };

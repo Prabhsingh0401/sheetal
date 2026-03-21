@@ -23,6 +23,12 @@ export interface ProductImage {
   isDefault?: boolean;
 }
 
+export interface VariantGalleryImage {
+  url: string;
+  alt?: string;
+  public_id?: string;
+}
+
 export interface ProductVariant {
   _id: string;
   v_sku?: string;
@@ -41,6 +47,7 @@ export interface ProductVariant {
     url: string;
     public_id?: string;
   };
+  gallery?: VariantGalleryImage[];
 }
 
 export interface Product {
@@ -183,6 +190,45 @@ export const getProductHoverImageUrl = (
   if (!product) return fallback;
   if (!product.hoverImage) return fallback;
   return getApiImageUrl(product.hoverImage, fallback); // pass the whole object, same as mainImage
+};
+
+export const getProductGalleryUrls = (
+  product: Product | null | undefined,
+  fallback: string = "/assets/default-image.png",
+) => {
+  if (!product) return [fallback];
+
+  const gallery = [
+    getProductImageUrl(product, fallback),
+    ...(product.images?.map((img) => getApiImageUrl(img, fallback)) || []),
+  ].filter(Boolean);
+
+  return Array.from(new Set(gallery));
+};
+
+export const getVariantGalleryUrls = (
+  product: Product | null | undefined,
+  variant: ProductVariant | null | undefined,
+  fallback: string = "/assets/default-image.png",
+) => {
+  if (!product) return [fallback];
+
+  const variantGallery = [
+    ...(variant?.gallery?.map((img) => getApiImageUrl(img, fallback)) || []),
+  ].filter(Boolean);
+
+  if (variantGallery.length > 0) {
+    return Array.from(new Set(variantGallery));
+  }
+
+  const variantImage = getApiImageUrl(variant?.v_image, "");
+  if (variantImage) {
+    return Array.from(
+      new Set([variantImage, ...getProductGalleryUrls(product, fallback)]),
+    );
+  }
+
+  return getProductGalleryUrls(product, fallback);
 };
 
 export const checkCanReview = async (productId: string) => {

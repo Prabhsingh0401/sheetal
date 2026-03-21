@@ -134,7 +134,7 @@ const NewArrivals = () => {
           <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
             <Link
               href={`/product/${product.slug}`}
-              className="text-[13px] md:text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2"
+              className="text-[16px] md:text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2"
             >
               {product.name}
             </Link>
@@ -152,13 +152,13 @@ const NewArrivals = () => {
           >
             {displayPrice.discount ? (
               <>
-                <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
+                <span className="text-[15px] text-[#000000] font-medium whitespace-nowrap">
                   {displayPrice.price}
                 </span>
-                <span className="text-[clamp(9px,4cqw,14px)] text-gray-400 line-through whitespace-nowrap">
+                <span className="text-[13px] text-gray-400 line-through whitespace-nowrap">
                   {displayPrice.mrp}
                 </span>
-                <span className="text-[clamp(9px,4cqw,14px)] text-[#B78D65] font-bold whitespace-nowrap">
+                <span className="text-[15px] text-[#6a3f0e] font-bold whitespace-nowrap">
                   {displayPrice.discount}
                 </span>
               </>
@@ -171,7 +171,7 @@ const NewArrivals = () => {
 
           <Link
             href={`/product/${product.slug}`}
-            className="inline-block rounded border-y border-black text-black py-1.5 md:py-2 px-6 md:px-8 text-xs md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
+            className="inline-block rounded border-y border-black text-black py-1.5 md:py-2 px-6 md:px-8 text-[10px] md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
           >
             View Product
           </Link>
@@ -200,16 +200,16 @@ const NewArrivals = () => {
 
           {/* LEFT CONTENT */}
           <div className="lg:col-span-3 xl:col-span-4 text-center md:text-left">
-            <h2 className="text-[2rem] md:text-[2.5rem] lg:text-[45px] font-medium text-[#68400f] mb-3 font-[family-name:var(--font-optima)] leading-tight">
+            <h2 className="text-[26px] md:text-[2.5rem] lg:text-[45px] font-medium text-[#6a3f07] mb-3 font-[family-name:var(--font-optima)] leading-tight">
               New Arrivals
             </h2>
-            <p className="text-[#555] text-base md:text-lg lg:text-xl leading-relaxed mb-5 md:mb-8">
+            <p className="text-[#555] text-[15px] font-[font-fmaily:var(--font-monteserrat)] px-8 md:text-lg lg:text-xl leading-relaxed mb-5 md:mb-8">
               Pick your beauty products today. 50% OFF on the new brands. Order
               all classy products today!
             </p>
             <Link
               href="/product-list?sort=newest"
-              className="inline-block rounded border-y border-black text-black py-2.5 md:py-3 px-8 md:px-10 text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
+              className="inline-block rounded border-y border-black text-black py-2.5 md:py-3 px-8 md:px-10 text-[16px] uppercase transition-all duration-500 hover:border-[#a2690f]"
             >
               Explore More
             </Link>

@@ -7,21 +7,23 @@ import {
   fetchCategoryBySlug,
   getCategoryBannerUrl,
 } from "../../services/categoryService";
+import { searchService } from "../../services/searchService";
 
 interface ProductListBannerProps {
   categorySlug?: string;
+  searchQuery?: string | null;
 }
 
 const ProductListBanner: React.FC<ProductListBannerProps> = ({
   categorySlug,
+  searchQuery,
 }) => {
   const [category, setCategory] = useState<Category | null>(null);
-  const [loading, setLoading] = useState(!!categorySlug);
+  const [loading, setLoading] = useState(!!categorySlug || !!searchQuery?.trim());
   const [error, setError] = useState<string | null>(null);
 
   const handleScroll = (id: string) => {
     const element = document.getElementById(id);
-    console.log("Scroll triggered");
     element?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -29,20 +31,49 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({
   };
 
   useEffect(() => {
-    if (!categorySlug) {
-      setLoading(false);
-      return;
-    }
+    const loadBannerCategory = async () => {
+      const trimmedSearchQuery = searchQuery?.trim();
+      if (!categorySlug && !trimmedSearchQuery) {
+        return;
+      }
 
-    const loadCategory = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchCategoryBySlug(categorySlug);
-        if (!data) {
-          setError("Category not found");
+        setCategory(null);
+
+        if (categorySlug) {
+          const data = await fetchCategoryBySlug(categorySlug);
+          if (!data) {
+            setError("Category not found");
+          } else {
+            setCategory(data);
+          }
+          return;
+        }
+
+        if (!trimmedSearchQuery) {
+          return;
+        }
+
+        const searchResponse = await searchService(trimmedSearchQuery);
+        const matchedCategory = searchResponse?.results?.find(
+          (result: any) => result.type === "category" && result.data?.slug,
+        )?.data;
+
+        if (!matchedCategory?.slug) {
+          return;
+        }
+
+        const matchedCategoryData = await fetchCategoryBySlug(matchedCategory.slug);
+        if (matchedCategoryData) {
+          setCategory(matchedCategoryData);
         } else {
-          setCategory(data);
+          setCategory({
+            _id: matchedCategory._id || matchedCategory.slug,
+            name: matchedCategory.name,
+            slug: matchedCategory.slug,
+          } as Category);
         }
       } catch (err) {
         const errorMessage =
@@ -55,14 +86,22 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({
       }
     };
 
-    loadCategory();
-  }, [categorySlug]);
+    loadBannerCategory();
+  }, [categorySlug, searchQuery]);
 
   // Use category data if available, otherwise fallback to defaults
-  const bannertext = category?.categoryBanner || "";
-  const title = category?.name || "Collection";
+  const trimmedSearchQuery = searchQuery?.trim();
+  const isSearchPage = !categorySlug && !!trimmedSearchQuery;
+  const bannertext = isSearchPage
+    ? `Showing results for: ${trimmedSearchQuery}`
+    : category?.categoryBanner || "";
+  const title = isSearchPage
+    ? category?.name || trimmedSearchQuery
+    : category?.name || "Collection";
   const description =
-    category?.description ||
+    (isSearchPage
+      ? `Browse products matching "${trimmedSearchQuery}" and refine the results using filters and sorting.`
+      : category?.description) ||
     `Explore our exclusive ${title.toLowerCase()} collection. Get styled with the high-fashion products and transform yourself.`;
   const bannerImage = getCategoryBannerUrl(category || undefined);
 

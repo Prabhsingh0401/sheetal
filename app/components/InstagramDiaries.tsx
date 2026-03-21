@@ -4,10 +4,15 @@ import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
-import { API_BASE_URL } from "../services/api";
+import {
+  fetchProducts,
+  getProductImageUrl,
+  Product,
+} from "../services/productService";
 
+const INSTAGRAM_DIARIES_PRODUCT_LIMIT = 10;
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
-const MIN_FOR_CAROUSEL_MOBILE  = 2;
+const MIN_FOR_CAROUSEL_MOBILE = 2;
 
 const fallbackImages = [
   "/assets/i1.webp",
@@ -19,13 +24,13 @@ const fallbackImages = [
 
 interface InstaCard {
   url: string;
-  link: string | null;
+  link: string;
   alt: string | null;
 }
 
 const InstagramDiaries = () => {
   const [cards, setCards] = useState<InstaCard[]>(
-    fallbackImages.map((url) => ({ url, link: null, alt: null })),
+    fallbackImages.map((url) => ({ url, link: "#", alt: null })),
   );
   const [isCarousel, setIsCarousel] = useState(false);
 
@@ -55,26 +60,32 @@ const InstagramDiaries = () => {
   }, [cards]);
 
   useEffect(() => {
-    const fetchInstaCards = async () => {
+    const fetchLatestProducts = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/instacards`);
-        const data = await response.json();
-        if (data.success && data.cards?.length > 0) {
-          setCards(data.cards);
+        const response = await fetchProducts({
+          sort: "-createdAt",
+          limit: INSTAGRAM_DIARIES_PRODUCT_LIMIT,
+          status: "Active",
+        });
+
+        if (response.success && response.products?.length > 0) {
+          setCards(
+            response.products.map((product: Product) => ({
+              url: getProductImageUrl(product),
+              link: `/product/${product.slug}`,
+              alt: product.mainImage?.alt || product.name,
+            })),
+          );
         }
       } catch (error) {
-        console.error("Error fetching insta cards:", error);
+        console.error("Error fetching latest products for Instagram Diaries:", error);
       }
     };
-    fetchInstaCards();
+    fetchLatestProducts();
   }, []);
 
   const CardItem = ({ card, index }: { card: InstaCard; index: number }) => (
-    <Link
-      href={card.link || "#"}
-      target={card.link ? "_blank" : undefined}
-      rel={card.link ? "noopener noreferrer" : undefined}
-    >
+    <Link href={card.link}>
       <div className="relative overflow-hidden rounded-xl shadow-md group cursor-pointer aspect-[3/4]">
         <Image
           src={card.url}
@@ -106,11 +117,11 @@ const InstagramDiaries = () => {
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="text-center mb-10 md:mb-14">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium text-[#cc8a00] mb-3 font-[family-name:var(--font-optima)]">
+          <h2 className="text-[26px] md:text-4xl lg:text-5xl font-normal text-[#6a3f07] mb-1 font-[family-name:var(--font-optima)]">
             Visit Our Instagram Diaries
           </h2>
-          <p className="text-[#666] text-base md:text-lg tracking-wide">
-            Follow To Know More @sbsinstagram
+          <p className="text-[#666] text-[15px] md:text-lg tracking-wide">
+            Follow To Know More <a href="#" className="cursor-pointer underline">@sbsinstagram</a>
           </p>
         </div>
 

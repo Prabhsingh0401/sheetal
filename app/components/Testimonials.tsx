@@ -55,15 +55,15 @@ const Testimonials = () => {
   }, []);
 
   return (
-    <div className="w-full py-16 md:py-16 bg-[#f9f9f9]">
+    <div className="w-full pb-16 md:py-16 bg-[#f9f9f9]">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-center">
           {/* Left Text Section */}
           <div className="lg:col-span-4 lg:border-r border-gray-300 pr-0 lg:pr-12 text-left mb-10 lg:mb-0">
-            <p className="text-[#8b5e34] uppercase tracking-wider text-sm font-semibold mb-3">
+            <p className="text-[#a2690f] font-[font-family:var(--font-montserrat)] text-center text-[26px] tracking-wider text-sm font-nornal mb-3">
               Your words
             </p>
-            <h2 className="text-3xl lg:text-[40px] font-medium text-[#cc8a00] leading-tight font-[family-name:var(--font-optima)]">
+            <h2 className="text-[26px] lg:text-[40px] text-center px-8  text-[#6a3f07] leading-tight font-[family-name:var(--font-optima)]">
               What Our Customers Have To Say
             </h2>
           </div>
@@ -87,7 +87,7 @@ const Testimonials = () => {
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10">
                     {/* Avatar */}
                     <div className="shrink-0">
-                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-100 flex items-center justify-center">
+                      <div className="w-64 h-64 md:w-72 md:h-72 rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-100 flex items-center justify-center">
                         {item.image?.url ? (
                           <Image
                             src={item.image.url}
@@ -106,10 +106,10 @@ const Testimonials = () => {
 
                     {/* Content */}
                     <div className="text-center md:text-left pt-2">
-                      <p className="text-lg md:text-xl text-gray-600 italic leading-relaxed mb-6 font-[family-name:var(--font-optima)]">
+                      <p className="text-[15px] md:text-xl text-gray-600 leading-relaxed mb-6 font-[family-name:var(--font-montserrat)]">
                         &quot;{item.comment}&quot;
                       </p>
-                      <p className="text-[#333] font-semibold text-lg uppercase tracking-wide">
+                      <p className="text-black font-semibold text-[15px] uppercase tracking-wide">
                         {item.name}
                       </p>
                     </div>

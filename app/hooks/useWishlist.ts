@@ -37,8 +37,10 @@ export const useWishlist = (): UseWishlistReturn => {
   const [error, setError]                       = useState<string | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  const loadWishlist = useCallback(async () => {
-    setLoading(true);
+  const loadWishlist = useCallback(async (showLoader: boolean = true) => {
+    if (showLoader) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const response = await fetchWishlist();
@@ -57,7 +59,9 @@ export const useWishlist = (): UseWishlistReturn => {
         setError(err.message || "An error occurred while fetching wishlist");
       }
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -67,7 +71,7 @@ export const useWishlist = (): UseWishlistReturn => {
 
   useEffect(() => {
     const handleWishlistUpdated = () => {
-      loadWishlist();
+      loadWishlist(false);
     };
 
     window.addEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdated);
@@ -87,7 +91,7 @@ export const useWishlist = (): UseWishlistReturn => {
         if (response.success) {
           toast.success(response.message || "Wishlist updated!");
           dispatchWishlistUpdated();
-          await loadWishlist();
+          await loadWishlist(false);
         } else {
           // Some backends return HTTP 200 with success: false when not logged in
           const msg = response.message?.toLowerCase() || "";

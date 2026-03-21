@@ -2,10 +2,14 @@
 import React, { useEffect, useState } from "react";
 import {
   Product,
+  ProductVariant,
   fetchProductBySlug,
   getProductImageUrl,
+  getVariantGalleryUrls,
 } from "../../services/productService";
+import { isAuthenticated } from "../../services/authService";
 import ProductImageGallery from "../../product/components/ProductImageGallery";
+import StarRating from "../../product/components/StarRating";
 import { useRouter } from "next/navigation";
 import { getApiImageUrl } from "../../services/api";
 import Image from "next/image";
@@ -26,6 +30,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedVariantId, setSelectedVariantId] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   // Removed lowestPrice and lowestMrp states
   const {
@@ -36,7 +41,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     handleLoginRedirect,
   } = useWishlist();
   const { addToCart } = useCart();
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     if (productSlug) {
@@ -51,21 +56,32 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
 
             // Default size and color logic: find first available variant, its color, and its size
             const firstAvailableVariant = response.data.variants?.find(
-              (v: any) =>
+              (v: ProductVariant) =>
                 Array.isArray(v.sizes) &&
                 v.sizes.length > 0 &&
-                v.sizes.some((s: any) => s.stock > 0),
+                v.sizes.some((s) => s.stock > 0),
             );
             if (firstAvailableVariant) {
+              setSelectedVariantId(firstAvailableVariant._id);
               if (firstAvailableVariant.color?.name) {
                 setSelectedColor(firstAvailableVariant.color.name);
               }
+              const initialGallery = getVariantGalleryUrls(
+                response.data,
+                firstAvailableVariant,
+              );
+              setSelectedImage(
+                initialGallery[0] || getProductImageUrl(response.data),
+              );
               const firstAvailableSize = firstAvailableVariant.sizes.find(
-                (s: any) => s.stock > 0,
+                (s: ProductVariant["sizes"][number]) => s.stock > 0,
               );
               if (firstAvailableSize) {
                 setSelectedSize(firstAvailableSize.name);
               }
+            } else {
+              const mainImg = getProductImageUrl(response.data);
+              setSelectedImage(mainImg);
             }
           }
         } catch (error) {
@@ -190,9 +206,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
     const checkoutUrl = `/checkout/address?buynow=${encoded}`;
 
-    const isLoggedIn = !!localStorage.getItem("token"); // adapt to your auth check
-
-    if (!isLoggedIn) {
+    if (!isAuthenticated()) {
       sessionStorage.setItem("redirect", checkoutUrl);
       onClose(); // close the modal before navigating
       router.push("/login");
@@ -248,18 +262,25 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     }
   };
 
-  if (!productSlug) {
-    return null;
-  }
-
   const displayPrice = currentPrice;
   const displayOriginalPrice = currentOriginalPrice;
   const discount = currentDiscount;
+  const selectedVariant =
+    product?.variants.find((variant) => variant._id === selectedVariantId) ||
+    product?.variants.find((variant) => variant.color?.name === selectedColor) ||
+    null;
+  const galleryImages = getVariantGalleryUrls(product, selectedVariant);
 
-  const galleryImages = [
-    getProductImageUrl(product || undefined),
-    ...(product?.images?.map((img) => getApiImageUrl(img.url)) || []),
-  ].filter(Boolean) as string[];
+  useEffect(() => {
+    if (!galleryImages.length) return;
+    if (!selectedImage || !galleryImages.includes(selectedImage)) {
+      setSelectedImage(galleryImages[0]);
+    }
+  }, [galleryImages, selectedImage]);
+
+  if (!productSlug) {
+    return null;
+  }
 
   const allUniqueColors: { name: string; image: string }[] = [];
   const allUniqueSizeNames = new Set<string>();
@@ -302,7 +323,12 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
 
   const handleColorChange = (color: { name: string; image: string }) => {
     setSelectedColor(color.name);
-    setSelectedImage(color.image);
+    const nextVariant =
+      product?.variants.find((variant) => variant.color?.name === color.name) ||
+      null;
+    setSelectedVariantId(nextVariant?._id || "");
+    const nextGallery = getVariantGalleryUrls(product, nextVariant);
+    setSelectedImage(nextGallery[0] || color.image);
 
     const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
     if (
@@ -321,29 +347,39 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     }
   };
 
+  const handleViewSimilar = () => {
+    if (!product) return;
+    onClose();
+    router.push(`/product/${product.slug}?scroll=similar`);
+  };
+
   return (
     <div
-      className="fixed inset-0 z-[1005] flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-[1005] flex items-center justify-center bg-black/60 p-4"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-4xl p-4 mx-auto bg-white rounded-lg shadow-lg"
+        className="relative w-full max-w-5xl bg-white rounded-lg shadow-lg overflow-hidden"
+        style={{ maxHeight: "95vh" }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Close button */}
         <button
-          className="absolute cursor-pointer top-4 right-4 text-gray-500 border px-2 hover:text-gray-700 text-2xl font-bold z-10"
+          className="absolute cursor-pointer top-3 right-3 text-gray-500 border border-gray-300 w-8 h-8 flex items-center justify-center hover:text-gray-700 text-xl font-bold z-10 bg-white"
           onClick={onClose}
         >
-          &times;
+          <span className="mb-1">&times;</span>
         </button>
-        <div className="container mx-auto mt-8">
+
+        <div className="overflow-y-auto" style={{ maxHeight: "95vh" }}>
           {loading ? (
             <div className="flex justify-center items-center h-96">
-              <div className="w-16 h-16 border-4 border-[#bd9951] border-dashed rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-4 border-[#bd9951] border-dashed rounded-full animate-spin" />
             </div>
           ) : product ? (
-            <div className="flex flex-wrap -mx-2">
-              <div className="w-full sm:w-1/2 px-2">
+            <div className="flex flex-col sm:flex-row">
+              {/* Left — image gallery, no padding so it bleeds to edge */}
+              <div className="w-full sm:w-[52%] shrink-0 p-10">
                 <ProductImageGallery
                   images={galleryImages}
                   selectedImage={selectedImage || galleryImages[0]}
@@ -351,69 +387,89 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                   title={product.name}
                   isWishlisted={isProductInWishlist(product._id)}
                   onToggleWishlist={() => toggleProductInWishlist(product._id)}
-                  onScrollToSimilar={() => {}}
+                  onScrollToSimilar={handleViewSimilar}
                 />
               </div>
-              <div className="w-full sm:w-1/2 px-2 text-left relative">
-                <div className="mb-4">
-                  <h2 className="text-2xl md:text-3xl font-medium text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
-                    {product.name}
-                  </h2>
-                  <div className="text-gray-700 text-sm mb-4">
-                    <p>{product.shortDescription}</p>
-                  </div>
+
+              {/* Right — product details */}
+              <div
+                className="w-full sm:w-[48%] flex flex-col text-left p-6 px-10"
+              >
+                {/* Name */}
+                <h2 className="text-[28px] font-normal text-[#683e14] mb-3 font-[family-name:var(--font-optima)] leading-snug">
+                  {product.name}
+                </h2>
+
+                {/* Rating */}
+                <div className="flex items-center gap-4 mb-2">
+                  <StarRating rating={product.averageRating || 0} />
                 </div>
-                <div className="mb-6">
-                  <div className="flex items-end gap-3">
-                    <span className="text-3xl font-medium">
+
+                {/* Product code */}
+                <div className="text-[#005648] text-[15px] mb-2">
+                  <span className="font-bold">Product Code:</span>{" "}
+                  {product.sku}
+                </div>
+
+                {/* Short desc */}
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  {product.shortDescription}
+                </p>
+
+                {/* Price */}
+                <div className="mb-4 pb-4 border-b border-gray-100">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="text-[22px] font-[family-name:var(--font-montserrat)]">
                       ₹ {displayPrice.toFixed(2)}
                     </span>
-                    {/* Removed originalPrice > price condition */}
-                    <span className="text-lg text-gray-400 line-through">
-                      ₹ {displayOriginalPrice.toFixed(2)}
-                    </span>{" "}
+                    {displayOriginalPrice > displayPrice && (
+                      <span className="text-[16px] text-gray-400 line-through font-[family-name:var(--font-montserrat)]">
+                        ₹ {displayOriginalPrice.toFixed(2)}
+                      </span>
+                    )}
                     {discount > 0 && (
-                      <span className="text-lg text-green-600 font-semibold">
+                      <span className="text-[15px] text-[#6a3f0e] font-semibold font-[family-name:var(--font-montserrat)]">
                         Save {discount}%
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-[12px] text-gray-400 mt-1 font-[family-name:var(--font-montserrat)]">
                     Inclusive of all taxes.
                   </p>
                 </div>
-                {/* Color Selection */}
-                <div className="mb-6">
+
+                {/* Color */}
+                <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-800 mb-2">
                     Select Color:
                   </label>
-                  <div className="flex gap-3">
-                    {Array.isArray(allUniqueColors) &&
-                      allUniqueColors.map((color: any, i: number) => (
-                        <div
-                          key={i}
-                          className={`w-12 h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative ${selectedColor === color.name ? "border-[#bd9951]" : "border-gray-200"}`}
-                          onClick={() => {
-                            handleColorChange(color);
-                          }}
-                        >
-                          <Image
-                            src={color.image}
-                            alt={color.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      ))}
+                  <div className="flex flex-wrap gap-2">
+                    {allUniqueColors.map((color, i: number) => (
+                      <div
+                        key={i}
+                        className={`w-10 h-14 md:w-12 md:h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative flex-shrink-0 ${
+                          selectedColor === color.name
+                            ? "border-[#bd9951]"
+                            : "border-gray-200"
+                        }`}
+                        onClick={() => handleColorChange(color)}
+                      >
+                        <Image
+                          src={color.image}
+                          alt={color.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
-                {/* Size Selection */}
-                <div className="mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-sm font-semibold text-gray-800">
-                      Select Size:
-                    </label>
-                  </div>
+
+                {/* Size */}
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">
+                    Select Size:
+                  </label>
                   <div className="flex flex-wrap gap-3">
                     {allSizesForDisplay.map((sizeName) => {
                       const isAvailableForSelectedColor =
@@ -431,38 +487,27 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                       return (
                         <div
                           key={sizeName}
-                          className="flex flex-col items-center"
+                          className="flex flex-col items-center gap-1"
                         >
                           <button
                             disabled={isDisabled}
                             onClick={() => setSelectedSize(sizeName)}
                             className={`
-                                                                ${sizeName === "One Size" ? "px-3 py-2 rounded-md" : "w-10 h-10 rounded-full"}
-                                                                flex items-center justify-center border text-sm font-medium transition-colors relative overflow-hidden
-                                                                ${
-                                                                  isDisabled
-                                                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                                    : ""
-                                                                }
-                                                                ${
-                                                                  selectedSize ===
-                                                                    sizeName &&
-                                                                  !isDisabled
-                                                                    ? "border-[#bd9951]"
-                                                                    : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-                                                                }
-                                                            `}
+                          ${sizeName === "One Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
+                          flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative overflow-hidden
+                          ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
+                          ${selectedSize === sizeName && !isDisabled ? "border-[#bd9951]" : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"}
+                        `}
                           >
                             {sizeName}
                             {isDisabled && (
-                              <div className="absolute w-full h-px bg-gray-400 transform rotate-45"></div>
+                              <div className="absolute w-full h-px bg-gray-400 transform rotate-45" />
                             )}
                           </button>
-
                           {isAvailableForSelectedColor &&
                             stock <= 5 &&
                             stock > 0 && (
-                              <span className="text-[10px] bg-[#f5a623] text-white px-2 py-0.5 rounded-sm font-semibold">
+                              <span className="text-[9px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">
                                 {stock} left
                               </span>
                             )}
@@ -471,24 +516,27 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                     })}
                   </div>
                 </div>
-                <div className="mb-8 hidden lg:block">
-                  <div className="flex gap-4 items-center">
-                    <div className="w-20">
-                      <input
-                        type="number"
-                        min="1"
-                        value={quantity}
-                        onChange={(e) => setQuantity(parseInt(e.target.value))}
-                        className="w-full h-12 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
-                      />
-                    </div>
+
+                {/* Actions */}
+                <div className="mt-auto">
+                  <div className="flex gap-3 items-center">
+                    <input
+                      type="number"
+                      min="1"
+                      value={quantity}
+                      onChange={(e) => setQuantity(parseInt(e.target.value))}
+                      className="w-16 h-11 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
+                    />
                     <button
                       onClick={handleAddToCart}
-                      className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors"
+                      className="flex-1 h-11 bg-white border border-[#fe5722] text-[#fe5722] uppercase text-sm font-medium tracking-wider hover:bg-gray-50 cursor-pointer transition-colors"
                     >
                       Add to Cart
                     </button>
-                    <button onClick={handleBuyNow} className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg">
+                    <button
+                      onClick={handleBuyNow}
+                      className="flex-1 h-11 bg-[#fe5722] text-white uppercase text-sm font-medium tracking-wider cursor-pointer transition-colors"
+                    >
                       Buy Now
                     </button>
                   </div>
@@ -500,6 +548,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
           )}
         </div>
       </div>
+
       <WishlistLoginModal
         isOpen={isLoginModalOpen}
         onClose={closeLoginModal}

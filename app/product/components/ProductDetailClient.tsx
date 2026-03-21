@@ -1,7 +1,7 @@
 // app/product/[id]/ProductDetailClient.tsx
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import TopInfo from "../../components/TopInfo";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
@@ -19,14 +19,15 @@ import {
   fetchProducts,
   Product,
   getProductImageUrl,
+  getVariantGalleryUrls,
   ProductVariant,
   incrementProductView,
   fetchProductReviews,
 } from "../../services/productService";
 import { fetchSizeChart, SizeChartData } from "../../services/sizeChartService";
 import { getApiImageUrl } from "../../services/api";
+import { isAuthenticated } from "../../services/authService";
 import { useWishlist } from "../../hooks/useWishlist";
-import Cookies from "js-cookie";
 import { useCart } from "../../hooks/useCart";
 import toast from "react-hot-toast";
 
@@ -72,6 +73,7 @@ interface RelatedProduct {
 
 const ProductDetailClient = ({ slug }: { slug: string }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -85,9 +87,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedVariantData, setSelectedVariantData] =
     useState<ProductVariant | null>(null);
-  const [selectedSizeObject, setSelectedSizeObject] = useState<any | null>(
-    null,
-  );
+  const [selectedSizeObject, setSelectedSizeObject] = useState<
+    ProductVariant["sizes"][number] | null
+  >(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [enquireModalOpen, setEnquireModalOpen] = useState(false);
@@ -113,10 +115,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         if (res.success && res.data) {
           setProduct(res.data);
 
-          // Set initial image
-          const mainImg = getProductImageUrl(res.data);
-          setSelectedImage(mainImg);
-
           // Default size logic: find first available size
           const firstAvailableVariant = res.data.variants?.find(
             (v: ProductVariant) =>
@@ -130,6 +128,11 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
             if (firstAvailableVariant.color?.name) {
               setSelectedColor(firstAvailableVariant.color.name);
             }
+            const initialGallery = getVariantGalleryUrls(
+              res.data,
+              firstAvailableVariant,
+            );
+            setSelectedImage(initialGallery[0] || getProductImageUrl(res.data));
             const firstAvailableSize = firstAvailableVariant.sizes.find(
               (s: {
                 name: string;
@@ -142,6 +145,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               setSelectedSize(firstAvailableSize.name);
               setSelectedSizeObject(firstAvailableSize);
             }
+          } else {
+            const mainImg = getProductImageUrl(res.data);
+            setSelectedImage(mainImg);
           }
 
           // ── Similar Products: always scoped to same category ──────────
@@ -218,26 +224,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
           setSimilarProducts(allFetched);
 
-          console.log("currentMinPrice:", currentMinPrice);
-          console.log(
-            "priceRange:",
-            Math.max(0, currentMinPrice - 2000),
-            "to",
-            currentMinPrice + 2000,
-          );
-          console.log(
-            "allFetched prices:",
-            allFetched.map((p) => {
-              const min = Math.min(
-                ...p.variants.flatMap((v) =>
-                  v.sizes.map((s) =>
-                    s.discountPrice > 0 ? s.discountPrice : s.price,
-                  ),
-                ),
-              );
-              return `${p.name} | ₹${min}`;
-            }),
-          );
           // ─────────────────────────────────────────────────────────────
 
           // ── Persist to recently-viewed ────────────────────────────────
@@ -330,45 +316,45 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     }
   };
 
-  const checkLoginStatus = () => {
-    const token = Cookies.get("token");
-    return !!token;
-  };
-
   const handleAddToCart = async () => {
-    if (product && selectedVariantData && selectedSizeObject) {
-      const selectedVariant = product.variants.find(
-        (variant: ProductVariant) => variant.color?.name === selectedColor,
-      );
-      if (selectedVariant) {
-        const price = selectedSizeObject.price || 0;
-        const discountPrice = selectedSizeObject.discountPrice || 0;
-        const variantImageUrl = getApiImageUrl(
-          selectedVariant.v_image,
-          product.mainImage?.url || "/assets/placeholder-product.jpg",
-        );
-        await addToCart(
-          product._id,
-          selectedVariant._id,
-          quantity,
-          selectedSize,
-          price,
-          discountPrice,
-          variantImageUrl,
-          selectedColor,
-          {
-            _id: product._id,
-            name: product.name,
-            slug: product.slug,
-            mainImage: product.mainImage,
-          },
-        );
-      } else {
-        console.error("Selected variant not found");
-      }
-    } else {
+    if (!product || !selectedSize || !selectedColor) {
       toast.error("Please select a size to add to cart.");
+      return;
     }
+
+    const selectedVariant = product.variants.find(
+      (variant: ProductVariant) => variant.color?.name === selectedColor,
+    );
+    const selectedSizeInfo = selectedVariant?.sizes.find(
+      (size) => size.name === selectedSize,
+    );
+
+    if (!selectedVariant || !selectedSizeInfo) {
+      toast.error("Selected variant not available.");
+      return;
+    }
+
+    const variantImageUrl = getApiImageUrl(
+      selectedVariant.v_image,
+      product.mainImage?.url || "/assets/placeholder-product.jpg",
+    );
+
+    await addToCart(
+      product._id,
+      selectedVariant._id,
+      quantity,
+      selectedSize,
+      selectedSizeInfo.price || 0,
+      selectedSizeInfo.discountPrice || 0,
+      variantImageUrl,
+      selectedColor,
+      {
+        _id: product._id,
+        name: product.name,
+        slug: product.slug,
+        mainImage: product.mainImage,
+      },
+    );
   };
 
   const handleBuyNow = () => {
@@ -376,7 +362,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       toast.error("Product not available");
       return;
     }
-    if (!selectedSize || !selectedSizeObject) {
+    if (!selectedSize) {
       toast.error("Please select a size");
       return;
     }
@@ -388,13 +374,19 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     const selectedVariant = product.variants.find(
       (v: ProductVariant) => v.color?.name === selectedColor,
     );
+    const selectedSizeInfo = selectedVariant?.sizes.find(
+      (size) => size.name === selectedSize,
+    );
 
-    const variantImageUrl = selectedVariant
-      ? getApiImageUrl(
-          selectedVariant.v_image,
-          product.mainImage?.url || "/assets/placeholder-product.jpg",
-        )
-      : product.mainImage?.url || "";
+    if (!selectedVariant || !selectedSizeInfo) {
+      toast.error("Selected variant not available");
+      return;
+    }
+
+    const variantImageUrl = getApiImageUrl(
+      selectedVariant.v_image,
+      product.mainImage?.url || "/assets/placeholder-product.jpg",
+    );
 
     const buyNowItem = {
       product: {
@@ -407,18 +399,16 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       size: selectedSize,
       color: selectedColor,
       quantity,
-      price: selectedSizeObject.price || 0,
+      price: selectedSizeInfo.price || 0,
       discountPrice:
-        selectedSizeObject.discountPrice || selectedSizeObject.price || 0,
+        selectedSizeInfo.discountPrice || selectedSizeInfo.price || 0,
       variantImage: variantImageUrl,
     };
 
     const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
     const checkoutUrl = `/checkout/address?buynow=${encoded}`;
 
-    const isLoggedIn = !!Cookies.get("token");
-
-    if (!isLoggedIn) {
+    if (!isAuthenticated()) {
       sessionStorage.setItem("redirect", checkoutUrl);
       router.push("/login");
       return;
@@ -433,6 +423,30 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       ?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  useEffect(() => {
+    if (loading || searchParams.get("scroll") !== "similar") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      scrollToSimilarProducts();
+    }, 100);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loading, searchParams, scrollToSimilarProducts]);
+
+  const galleryImages = useMemo(
+    () => getVariantGalleryUrls(product, selectedVariantData),
+    [product, selectedVariantData],
+  );
+
+  useEffect(() => {
+    if (!galleryImages.length) return;
+    if (!selectedImage || !galleryImages.includes(selectedImage)) {
+      setSelectedImage(galleryImages[0]);
+    }
+  }, [galleryImages, selectedImage]);
+
   if (loading)
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -445,12 +459,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         {error || "Product not found"}
       </div>
     );
-
-  // Transform Data for View
-  const galleryImages = [
-    getProductImageUrl(product),
-    ...(product.images?.map((img) => getApiImageUrl(img.url)) || []),
-  ].filter(Boolean);
 
   // Derive all unique colors, all unique sizes, and a map of color to available sizes
   const allUniqueColors: ColorOption[] = [];
@@ -521,11 +529,12 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
   const handleColorChange = (color: ColorOption) => {
     setSelectedColor(color.name);
-    setSelectedImage(color.image);
 
     const newlySelectedVariant =
       product?.variants.find((v) => v.color?.name === color.name) || null;
     setSelectedVariantData(newlySelectedVariant);
+    const nextGallery = getVariantGalleryUrls(product, newlySelectedVariant);
+    setSelectedImage(nextGallery[0] || color.image);
 
     const availableSizesForNewColor = colorToAvailableSizesMap.get(color.name);
     if (

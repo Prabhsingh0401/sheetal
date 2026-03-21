@@ -216,6 +216,13 @@ const HomeBanner = () => {
           </div>
         </div>
       )}
+      <Image
+        src="/assets/shape-bt.png"
+        alt=""
+        width={1920}
+        height={160}
+        className="w-full h-auto absolute bottom-0 left-0 z-20"
+      />
     </div>
   );
 };

@@ -118,9 +118,11 @@ const ProductListContent = ({
           setCategoryId(category._id);
         } else {
           console.warn("Category not found:", categorySlug);
+          setCategoryId(undefined);
         }
       } catch (error) {
         console.error("Error resolving category:", error);
+        setCategoryId(undefined);
       } finally {
         setIsResolvingCategory(false);
       }
@@ -142,7 +144,7 @@ const ProductListContent = ({
     search: searchQuery || undefined,
     sort: sortOption,
     limit: 50,
-  });
+  }, !categorySlug || !!categoryId);
 
   /* =======================
      Extract Filter Options
@@ -334,7 +336,10 @@ const ProductListContent = ({
       <TopInfo />
       <Navbar />
 
-      <ProductListBanner categorySlug={categorySlug || undefined} />
+      <ProductListBanner
+        categorySlug={categorySlug || undefined}
+        searchQuery={searchQuery}
+      />
 
       <div className="container mx-auto">
         <ProductFilterBar
