@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface DeleteConfirmationModalProps {
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
   onCancel: () => void;
-  onMoveToWishlist: () => void;
+  onMoveToWishlist: () => Promise<void>;
   isBulkAction?: boolean;
   itemCount?: number;
 }
@@ -15,15 +15,32 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   isBulkAction = false,
   itemCount = 0,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAction = async (action: () => Promise<void>) => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await action();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     // Backdrop
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onClick={onCancel}
+      onClick={() => {
+        if (!isSubmitting) {
+          onCancel();
+        }
+      }}
     >
       {/* Modal box */}
       <div
-        className="bg-white p-2 shadow-2xl max-w-xs w-full font-montserrat font-optima"
+        className="bg-white px-6 py-4 rounded-xl shadow-2xl w-88 font-montserrat font-optima"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold text-gray-800 mb-3">
@@ -38,15 +55,17 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 
         <div className="flex justify-between space-x-3">
           <button
-            onClick={onConfirm}
-            className="flex-1 px-4 py-2 text-black bg-gray-200 hover:bg-gray-300 transition-colors font-semibold text-sm"
+            onClick={() => handleAction(onConfirm)}
+            disabled={isSubmitting}
+            className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 flex-1 px-4 py-2 text-black bg-gray-200 hover:bg-gray-300 transition-colors font-semibold text-sm"
           >
             Remove
           </button>
 
           <button
-            onClick={onMoveToWishlist}
-            className="flex-1 px-4 py-2 text-white bg-[#693e07] transition-colors font-semibold text-sm"
+            onClick={() => handleAction(onMoveToWishlist)}
+            disabled={isSubmitting}
+            className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 flex-1 px-4 py-2 text-white bg-[#693e07] transition-colors font-semibold text-sm"
           >
             Move to Wishlist
           </button>

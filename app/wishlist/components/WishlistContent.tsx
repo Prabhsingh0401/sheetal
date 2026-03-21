@@ -3,9 +3,82 @@ import React from "react";
 import { useWishlist } from "../../hooks/useWishlist";
 import WishlistItemCard from "./WishlistItemCard";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { addToCart as addToCartApi } from "../../services/cartService";
+import { getApiImageUrl } from "../../services/api";
+import {
+  Product,
+  toggleWishlist as toggleWishlistApi,
+} from "../../services/productService";
+import { isAuthenticated } from "../../services/authService";
+import {
+  dispatchCartUpdated,
+  dispatchWishlistUpdated,
+} from "../../hooks/shopEvents";
 
 const WishlistContent = () => {
   const { wishlist, loading, toggleProductInWishlist } = useWishlist();
+  const router = useRouter();
+
+  const handleMoveToCart = async (product: Product) => {
+    if (!isAuthenticated()) {
+      sessionStorage.setItem("redirect", window.location.pathname);
+      router.push("/login");
+      return;
+    }
+
+    const selectedVariant = product.variants.find((variant) =>
+      variant.sizes?.some((size) => size.stock > 0),
+    );
+    const selectedSize = selectedVariant?.sizes.find((size) => size.stock > 0);
+
+    if (!selectedVariant || !selectedSize) {
+      toast.error("This item is currently unavailable.");
+      return;
+    }
+
+    const variantImage = getApiImageUrl(
+      selectedVariant.v_image,
+      product.mainImage?.url || "/assets/placeholder-product.jpg",
+    );
+
+    try {
+      const cartResponse = await addToCartApi(
+        product._id,
+        selectedVariant._id,
+        1,
+        selectedSize.name,
+        selectedSize.price || 0,
+        selectedSize.discountPrice || selectedSize.price || 0,
+        selectedVariant.color?.name || "",
+        variantImage,
+      );
+
+      if (!cartResponse.success) {
+        toast.error(cartResponse.message || "Failed to move item to cart.");
+        return;
+      }
+
+      const wishlistResponse = await toggleWishlistApi(product._id);
+
+      if (!wishlistResponse.success) {
+        toast.error(
+          wishlistResponse.message ||
+            "Item added to cart, but could not remove it from wishlist.",
+        );
+        dispatchCartUpdated();
+        return;
+      }
+
+      dispatchCartUpdated();
+      dispatchWishlistUpdated();
+      toast.success("Item moved to cart!");
+    } catch (error) {
+      console.error("Failed to move wishlist item to cart:", error);
+      toast.error("Could not move item to cart. Please try again.");
+    }
+  };
 
   const processedWishlist = wishlist.map((p) => {
     let lowestPrice = Infinity;
@@ -83,6 +156,7 @@ const WishlistContent = () => {
             key={product._id}
             product={product}
             onRemove={toggleProductInWishlist}
+            onMoveToCart={handleMoveToCart}
           />
         ))}
       </div>

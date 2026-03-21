@@ -110,7 +110,7 @@ const HiddenBeauty = () => {
               >
                 <div className="relative rounded-[22px] overflow-hidden group">
                   <Link
-                    href={`/product-list?category=${cat.slug}`}
+                    href={`/${cat.slug}`}
                     className="block"
                   >
                     <Image
@@ -127,7 +127,7 @@ const HiddenBeauty = () => {
                   </Link>
 
                   <Link
-                    href={`/product-list?category=${cat.slug}`}
+                    href={`/${cat.slug}`}
                     className="
                       absolute bottom-0 left-0 w-full
                       text-center text-white text-[22px]

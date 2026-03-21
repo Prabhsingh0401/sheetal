@@ -88,8 +88,15 @@ interface UseCartReturn {
     color: string,
     productMeta?: { _id: string; name: string; slug: string; mainImage?: { url: string } },
   ) => Promise<void>;
-  removeFromCart: (itemId: string) => Promise<void>;
-  moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
+  removeFromCart: (
+    itemId: string,
+    options?: { silent?: boolean },
+  ) => Promise<void>;
+  moveFromCartToWishlist: (
+    itemId: string,
+    productId: string,
+    options?: { silent?: boolean },
+  ) => Promise<void>;
   applyCoupon: (code: string, userId: string) => Promise<void>;
   updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeCoupon: () => void;
@@ -178,8 +185,10 @@ export const useCart = (): UseCartReturn => {
   /**
    * Loads the cart — from the server if authenticated, from localStorage if guest.
    */
-  const loadCart = useCallback(async () => {
-    setLoading(true);
+  const loadCart = useCallback(async (showLoader: boolean = true) => {
+    if (showLoader) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -205,7 +214,9 @@ export const useCart = (): UseCartReturn => {
       console.error("Error loading cart:", err);
       setError(err.message || "An error occurred while fetching cart");
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -216,7 +227,7 @@ export const useCart = (): UseCartReturn => {
 
   useEffect(() => {
     const handleCartUpdated = () => {
-      loadCart();
+      loadCart(false);
     };
 
     window.addEventListener(CART_UPDATED_EVENT, handleCartUpdated);
@@ -251,7 +262,7 @@ export const useCart = (): UseCartReturn => {
           );
           if (response.success) {
             toast.success(response.message || "Product added to cart!");
-            await loadCart();
+            await loadCart(false);
             dispatchCartUpdated();
           } else {
             toast.error(response.message || "Failed to add to cart.");
@@ -305,13 +316,15 @@ export const useCart = (): UseCartReturn => {
    * Removes an item from the cart (server or guest localStorage).
    */
   const removeFromCart = useCallback(
-    async (itemId: string) => {
+    async (itemId: string, options?: { silent?: boolean }) => {
       try {
         if (isAuthenticated()) {
           const response = await removeFromCartApi(itemId);
           if (response.success) {
-            toast.success(response.message || "Item removed from cart!");
-            await loadCart();
+            if (!options?.silent) {
+              toast.success(response.message || "Item removed from cart!");
+            }
+            await loadCart(false);
             dispatchCartUpdated();
             resetCoupon();
           } else {
@@ -323,7 +336,9 @@ export const useCart = (): UseCartReturn => {
           writeGuestCart(guestItems);
           setCart(guestToCartItems(guestItems));
           dispatchCartUpdated();
-          toast.success("Item removed from cart!");
+          if (!options?.silent) {
+            toast.success("Item removed from cart!");
+          }
           resetCoupon();
         }
       } catch (err: any) {
@@ -335,19 +350,24 @@ export const useCart = (): UseCartReturn => {
   );
 
   const moveFromCartToWishlist = useCallback(
-    async (itemId: string, productId: string) => {
+    async (
+      itemId: string,
+      productId: string,
+      options?: { silent?: boolean },
+    ) => {
       try {
         const removeResponse = await removeFromCartApi(itemId);
         if (removeResponse.success) {
-          toast.success("Item removed from cart!");
-          await loadCart();
+          await loadCart(false);
           dispatchCartUpdated();
           resetCoupon();
 
           const wishlistResponse = await toggleWishlistApi(productId);
           if (wishlistResponse.success) {
             dispatchWishlistUpdated();
-            toast.success("Item added to wishlist!");
+            if (!options?.silent) {
+              toast.success("Item moved to wishlist!");
+            }
           } else {
             toast.error(wishlistResponse.message || "Failed to add to wishlist.");
           }

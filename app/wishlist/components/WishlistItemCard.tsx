@@ -11,21 +11,30 @@ interface WishlistItemCardProps {
     discountPercent: number;
   };
   onRemove: (productId: string) => void;
+  onMoveToCart: (product: Product) => void;
 }
 
 const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
   product,
   onRemove,
+  onMoveToCart,
 }) => {
   return (
     <div className="group p-2 flex flex-col">
       <div className="relative overflow-hidden bg-[#f7f7f7] rounded-lg">
+        {product.stock < 1 && (
+          <div className="absolute -top-1 left-0 z-20">
+            <span className="bg-red-600 text-white text-[10px] px-2 py-1 uppercase font-bold tracking-wider rounded-br-lg">
+              SOLD OUT
+            </span>
+          </div>
+        )}
         <button
           onClick={() => onRemove(product._id)}
-          className="absolute top-2 right-2 z-20 w-8 h-8 border border-[#f5eaac] rounded-full flex items-center justify-center text-[#f5eaac] hover:bg-gray-100 hover:text-[#bd9951] transition-all"
+          className="absolute cursor-pointer top-2 right-2 z-20 w-8 h-8 border border-[#f5eaac] rounded-full flex items-center justify-center text-[#f5eaac] hover:bg-gray-100 hover:text-[#bd9951] transition-all"
           aria-label="Remove from wishlist"
         >
-          &times;
+          <span className="mb-0.5">&times;</span>
         </button>
 
         <Link
@@ -80,16 +89,19 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
         </div>
         <div className="mt-auto">
           {product.stock > 0 ? (
-            <button className="text-left text-sm border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px]">
-              Add to Cart
+            <button
+              onClick={() => onMoveToCart(product)}
+              className="cursor-pointer text-left text-sm border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
+            >
+              Move to Cart
             </button>
           ) : (
-            <button
-              className="text-left text-sm border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-black hover:tracking-[2px]"
-              disabled
+            <Link
+              href={`/product/${product.slug}?scroll=similar`}
+              className="cursor-pointer inline-block text-left text-sm border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
             >
-              Sold Out
-            </button>
+              Show Similar
+            </Link>
           )}
         </div>
       </div>

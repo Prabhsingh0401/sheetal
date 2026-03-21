@@ -39,7 +39,7 @@ const TimelessWomenCollection = () => {
           }
         }
 
-        console.log(data.lookbook)
+        console.log(data.lookbook);
       } catch (error) {
         console.error("Error fetching lookbook images", error);
       } finally {
@@ -74,20 +74,24 @@ const TimelessWomenCollection = () => {
       : defaultImages.map((url) => ({ url }));
 
   return (
-    <div className="relative w-full pb-12 px-6 md:py-20 bg-[#fbfbfb]">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
+    <div className="flex justify-center w-full py-4 bg-[#fbfbfb]">
+      <div className="container">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
           {/* LEFT SLIDER */}
-          <div className="w-full max-w-xl mx-auto">
-            <Slider {...sliderSettings} autoplaySpeed={3000}>
+          <div className="w-full h-[320px]">
+            <Slider
+              {...sliderSettings}
+              autoplaySpeed={3000}
+              className="timeless-slider h-full"
+            >
               {leftSliderData.map((img, i) => (
-                <div key={i} className="px-2 cursor-pointer">
-                  <div className="relative aspect-[16/9] rounded-lg overflow-hidden shadow-lg">
+                <div key={i} className="cursor-pointer outline-none">
+                  <div className="relative w-full h-[320px]">
                     <Image
                       src={img.url}
                       alt={`Deal ${i + 1}`}
                       fill
-                      className="object-cover transition-transform duration-500 hover:scale-105"
+                      className="object-cover rounded-lg"
                     />
                   </div>
                 </div>
@@ -96,47 +100,57 @@ const TimelessWomenCollection = () => {
           </div>
 
           {/* CENTER CONTENT */}
-          <div className="w-full max-w-xl mx-auto px-2">
+          <div className="w-full h-[320px] flex relative">
+            <div className="absolute top-20 -left-5 h-0.5 w-15 bg-[#a2690f]"></div>
+            <div className="absolute top-20 -right-5  h-0.5 w-15 bg-[#a2690f]"></div>
             <Link
               href={centerContent.buttonLink || "#"}
-              className="block relative aspect-[16/9] border border-[#cc8a00] rounded-lg shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow duration-300"
+              className="flex w-full h-full border border-[#cc8a00] rounded-2xl items-center justify-center hover:shadow-xl transition-shadow duration-300"
             >
-              <div className="text-center px-6 py-10 md:py-5">
+              <div className="text-center px-8">
                 {centerContent.label && (
-                  <p className="text-[11px] uppercase tracking-[0.18em] mb-2 text-gray-600">
+                  <p className="text-[14px] font-[family-name:var(--font-montserrat)]  mb-4 text-black">
                     {centerContent.label}
                   </p>
                 )}
-
                 {centerContent.heading && (
-                  <h2 className="text-2xl lg:text-3xl font-serif mb-2 text-[#cc8a00] leading-snug">
+                  <h2 className="text-[26px] lg:text-[39px] font-optima mb-4 text-[#6a3f07] leading-snug">
                     {centerContent.heading}
                   </h2>
                 )}
 
                 {centerContent.description && (
                   <div
-                    className="text-sm text-gray-600 mb-2 leading-relaxed max-w-sm mx-auto"
+                    className="text-[15px] text-black font-[family-name:var(--font-montserrat)] mb-4 max-w-xs mx-auto"
                     dangerouslySetInnerHTML={{
                       __html: centerContent.description,
                     }}
                   />
+                )}
+                {centerContent.buttonText && (
+                  <span className="inline-block text-[16px] uppercase tracking-[0.2em] text-gray-800 border-y py-2 px-6 rounded border-gray-800  hover:text-[#cc8a00] hover:border-[#cc8a00] transition-colors">
+                    View more
+                  </span>
                 )}
               </div>
             </Link>
           </div>
 
           {/* RIGHT SLIDER */}
-          <div className="w-full max-w-xl mx-auto">
-            <Slider {...sliderSettings} autoplaySpeed={3500}>
+          <div className="w-full h-[320px]">
+            <Slider
+              {...sliderSettings}
+              autoplaySpeed={3500}
+              className="timeless-slider h-full"
+            >
               {rightSliderData.map((img, i) => (
-                <div key={i} className="px-2 cursor-pointer">
-                  <div className="relative aspect-[16/9] rounded-lg overflow-hidden shadow-lg">
+                <div key={i} className="cursor-pointer outline-none">
+                  <div className="relative w-full h-[320px]">
                     <Image
                       src={img.url}
                       alt={`Deal ${i + 1}`}
                       fill
-                      className="object-cover transition-transform duration-500 hover:scale-105"
+                      className="object-cover rounded-lg"
                     />
                   </div>
                 </div>

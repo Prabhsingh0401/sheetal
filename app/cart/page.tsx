@@ -80,11 +80,16 @@ const CartPage = () => {
 
   const confirmRemoveItem = async () => {
     if (isBulkAction) {
+      await new Promise((res) => setTimeout(res, 1000));
       for (const id of selectedItemIds) {
-        await removeFromCart(id);
+        await removeFromCart(id, { silent: true });
       }
+      toast.success(
+        `${selectedItemIds.length} item${selectedItemIds.length > 1 ? "s" : ""} removed from cart!`,
+      );
       setSelectedItemIds([]);
     } else if (itemToRemove) {
+      await new Promise((res) => setTimeout(res, 1000));
       await removeFromCart(itemToRemove._id);
       setItemToRemove(null);
     }
@@ -99,14 +104,19 @@ const CartPage = () => {
       return;
     }
     if (isBulkAction) {
+      await new Promise((res) => setTimeout(res, 1000));
       for (const id of selectedItemIds) {
         const item = cartItems.find((i) => i._id === id);
         if (item) {
-          await moveFromCartToWishlist(id, item.product._id);
+          await moveFromCartToWishlist(id, item.product._id, { silent: true });
         }
       }
+      toast.success(
+        `${selectedItemIds.length} item${selectedItemIds.length > 1 ? "s" : ""} moved to wishlist!`,
+      );
       setSelectedItemIds([]);
     } else if (itemToRemove) {
+      await new Promise((res) => setTimeout(res, 1000));
       await moveFromCartToWishlist(itemToRemove._id, itemToRemove.product._id);
       setItemToRemove(null);
     }

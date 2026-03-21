@@ -173,7 +173,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       )}
 
                     <button
-                      className="text-xs md:text-sm text-[#bd9951] hover:underline mt-2 block"
+                      className="text-xs cursor-pointer md:text-sm text-[#bd9951] hover:underline mt-2 block"
                       onClick={() =>
                         moveFromCartToWishlist(item._id, item.product._id)
                       }

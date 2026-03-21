@@ -455,7 +455,10 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {cats.slice(0, 4).map((cat) => (
-          <div key={cat._id} className="relative aspect-[3/4] rounded-lg overflow-hidden group">
+          <div
+            key={cat._id}
+            className="relative aspect-[3/4] rounded-lg overflow-hidden group"
+          >
             <Link
               href={`/product-list?category=${cat.slug}`}
               className="block h-full w-full"
@@ -675,20 +678,97 @@ const SearchModal: React.FC<SearchModalProps> = ({
               <div className="flex flex-col md:flex-row gap-6 min-h-0">
                 {renderLeftPanel()}
                 <div className="flex-1 min-w-0 overflow-y-auto max-h-[58vh] custom-scrollbar">
-                  {showingQuery
-                    ? matchedProducts.length > 0
-                      ? renderProductGrid(matchedProducts, false, productTitle)
-                      : !isLoading && (
-                          <p className="text-gray-400 text-center py-8 text-sm italic">
-                            No results found for &ldquo;{query}&rdquo;.
-                          </p>
-                        )
-                    : trendingProducts.length > 0 && (
-                        <div className="flex flex-col gap-6">
-                          {renderProductGrid(trendingProducts, true, productTitle)}
-                          {trendingCategories.length > 0 && renderCategoryGrid(trendingCategories)}
+                  {showingQuery ? (
+                    <div className="flex flex-col gap-6">
+                      {/* Matched products */}
+                      {matchedProducts.length > 0
+                        ? renderProductGrid(
+                            matchedProducts,
+                            false,
+                            productTitle,
+                          )
+                        : !isLoading && (
+                            <p className="text-gray-400 text-center py-8 text-sm italic">
+                              No results found for &ldquo;{query}&rdquo;.
+                            </p>
+                          )}
+
+                      {/* Matched categories — same card dimensions as products */}
+                      {matchedCategories.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-3 mb-4">
+                            <h4 className="text-[16px] font-normal text-black tracking-wide whitespace-nowrap">
+                              Categories:
+                            </h4>
+                            <hr className="flex-1 border-gray-200" />
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                            {matchedCategories.map((cat) => (
+                              <Link
+                                key={cat.data._id}
+                                href={`/${cat.data.slug}`}
+                                className="group flex flex-col h-full cursor-pointer"
+                                onClick={() => {
+                                  addClickedItem({
+                                    type: "category",
+                                    name: cat.data.name,
+                                    categoryName: cat.data.name,
+                                  });
+                                  onClose();
+                                }}
+                              >
+                                <div className="relative aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden shrink-0">
+                                  <Image
+                                    src={getCategoryImageUrl(
+                                      cat.data,
+                                      "/assets/default-image.png",
+                                    )}
+                                    alt={cat.data.name}
+                                    fill
+                                    className="object-cover"
+                                  />
+                                </div>
+                                <div className="mt-2 px-0.5 flex flex-col flex-grow">
+                                  <h5 className="text-[12px] text-gray-800 font-medium line-clamp-2 leading-snug min-h-[36px]">
+                                    {cat.data.name}
+                                  </h5>
+                                  <span className="inline-block mt-1.5 border-b border-black text-[11px] text-black uppercase tracking-wide transition-all duration-300 group-hover:tracking-widest group-hover:text-[#b3a660]">
+                                    View Collection
+                                  </span>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+
+                          {/* View all collections button */}
+                          <div className="mt-8 flex justify-center">
+                            <Link
+                              href={`/product-list?search=${encodeURIComponent(query)}`}
+                              onClick={() => {
+                                addSearchQuery(query);
+                                onClose();
+                              }}
+                              className="inline-block border border-black text-black px-6 py-2.5 text-[12px] uppercase tracking-[0.15em] font-medium transition-colors duration-300 rounded-[2px] hover:bg-black hover:text-white"
+                            >
+                              View all collections for &ldquo;{query}&rdquo;
+                            </Link>
+                          </div>
                         </div>
                       )}
+                    </div>
+                  ) : (
+                    trendingProducts.length > 0 && (
+                      <div className="flex flex-col gap-6">
+                        {renderProductGrid(
+                          trendingProducts,
+                          true,
+                          productTitle,
+                        )}
+                        {trendingCategories.length > 0 &&
+                          renderCategoryGrid(trendingCategories)}
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             </div>

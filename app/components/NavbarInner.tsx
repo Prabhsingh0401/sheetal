@@ -552,6 +552,7 @@ const NavbarInner = () => {
   const router = useRouter();
   const { wishlist } = useWishlist();
   const { cart } = useCart();
+  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -788,7 +789,7 @@ const NavbarInner = () => {
                       className="w-7 h-7"
                     />
                     <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                      {cart.length}
+                      {cartItemCount}
                     </span>
                   </Link>
                 </li>
@@ -835,7 +836,7 @@ const NavbarInner = () => {
                 className="w-6 h-6"
               />
               <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                {cart.length}
+                {cartItemCount}
               </span>
             </Link>
             <div className="cursor-pointer" onClick={toggleMobileMenu}>

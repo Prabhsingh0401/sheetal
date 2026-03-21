@@ -1,7 +1,7 @@
 // app/product/[id]/ProductDetailClient.tsx
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import TopInfo from "../../components/TopInfo";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
@@ -25,8 +25,8 @@ import {
 } from "../../services/productService";
 import { fetchSizeChart, SizeChartData } from "../../services/sizeChartService";
 import { getApiImageUrl } from "../../services/api";
+import { isAuthenticated } from "../../services/authService";
 import { useWishlist } from "../../hooks/useWishlist";
-import Cookies from "js-cookie";
 import { useCart } from "../../hooks/useCart";
 import toast from "react-hot-toast";
 
@@ -72,6 +72,7 @@ interface RelatedProduct {
 
 const ProductDetailClient = ({ slug }: { slug: string }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -330,45 +331,45 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     }
   };
 
-  const checkLoginStatus = () => {
-    const token = Cookies.get("token");
-    return !!token;
-  };
-
   const handleAddToCart = async () => {
-    if (product && selectedVariantData && selectedSizeObject) {
-      const selectedVariant = product.variants.find(
-        (variant: ProductVariant) => variant.color?.name === selectedColor,
-      );
-      if (selectedVariant) {
-        const price = selectedSizeObject.price || 0;
-        const discountPrice = selectedSizeObject.discountPrice || 0;
-        const variantImageUrl = getApiImageUrl(
-          selectedVariant.v_image,
-          product.mainImage?.url || "/assets/placeholder-product.jpg",
-        );
-        await addToCart(
-          product._id,
-          selectedVariant._id,
-          quantity,
-          selectedSize,
-          price,
-          discountPrice,
-          variantImageUrl,
-          selectedColor,
-          {
-            _id: product._id,
-            name: product.name,
-            slug: product.slug,
-            mainImage: product.mainImage,
-          },
-        );
-      } else {
-        console.error("Selected variant not found");
-      }
-    } else {
+    if (!product || !selectedSize || !selectedColor) {
       toast.error("Please select a size to add to cart.");
+      return;
     }
+
+    const selectedVariant = product.variants.find(
+      (variant: ProductVariant) => variant.color?.name === selectedColor,
+    );
+    const selectedSizeInfo = selectedVariant?.sizes.find(
+      (size) => size.name === selectedSize,
+    );
+
+    if (!selectedVariant || !selectedSizeInfo) {
+      toast.error("Selected variant not available.");
+      return;
+    }
+
+    const variantImageUrl = getApiImageUrl(
+      selectedVariant.v_image,
+      product.mainImage?.url || "/assets/placeholder-product.jpg",
+    );
+
+    await addToCart(
+      product._id,
+      selectedVariant._id,
+      quantity,
+      selectedSize,
+      selectedSizeInfo.price || 0,
+      selectedSizeInfo.discountPrice || 0,
+      variantImageUrl,
+      selectedColor,
+      {
+        _id: product._id,
+        name: product.name,
+        slug: product.slug,
+        mainImage: product.mainImage,
+      },
+    );
   };
 
   const handleBuyNow = () => {
@@ -376,7 +377,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       toast.error("Product not available");
       return;
     }
-    if (!selectedSize || !selectedSizeObject) {
+    if (!selectedSize) {
       toast.error("Please select a size");
       return;
     }
@@ -388,13 +389,19 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     const selectedVariant = product.variants.find(
       (v: ProductVariant) => v.color?.name === selectedColor,
     );
+    const selectedSizeInfo = selectedVariant?.sizes.find(
+      (size) => size.name === selectedSize,
+    );
 
-    const variantImageUrl = selectedVariant
-      ? getApiImageUrl(
-          selectedVariant.v_image,
-          product.mainImage?.url || "/assets/placeholder-product.jpg",
-        )
-      : product.mainImage?.url || "";
+    if (!selectedVariant || !selectedSizeInfo) {
+      toast.error("Selected variant not available");
+      return;
+    }
+
+    const variantImageUrl = getApiImageUrl(
+      selectedVariant.v_image,
+      product.mainImage?.url || "/assets/placeholder-product.jpg",
+    );
 
     const buyNowItem = {
       product: {
@@ -407,18 +414,16 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       size: selectedSize,
       color: selectedColor,
       quantity,
-      price: selectedSizeObject.price || 0,
+      price: selectedSizeInfo.price || 0,
       discountPrice:
-        selectedSizeObject.discountPrice || selectedSizeObject.price || 0,
+        selectedSizeInfo.discountPrice || selectedSizeInfo.price || 0,
       variantImage: variantImageUrl,
     };
 
     const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
     const checkoutUrl = `/checkout/address?buynow=${encoded}`;
 
-    const isLoggedIn = !!Cookies.get("token");
-
-    if (!isLoggedIn) {
+    if (!isAuthenticated()) {
       sessionStorage.setItem("redirect", checkoutUrl);
       router.push("/login");
       return;
@@ -432,6 +437,18 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       .getElementById("similar-products-section")
       ?.scrollIntoView({ behavior: "smooth" });
   }, []);
+
+  useEffect(() => {
+    if (loading || searchParams.get("scroll") !== "similar") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      scrollToSimilarProducts();
+    }, 100);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loading, searchParams, scrollToSimilarProducts]);
 
   if (loading)
     return (

@@ -16,7 +16,7 @@ const StarRating = ({ rating, onRatingChange }: StarRatingProps) => {
           alt="star"
           width={14}
           height={14}
-          className={`w-[14px] h-[14px] ${onRatingChange ? "cursor-pointer hover:scale-110 transition-transform" : ""}`}
+          className={`w-[20px] h-[20px] ${onRatingChange ? "cursor-pointer hover:scale-110 transition-transform" : ""}`}
           onClick={() => onRatingChange && onRatingChange(i + 1)}
         />
       ))}

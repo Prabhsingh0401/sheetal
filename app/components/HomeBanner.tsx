@@ -216,6 +216,13 @@ const HomeBanner = () => {
           </div>
         </div>
       )}
+      <Image
+        src="/assets/shape-bt.png"
+        alt="Studio By Sheetal"
+        width={300}
+        height={100}
+        className="w-full absolute bottom-0 left-0 z-20"
+      />
     </div>
   );
 };
