@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import WishlistLoginModal from "../../components/WishlistLoginModal";
 
 import { useCart } from "../../hooks/useCart";
+import { redirectToLogin } from "../../utils/authRedirect";
 
 interface QuickViewProps {
   productSlug: string | null;
@@ -207,9 +208,13 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     const checkoutUrl = `/checkout/address?buynow=${encoded}`;
 
     if (!isAuthenticated()) {
-      sessionStorage.setItem("redirect", checkoutUrl);
+      redirectToLogin(router, checkoutUrl, {
+        modals: {
+          quickViewOpen: true,
+        },
+        selectedProductSlug: productSlug,
+      });
       onClose(); // close the modal before navigating
-      router.push("/login");
       return;
     }
 

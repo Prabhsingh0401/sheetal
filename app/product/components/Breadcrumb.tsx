@@ -16,7 +16,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
     <div className="container mx-auto px-4 py-4 pt-[120px] md:pt-[140px]">
       <ul className="flex items-center text-xs md:text-sm text-gray-500">
         <li>
-          <Link href="/" className="hover:text-[#bd9951]">
+          <Link href="/" className="text-[#6a3f07] text-[15px]">
             Home
           </Link>{" "}
           <span className="mx-2">/</span>
@@ -28,13 +28,13 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
                 ? `/product-list?category=${categorySlug}`
                 : "/product-list"
             }
-            className="hover:text-[#bd9951]"
+            className="text-[#6a3f07] text-[15px]"
           >
             {categoryName || "Products"}
           </Link>
           <span className="mx-2">/</span>
         </li>
-        <li className="text-gray-800 truncate max-w-[200px] md:max-w-none">
+        <li className="text-[#6a3f07] text-[15px] truncate max-w-[200px] md:max-w-none">
           {title}
         </li>
       </ul>

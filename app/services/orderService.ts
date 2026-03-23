@@ -10,6 +10,7 @@ import { apiFetch } from "./api";
  */
 export const createCODOrder = async (
   shippingAddress: object,
+  billingAddress: object,
   orderItems: object[],
   pricing: {
     itemsPrice: number;
@@ -24,6 +25,7 @@ export const createCODOrder = async (
     body: JSON.stringify({
       orderItems,
       shippingAddress,
+      billingAddress,
       paymentInfo: {
         method: "COD",
         status: "Pending",

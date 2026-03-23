@@ -14,17 +14,17 @@ const ProductTabs: React.FC<ProductTabsProps> = ({
   materialCare,
 }) => {
   return (
-    <div className="border-[#fe5722] border-b">
-      <div className="flex justify-center mb-8 border-y border-[#fe5722]">
+    <div className="border-[#fe5722] border-b mt-8">
+      <div className="flex justify-center mb-8 border-y border-[#ff5722]">
           <button
             onClick={() => setActiveTab("description")}
-            className={`px-8 py-2 font-bold tracking-wide text-lg border-b-2 transition-colors cursor-pointer ${activeTab === "description" ? "border-[#fe5722] text-white bg-[#fe5722]" : "border-transparent text-black hover:text-black"}`}
+            className={`px-8 py-2 font-bold tracking-wide text-lg uppercase border-b-2 transition-colors cursor-pointer ${activeTab === "description" ? "border-[#fe5722] text-white bg-[#fe5722]" : "border-transparent text-black hover:text-black"}`}
           >
             Description
           </button>
           <button
             onClick={() => setActiveTab("material")}
-            className={`px-8 py-2 font-bold tracking-wide text-lg border-b-2 transition-colors cursor-pointer ${activeTab === "material" ? "border-[#fe5722] text-white bg-[#fe5722]" : "border-transparent text-black hover:text-black"}`}
+            className={`px-8 py-2 font-bold tracking-wide text-lg uppercase border-b-2 transition-colors cursor-pointer ${activeTab === "material" ? "border-[#fe5722] text-white bg-[#fe5722]" : "border-transparent text-black hover:text-black"}`}
           >
             Material & Care
           </button>

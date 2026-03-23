@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { getToken, getUserDetails } from "@/app/services/authService";
 import { getAllCouponsClient } from "@/app/services/couponService";
+import {
+  consumeRedirectField,
+  consumeRedirectModalState,
+  peekRedirectField,
+  peekRedirectModalState,
+  redirectToLogin,
+} from "@/app/utils/authRedirect";
 
 interface PriceDetailsProps {
   couponInput: string;
@@ -29,6 +36,18 @@ interface PriceDetailsProps {
   onProceed?: () => void;
 }
 
+interface CouponOption {
+  _id?: string;
+  id?: string;
+  code: string;
+  offerType?: string;
+  offerValue?: number;
+  scope?: string;
+  applicableIds?: Array<{ name?: string } | string>;
+  description?: string;
+  minPurchase?: number;
+}
+
 const PriceDetails: React.FC<PriceDetailsProps> = ({
   couponInput,
   setCouponInput,
@@ -36,7 +55,6 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   couponError,
   bogoMessage,
   applicableCategories,
-  categoryName,
   cartLength,
   totalMrp,
   totalDiscount,
@@ -51,10 +69,28 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
 }) => {
   const router = useRouter();
   const [openCouponModal, setOpenCouponModal] = useState(false);
-  const [coupons, setCoupons] = useState<any[]>([]);
+  const [coupons, setCoupons] = useState<CouponOption[]>([]);
   const [selectedCouponCode, setSelectedCouponCode] = useState<string | null>(
-    null,
+    () => peekRedirectField<string>("selectedCouponCode"),
   );
+  const [shouldRestoreCouponModal] = useState(() =>
+    peekRedirectModalState("couponModalOpen"),
+  );
+
+  useEffect(() => {
+    if (!shouldRestoreCouponModal) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setOpenCouponModal(true);
+      consumeRedirectModalState("couponModalOpen");
+      consumeRedirectField<string>("couponInput");
+      consumeRedirectField<string>("selectedCouponCode");
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [shouldRestoreCouponModal]);
 
   useEffect(() => {
     if (openCouponModal) {
@@ -80,8 +116,14 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
       return;
     }
     if (!user?.id) {
-      setOpenCouponModal(false);
-      router.push("/login");
+      redirectToLogin(router, undefined, {
+        modals: {
+          couponModalOpen: true,
+        },
+        couponInput: couponInput.trim(),
+        selectedCouponCode:
+          selectedCouponCode || couponInput.trim() || undefined,
+      });
       return;
     }
     handleApplyCoupon(user?.id);

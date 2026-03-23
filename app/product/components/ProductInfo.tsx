@@ -57,15 +57,14 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   isOutOfStock,
   selectedVariantData,
 }) => {
-  const priceToDisplay          = product.selectedPrice || product.selectedOriginalPrice;
-  const originalPriceToDisplay  = product.selectedOriginalPrice;
+  const priceToDisplay = product.selectedPrice || product.selectedOriginalPrice;
+  const originalPriceToDisplay = product.selectedOriginalPrice;
   const discountPercentageToDisplay = product.selectedDiscount
     ? Number(product.selectedDiscount)
     : 0;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-
+    <div className="px-">
       {/* Desktop Title / Rating / Code */}
       <div className="hidden lg:block mb-4">
         <h1 className="text-[26px] md:text-[30px] font-normal text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
@@ -75,7 +74,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           <StarRating rating={product.rating} />
         </div>
         <div className="text-emerald-900 text-sm hidden md:block">
-          <span className="font-semibold">Product Code:</span> {product.productCode}
+          <span className="font-semibold">Product Code:</span>{" "}
+          {product.productCode}
         </div>
       </div>
 
@@ -87,14 +87,14 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       {/* Price */}
       <div className="mb-5">
         <div className="flex flex-wrap items-end gap-2 md:gap-3">
-          <span className="text-xl md:text-2xl font-normal">
+          <span className="text-[22px] font-normal">
             ₹ {priceToDisplay.toFixed(2)}
           </span>
-          <span className="text-base md:text-lg text-gray-400 line-through">
+          <span className="text-[18px] text-gray-400 line-through">
             ₹ {originalPriceToDisplay.toFixed(2)}
           </span>
           {discountPercentageToDisplay > 0 && (
-            <span className="text-sm md:text-md text-green-600 font-semibold">
+            <span className="text-[16px] text-[#6a3f0e] font-medium">
               Save {discountPercentageToDisplay}%
             </span>
           )}
@@ -105,10 +105,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       {/* Stock badge */}
       <div className="mb-5">
         <span
-          className={`inline-block text-xs px-2 py-1 rounded border ${
-            isOutOfStock
-              ? "bg-red-50 text-red-700 border-red-200"
-              : "bg-green-50 text-green-700 border-green-200"
+          className={`inline-block text-xs px-2 py-1 text-[15px] rounded ${
+            isOutOfStock ? " text-red-700 " : " text-green-700 "
           }`}
         >
           {isOutOfStock ? "Out of Stock" : "In Stock"}
@@ -117,7 +115,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
       {/* Color Selection */}
       <div className="mb-5">
-        <label className="block text-sm font-semibold text-gray-800 mb-2">
+        <label className="block text-[17px] font-noermal text-black mb-2">
           Select Color:
         </label>
         <div className="flex flex-wrap gap-2 md:gap-3">
@@ -125,8 +123,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             product.colors.map((color, i) => (
               <div
                 key={i}
-                className={`w-10 h-14 md:w-12 md:h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative flex-shrink-0 ${
-                  selectedColor === color.name ? "border-[#bd9951]" : "border-gray-200"
+                className={`w-16 h-20 border cursor-pointer hover:border-[#bd9951] p-0.5 relative flex-shrink-0 ${
+                  selectedColor === color.name
+                    ? "border-[#bd9951]"
+                    : "border-gray-200"
                 }`}
                 onClick={() => onColorChange(color)}
               >
@@ -134,7 +134,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                   src={getApiImageUrl(color.image, "/assets/default-image.png")}
                   alt={color.name}
                   fill
-                  className="object-cover"
+                  className="object-cover h-24 w-auto"
                 />
               </div>
             ))}
@@ -144,37 +144,44 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       {/* Size Selection */}
       <div className="mb-5">
         <div className="flex justify-between items-center mb-2">
-          <label className="block text-sm font-semibold text-gray-800">
+          <label className="block text-[17px] font-medium text-black">
             Select Size:
           </label>
-          <button
-            onClick={onSizeChartOpen}
-            className="flex items-center text-sm text-red-500 font-semibold hover:underline cursor-pointer"
-          >
-            <Image
-              src="/assets/icons/measurement.svg"
-              width={14}
-              height={14}
-              alt="ruler"
-              className="mr-1"
-            />
-            Size Chart {">"}
-          </button>
+          {product.allSizes.length > 1 && (
+            <button
+              onClick={onSizeChartOpen}
+              className="flex items-center text-sm text-red-500 font-semibold hover:underline cursor-pointer"
+            >
+              <Image
+                src="/assets/icons/measurement.svg"
+                width={14}
+                height={14}
+                alt="ruler"
+                className="mr-1"
+              />
+              Size Chart {">"}
+            </button>
+          )}
         </div>
         <div className="flex flex-wrap gap-2 md:gap-3">
           {Array.isArray(product?.allSizes) &&
             product.allSizes.map((size) => {
               const isAvailableForSelectedColor =
-                product.colorToAvailableSizesMap[selectedColor]?.includes(size.name);
+                product.colorToAvailableSizesMap[selectedColor]?.includes(
+                  size.name,
+                );
               const isDisabled = !isAvailableForSelectedColor || isOutOfStock;
 
               return (
-                <div key={size.name} className="flex flex-col items-center gap-1">
+                <div
+                  key={size.name}
+                  className="flex flex-col items-center gap-1"
+                >
                   <button
                     disabled={isDisabled}
                     onClick={() => setSelectedSize(size.name)}
                     className={`
-                      ${size.name === "One Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
+                      ${size.name === "One Size" || "Free Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
                       flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative overflow-hidden
                       ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
                       ${
@@ -240,29 +247,31 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             Notify Me
           </button>
         ) : (
-          <div className="flex gap-3 items-center">
-            <div className="w-16 md:w-20">
+          <div className="flex flex-col gap-3 items-start">
+            <div className="w-20 md:w-24">
               <input
                 type="number"
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(parseInt(e.target.value))}
-                className="w-full h-12 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
+                className="w-full h-10 border border-gray-300 text-left px-4 focus:outline-none focus:border-[#bd9951]"
               />
             </div>
-            <button
+            <div className="flex gap-3 w-full">
+              <button
               onClick={onAddToCart}
-              className="flex-1 h-12 bg-white border border-[#fe5722] text-[#fe5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors text-sm"
+              className="flex-1 h-12 bg-white border border-[#ff5722] text-[#ff5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors text-[17px] font-semibold"
             >
               Add to Cart
             </button>
             <button
               onClick={onBuyNow}
               disabled={!selectedSize}
-              className="flex-1 h-12 bg-[#fe5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg text-sm disabled:opacity-60"
+              className="flex-1 h-12 bg-[#ff5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg text-[17px] font-semibold disabled:opacity-60"
             >
               Buy Now
             </button>
+            </div>
           </div>
         )}
       </div>
@@ -307,35 +316,40 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
 
       {/* Delivery */}
       <div className="mb-5 border-t border-gray-100 pt-5">
-        <label className="flex items-center text-sm font-semibold mb-3">
+        <label className="flex items-center text-[17px] font-semibold mb-3">
           Delivery Options
           <Image
             src="/assets/icons/delivery-truck.svg"
             width={18}
             height={18}
             alt="truck"
-            className="ml-2"
+            className="w-7 h-7 ml-2"
           />
         </label>
-        <div className="flex relative max-w-sm mb-2">
+        <div className="flex relative max-w-72 mb-2">
           <input
             type="text"
             placeholder="Enter pincode"
             value={pincode}
             onChange={(e) => setPincode(e.target.value)}
-            className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
+            className="w-full h-10 border rounded-lg border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
           />
           <button
             onClick={checkPincode}
-            className="absolute right-0 bg-gray-100 border border-gray-300 top-0 h-10 px-3 text-[#fe5722] font-semibold text-sm hover:bg-gray-50 cursor-pointer"
+            className="absolute right-0 rounded-r-lg bg-gray-100 border border-gray-300 top-0 h-10 px-3 text-[#fe5722] font-semibold text-sm hover:bg-gray-50 cursor-pointer"
           >
             Check
           </button>
         </div>
+        <div className="text-[13px] my-2 font-medium w-full">
+          Please enter PIN code to check delivery time & Pay on Delivery Availability
+        </div>
         {pincodeMessage && (
           <p
             className={`text-xs ${
-              pincodeMessage.includes("valid") ? "text-red-500" : "text-green-600"
+              pincodeMessage.includes("valid")
+                ? "text-red-500"
+                : "text-green-600"
             }`}
           >
             {pincodeMessage}
@@ -343,12 +357,21 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         )}
         <div className="mt-4 space-y-2">
           {[
-            { icon: "delivery-truck.svg",  text: "Get it by Tue, Jan 06" },
+            { icon: "delivery-truck.svg", text: "Get it by Tue, Jan 06" },
             { icon: "cash-on-delivery.svg", text: "Pay on delivery available" },
-            { icon: "product-return.svg",   text: "Easy 7 days return & exchange available" },
+            {
+              icon: "product-return.svg",
+              text: "Easy 7 days return & exchange available",
+            },
           ].map(({ icon, text }) => (
             <div key={text} className="flex items-center text-[15px] gap-3">
-              <Image src={`/assets/icons/${icon}`} width={38} height={38} alt={icon} className="shrink-0" />
+              <Image
+                src={`/assets/icons/${icon}`}
+                width={38}
+                height={38}
+                alt={icon}
+                className="shrink-0"
+              />
               <span>{text}</span>
             </div>
           ))}
@@ -376,7 +399,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       {/* Accordion */}
       <div className="rounded mt-2">
         <details open className="group border-b border-gray-200">
-          <summary className="flex justify-between items-center text-[#fc5823] px-2 py-2 cursor-pointer font-bold hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase text-[16px]">
+          <summary className="flex justify-between items-center text-[#ff5722] px-2 py-2 cursor-pointer font-semibold hover:bg-gray-300 list-none bg-gray-100 transition-colors uppercase text-[16px]">
             Specifications
             <span className="text-xl font-semibold">
               <span className="group-open:hidden">+</span>
@@ -384,23 +407,33 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             </span>
           </summary>
           <div className="p-3 md:p-4 bg-gray-50 text-sm">
-            {Array.isArray(product?.specifications) && product.specifications.length > 0 ? (
+            {Array.isArray(product?.specifications) &&
+            product.specifications.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 md:gap-x-8">
                 {product.specifications.map((spec: any, idx: number) => (
-                  <div key={idx} className="flex flex-col border-b border-gray-200 pb-2">
-                    <span className="font-semibold text-gray-700 text-xs md:text-[15px]">{spec.key}</span>
-                    <span className="text-gray-900 text-xs md:text-[16px]">{spec.value}</span>
+                  <div
+                    key={idx}
+                    className="flex flex-col border-b border-gray-200 pb-2"
+                  >
+                    <span className="font-semibold text-gray-700 text-xs md:text-[15px]">
+                      {spec.key}
+                    </span>
+                    <span className="text-gray-900 text-xs md:text-[16px]">
+                      {spec.value}
+                    </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 italic text-sm">No specifications available.</p>
+              <p className="text-gray-500 italic text-sm">
+                No specifications available.
+              </p>
             )}
           </div>
         </details>
 
         <details className="group">
-          <summary className="flex justify-between items-center px-2 py-2 cursor-pointer font-bold text-[#fc5823] hover:bg-gray-300 list-none bg-gray-200 transition-colors uppercase text-[15px]">
+          <summary className="flex justify-between items-center px-2 py-2 cursor-pointer font-semibold text-[#ff5722] hover:bg-gray-300 bg-gray-100 list-none bg-gray-00 transition-colors uppercase text-[15px]">
             Delivery & Returns
             <span className="text-xl font-semibold">
               <span className="group-open:hidden">+</span>
@@ -408,7 +441,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             </span>
           </summary>
           <div className="p-3 md:p-4 bg-gray-50 text-sm">
-            <h3 className="font-semibold text-gray-900 mb-3">Available Shipping Methods</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">
+              Available Shipping Methods
+            </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-xs md:text-sm">
                 <thead>
@@ -434,20 +469,31 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             </div>
             <p className="mt-3 font-semibold text-xs md:text-sm">
               For more details please read{" "}
-              <a href="/shipping-policy" className="underline text-gray-900 hover:text-black">
+              <a
+                href="/shipping-policy"
+                className="underline text-gray-900 hover:text-black"
+              >
                 Shipping Policy
-              </a>.
+              </a>
+              .
             </p>
-            <h3 className="font-semibold text-gray-900 mt-4 mb-1 text-xs md:text-sm">Return Policy</h3>
+            <h3 className="font-semibold text-gray-900 mt-4 mb-1 text-xs md:text-sm">
+              Return Policy
+            </h3>
             <p className="leading-relaxed text-xs md:text-sm">
-              Your satisfaction is our top priority. If you're not completely satisfied with the
-              product, we offer a hassle-free, no questions asked 7 days return and refund.
+              Your satisfaction is our top priority. If you're not completely
+              satisfied with the product, we offer a hassle-free, no questions
+              asked 7 days return and refund.
             </p>
             <p className="mt-2 text-xs md:text-sm">
               For more details please read{" "}
-              <a href="/return-and-cancellation-policy" className="underline text-gray-900 hover:text-black">
+              <a
+                href="/return-and-cancellation-policy"
+                className="underline text-gray-900 hover:text-black"
+              >
                 Return and Cancellation Policy
-              </a>.
+              </a>
+              .
             </p>
           </div>
         </details>
@@ -459,15 +505,30 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           Have a question? We are here to help!
         </h4>
         <div className="flex flex-col gap-3 text-sm">
-          <a href="mailto:info@studiobysheetal.com" className="flex items-center hover:text-[#5f3c20] gap-2">
-            <Image src="/assets/icons/email.svg" width={27} height={27} alt="email" />
-            <span className="break-all text-[15px]">Email us at info@studiobysheetal.com</span>
+          <a
+            href="mailto:info@studiobysheetal.com"
+            className="flex items-center hover:text-[#5f3c20] gap-2"
+          >
+            <Image
+              src="/assets/icons/email.svg"
+              width={27}
+              height={27}
+              alt="email"
+            />
+            <span className="break-all text-[15px]">
+              Email us at info@studiobysheetal.com
+            </span>
           </a>
           <a
             href="https://wa.me/919958813913"
             className="flex items-center hover:text-[#5f3c20] border w-fit px-3 py-2 font-semibold gap-2"
           >
-            <Image src="/assets/icons/whatsapp.svg" width={27} height={27} alt="wa" />
+            <Image
+              src="/assets/icons/whatsapp.svg"
+              width={27}
+              height={27}
+              alt="wa"
+            />
             <span className="text-[15px]">Click to chat</span>
           </a>
         </div>

@@ -21,6 +21,10 @@ import { getApiImageUrl } from "../services/api";
 import { useProducts } from "../hooks/useProducts";
 import { useWishlist } from "../hooks/useWishlist";
 import { useProductFilters } from "../hooks/useProductFilters";
+import {
+  consumeRedirectField,
+  consumeRedirectModalState,
+} from "../utils/authRedirect";
 
 interface ProductListProps {
   categorySlug?: string;
@@ -85,6 +89,15 @@ const ProductListContent = ({
       }
     }
   }, [activeType, activeValue]);
+
+  useEffect(() => {
+    const shouldRestoreQuickView = consumeRedirectModalState("quickViewOpen");
+    const restoredSlug = consumeRedirectField<string>("selectedProductSlug");
+
+    if (shouldRestoreQuickView && restoredSlug) {
+      setSelectedProductSlug(restoredSlug);
+    }
+  }, []);
   const [sortOption, setSortOption] = useState<string>("newest");
 
   // ... rest of logic uses categorySlug variable which is now derived
@@ -313,7 +326,12 @@ const ProductListContent = ({
       // wearType, occasion, tags, style, work, fabric, productType
       filteredProducts = filteredProducts.filter((p) => {
         const product = products.find((prod) => prod._id === p._id);
-        return values.some((val) => (product as any)?.[type]?.includes(val));
+        const productFields = product as Record<string, unknown> | undefined;
+        const fieldValue = productFields?.[type];
+        return (
+          Array.isArray(fieldValue) &&
+          values.some((val) => fieldValue.includes(val))
+        );
       });
     }
   });

@@ -36,14 +36,14 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       className={`grid gap-1 md:gap-3 xl:gap-5
         ${viewMode === "grid"
           ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          : "grid-cols-1"
+          : "grid-cols-1 lg:grid-cols-2"
         }`}
     >
       {products.map((product) => (
         <div
           key={product._id}
           className={`group flex transition-all rounded-xl p-1 md:p-2
-            ${viewMode === "grid" ? "flex-col h-full" : "flex-row h-full items-center gap-3 md:gap-6"}
+            ${viewMode === "grid" ? "flex-col h-full" : "flex-row items-center gap-3 md:gap-4 lg:gap-6"}
           `}
         >
           {/* Image Container */}
@@ -51,7 +51,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             className={`relative overflow-hidden bg-[#f7f7f7] rounded-lg shadow-sm shrink-0
               ${viewMode === "grid"
                 ? "mb-3 md:mb-5 aspect-[3/4] w-full"
-                : "w-[40%] sm:w-[30%] md:w-[220px] aspect-[3/4]"
+                : "w-[42%] sm:w-[34%] md:w-[42%] lg:w-[38%] aspect-[3/4]"
               }`}
           >
             {product.soldOut && (
@@ -117,8 +117,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
           {/* Info */}
           <div
-            className={`flex flex-col flex-grow px-0.5 md:px-1 font-[family-name:var(--font-montserrat)] mb-2 md:mb-3
-              ${viewMode === "list" ? "pl-2 md:pl-4" : ""}`}
+          className={`flex flex-col flex-grow px-0.5 md:px-1 font-[family-name:var(--font-montserrat)] mb-2 md:mb-3
+              ${viewMode === "list" ? "pl-1.5 md:pl-3 lg:pl-4" : ""}`}
           >
             <h3 className="text-sm md:text-base lg:text-lg leading-snug line-clamp-2 pb-1">
               <Link

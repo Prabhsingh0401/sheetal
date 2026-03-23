@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import StarRating from "./StarRating";
 import { checkCanReview, addReview, fetchProductReviews } from "../../services/productService";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
+import { redirectToLogin } from "../../utils/authRedirect";
 
 export interface Review {
   _id: string;
@@ -43,6 +45,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
   const [canReview, setCanReview] = useState(false);
   const [reviewReason, setReviewReason] = useState<string | null>(null);
   const [loadingCanReview, setLoadingCanReview] = useState(true);
+  const router = useRouter();
 
   // Check eligibility on mount if logged in
   useEffect(() => {
@@ -143,13 +146,19 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
                 >
                   WRITE A REVIEW
                 </button>
-              ) : (
-                <div className="text-sm text-gray-500 italic max-w-xs">
-                  {!Cookies.get("token") ? (
-                    <a href="/login" className="cursor-pointer">Please log in to write a review.</a>
-                  ) : reviewReason === "Already reviewed" ? (
-                    <p>You have already reviewed this product.</p>
-                  ) : (
+                ) : (
+                  <div className="text-sm text-gray-500 italic max-w-xs">
+                    {!Cookies.get("token") ? (
+                      <button
+                        type="button"
+                        onClick={() => redirectToLogin(router)}
+                        className="cursor-pointer underline"
+                      >
+                        Please log in to write a review.
+                      </button>
+                    ) : reviewReason === "Already reviewed" ? (
+                      <p>You have already reviewed this product.</p>
+                    ) : (
                     <p>Only customers who have received this product (Delivered) can write a review.</p>
                   )}
                 </div>

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
@@ -12,6 +13,7 @@ import {
 import { auth, googleProvider, signInWithPopup } from "../../services/firebase";
 import { verifyIdToken, login } from "../../services/authService";
 import { mergeGuestCartOnLogin } from "../../hooks/useCart";
+import { consumeRedirectTarget, syncRedirectFromQuery } from "../../utils/authRedirect";
 import toast from "react-hot-toast";
 
 declare global {
@@ -21,8 +23,11 @@ declare global {
   }
 }
 
+const RECAPTCHA_CONTAINER_ID = "recaptcha-container";
+
 const LoginForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(
@@ -31,35 +36,33 @@ const LoginForm = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
+    syncRedirectFromQuery(searchParams.get("redirect"));
+  }, [searchParams]);
+
+  useEffect(() => {
     return () => {
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-        } catch (error) {
-          console.error("Error clearing recaptcha:", error);
-        }
-        window.recaptchaVerifier = undefined;
-      }
+      // Keep the verifier alive during the login-to-OTP flow; clean up only on full unmount.
     };
   }, []);
 
   const setupRecaptcha = async () => {
     if (window.recaptchaVerifier) {
-      return;
+      return window.recaptchaVerifier;
     }
 
     const recaptchaVerifier = new RecaptchaVerifier(
       auth,
-      "recaptcha-container",
+      RECAPTCHA_CONTAINER_ID,
       {
         size: "invisible",
-        callback: () => { },
-        "expired-callback": () => { },
+        callback: () => {},
+        "expired-callback": () => {},
       },
     );
 
     window.recaptchaVerifier = recaptchaVerifier;
     await window.recaptchaVerifier.render();
+    return window.recaptchaVerifier;
   };
 
   const handleContinue = async () => {
@@ -77,9 +80,10 @@ const LoginForm = () => {
       setLoading(true);
       setLoadingType("phone");
 
-      await setupRecaptcha();
-
-      const appVerifier = window.recaptchaVerifier!;
+      const appVerifier = await setupRecaptcha();
+      window.confirmationResult = undefined;
+      sessionStorage.setItem("otp_phone_number", phoneNumber);
+      sessionStorage.setItem("login_phone_number", phoneNumber);
 
       const confirmationResult = await signInWithPhoneNumber(
         auth,
@@ -89,14 +93,11 @@ const LoginForm = () => {
 
       window.confirmationResult = confirmationResult;
       router.push("/otp");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to send OTP";
       console.error("OTP error:", error);
-      toast.error(error.message || "Failed to send OTP");
-
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = undefined;
-      }
+      toast.error(message);
     } finally {
       setLoading(false);
       setLoadingType(null);
@@ -123,9 +124,8 @@ const LoginForm = () => {
         // Merge any guest cart into the user's server cart
         await mergeGuestCartOnLogin();
         toast.success("Logged in successfully!");
-        const redirectUrl = sessionStorage.getItem("redirect");
+        const redirectUrl = consumeRedirectTarget();
         if (redirectUrl) {
-          sessionStorage.removeItem("redirect");
           router.push(redirectUrl);
         } else {
           router.push("/");
@@ -133,15 +133,16 @@ const LoginForm = () => {
       } else {
         toast.error(data.message || "Backend login failed.");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string; message?: string };
       console.error("Google Login Error:", error);
-      if (error.code === "auth/account-exists-with-different-credential") {
+      if (firebaseError.code === "auth/account-exists-with-different-credential") {
         toast.error(
           "An account already exists with this email but using a different sign-in method (like phone). Please sign in using your original method or link accounts in your profile.",
           { duration: 6000 },
         );
       } else {
-        toast.error(error.message || "Failed to login with Google");
+        toast.error(firebaseError.message || "Failed to login with Google");
       }
     } finally {
       setLoading(false);
@@ -252,7 +253,7 @@ const LoginForm = () => {
               </div>
 
               {/* REQUIRED: reCAPTCHA container */}
-              <div id="recaptcha-container"></div>
+      <div id={RECAPTCHA_CONTAINER_ID}></div>
 
               <p className="text-left text-md mt-4">
                 Have trouble logging in?{" "}

@@ -121,6 +121,11 @@ const EditProfile: React.FC = () => {
 
     return () => {
       unsubscribe();
+    };
+  }, [profilePicturePreview]); // Removed mobileNumber dependency to avoid loops
+
+  useEffect(() => {
+    return () => {
       if (profilePicturePreview) {
         URL.revokeObjectURL(profilePicturePreview);
       }
@@ -128,7 +133,7 @@ const EditProfile: React.FC = () => {
         window.recaptchaVerifier.clear();
       }
     };
-  }, [profilePicturePreview]); // Removed mobileNumber dependency to avoid loops
+  }, [profilePicturePreview]);
 
   const setupRecaptcha = () => {
     if (!window.recaptchaVerifier) {

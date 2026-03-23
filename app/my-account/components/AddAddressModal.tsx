@@ -1,12 +1,49 @@
 "use client";
 
 import React, { useState } from "react";
+import toast from "react-hot-toast";
+
+type AddressType = "Home" | "Office" | "Other";
+
+const normalizePhoneNumber = (value: string) =>
+  value.replace(/\D/g, "").slice(0, 10);
+
+const normalizeAddressType = (value?: string): AddressType => {
+  if (value === "Office" || value === "Other") return value;
+  return "Home";
+};
+
+interface AddressFormData {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  address: string;
+  pincode: string;
+  city: string;
+  state: string;
+  country: string;
+  addressType: AddressType;
+  isDefault: boolean;
+}
+
+const defaultState: AddressFormData = {
+  firstName: "",
+  lastName: "",
+  phoneNumber: "",
+  address: "",
+  pincode: "",
+  city: "",
+  state: "",
+  country: "",
+  addressType: "Home",
+  isDefault: false,
+};
 
 interface AddAddressModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
-  initialData?: any;
+  onSave: (data: AddressFormData) => void;
+  initialData?: Partial<AddressFormData>;
 }
 
 const AddAddressModal: React.FC<AddAddressModalProps> = ({
@@ -15,19 +52,6 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
   onSave,
   initialData,
 }) => {
-  const defaultState = {
-    firstName: "",
-    lastName: "",
-    phoneNumber: "",
-    address: "",
-    pincode: "",
-    city: "",
-    state: "",
-    country: "",
-    addressType: "Home",
-    isDefault: false,
-  };
-
   const [formData, setFormData] = useState(defaultState);
 
   // Reset or Populate form when modal opens or initialData changes
@@ -37,13 +61,13 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
         setFormData({
           firstName: initialData.firstName || "",
           lastName: initialData.lastName || "",
-          phoneNumber: initialData.phoneNumber || "",
+          phoneNumber: normalizePhoneNumber(initialData.phoneNumber || ""),
           address: initialData.address || "",
           pincode: initialData.pincode || "",
           city: initialData.city || "",
           state: initialData.state || "",
           country: initialData.country || "",
-          addressType: initialData.addressType || "Home",
+          addressType: normalizeAddressType(initialData.addressType),
           isDefault: initialData.isDefault || false,
         });
       } else {
@@ -58,16 +82,27 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : name === "phoneNumber"
+            ? normalizePhoneNumber(value)
+            : value,
     }));
   };
 
-  const handleTypeChange = (type: string) => {
-    setFormData((prev) => ({ ...prev, addressType: type }));
+  const handleTypeChange = (type: AddressType) => {
+    setFormData((prev: AddressFormData) => ({ ...prev, addressType: type }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!/^\d{10}$/.test(formData.phoneNumber)) {
+      toast.error("Mobile number must be exactly 10 digits.");
+      return;
+    }
+
     onSave(formData);
     onClose();
   };
@@ -128,6 +163,9 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
               </label>
               <input
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={10}
                 name="phoneNumber"
                 required
                 value={formData.phoneNumber}
@@ -218,7 +256,7 @@ const AddAddressModal: React.FC<AddAddressModalProps> = ({
                 Save this address as (optional)
               </label>
               <div className="flex gap-3">
-                {["Home", "Office", "Other"].map((type) => (
+                {(["Home", "Office", "Other"] as AddressType[]).map((type) => (
                   <button
                     key={type}
                     type="button"

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -34,13 +34,17 @@ const AddressPageInner = () => {
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [selectedShippingAddressId, setSelectedShippingAddressId] = useState<string | null>(null);
+  const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<string | null>(null);
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isEmailFromProfile, setIsEmailFromProfile] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const selectedShippingAddressIdRef = useRef<string | null>(null);
+  const selectedBillingAddressIdRef = useRef<string | null>(null);
 
   const [platformFee, setPlatformFee] = useState(0);
   const [shippingCharges, setShippingCharges] = useState(0);
@@ -82,7 +86,21 @@ const AddressPageInner = () => {
     : finalAmount;
   // ─────────────────────────────────────────────────────────────────────────
 
-  const fetchAddresses = async () => {
+  useEffect(() => {
+    selectedShippingAddressIdRef.current = selectedShippingAddressId;
+  }, [selectedShippingAddressId]);
+
+  useEffect(() => {
+    selectedBillingAddressIdRef.current = selectedBillingAddressId;
+  }, [selectedBillingAddressId]);
+
+  useEffect(() => {
+    if (billingSameAsShipping) {
+      setSelectedBillingAddressId(selectedShippingAddressId);
+    }
+  }, [billingSameAsShipping, selectedShippingAddressId]);
+
+  const fetchAddresses = useCallback(async () => {
     setLoadingAddresses(true);
     try {
       const response = await getCurrentUser();
@@ -96,10 +114,14 @@ const AddressPageInner = () => {
         }
 
         const defaultAddr = userAddresses.find((a: Address) => a.isDefault);
-        if (defaultAddr && !selectedAddressId) {
-          setSelectedAddressId(defaultAddr._id);
-        } else if (userAddresses.length > 0 && !selectedAddressId) {
-          setSelectedAddressId(userAddresses[0]._id);
+        const fallbackAddressId = defaultAddr?._id || userAddresses[0]?._id || null;
+
+        if (fallbackAddressId && !selectedShippingAddressIdRef.current) {
+          setSelectedShippingAddressId(fallbackAddressId);
+        }
+
+        if (fallbackAddressId && !selectedBillingAddressIdRef.current) {
+          setSelectedBillingAddressId(fallbackAddressId);
         }
       }
     } catch (error) {
@@ -107,11 +129,11 @@ const AddressPageInner = () => {
     } finally {
       setLoadingAddresses(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAddresses();
-  }, []);
+  }, [fetchAddresses]);
 
   useEffect(() => {
     const fetchSettingsData = async () => {
@@ -157,49 +179,100 @@ const AddressPageInner = () => {
     country: selectedAddress.country || "India",
   });
 
+  const getSelectedBillingAddress = () =>
+    billingSameAsShipping ? selectedShippingAddressId : selectedBillingAddressId;
+
+  const buildBillingAddress = (selectedAddress: Address) => ({
+    fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
+    phoneNumber: selectedAddress.phoneNumber,
+    addressLine1: selectedAddress.addressLine1,
+    city: selectedAddress.city,
+    state: selectedAddress.state,
+    postalCode: selectedAddress.postalCode,
+    country: selectedAddress.country || "India",
+  });
+
   const handlePayOnline = async () => {
-    if (!selectedAddressId) {
+    if (!selectedShippingAddressId) {
       toast.error("Please select a delivery address.");
       return;
     }
-    const selectedAddress = addresses.find((a) => a._id === selectedAddressId);
+    const billingAddressId = getSelectedBillingAddress();
+    if (!billingSameAsShipping && !billingAddressId) {
+      toast.error("Please select a billing address.");
+      return;
+    }
+    const selectedAddress = addresses.find((a) => a._id === selectedShippingAddressId);
     if (!selectedAddress) {
       toast.error("Invalid address selected.");
       return;
     }
+    const billingSelectedAddress = addresses.find((a) => a._id === billingAddressId);
+    if (!billingSelectedAddress) {
+      toast.error("Invalid billing address selected.");
+      return;
+    }
 
     const shippingAddress = buildShippingAddress(selectedAddress);
+    const billingAddress = buildBillingAddress(billingSelectedAddress);
 
     try {
       setIsSubmitting(true);
       toast.loading("Initiating payment...");
       const response = await createRazorpayPaymentLink(
-        selectedAddressId,
+        selectedShippingAddressId,
         shippingAddress,
+        billingAddress,
         isBuyNow ? activeItems : undefined,
       );
       toast.dismiss();
+      const maybeOrderId =
+        response?.data?.orderId ||
+        response?.data?._id ||
+        response?.data?.referenceId ||
+        response?.data?.reference_id ||
+        response?.data?.order?.id ||
+        response?.data?.order?._id;
+
+      if (maybeOrderId) {
+        sessionStorage.setItem("checkout_invoice_order_id", String(maybeOrderId));
+      }
+
       if (response?.success && response?.data?.short_url) {
         window.location.href = response.data.short_url;
       } else {
         toast.error(response.message || "Failed to create payment link");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.dismiss();
-      toast.error(error.message || "Something went wrong while initiating payment");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while initiating payment",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCOD = async () => {
-    if (!selectedAddressId) {
+    if (!selectedShippingAddressId) {
       toast.error("Please select a delivery address.");
       return;
     }
-    const selectedAddress = addresses.find((a) => a._id === selectedAddressId);
+    const billingAddressId = getSelectedBillingAddress();
+    if (!billingSameAsShipping && !billingAddressId) {
+      toast.error("Please select a billing address.");
+      return;
+    }
+    const selectedAddress = addresses.find((a) => a._id === selectedShippingAddressId);
     if (!selectedAddress) {
       toast.error("Invalid address selected.");
+      return;
+    }
+    const billingSelectedAddress = addresses.find((a) => a._id === billingAddressId);
+    if (!billingSelectedAddress) {
+      toast.error("Invalid billing address selected.");
       return;
     }
     if (activeItems.length === 0) {
@@ -208,6 +281,7 @@ const AddressPageInner = () => {
     }
 
     const shippingAddress = buildShippingAddress(selectedAddress);
+    const billingAddress = buildBillingAddress(billingSelectedAddress);
 
     const orderItems = activeItems.map((item) => ({
       product: item.product._id,
@@ -229,6 +303,7 @@ const AddressPageInner = () => {
       toast.loading("Placing your order...");
       const response = await createCODOrder(
         shippingAddress,
+        billingAddress,
         orderItems,
         {
           itemsPrice: activeFinalAmount,
@@ -240,14 +315,34 @@ const AddressPageInner = () => {
       );
       toast.dismiss();
       if (response?.success) {
+        const maybeOrderId =
+          response?.data?.orderId ||
+          response?.data?._id ||
+          response?.data?.id ||
+          response?.data?.order?.id ||
+          response?.data?.order?._id;
+
+        if (maybeOrderId) {
+          sessionStorage.setItem(
+            "checkout_invoice_order_id",
+            String(maybeOrderId),
+          );
+        }
+
         toast.success("Order placed successfully!");
-        router.push("/checkout/success?payment_method=cod");
+        router.push(
+          `/checkout/success?payment_method=cod${maybeOrderId ? `&order_id=${encodeURIComponent(String(maybeOrderId))}` : ""}`,
+        );
       } else {
         toast.error(response.message || "Failed to place order");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.dismiss();
-      toast.error(error.message || "Something went wrong while placing your order");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while placing your order",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -370,8 +465,12 @@ const AddressPageInner = () => {
                 ) : (
                   <AddressList
                     addresses={addresses}
-                    selectedAddressId={selectedAddressId}
-                    onSelectAddress={setSelectedAddressId}
+                    selectedShippingAddressId={selectedShippingAddressId}
+                    selectedBillingAddressId={selectedBillingAddressId}
+                    billingSameAsShipping={billingSameAsShipping}
+                    onSelectShippingAddress={setSelectedShippingAddressId}
+                    onSelectBillingAddress={setSelectedBillingAddressId}
+                    onToggleBillingSameAsShipping={setBillingSameAsShipping}
                     onRefresh={fetchAddresses}
                     onAddNew={() => {
                       setEditingAddress(null);
@@ -415,14 +514,14 @@ const AddressPageInner = () => {
             <div className="mt-6 flex flex-col gap-3">
               <button
                 onClick={handlePayOnline}
-                disabled={!selectedAddressId || isSubmitting}
+                disabled={!selectedShippingAddressId || isSubmitting}
                 className="w-full cursor-pointer bg-[#bd9951] text-white py-3 rounded font-bold uppercase tracking-wider disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-[#a38038] transition-colors"
               >
                 {isSubmitting ? "Processing..." : "Pay Online"}
               </button>
               <button
                 onClick={handleCOD}
-                disabled={!selectedAddressId || isSubmitting}
+                disabled={!selectedShippingAddressId || isSubmitting}
                 className="w-full cursor-pointer bg-white text-[#bd9951] py-3 rounded font-bold uppercase tracking-wider border-2 border-[#bd9951] disabled:border-gray-400 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-[#fdf8f0] transition-colors"
               >
                 {isSubmitting ? "Processing..." : "Cash on Delivery"}
