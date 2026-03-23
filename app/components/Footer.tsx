@@ -12,38 +12,81 @@ interface FooterLink {
   hidden?: boolean;
 }
 
-interface FooterSection {
+interface FooterSubColumn {
   id: string;
-  title: string;
-  links: FooterLink[];
   hidden?: boolean;
+  links: FooterLink[];
 }
 
-// Default fallback structure
-const defaultSections: FooterSection[] = [
+interface FooterDoubleBlock {
+  id: string;
+  type: "double";
+  title: string;
+  hidden?: boolean;
+  columns: FooterSubColumn[];
+}
+
+interface FooterSingleBlock {
+  id: string;
+  type: "single";
+  title: string;
+  hidden?: boolean;
+  links: FooterLink[];
+}
+
+type FooterBlock = FooterDoubleBlock | FooterSingleBlock;
+type RawFooterLink = {
+  id?: string;
+  label?: string;
+  href?: string;
+  hidden?: boolean;
+};
+
+type RawFooterBlock = {
+  id?: string;
+  title?: string;
+  hidden?: boolean;
+  type?: "double" | "single";
+  links?: RawFooterLink[];
+  columns?: { id?: string; hidden?: boolean; links?: RawFooterLink[] }[];
+  isDroppable?: boolean;
+  children?: unknown;
+};
+
+const defaultLayout: FooterBlock[] = [
   {
-    id: "info",
+    id: "double-col",
+    type: "double",
     title: "Information",
-    links: [
-      { id: "1", label: "Our Story", href: "/about-us" },
-      { id: "2", label: "Blog", href: "/blog" },
-      { id: "3", label: "FAQ's", href: "/faq" },
-      { id: "4", label: "Contact us", href: "/contact-us" },
+    hidden: false,
+    columns: [
+      {
+        id: "sub-1",
+        hidden: false,
+        links: [
+          { id: "1", label: "Our Story", href: "/about-us" },
+          { id: "2", label: "Blog", href: "/blog" },
+          { id: "3", label: "FAQ's", href: "/faq" },
+          { id: "4", label: "Contact us", href: "/contact-us" },
+        ],
+      },
+      {
+        id: "sub-2",
+        hidden: false,
+        links: [
+          { id: "5", label: "My Account", href: "/my-account" },
+          { id: "6", label: "Track Order", href: "/track-order" },
+          { id: "7", label: "Return Order", href: "/return-order" },
+          { id: "8", label: "Sitemap", href: "/sitemap" },
+        ],
+      },
     ],
   },
   {
-    id: "account",
-    title: "My Account / Orders",
-    links: [
-      { id: "5", label: "My Account", href: "/my-account" },
-      { id: "6", label: "Track Order", href: "/track-order" },
-      { id: "7", label: "Return Order", href: "/return-order" },
-      { id: "8", label: "Sitemap", href: "/sitemap" },
-    ],
-  },
-  {
-    id: "quick",
+    id: "single-col",
+    type: "single",
     title: "Quick Links",
+    hidden: false,
     links: [
       { id: "9", label: "Privacy Policy", href: "/privacy-policy" },
       { id: "10", label: "Return & Exchange Policy", href: "/returne-policy" },
@@ -53,53 +96,77 @@ const defaultSections: FooterSection[] = [
   },
 ];
 
-const Footer = () => {
-  const [sectionsToRender, setSectionsToRender] =
-    useState<FooterSection[]>(defaultSections);
-  const [showBackToTop, setShowBackToTop] = useState(true);
-  const pathname = usePathname();
+const isNewFormat = (layout: RawFooterBlock[]): layout is FooterBlock[] =>
+  layout.length > 0 &&
+  (layout[0].type === "double" || layout[0].type === "single");
 
-  useEffect(() => {
-    if (pathname === "/") {
-      setShowBackToTop(false);
-    }
-  }, [pathname]);
+const isOldFlatFormat = (layout: RawFooterBlock[]): boolean =>
+  layout.length > 0 &&
+  !layout[0].hasOwnProperty("type") &&
+  Array.isArray(layout[0].links);
+
+const convertOldToNew = (old: RawFooterBlock[]): FooterBlock[] => {
+  const isValidFooterLink = (link: RawFooterLink): link is FooterLink =>
+    Boolean(link?.id && link?.label && link?.href);
+
+  const doubleBlock: FooterDoubleBlock = {
+    id: "double-col",
+    type: "double",
+    title: old[0]?.title || "Information",
+    hidden: false,
+    columns: old.slice(0, 2).map((s: RawFooterBlock, i: number) => ({
+      id: s.id || `sub-${i}`,
+      hidden: s.hidden || false,
+      links: (s.links || []).filter(isValidFooterLink).filter((l) => !l.hidden),
+    })),
+  };
+
+  const singleBlock: FooterSingleBlock = old[2]
+    ? {
+        id: old[2].id || "single-col",
+        type: "single",
+        title: old[2].title || "Quick Links",
+        hidden: old[2].hidden || false,
+        links: (old[2].links || [])
+          .filter(isValidFooterLink)
+          .filter((l) => !l.hidden),
+      }
+    : {
+        id: "single-col",
+        type: "single",
+        title: "Quick Links",
+        hidden: false,
+        links: [],
+      };
+
+  return [doubleBlock, singleBlock];
+};
+
+const Footer = () => {
+  const [layout, setLayout] = useState<FooterBlock[]>(defaultLayout);
+  const pathname = usePathname();
+  const showBackToTop = pathname !== "/";
 
   useEffect(() => {
     const fetchFooterLayout = async () => {
       try {
         const settings = await getSettings();
-        const footerLayout: FooterSection[] = settings.footerLayout || [];
+        const raw = (settings.footerLayout || []) as RawFooterBlock[];
 
-        // Validate that it's actually footer data, not navbar data
-        // Navbar data has: isDroppable, type, children
-        // Footer data has: title, links
+        if (!Array.isArray(raw) || raw.length === 0) return;
+
         const hasNavbarStructure =
-          footerLayout.length > 0 &&
-          (footerLayout[0].hasOwnProperty("isDroppable") ||
-            footerLayout[0].hasOwnProperty("type") ||
-            footerLayout[0].hasOwnProperty("children"));
+          raw[0].hasOwnProperty("isDroppable") ||
+          raw[0].hasOwnProperty("children");
+        if (hasNavbarStructure) return;
 
-        // If empty or has navbar structure, keep defaults
-        if (footerLayout.length === 0 || hasNavbarStructure) {
-          return; // Keep default sections
-        }
-
-        // Filter out hidden sections and links
-        const visibleSections = footerLayout
-          .filter((section) => !section.hidden)
-          .map((section) => ({
-            ...section,
-            links: (section.links || []).filter((link) => !link.hidden),
-          }));
-
-        // Use fetched layout if available
-        if (visibleSections.length > 0) {
-          setSectionsToRender(visibleSections);
+        if (isNewFormat(raw)) {
+          setLayout(raw);
+        } else if (isOldFlatFormat(raw)) {
+          setLayout(convertOldToNew(raw));
         }
       } catch (error) {
         console.error("Failed to fetch footer layout:", error);
-        // Keep default sections on error
       }
     };
 
@@ -121,82 +188,103 @@ const Footer = () => {
           {/* TOP GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 text-left">
             {/* LOGO + SOCIAL */}
-            <div className="text-center lg:text-left flex flex-col items-center lg:items-start md:border-r px-4">
+            <div className="text-center lg:text-left flex flex-col items-center md:border-r px-8">
               <Link href="/" className="mb-4">
                 <Image
                   src="/assets/625030871.png"
                   alt="Studio By Sheetal"
                   width={280}
                   height={140}
-                  className=" lg:mx-0"
+                  className="lg:mx-0"
                 />
               </Link>
-
-              <div className="flex justify-center lg:justify-start gap-4 text-[#f8f0b6]">
-                <a
-                  href="#"
-                  target="_blank"
-                  className="hover:text-white transition-colors"
-                >
-                  Fb
-                </a>
-                <a
-                  href="#"
-                  target="_blank"
-                  className="hover:text-white transition-colors"
-                >
-                  In
-                </a>
-                <a
-                  href="#"
-                  target="_blank"
-                  className="hover:text-white transition-colors"
-                >
-                  Pi
-                </a>
-                <a
-                  href="#"
-                  target="_blank"
-                  className="hover:text-white transition-colors"
-                >
-                  Yt
-                </a>
+              <div className="flex justify-center gap-4 text-[#f8f0b6]">
+                {["Fb", "In", "Pi", "Yt"].map((s) => (
+                  <a
+                    key={s}
+                    href="#"
+                    target="_blank"
+                    className="hover:text-white transition-colors"
+                  >
+                    {s}
+                  </a>
+                ))}
               </div>
             </div>
 
-            
+            {/* DYNAMIC FOOTER BLOCKS — spans 3 of the 5 grid cols */}
+            <div className="lg:col-span-3 px-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-left">
+                {layout
+                  .filter((b) => !b.hidden)
+                  .map((block) => {
+                    if (block.type === "double") {
+                      return (
+                        <div key={block.id}>
+                          {/* Section heading e.g. "Information" */}
+                          <h3 className="text-[#f8f0b4] text-[18px] sm:text-[22px] font-normal mb-4 sm:mb-6 leading-tight font-optima whitespace-nowrap">
+                            {block.title}
+                          </h3>
+                          {/* Two sub-columns side by side */}
+                          <div className="grid grid-cols-2 border-y lg:border-none py-5">
+                            {block.columns
+                              .filter((c) => !c.hidden)
+                              .map((col) => (
+                                <div
+                                  key={col.id}
+                                  className="flex flex-col gap-3 sm:gap-4 text-[#f8f0b6]"
+                                >
+                                  {col.links
+                                    .filter((l) => !l.hidden)
+                                    .map((link) => (
+                                      <Link
+                                        key={link.id}
+                                        href={link.href}
+                                        className="hover:text-white transition-colors text-[13px] sm:text-[16px] font-light tracking-wide leading-snug"
+                                      >
+                                        {link.label}
+                                      </Link>
+                                    ))}
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      );
+                    }
 
-            {/* DYNAMIC FOOTER SECTIONS */}
-            {sectionsToRender.map((section) => (
-              <div key={section.id}>
-                <h3 className="text-[#f8f0b4] text-[22px] font-normal mb-6">
-                  {section.title}
-                </h3>
-
-                <div className="flex flex-col gap-2  text-[#f8f0b6]">
-                  {section.links.map((link) => (
-                    <Link
-                      key={link.id}
-                      href={link.href}
-                      className="hover:text-white my-1 transition-colors text-[16px] font-light tracking-wide"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
+                    // type === "single"
+                    return (
+                      <div key={block.id}>
+                        <h3 className="text-[#f8f0b4] text-[18px] sm:text-[22px] font-normal mb-4 sm:mb-6 leading-tight font-optima whitespace-nowrap">
+                          {block.title}
+                        </h3>
+                        <div className="flex flex-col gap-1.5 sm:gap-2 border-y lg:border-none py-5 text-[#f8f0b6]">
+                          {block.links
+                            .filter((l) => !l.hidden)
+                            .map((link) => (
+                              <Link
+                                key={link.id}
+                                href={link.href}
+                                className="hover:text-white transition-colors text-[13px] sm:text-[16px] font-light tracking-wide leading-snug"
+                              >
+                                {link.label}
+                              </Link>
+                            ))}
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
-            ))}
+            </div>
 
             {/* NEWSLETTER */}
             <div>
-              <h3 className="text-[#f8f0b4] text-[22px] font-normal mb-6">
+              <h3 className="text-[#f8f0b4] text-[20px] sm:text-[22px] font-normal mb-6 whitespace-nowrap">
                 Subscribe to our newsletter
               </h3>
-
-              <p className="mb-4 text-[#f8f0b6] font-light">
+              <p className="mb-4 text-[#f8f0b6] font-light font-optima">
                 Subscribe to get special offers, new products and sales deals.
               </p>
-
               <div className="relative border-b border-[#777] pb-2">
                 <input
                   type="email"
@@ -221,9 +309,7 @@ const Footer = () => {
               />
               100% Secure Payments
             </div>
-
             <div className="hidden lg:block h-4 w-px bg-[#f1e4a3]" />
-
             <div className="flex items-center px-4 border-l border-r border-[#f1e4a3] lg:border-none">
               <Image
                 src="/assets/icons/payment-partners.svg"
@@ -233,7 +319,6 @@ const Footer = () => {
                 className="lg:border-r border-[#f1e4a3] pr-8 mr-4"
               />
             </div>
-
             <div className="flex items-center gap-2">
               <Image
                 src="/assets/icons/ssl.svg"
@@ -259,8 +344,7 @@ const Footer = () => {
         <a
           href="#"
           className="fixed right-[30px] bottom-[90px] z-50 w-[38px] h-[38px] flex items-center justify-center
-                   text-white rounded-full  bg-[#1e3b37]
-                   hover:bg-[#90c03e] hover:text-white transition-colors"
+                     text-white rounded-full bg-[#1e3b37] hover:bg-[#90c03e] hover:text-white transition-colors"
         >
           ↑
         </a>

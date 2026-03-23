@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   RecaptchaVerifier,
@@ -25,25 +25,18 @@ declare global {
 
 const RECAPTCHA_CONTAINER_ID = "recaptcha-container";
 
+// ✅ Inner component that safely uses useSearchParams
 const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
-  const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(
-    null,
-  );
+  const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     syncRedirectFromQuery(searchParams.get("redirect"));
   }, [searchParams]);
-
-  useEffect(() => {
-    return () => {
-      // Keep the verifier alive during the login-to-OTP flow; clean up only on full unmount.
-    };
-  }, []);
 
   const setupRecaptcha = async () => {
     if (window.recaptchaVerifier) {
@@ -121,7 +114,6 @@ const LoginForm = () => {
 
       if (data.success && data.token) {
         login(data.token, data.user);
-        // Merge any guest cart into the user's server cart
         await mergeGuestCartOnLogin();
         toast.success("Logged in successfully!");
         const redirectUrl = consumeRedirectTarget();
@@ -195,17 +187,11 @@ const LoginForm = () => {
                 />
                 <p>
                   By continuing, I agree to the{" "}
-                  <Link
-                    href="/terms-of-use"
-                    className="underline text-[#6b4a1f]"
-                  >
+                  <Link href="/terms-of-use" className="underline text-[#6b4a1f]">
                     Terms of Use
                   </Link>{" "}
                   &{" "}
-                  <Link
-                    href="/privacy-policy"
-                    className="underline text-[#6b4a1f]"
-                  >
+                  <Link href="/privacy-policy" className="underline text-[#6b4a1f]">
                     Privacy Policy
                   </Link>{" "}
                   and I am above 18 years old.
@@ -241,19 +227,9 @@ const LoginForm = () => {
                     height={25}
                   />
                 </button>
-
-                {/* <button className="w-10 h-10 flex items-center justify-center cursor-pointer">
-                  <Image
-                    src="/assets/icons/facebook.svg"
-                    alt="Facebook"
-                    width={25}
-                    height={25}
-                  />
-                </button> */}
               </div>
 
-              {/* REQUIRED: reCAPTCHA container */}
-      <div id={RECAPTCHA_CONTAINER_ID}></div>
+              <div id={RECAPTCHA_CONTAINER_ID}></div>
 
               <p className="text-left text-md mt-4">
                 Have trouble logging in?{" "}

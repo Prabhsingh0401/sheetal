@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -96,7 +96,7 @@ const formatAddressLines = (address: BasicInfoAddress) => {
   return lines.length > 0 ? lines : ["Not configured"];
 };
 
-const InvoicePage = () => {
+const InvoicePageInner = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [order, setOrder] = useState<Order | null>(null);
@@ -593,6 +593,23 @@ const InvoicePage = () => {
         </div>
       </div>
     </>
+  );
+};
+
+const InvoicePage = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+          <div className="bg-white p-8 rounded shadow-md text-center max-w-md w-full">
+            <div className="w-12 h-12 border-4 border-[#bd9951] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading invoice...</p>
+          </div>
+        </div>
+      }
+    >
+      <InvoicePageInner />
+    </Suspense>
   );
 };
 

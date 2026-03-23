@@ -15,6 +15,8 @@ interface AddressFormData {
   isDefault: boolean;
 }
 
+type AddressType = AddressFormData["addressType"];
+
 interface AddressFormProps {
   onSuccess: () => void;
   onCancel: () => void;
@@ -69,7 +71,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleTypeSelect = (type: "Home" | "Office" | "Other") => {
+  const handleTypeSelect = (type: AddressType) => {
     setFormData((prev) => ({ ...prev, addressType: type }));
   };
 
@@ -250,11 +252,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
           Save this address as (optional)
         </label>
         <div className="flex gap-3">
-          {["Home", "Office", "Other"].map((type) => (
+          {(["Home", "Office", "Other"] as AddressType[]).map((type) => (
             <button
               key={type}
               type="button"
-              onClick={() => handleTypeSelect(type as any)}
+              onClick={() => handleTypeSelect(type)}
               className={`px-4 py-1.5 rounded-full text-sm border transition-colors ${
                 formData.addressType === type
                   ? "bg-transparent text-[#bd9951] border-[#bd9951]"
@@ -283,7 +285,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
         </label>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <button
           type="submit"
           disabled={loading}

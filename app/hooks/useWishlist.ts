@@ -38,9 +38,9 @@ type ErrorLike = {
 const isUnauthorized = (err: ErrorLike): boolean =>
   err?.response?.status === 401 ||
   err?.status === 401 ||
-  err?.message?.toLowerCase().includes("unauthorized") ||
-  err?.message?.toLowerCase().includes("not logged in") ||
-  err?.message?.toLowerCase().includes("token");
+  Boolean(err?.message?.toLowerCase().includes("unauthorized")) ||
+  Boolean(err?.message?.toLowerCase().includes("not logged in")) ||
+  Boolean(err?.message?.toLowerCase().includes("token"));
 
 export const useWishlist = (): UseWishlistReturn => {
   const router = useRouter();

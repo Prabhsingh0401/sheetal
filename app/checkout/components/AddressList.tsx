@@ -161,11 +161,13 @@ const AddressList: React.FC<AddressListProps> = ({
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2">
-        <h4 className="text-xl text-[#785e32] font-montserrat">Select Address</h4>
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mb-4 border-b border-gray-300 pb-2">
+        <h4 className="text-lg sm:text-xl text-[#785e32] font-montserrat">
+          Select Address
+        </h4>
         <button
           onClick={onAddNew}
-          className="border border-black cursor-pointer text-black text-sm font-semibold px-4 py-2 hover:bg-gray-50 transition-colors uppercase tracking-wide"
+          className="border border-black cursor-pointer text-black text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 hover:bg-gray-50 transition-colors uppercase tracking-wide w-full sm:w-auto"
         >
           Add New Address
         </button>
@@ -175,7 +177,7 @@ const AddressList: React.FC<AddressListProps> = ({
         <p className="font-semibold text-gray-700">Select a delivery address</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         {addresses.map((addr) =>
           renderAddressCard(
             addr,
@@ -188,9 +190,11 @@ const AddressList: React.FC<AddressListProps> = ({
       </div>
 
       <div className="mt-6">
-        <div className="flex items-center gap-3 mb-4">
-          <p className="font-semibold text-gray-700">Select a billing address</p>
-          <label className="flex items-center gap-2 cursor-pointer">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+          <p className="font-semibold text-gray-700">
+            Select a billing address
+          </p>
+          <label className="flex items-center gap-2 cursor-pointer flex-wrap">
             <input
               type="checkbox"
               checked={billingSameAsShipping}
@@ -204,7 +208,7 @@ const AddressList: React.FC<AddressListProps> = ({
         {!billingSameAsShipping && (
           <div
             id="billing-address-grid"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-6"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"
           >
             {addresses.map((addr) =>
               renderAddressCard(

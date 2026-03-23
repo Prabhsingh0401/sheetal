@@ -366,9 +366,9 @@ const AddressPageInner = () => {
     <div className="font-montserrat">
       {/* Header */}
       <div className="w-full border-b border-gray-100">
-        <div className="flex justify-between items-center py-3 px-6 md:px-10">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center py-3 px-4 sm:px-6 md:px-10">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-between sm:justify-start">
             <Link href="/" className="cursor-pointer">
               <Image
                 src="/assets/335014072.png"
@@ -380,7 +380,7 @@ const AddressPageInner = () => {
           </div>
 
           {/* Checkout Steps */}
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+          <div className="flex items-center justify-between sm:justify-center gap-4 sm:gap-8 text-xs sm:text-sm font-medium">
             <Link href="/cart" className="text-black hover:text-[#bd9951] cursor-pointer">
               BAG
             </Link>
@@ -389,24 +389,24 @@ const AddressPageInner = () => {
           </div>
 
           {/* Secure Badge */}
-          <div className="flex items-center space-x-2 text-sm font-semibold">
+          <div className="flex items-center justify-start sm:justify-end space-x-2 text-xs sm:text-sm font-semibold">
             <Image
               src="/assets/icons/shield.svg"
               alt="Secure"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
             />
             <span>100% SECURE</span>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto py-8 px-4 md:px-8 lg:px-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto py-5 sm:py-8 px-3 sm:px-4 md:px-8 lg:px-12">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
           {/* LEFT COLUMN: ADDRESS */}
-          <div className="w-full lg:w-8/12">
+          <div className="w-full lg:w-[58%]">
             <div className="mb-6">
-              <h4 className="text-xl text-[#785e32] mb-4 font-montserrat">
+              <h4 className="text-lg sm:text-xl text-[#785e32] mb-3 sm:mb-4 font-montserrat">
                 Customer Information
               </h4>
               <div className="mb-2">
@@ -484,7 +484,7 @@ const AddressPageInner = () => {
           </div>
 
           {/* RIGHT COLUMN: SUMMARY */}
-          <div className="w-full lg:w-4/12">
+          <div className="w-full lg:w-[42%] lg:sticky lg:top-6">
             <MiniCartSummary cartItems={activeItems} />
 
             <PriceDetails
@@ -531,48 +531,48 @@ const AddressPageInner = () => {
         </div>
 
         {/* Footer Icons */}
-        <div className="flex justify-around items-center mt-12 py-4 border-t border-gray-100">
-          <div className="flex items-center text-sm">
+        <div className="mt-10 py-4 border-t border-gray-100 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="flex items-center justify-center lg:justify-start text-sm">
             <Image
               src="/assets/icons/secure-payment.svg"
               alt="Secure Payments"
               width={30}
               height={30}
             />
-            <span className="ml-2 text-xl text-[#706a42] font-semibold">
+            <span className="ml-2 text-sm sm:text-lg lg:text-xl text-[#706a42] font-semibold">
               Secure Payments
             </span>
           </div>
-          <div className="flex items-center text-sm">
+          <div className="flex items-center justify-center lg:justify-start text-sm">
             <Image
               src="/assets/icons/transaction.svg"
               alt="Cash on delivery"
               width={30}
               height={30}
             />
-            <span className="ml-2 text-xl text-[#706a42] font-semibold">
+            <span className="ml-2 text-sm sm:text-lg lg:text-xl text-[#706a42] font-semibold">
               Cash on delivery
             </span>
           </div>
-          <div className="flex items-center text-sm">
+          <div className="flex items-center justify-center lg:justify-start text-sm">
             <Image
               src="/assets/icons/quality-assurance.svg"
               alt="Assured Quality"
               width={30}
               height={30}
             />
-            <span className="ml-2 text-xl text-[#706a42] font-semibold">
+            <span className="ml-2 text-sm sm:text-lg lg:text-xl text-[#706a42] font-semibold">
               Assured Quality
             </span>
           </div>
-          <div className="flex items-center text-sm">
+          <div className="flex items-center justify-center lg:justify-start text-sm">
             <Image
               src="/assets/icons/product-return1.svg"
               alt="Easy returns"
               width={30}
               height={30}
             />
-            <span className="ml-2 text-xl text-[#706a42] font-semibold">
+            <span className="ml-2 text-sm sm:text-lg lg:text-xl text-[#706a42] font-semibold">
               Easy returns
             </span>
           </div>
