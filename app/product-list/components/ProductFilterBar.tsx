@@ -62,8 +62,8 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
   return (
     <>
       {/* Top Filter Bar */}
-      <div className="border-t border-b border-[#e7b96bb8] py-4 mb-6 relative hidden lg:block">
-        <div className="flex flex-col items-center gap-4">
+      <div className="border-t border-b border-[#e7b96bb8] py-3 sm:py-4 md:py-5 mb-4 sm:mb-5 md:mb-6 relative hidden lg:block px-3 sm:px-4 md:px-0">
+        <div className="flex flex-col items-center gap-3 sm:gap-4">
           {/* Centered Sort By */}
           <div className="relative">
             <button
@@ -217,9 +217,9 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
          hover:[&::-webkit-scrollbar-thumb]:bg-[#bd9951]/60
        `}
       >
-        <div className="p-6">
+        <div className="p-4 sm:p-5 md:p-6">
           {/* Sidebar Header */}
-          <div className="flex justify-between items-center pb-4">
+          <div className="flex justify-between items-center pb-3 sm:pb-4">
             <h4 className="text-xl font-medium uppercase tracking-wide">
               Filters
             </h4>
@@ -232,7 +232,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           </div>
 
           {/* Clear Filters (Top) */}
-          <div className="mb-4 flex justify-between items-center pb-4 border-b border-gray-700">
+          <div className="mb-3 sm:mb-4 flex justify-between items-center pb-3 sm:pb-4 border-b border-gray-700">
             <span className="text-sm text-gray-500">
               {totalProducts} Product{totalProducts !== 1 ? "s" : ""}
             </span>
@@ -249,7 +249,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           
 
           {/* Filter Categories Accordion */}
-          <div className="space-y-4 font-[family-name:var(--font-montserrat)]">
+          <div className="space-y-3 sm:space-y-4 font-[family-name:var(--font-montserrat)]">
             {/* Size Filter */}
             {filterOptions.sizes.length > 0 && (
               <div className="border-b border-gray-300 pb-2">

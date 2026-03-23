@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   fetchWishlist,
@@ -11,6 +12,10 @@ import {
   dispatchWishlistUpdated,
   WISHLIST_UPDATED_EVENT,
 } from "./shopEvents";
+import {
+  consumeRedirectModalState,
+  redirectToLogin,
+} from "../utils/authRedirect";
 
 export interface UseWishlistReturn {
   wishlist: Product[];
@@ -23,18 +28,25 @@ export interface UseWishlistReturn {
   handleLoginRedirect: () => void;
 }
 
+type ErrorLike = {
+  response?: { status?: number };
+  status?: number;
+  message?: string;
+};
+
 /** Detects 401-style errors from axios, fetch, or plain Error messages */
-const isUnauthorized = (err: any): boolean =>
+const isUnauthorized = (err: ErrorLike): boolean =>
   err?.response?.status === 401 ||
   err?.status === 401 ||
-  err?.message?.toLowerCase().includes("unauthorized") ||
-  err?.message?.toLowerCase().includes("not logged in") ||
-  err?.message?.toLowerCase().includes("token");
+  Boolean(err?.message?.toLowerCase().includes("unauthorized")) ||
+  Boolean(err?.message?.toLowerCase().includes("not logged in")) ||
+  Boolean(err?.message?.toLowerCase().includes("token"));
 
 export const useWishlist = (): UseWishlistReturn => {
-  const [wishlist, setWishlist]                 = useState<Product[]>([]);
-  const [loading, setLoading]                   = useState<boolean>(true);
-  const [error, setError]                       = useState<string | null>(null);
+  const router = useRouter();
+  const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const loadWishlist = useCallback(async (showLoader: boolean = true) => {
@@ -49,14 +61,14 @@ export const useWishlist = (): UseWishlistReturn => {
       } else {
         setWishlist([]);
       }
-    } catch (err: any) {
-      // Unauthenticated users get a 401 fetching wishlist — that's expected,
-      // just show an empty wishlist rather than treating it as an error.
-      if (isUnauthorized(err)) {
+    } catch (err: unknown) {
+      const error = err as ErrorLike;
+      // Unauthenticated users get a 401 fetching wishlist. That is expected.
+      if (isUnauthorized(error)) {
         setWishlist([]);
       } else {
         console.error("Error loading wishlist:", err);
-        setError(err.message || "An error occurred while fetching wishlist");
+        setError(error.message || "An error occurred while fetching wishlist");
       }
     } finally {
       if (showLoader) {
@@ -68,6 +80,12 @@ export const useWishlist = (): UseWishlistReturn => {
   useEffect(() => {
     loadWishlist();
   }, [loadWishlist]);
+
+  useEffect(() => {
+    if (consumeRedirectModalState("wishlistLoginModalOpen")) {
+      setIsLoginModalOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     const handleWishlistUpdated = () => {
@@ -105,9 +123,10 @@ export const useWishlist = (): UseWishlistReturn => {
           }
           toast.error(response.message || "Failed to update wishlist.");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const error = err as ErrorLike;
         // HTTP 401 thrown by axios / fetch wrapper
-        if (isUnauthorized(err)) {
+        if (isUnauthorized(error)) {
           setIsLoginModalOpen(true);
           return;
         }
@@ -127,11 +146,13 @@ export const useWishlist = (): UseWishlistReturn => {
   const handleLoginRedirect = useCallback(() => {
     setIsLoginModalOpen(false);
     if (typeof window !== "undefined") {
-      // Persist current page so the user returns here after login
-      sessionStorage.setItem("redirect", window.location.pathname);
-      window.location.href = "/login";
+      redirectToLogin(router, undefined, {
+        modals: {
+          wishlistLoginModalOpen: true,
+        },
+      });
     }
-  }, []);
+  }, [router]);
 
   return {
     wishlist,

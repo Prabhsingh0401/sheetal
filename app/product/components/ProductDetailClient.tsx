@@ -29,6 +29,7 @@ import { getApiImageUrl } from "../../services/api";
 import { isAuthenticated } from "../../services/authService";
 import { useWishlist } from "../../hooks/useWishlist";
 import { useCart } from "../../hooks/useCart";
+import { redirectToLogin } from "../../utils/authRedirect";
 import toast from "react-hot-toast";
 
 interface ColorOption {
@@ -409,8 +410,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     const checkoutUrl = `/checkout/address?buynow=${encoded}`;
 
     if (!isAuthenticated()) {
-      sessionStorage.setItem("redirect", checkoutUrl);
-      router.push("/login");
+      redirectToLogin(router, checkoutUrl);
       return;
     }
 
@@ -688,7 +688,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         categorySlug={product.category?.slug}
       />
 
-      <div className="container mx-auto px-4 md:px-8 lg:px-16 pb-12">
+      <div className="container mx-auto">
         {/* Mobile Title */}
         <div className="lg:hidden mb-4 mt-2">
           <h1 className="text-2xl font-medium text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
@@ -696,7 +696,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           </h1>
         </div>
 
-        <div className="flex flex-col lg:flex-row md:gap-8">
+        <div className="flex flex-col lg:flex-row md:gap-13">
           <div className="lg:w-7/12">
             <ProductImageGallery
               images={galleryImages}

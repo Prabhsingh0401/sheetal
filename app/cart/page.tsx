@@ -9,6 +9,10 @@ import CartItemsList from "./components/CartItemsList";
 import PriceDetails from "./components/PriceDetails";
 import { getSettings } from "../services/settingsService";
 import { isAuthenticated } from "../services/authService";
+import {
+  peekRedirectField,
+  redirectToLogin,
+} from "../utils/authRedirect";
 
 const CartPage = () => {
   const router = useRouter();
@@ -47,7 +51,9 @@ const CartPage = () => {
     "remove",
   );
   const [isProcessing, setIsProcessing] = useState(false);
-  const [couponInput, setCouponInput] = useState("");
+  const [couponInput, setCouponInput] = useState(
+    () => peekRedirectField<string>("couponInput") || "",
+  );
 
   /* Selection Handlers */
   const handleSelectionChange = (itemId: string) => {
@@ -114,8 +120,7 @@ const CartPage = () => {
     if (isProcessing) return;
 
     if (!isAuthenticated()) {
-      sessionStorage.setItem("redirect", "/checkout/address");
-      router.push("/login");
+      redirectToLogin(router, "/cart");
       return;
     }
 
@@ -165,8 +170,7 @@ const CartPage = () => {
 
   const handleProceedToBuy = () => {
     if (!isAuthenticated()) {
-      sessionStorage.setItem("redirect", "/checkout/address");
-      router.push("/login");
+      redirectToLogin(router, "/checkout/address");
       return;
     }
     router.push("/checkout/address");
@@ -277,7 +281,7 @@ const CartPage = () => {
               Your cart is empty!
             </p>
             <p className="text-gray-500 mb-8">
-              Looks like you haven't added anything to your cart yet.
+              Looks like you haven&apos;t added anything to your cart yet.
             </p>
             <Link
               href="/"

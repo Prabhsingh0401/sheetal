@@ -9,11 +9,19 @@ import UserInfoCard from "./components/UserInfoCard";
 import DashboardSidebar from "./components/DashboardSidebar";
 import { isAuthenticated } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
+import { redirectToLogin } from "../utils/authRedirect";
+
+interface CurrentUser {
+  name?: string;
+  phoneNumber?: string;
+  email?: string;
+  [key: string]: unknown;
+}
 
 const MyAccountLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
   const getActiveSectionFromPath = (path: string): string => {
@@ -35,7 +43,7 @@ const MyAccountLayout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!isAuthenticated()) {
-        router.push("/login");
+        redirectToLogin(router, pathname);
         return;
       }
 
@@ -46,18 +54,18 @@ const MyAccountLayout = ({ children }: { children: React.ReactNode }) => {
           setCurrentUser(res.data);
         } else {
           console.error("Failed to fetch user data:", res.message);
-          router.push("/login");
+          redirectToLogin(router, pathname);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        router.push("/login");
+        redirectToLogin(router, pathname);
       } finally {
         setLoadingUser(false);
       }
     };
 
     fetchUserData();
-  }, [router]);
+  }, [router, pathname]);
 
   // Handle navigation from UserInfoCard
   const onSelectSection = (section: string) => {

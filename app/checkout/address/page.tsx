@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -34,13 +34,17 @@ const AddressPageInner = () => {
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [selectedShippingAddressId, setSelectedShippingAddressId] = useState<string | null>(null);
+  const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<string | null>(null);
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isEmailFromProfile, setIsEmailFromProfile] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const selectedShippingAddressIdRef = useRef<string | null>(null);
+  const selectedBillingAddressIdRef = useRef<string | null>(null);
 
   const [platformFee, setPlatformFee] = useState(0);
   const [shippingCharges, setShippingCharges] = useState(0);
@@ -82,7 +86,21 @@ const AddressPageInner = () => {
     : finalAmount;
   // ─────────────────────────────────────────────────────────────────────────
 
-  const fetchAddresses = async () => {
+  useEffect(() => {
+    selectedShippingAddressIdRef.current = selectedShippingAddressId;
+  }, [selectedShippingAddressId]);
+
+  useEffect(() => {
+    selectedBillingAddressIdRef.current = selectedBillingAddressId;
+  }, [selectedBillingAddressId]);
+
+  useEffect(() => {
+    if (billingSameAsShipping) {
+      setSelectedBillingAddressId(selectedShippingAddressId);
+    }
+  }, [billingSameAsShipping, selectedShippingAddressId]);
+
+  const fetchAddresses = useCallback(async () => {
     setLoadingAddresses(true);
     try {
       const response = await getCurrentUser();
@@ -96,10 +114,14 @@ const AddressPageInner = () => {
         }
 
         const defaultAddr = userAddresses.find((a: Address) => a.isDefault);
-        if (defaultAddr && !selectedAddressId) {
-          setSelectedAddressId(defaultAddr._id);
-        } else if (userAddresses.length > 0 && !selectedAddressId) {
-          setSelectedAddressId(userAddresses[0]._id);
+        const fallbackAddressId = defaultAddr?._id || userAddresses[0]?._id || null;
+
+        if (fallbackAddressId && !selectedShippingAddressIdRef.current) {
+          setSelectedShippingAddressId(fallbackAddressId);
+        }
+
+        if (fallbackAddressId && !selectedBillingAddressIdRef.current) {
+          setSelectedBillingAddressId(fallbackAddressId);
         }
       }
     } catch (error) {
@@ -107,11 +129,11 @@ const AddressPageInner = () => {
     } finally {
       setLoadingAddresses(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchAddresses();
-  }, []);
+  }, [fetchAddresses]);
 
   useEffect(() => {
     const fetchSettingsData = async () => {
@@ -157,49 +179,100 @@ const AddressPageInner = () => {
     country: selectedAddress.country || "India",
   });
 
+  const getSelectedBillingAddress = () =>
+    billingSameAsShipping ? selectedShippingAddressId : selectedBillingAddressId;
+
+  const buildBillingAddress = (selectedAddress: Address) => ({
+    fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`.trim(),
+    phoneNumber: selectedAddress.phoneNumber,
+    addressLine1: selectedAddress.addressLine1,
+    city: selectedAddress.city,
+    state: selectedAddress.state,
+    postalCode: selectedAddress.postalCode,
+    country: selectedAddress.country || "India",
+  });
+
   const handlePayOnline = async () => {
-    if (!selectedAddressId) {
+    if (!selectedShippingAddressId) {
       toast.error("Please select a delivery address.");
       return;
     }
-    const selectedAddress = addresses.find((a) => a._id === selectedAddressId);
+    const billingAddressId = getSelectedBillingAddress();
+    if (!billingSameAsShipping && !billingAddressId) {
+      toast.error("Please select a billing address.");
+      return;
+    }
+    const selectedAddress = addresses.find((a) => a._id === selectedShippingAddressId);
     if (!selectedAddress) {
       toast.error("Invalid address selected.");
       return;
     }
+    const billingSelectedAddress = addresses.find((a) => a._id === billingAddressId);
+    if (!billingSelectedAddress) {
+      toast.error("Invalid billing address selected.");
+      return;
+    }
 
     const shippingAddress = buildShippingAddress(selectedAddress);
+    const billingAddress = buildBillingAddress(billingSelectedAddress);
 
     try {
       setIsSubmitting(true);
       toast.loading("Initiating payment...");
       const response = await createRazorpayPaymentLink(
-        selectedAddressId,
+        selectedShippingAddressId,
         shippingAddress,
+        billingAddress,
         isBuyNow ? activeItems : undefined,
       );
       toast.dismiss();
+      const maybeOrderId =
+        response?.data?.orderId ||
+        response?.data?._id ||
+        response?.data?.referenceId ||
+        response?.data?.reference_id ||
+        response?.data?.order?.id ||
+        response?.data?.order?._id;
+
+      if (maybeOrderId) {
+        sessionStorage.setItem("checkout_invoice_order_id", String(maybeOrderId));
+      }
+
       if (response?.success && response?.data?.short_url) {
         window.location.href = response.data.short_url;
       } else {
         toast.error(response.message || "Failed to create payment link");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.dismiss();
-      toast.error(error.message || "Something went wrong while initiating payment");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while initiating payment",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCOD = async () => {
-    if (!selectedAddressId) {
+    if (!selectedShippingAddressId) {
       toast.error("Please select a delivery address.");
       return;
     }
-    const selectedAddress = addresses.find((a) => a._id === selectedAddressId);
+    const billingAddressId = getSelectedBillingAddress();
+    if (!billingSameAsShipping && !billingAddressId) {
+      toast.error("Please select a billing address.");
+      return;
+    }
+    const selectedAddress = addresses.find((a) => a._id === selectedShippingAddressId);
     if (!selectedAddress) {
       toast.error("Invalid address selected.");
+      return;
+    }
+    const billingSelectedAddress = addresses.find((a) => a._id === billingAddressId);
+    if (!billingSelectedAddress) {
+      toast.error("Invalid billing address selected.");
       return;
     }
     if (activeItems.length === 0) {
@@ -208,6 +281,7 @@ const AddressPageInner = () => {
     }
 
     const shippingAddress = buildShippingAddress(selectedAddress);
+    const billingAddress = buildBillingAddress(billingSelectedAddress);
 
     const orderItems = activeItems.map((item) => ({
       product: item.product._id,
@@ -229,6 +303,7 @@ const AddressPageInner = () => {
       toast.loading("Placing your order...");
       const response = await createCODOrder(
         shippingAddress,
+        billingAddress,
         orderItems,
         {
           itemsPrice: activeFinalAmount,
@@ -240,14 +315,34 @@ const AddressPageInner = () => {
       );
       toast.dismiss();
       if (response?.success) {
+        const maybeOrderId =
+          response?.data?.orderId ||
+          response?.data?._id ||
+          response?.data?.id ||
+          response?.data?.order?.id ||
+          response?.data?.order?._id;
+
+        if (maybeOrderId) {
+          sessionStorage.setItem(
+            "checkout_invoice_order_id",
+            String(maybeOrderId),
+          );
+        }
+
         toast.success("Order placed successfully!");
-        router.push("/checkout/success?payment_method=cod");
+        router.push(
+          `/checkout/success?payment_method=cod${maybeOrderId ? `&order_id=${encodeURIComponent(String(maybeOrderId))}` : ""}`,
+        );
       } else {
         toast.error(response.message || "Failed to place order");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.dismiss();
-      toast.error(error.message || "Something went wrong while placing your order");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while placing your order",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -271,9 +366,9 @@ const AddressPageInner = () => {
     <div className="font-montserrat">
       {/* Header */}
       <div className="w-full border-b border-gray-100">
-        <div className="flex justify-between items-center py-3 px-6 md:px-10">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center py-3 px-4 sm:px-6 md:px-10">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-between sm:justify-start">
             <Link href="/" className="cursor-pointer">
               <Image
                 src="/assets/335014072.png"
@@ -285,7 +380,7 @@ const AddressPageInner = () => {
           </div>
 
           {/* Checkout Steps */}
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
+          <div className="flex items-center justify-between sm:justify-center gap-4 sm:gap-8 text-xs sm:text-sm font-medium">
             <Link href="/cart" className="text-black hover:text-[#bd9951] cursor-pointer">
               BAG
             </Link>
@@ -294,24 +389,24 @@ const AddressPageInner = () => {
           </div>
 
           {/* Secure Badge */}
-          <div className="flex items-center space-x-2 text-sm font-semibold">
+          <div className="flex items-center justify-start sm:justify-end space-x-2 text-xs sm:text-sm font-semibold">
             <Image
               src="/assets/icons/shield.svg"
               alt="Secure"
-              width={20}
-              height={20}
+              width={18}
+              height={18}
             />
             <span>100% SECURE</span>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto py-8 px-4 md:px-8 lg:px-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto py-5 sm:py-8 px-3 sm:px-4 md:px-8 lg:px-12">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
           {/* LEFT COLUMN: ADDRESS */}
-          <div className="w-full lg:w-8/12">
+          <div className="w-full lg:w-[58%]">
             <div className="mb-6">
-              <h4 className="text-xl text-[#785e32] mb-4 font-montserrat">
+              <h4 className="text-lg sm:text-xl text-[#785e32] mb-3 sm:mb-4 font-montserrat">
                 Customer Information
               </h4>
               <div className="mb-2">
@@ -370,8 +465,12 @@ const AddressPageInner = () => {
                 ) : (
                   <AddressList
                     addresses={addresses}
-                    selectedAddressId={selectedAddressId}
-                    onSelectAddress={setSelectedAddressId}
+                    selectedShippingAddressId={selectedShippingAddressId}
+                    selectedBillingAddressId={selectedBillingAddressId}
+                    billingSameAsShipping={billingSameAsShipping}
+                    onSelectShippingAddress={setSelectedShippingAddressId}
+                    onSelectBillingAddress={setSelectedBillingAddressId}
+                    onToggleBillingSameAsShipping={setBillingSameAsShipping}
                     onRefresh={fetchAddresses}
                     onAddNew={() => {
                       setEditingAddress(null);
@@ -385,7 +484,7 @@ const AddressPageInner = () => {
           </div>
 
           {/* RIGHT COLUMN: SUMMARY */}
-          <div className="w-full lg:w-4/12">
+          <div className="w-full lg:w-[42%] lg:sticky lg:top-6">
             <MiniCartSummary cartItems={activeItems} />
 
             <PriceDetails
@@ -415,14 +514,14 @@ const AddressPageInner = () => {
             <div className="mt-6 flex flex-col gap-3">
               <button
                 onClick={handlePayOnline}
-                disabled={!selectedAddressId || isSubmitting}
+                disabled={!selectedShippingAddressId || isSubmitting}
                 className="w-full cursor-pointer bg-[#bd9951] text-white py-3 rounded font-bold uppercase tracking-wider disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-[#a38038] transition-colors"
               >
                 {isSubmitting ? "Processing..." : "Pay Online"}
               </button>
               <button
                 onClick={handleCOD}
-                disabled={!selectedAddressId || isSubmitting}
+                disabled={!selectedShippingAddressId || isSubmitting}
                 className="w-full cursor-pointer bg-white text-[#bd9951] py-3 rounded font-bold uppercase tracking-wider border-2 border-[#bd9951] disabled:border-gray-400 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-[#fdf8f0] transition-colors"
               >
                 {isSubmitting ? "Processing..." : "Cash on Delivery"}
@@ -432,48 +531,48 @@ const AddressPageInner = () => {
         </div>
 
         {/* Footer Icons */}
-        <div className="flex justify-around items-center mt-12 py-4 border-t border-gray-100">
-          <div className="flex items-center text-sm">
+        <div className="mt-10 py-4 border-t border-gray-100 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="flex items-center justify-center lg:justify-start text-sm">
             <Image
               src="/assets/icons/secure-payment.svg"
               alt="Secure Payments"
               width={30}
               height={30}
             />
-            <span className="ml-2 text-xl text-[#706a42] font-semibold">
+            <span className="ml-2 text-sm sm:text-lg lg:text-xl text-[#706a42] font-semibold">
               Secure Payments
             </span>
           </div>
-          <div className="flex items-center text-sm">
+          <div className="flex items-center justify-center lg:justify-start text-sm">
             <Image
               src="/assets/icons/transaction.svg"
               alt="Cash on delivery"
               width={30}
               height={30}
             />
-            <span className="ml-2 text-xl text-[#706a42] font-semibold">
+            <span className="ml-2 text-sm sm:text-lg lg:text-xl text-[#706a42] font-semibold">
               Cash on delivery
             </span>
           </div>
-          <div className="flex items-center text-sm">
+          <div className="flex items-center justify-center lg:justify-start text-sm">
             <Image
               src="/assets/icons/quality-assurance.svg"
               alt="Assured Quality"
               width={30}
               height={30}
             />
-            <span className="ml-2 text-xl text-[#706a42] font-semibold">
+            <span className="ml-2 text-sm sm:text-lg lg:text-xl text-[#706a42] font-semibold">
               Assured Quality
             </span>
           </div>
-          <div className="flex items-center text-sm">
+          <div className="flex items-center justify-center lg:justify-start text-sm">
             <Image
               src="/assets/icons/product-return1.svg"
               alt="Easy returns"
               width={30}
               height={30}
             />
-            <span className="ml-2 text-xl text-[#706a42] font-semibold">
+            <span className="ml-2 text-sm sm:text-lg lg:text-xl text-[#706a42] font-semibold">
               Easy returns
             </span>
           </div>

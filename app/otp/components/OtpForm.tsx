@@ -3,34 +3,102 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ConfirmationResult } from "firebase/auth";
+import { useSearchParams } from "next/navigation";
+import {
+  ConfirmationResult,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "firebase/auth";
+import { auth } from "../../services/firebase";
 import { verifyIdToken, login } from "../../services/authService";
 import { mergeGuestCartOnLogin } from "../../hooks/useCart";
+import { consumeRedirectTarget, syncRedirectFromQuery } from "../../utils/authRedirect";
 import toast from "react-hot-toast";
+
+const RECAPTCHA_CONTAINER_ID = "recaptcha-container";
 
 const OtpForm = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    if (!window.confirmationResult) {
-      console.warn("No confirmation result found, redirecting to login.");
-      toast.error("Something went wrong. Please try signing in again.");
-      router.replace("/login");
+    syncRedirectFromQuery(searchParams.get("redirect"));
+
+    const storedPhone =
+      sessionStorage.getItem("otp_phone_number") ||
+      sessionStorage.getItem("login_phone_number") ||
+      "";
+
+    if (storedPhone) {
+      setPhoneNumber(storedPhone);
     }
+
+    if (!storedPhone) {
+      console.warn("No phone number found, redirecting to login.");
+      toast.error("Please sign in again to continue.");
+      router.replace("/login");
+      return;
+    }
+
     inputRefs.current[0]?.focus();
-  }, [router]);
+  }, [router, searchParams]);
+
+  const setupRecaptcha = async () => {
+    if (window.recaptchaVerifier) {
+      return window.recaptchaVerifier;
+    }
+
+    const recaptchaVerifier = new RecaptchaVerifier(
+      auth,
+      "recaptcha-container",
+      {
+        size: "invisible",
+        callback: () => {},
+        "expired-callback": () => {},
+      },
+    );
+
+    window.recaptchaVerifier = recaptchaVerifier;
+    await window.recaptchaVerifier.render();
+    return window.recaptchaVerifier;
+  };
 
   const handleChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) return;
+    const digits = value.replace(/\D/g, "");
+
+    if (!digits) {
+      const newOtp = [...otp];
+      newOtp[index] = "";
+      setOtp(newOtp);
+      return;
+    }
+
+    if (digits.length > 1) {
+      const nextOtp = [...otp];
+      const splitDigits = digits.slice(0, 6).split("");
+
+      splitDigits.forEach((digit, digitIndex) => {
+        if (index + digitIndex < 6) {
+          nextOtp[index + digitIndex] = digit;
+        }
+      });
+
+      setOtp(nextOtp);
+      const nextFocusIndex = Math.min(index + splitDigits.length, 5);
+      inputRefs.current[nextFocusIndex]?.focus();
+      return;
+    }
 
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[index] = digits;
     setOtp(newOtp);
 
-    if (value && index < 5) {
+    if (index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -72,6 +140,10 @@ const OtpForm = () => {
       return toast.error("Please enter a valid 6-digit OTP.");
     }
 
+    if (!window.confirmationResult) {
+      return toast.error("Your OTP session expired. Please resend OTP.");
+    }
+
     setLoading(true);
 
     try {
@@ -82,26 +154,18 @@ const OtpForm = () => {
 
       const idToken = await userCredential.user.getIdToken(true); // Force refresh
 
-      // Decode token to check structure (just for debugging)
-      try {
-        const tokenParts = idToken.split(".");
-        if (tokenParts.length === 3) {
-          const header = JSON.parse(atob(tokenParts[0]));
-        }
-      } catch (e) {
-        console.error("   - Could not decode token:", e);
-      }
-
       const data = await verifyIdToken(idToken);
 
       if (data.success && data.token) {
         login(data.token, data.user);
+        sessionStorage.removeItem("otp_phone_number");
+        sessionStorage.removeItem("login_phone_number");
+        window.confirmationResult = undefined;
         // Merge any guest cart items into the user's server cart
         await mergeGuestCartOnLogin();
         toast.success("Logged in successfully!");
-        const redirectUrl = sessionStorage.getItem("redirect");
+        const redirectUrl = consumeRedirectTarget();
         if (redirectUrl) {
-          sessionStorage.removeItem("redirect");
           router.push(redirectUrl);
         } else {
           router.push("/");
@@ -110,15 +174,44 @@ const OtpForm = () => {
         toast.error(data.message || "Backend login failed.");
         console.error("Backend login failed:", data.message);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const firebaseError = error as { constructor?: { name?: string }; message?: string; code?: string };
       console.error("=== ERROR DETAILS ===");
-      console.error("Error type:", error.constructor.name);
-      console.error("Error message:", error.message);
-      console.error("Error code:", error.code);
+      console.error("Error type:", firebaseError.constructor?.name || "Unknown");
+      console.error("Error message:", firebaseError.message);
+      console.error("Error code:", firebaseError.code);
       console.error("Full error:", error);
-      toast.error(error.message || "Failed to verify OTP. Please try again.");
+      toast.error(firebaseError.message || "Failed to verify OTP. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!phoneNumber) {
+      return toast.error("Please go back and enter your mobile number again.");
+    }
+
+    try {
+      setResending(true);
+      setOtp(["", "", "", "", "", ""]);
+      const appVerifier = await setupRecaptcha();
+      const confirmationResult = await signInWithPhoneNumber(
+        auth,
+        `+91${phoneNumber}`,
+        appVerifier!,
+      );
+
+      window.confirmationResult = confirmationResult;
+      toast.success("OTP sent again.");
+      inputRefs.current[0]?.focus();
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to resend OTP.";
+      console.error("Resend OTP error:", error);
+      toast.error(message);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -152,11 +245,11 @@ const OtpForm = () => {
                 <h1 className="text-2xl font-medium text-gray-900 mb-2 font-[family-name:var(--font-optima)]">
                   Verify with OTP
                 </h1>
-                <p className="text-gray-500 text-sm">
-                  Sent to your phone number.{" "}
-                  <Link
-                    href="/login"
-                    className="text-[#6b4a1f] hover:underline"
+              <p className="text-gray-500 text-sm">
+                Sent to your phone number.{" "}
+                <Link
+                  href="/login"
+                  className="text-[#6b4a1f] hover:underline"
                   >
                     Edit
                   </Link>
@@ -173,7 +266,10 @@ const OtpForm = () => {
                     }}
                     type="text"
                     inputMode="numeric"
-                    maxLength={1}
+                    autoComplete={index === 0 ? "one-time-code" : "off"}
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    maxLength={index === 0 ? 6 : 1}
                     className="w-full h-12 text-center text-xl border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#6b4a1f]"
                     value={digit}
                     onChange={(e) => handleChange(index, e.target.value)}
@@ -185,12 +281,14 @@ const OtpForm = () => {
 
               {/* Resend OTP */}
               <div className="text-left mb-6">
-                <Link
-                  href="#"
-                  className="text-[#6b4a1f] hover:underline text-md font-medium"
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resending}
+                  className="text-[#6b4a1f] hover:underline text-md font-medium disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  RESEND OTP
-                </Link>
+                  {resending ? "RESENDING..." : "RESEND OTP"}
+                </button>
               </div>
 
               {/* Verify OTP Button */}
@@ -210,6 +308,8 @@ const OtpForm = () => {
                   <span> Make sure you entered correct mobile number.</span>
                 </p>
               </div>
+
+              <div id={RECAPTCHA_CONTAINER_ID} />
             </div>
           </div>
         </div>

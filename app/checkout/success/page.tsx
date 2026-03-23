@@ -4,26 +4,53 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { verifyRazorpayPayment } from "../../services/paymentService";
 
+const INVOICE_ORDER_ID_KEY = "checkout_invoice_order_id";
+
+const resolveOrderId = (values: Array<string | null | undefined>) => {
+    for (const value of values) {
+        if (value) return value;
+    }
+    return "";
+};
+
 const SuccessContent = () => {
     const searchParams = useSearchParams();
 
     // Razorpay appends these to the callback URL after payment
-    const paymentLinkId     = searchParams.get("razorpay_payment_link_id");
-    const referenceId       = searchParams.get("razorpay_payment_link_reference_id");
+    const paymentLinkId = searchParams.get("razorpay_payment_link_id");
+    const referenceId = searchParams.get("razorpay_payment_link_reference_id");
     const paymentLinkStatus = searchParams.get("razorpay_payment_link_status");
-    const paymentId         = searchParams.get("razorpay_payment_id");
-    const signature         = searchParams.get("razorpay_signature");
+    const paymentId = searchParams.get("razorpay_payment_id");
+    const signature = searchParams.get("razorpay_signature");
 
     // COD orders redirect here with ?payment_method=cod
     const paymentMethod = searchParams.get("payment_method");
-    const isCOD         = paymentMethod === "cod";
-    const isOnline      = !!paymentId && !!signature;
+    const isCOD = paymentMethod === "cod";
+    const isOnline = !!paymentId && !!signature;
 
-    const [verifying, setVerifying]     = useState(isOnline);
+    const initialOrderId = resolveOrderId([
+        searchParams.get("order_id"),
+        searchParams.get("orderId"),
+        referenceId,
+        paymentLinkId,
+    ]);
+
+    const [verifying, setVerifying] = useState(isOnline);
     const [verifyError, setVerifyError] = useState("");
+    const [invoiceOrderId, setInvoiceOrderId] = useState(initialOrderId);
 
     useEffect(() => {
-        if (!isOnline) return; // COD — nothing to verify
+        const storedOrderId = sessionStorage.getItem(INVOICE_ORDER_ID_KEY);
+        const nextOrderId = initialOrderId || storedOrderId;
+
+        if (nextOrderId) {
+            setInvoiceOrderId(nextOrderId);
+            sessionStorage.setItem(INVOICE_ORDER_ID_KEY, nextOrderId);
+        }
+    }, [initialOrderId]);
+
+    useEffect(() => {
+        if (!isOnline) return; // COD - nothing to verify
 
         const verify = async () => {
             try {
@@ -37,9 +64,25 @@ const SuccessContent = () => {
 
                 if (!res?.success) {
                     setVerifyError(res?.message || "Verification failed");
+                    return;
                 }
-            } catch (err: any) {
-                setVerifyError(err.message || "Something went wrong");
+
+                const verifiedOrderId = resolveOrderId([
+                    res?.data?.orderId,
+                    res?.data?._id,
+                    res?.data?.id,
+                    referenceId,
+                    paymentLinkId,
+                ]);
+
+                if (verifiedOrderId) {
+                    setInvoiceOrderId(verifiedOrderId);
+                    sessionStorage.setItem(INVOICE_ORDER_ID_KEY, verifiedOrderId);
+                }
+            } catch (err: unknown) {
+                setVerifyError(
+                    err instanceof Error ? err.message : "Something went wrong",
+                );
             } finally {
                 setVerifying(false);
             }
@@ -49,7 +92,7 @@ const SuccessContent = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Loading — verifying payment signature
+    // Loading - verifying payment signature
     if (verifying) {
         return (
             <div className="bg-white p-8 rounded shadow-md text-center max-w-md w-full">
@@ -77,6 +120,10 @@ const SuccessContent = () => {
         );
     }
 
+    const invoiceHref = invoiceOrderId
+        ? `/checkout/download-invoice?orderId=${encodeURIComponent(invoiceOrderId)}`
+        : "/checkout/download-invoice";
+
     // Success
     return (
         <div className="bg-white p-8 rounded shadow-md text-center max-w-md w-full">
@@ -95,16 +142,25 @@ const SuccessContent = () => {
                     ? "Your order has been placed. Pay with cash when your order arrives."
                     : "Thank you for your purchase. Your order has been placed successfully."}
             </p>
-            
+
             {isCOD && (
                 <div className="bg-amber-50 border border-amber-200 p-3 rounded mb-6 text-sm text-amber-800">
                     <p>Payment will be collected at your doorstep on delivery.</p>
                 </div>
             )}
 
-            <Link href="/" className="block w-full bg-black text-white py-3 rounded font-semibold hover:bg-gray-800 transition">
-                Continue Shopping
-            </Link>
+            <div className="space-y-3">
+                <Link
+                    href={invoiceHref}
+                    target="_blank"
+                    className="block w-full bg-[#bd9951] text-white py-3 rounded font-semibold hover:bg-[#a38038] transition"
+                >
+                    Download Invoice
+                </Link>
+                <Link href="/" className="block w-full bg-black text-white py-3 rounded font-semibold hover:bg-gray-800 transition">
+                    Continue Shopping
+                </Link>
+            </div>
         </div>
     );
 };

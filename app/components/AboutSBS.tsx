@@ -10,11 +10,13 @@ const AboutSBS = () => {
         <div className="lg:col-span-1">
           <div className="h-full flex flex-col justify-center items-center lg:items-start">
             <div className="flex items-center justify-center gap-4 w-full">
-              <h2 className="text-[26px] md:text-[30px] lg:text-[40px] font-light text-[#6a3f07] font-[family-name:var(--font-optima)] whitespace-nowrap">
+              <div className="w-15 h-0.5 bg-[#a2690f]"/>
+              <h2 className="text-[30px] md:text-[30px] lg:text-[40px] font-light text-[#6a3f07] font-[family-name:var(--font-optima)] whitespace-nowrap">
                 About SBS
               </h2>
+              <div className="w-15 h-0.5 bg-[#a2690f]"/>
             </div>
-            <h3 className="text-[26px] font-light font-optima text-[#a2690f] font-[family-name:var(--font-outfit)] text-center lg:text-left">
+            <h3 className="text-[26px] font-light ml-16 font-optima text-[#a2690f] font-[family-name:var(--font-outfit)] text-center lg:text-left">
               Innovate the Outfit
             </h3>
           </div>

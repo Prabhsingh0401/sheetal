@@ -1,20 +1,35 @@
 import { apiFetch } from "./api";
 
+type CheckoutAddress = {
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  phone?: string;
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+};
+
 export const createRazorpayPaymentLink = async (
   addressId: string,
-  shippingAddress: any,
-  buyNowItems?: object[]   
+  shippingAddress: CheckoutAddress,
+  billingAddress: CheckoutAddress,
+  buyNowItems?: object[],
 ) => {
   const callbackUrl = `${window.location.origin}/checkout/success`;
 
   return await apiFetch("/payment/create-link", {
     method: "POST",
-    body: JSON.stringify({
-      addressId,
-      shippingAddress,
-      callbackUrl,
-      ...(buyNowItems ? { buyNowItems } : {}),
-    }),
+      body: JSON.stringify({
+        addressId,
+        shippingAddress,
+        billingAddress,
+        callbackUrl,
+        ...(buyNowItems ? { buyNowItems } : {}),
+      }),
   });
 };
 
