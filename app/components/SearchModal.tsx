@@ -77,10 +77,18 @@ const SearchModal: React.FC<SearchModalProps> = ({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [previousSearches, setPreviousSearches] = useState<
-    PreviousSearchItem[]
-  >([]);
+  const [previousSearches, setPreviousSearches] = useState<PreviousSearchItem[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+
+  // ── Mobile detection ──
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { categories: allCategories } = useCategories();
@@ -166,11 +174,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
   const handleSearchSubmit = useCallback(() => {
     const trimmedQuery = query.trim();
-
-    if (trimmedQuery.length <= 1) {
-      return;
-    }
-
+    if (trimmedQuery.length <= 1) return;
     addSearchQuery(trimmedQuery);
     setPreviousSearches(getPreviousSearches());
     onClose();
@@ -179,11 +183,8 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
+      if (e.key === "Escape") onClose();
     };
-
     if (isOpen) window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
@@ -217,13 +218,15 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
     return (
       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-        <span className="font-semibold text-gray-900 text-xs">₹{minPrice}</span>
+        <span className="font-semibold text-gray-900 text-[13px]">
+          ₹{minPrice}
+        </span>
         {relatedMrp > minPrice && (
           <>
-            <span className="line-through text-[11px] text-gray-400">
+            <span className="line-through text-[13px] text-gray-400">
               ₹{relatedMrp}
             </span>
-            <span className="text-[11px] text-[#B78D65] font-semibold">
+            <span className="text-[13px] text-[#B78D65] font-semibold">
               {discount}% OFF
             </span>
           </>
@@ -232,7 +235,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
     );
   };
 
-  const renderLeftPanelContent = (compact = false) => {
+  const renderLeftPanelContent = () => {
     const showingQuery = query.length >= 1;
 
     return (
@@ -272,34 +275,14 @@ const SearchModal: React.FC<SearchModalProps> = ({
                 >
                   <span className="text-gray-400 group-hover:text-[#8c7e4e] transition-colors shrink-0">
                     {item.type === "category" ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="3" width="7" height="7" />
                         <rect x="14" y="3" width="7" height="7" />
                         <rect x="14" y="14" width="7" height="7" />
                         <rect x="3" y="14" width="7" height="7" />
                       </svg>
                     ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="11" cy="11" r="8" />
                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
                       </svg>
@@ -317,26 +300,22 @@ const SearchModal: React.FC<SearchModalProps> = ({
           </div>
         )}
 
-        {/* ── Popular Searches — plain text links, unchanged ── */}
+        {/* ── Popular Searches ── */}
         {trendingCategories.length > 0 && (
-          <div className={compact ? "mb-3" : "mb-5"}>
+          <div className="mb-5">
             <h4 className="text-[16px] text-black tracking-wide mb-0.5">
               Popular Searches:
             </h4>
-            {!compact && (
-              <p className="text-[11px] text-gray-400 italic mb-2.5">
-                10,000+ of the products are in our store
-              </p>
-            )}
-            <div
-              className={`flex flex-wrap gap-x-4 ${compact ? "gap-y-2 mt-1.5" : "gap-y-1.5 mt-2.5"}`}
-            >
+            <p className="text-[15px] text-gray-400 mb-2.5">
+              10,000+ of the products are in our store
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
               {trendingCategories.map((cat, i) => (
                 <Link
                   key={i}
                   href={`/${cat.slug}`}
                   onClick={onClose}
-                  className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                  className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
                 >
                   {cat.name}
                 </Link>
@@ -355,34 +334,19 @@ const SearchModal: React.FC<SearchModalProps> = ({
             <h4 className="text-[16px] text-black tracking-wide mb-0.5">
               Search History:
             </h4>
-            {!compact && (
-              <p className="text-[11px] text-gray-400 italic mb-2.5">
-                you searched below keywords in the last session
-              </p>
-            )}
-            <div
-              className={`flex flex-wrap gap-x-4 ${compact ? "gap-y-2 mt-1.5" : "gap-y-1.5 mt-2.5"}`}
-            >
+            <p className="text-[15px] text-gray-400 mb-2.5">
+              you searched below keywords in the last session
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
               {previousSearches.map((item, i) => {
                 if (item.type === "query") {
                   return (
                     <button
                       key={i}
                       onClick={() => setQuery(item.name)}
-                      className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                      className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="11"
-                        height="11"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="opacity-60 shrink-0"
-                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60 shrink-0">
                         <circle cx="11" cy="11" r="8" />
                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
                       </svg>
@@ -402,7 +366,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                       addClickedItem(item);
                       onClose();
                     }}
-                    className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                    className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
                   >
                     {item.name}
                   </Link>
@@ -417,7 +381,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
   const renderLeftPanel = () => (
     <div className="hidden md:block w-[300px] shrink-0 border-r border-gray-100 pr-5 overflow-y-auto max-h-[58vh] custom-scrollbar">
-      {renderLeftPanelContent(false)}
+      {renderLeftPanelContent()}
     </div>
   );
 
@@ -429,8 +393,8 @@ const SearchModal: React.FC<SearchModalProps> = ({
       previousSearches.length > 0;
     if (!hasContent) return null;
     return (
-      <div className="md:hidden mb-4 pb-4 border-b border-gray-100">
-        {renderLeftPanelContent(true)}
+      <div className="md:hidden mb-4">
+        {renderLeftPanelContent()}
       </div>
     );
   };
@@ -446,19 +410,12 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {cats.slice(0, 4).map((cat) => (
-          <div
-            key={cat._id}
-            className="relative aspect-[3/4] rounded-lg overflow-hidden group"
-          >
+          <div key={cat._id} className="relative aspect-[3/4] rounded-lg overflow-hidden group">
             <Link
               href={`/product-list?category=${cat.slug}`}
               className="block h-full w-full"
               onClick={() => {
-                addClickedItem({
-                  type: "category",
-                  name: cat.name,
-                  categoryName: cat.name,
-                });
+                addClickedItem({ type: "category", name: cat.name, categoryName: cat.name });
                 onClose();
               }}
             >
@@ -469,16 +426,11 @@ const SearchModal: React.FC<SearchModalProps> = ({
                 className="object-cover w-full h-full"
               />
             </Link>
-
             <Link
               href={`/product-list?category=${cat.slug}`}
               className="absolute bottom-0 left-0 w-full text-center text-white text-[16px] bg-gradient-to-t from-[#251d05] to-transparent pt-[60px] pb-[15px] transition-all duration-300 pointer-events-auto"
               onClick={() => {
-                addClickedItem({
-                  type: "category",
-                  name: cat.name,
-                  categoryName: cat.name,
-                });
+                addClickedItem({ type: "category", name: cat.name, categoryName: cat.name });
                 onClose();
               }}
             >
@@ -502,11 +454,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
     </div>
   );
 
-  const renderProductGrid = (
-    products: any[],
-    isRaw: boolean,
-    title: string,
-  ) => (
+  const renderProductGrid = (products: any[], isRaw: boolean, title: string) => (
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-3 mb-4">
         <h4 className="text-[16px] font-normal text-black tracking-wide whitespace-nowrap">
@@ -518,38 +466,27 @@ const SearchModal: React.FC<SearchModalProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {products.map((item) => {
           const product = isRaw ? item : item.data;
-          const imageUrl = isRaw
-            ? getProductImageUrl(item)
-            : getProductImageUrl(item.data);
+          const imageUrl = isRaw ? getProductImageUrl(item) : getProductImageUrl(item.data);
           return (
             <Link
               key={product._id}
               href={`/product/${product.slug}`}
               className="group flex flex-col h-full cursor-pointer"
               onClick={() => {
-                addClickedItem({
-                  type: "product",
-                  name: product.name,
-                  slug: product.slug,
-                });
+                addClickedItem({ type: "product", name: product.name, slug: product.slug });
                 onClose();
               }}
             >
               <div className="relative aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden shrink-0">
-                <Image
-                  src={imageUrl}
-                  alt={product.name}
-                  fill
-                  className="object-cover opacity-100"
-                />
+                <Image src={imageUrl} alt={product.name} fill className="object-cover opacity-100" />
               </div>
               <div className="mt-2 px-0.5 flex flex-col flex-grow">
-                <h5 className="text-[12px] text-gray-800 font-medium line-clamp-2 leading-snug min-h-[36px]">
+                <h5 className="text-[15px] text-gray-800 font-medium line-clamp-2 leading-snug min-h-[36px]">
                   {product.name}
                 </h5>
                 <div className="mt-auto flex flex-col items-start">
                   {getPriceDisplay(product)}
-                  <span className="inline-block mt-1.5 border-b border-black text-[11px] text-black uppercase tracking-wide transition-all duration-300 group-hover:tracking-widest group-hover:text-[#b3a660]">
+                  <span className="inline-block mt-1.5 border-b border-black text-[12px] text-black uppercase tracking-wide transition-all duration-300 group-hover:tracking-widest group-hover:text-[#b3a660]">
                     View Detail
                   </span>
                 </div>
@@ -559,7 +496,6 @@ const SearchModal: React.FC<SearchModalProps> = ({
         })}
       </div>
 
-      {/* ── View All + Categories (query mode only) ── */}
       {showingQuery && (
         <div className="mt-8 flex justify-center">
           <Link
@@ -593,13 +529,18 @@ const SearchModal: React.FC<SearchModalProps> = ({
         aria-hidden="true"
       />
 
+      {/* ── Outer wrapper: full-screen on mobile, offset from navbar on desktop ── */}
       <div
-        className="fixed left-0 right-0 z-[9999] font-[family-name:var(--font-montserrat)] px-0 md:px-[5%] transition-all duration-300 flex justify-center"
-        style={{ top: `${navbarBottom + 10}px` }}
+        className="fixed left-0 right-0 bottom-0 z-[9999] font-[family-name:var(--font-montserrat)] px-0 md:px-[5%] transition-all duration-300 flex justify-center"
+        style={{ top: isMobile ? 0 : `${navbarBottom + 7}px` }}
       >
+        {/* ── Inner modal: 100dvh on mobile, capped height on desktop ── */}
         <div
-          className="relative w-full max-w-[850px] shadow-2xl md:rounded-b-2xl overflow-hidden"
+          className="relative flex w-full max-w-[1000px] min-h-0 flex-col shadow-2xl md:rounded-b-2xl overflow-hidden"
           style={{
+            height: isMobile
+              ? "100dvh"
+              : `min(650px, calc(100vh - ${navbarBottom + 7}px - 16px))`,
             background: "linear-gradient(135deg, #e2f7cf 0%, #f7efbe 100%)",
           }}
           onClick={(e) => e.stopPropagation()}
@@ -612,20 +553,10 @@ const SearchModal: React.FC<SearchModalProps> = ({
             ✕
           </button>
 
-          <div className="px-3 md:px-6 pt-4 md:pt-5 pb-3 pr-10 md:pr-12">
+          <div className="px-3 md:px-6 pt-4 md:pt-5 pb-3 pr-10 md:pr-12 max-w-[945px] mx-auto md:ml-[30px] w-full">
             <div className="relative">
-              <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+              <div className="absolute left-2 md:left-3 top-5 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -633,7 +564,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full py-2.5 pl-10 md:pl-11 pr-10 text-sm rounded-xl border border-gray-300 bg-white text-gray-800 focus:outline-none focus:border-[#b3a660] shadow-sm placeholder-gray-400 transition-all"
+                className="w-full py-2.5 pl-10 md:pl-11 mb-0 pr-10 text-sm rounded-xl border border-gray-300 bg-white text-gray-800 focus:outline-none focus:border-[#b3a660] shadow-sm placeholder-gray-400 transition-all"
                 placeholder="I'm Looking for..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -652,15 +583,14 @@ const SearchModal: React.FC<SearchModalProps> = ({
             </div>
           </div>
 
-          <div className="mx-2 md:mx-4 mb-3 md:mb-4 bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-3 md:px-5 py-4 md:py-5 overflow-y-auto max-h-[70vh] md:max-h-[65vh] custom-scrollbar">
+          <div className="mx-2 md:mx-4 mb-3 md:mb-4 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
+            <div className="px-3 md:px-5 py-4 md:py-5 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
               {renderMobilePanel()}
               <div className="flex flex-col md:flex-row gap-6 min-h-0">
                 {renderLeftPanel()}
-                <div className="flex-1 min-w-0 overflow-y-auto max-h-[58vh] custom-scrollbar">
+                <div className="flex-1 min-w-0 min-h-0 overflow-y-auto custom-scrollbar">
                   {showingQuery ? (
                     <div className="flex flex-col gap-6">
-                      {/* Matched products */}
                       {matchedProducts.length > 0 ? (
                         renderProductGrid(matchedProducts, false, productTitle)
                       ) : !isLoading && matchedCategories.length === 0 ? (
@@ -669,7 +599,6 @@ const SearchModal: React.FC<SearchModalProps> = ({
                         </p>
                       ) : null}
 
-                      {/* Matched categories — same card dimensions as products */}
                       {matchedCategories.length > 0 && (
                         <div>
                           <div className="flex items-center gap-3 mb-4">
@@ -685,20 +614,13 @@ const SearchModal: React.FC<SearchModalProps> = ({
                                 href={`/${cat.data.slug}`}
                                 className="group flex flex-col h-full cursor-pointer"
                                 onClick={() => {
-                                  addClickedItem({
-                                    type: "category",
-                                    name: cat.data.name,
-                                    categoryName: cat.data.name,
-                                  });
+                                  addClickedItem({ type: "category", name: cat.data.name, categoryName: cat.data.name });
                                   onClose();
                                 }}
                               >
                                 <div className="relative aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden shrink-0">
                                   <Image
-                                    src={getCategoryImageUrl(
-                                      cat.data,
-                                      "/assets/default-image.png",
-                                    )}
+                                    src={getCategoryImageUrl(cat.data, "/assets/default-image.png")}
                                     alt={cat.data.name}
                                     fill
                                     className="object-cover"
@@ -715,15 +637,10 @@ const SearchModal: React.FC<SearchModalProps> = ({
                               </Link>
                             ))}
                           </div>
-
-                          {/* View all collections button */}
                           <div className="mt-8 flex justify-center">
                             <Link
                               href={getSearchResultsHref(query)}
-                              onClick={() => {
-                                addSearchQuery(query);
-                                onClose();
-                              }}
+                              onClick={() => { addSearchQuery(query); onClose(); }}
                               className="inline-block border border-black text-black px-6 py-2.5 text-[12px] uppercase tracking-[0.15em] font-medium transition-colors duration-300 rounded-[2px] hover:bg-black hover:text-white"
                             >
                               View all collections for &ldquo;{query}&rdquo;
@@ -735,13 +652,8 @@ const SearchModal: React.FC<SearchModalProps> = ({
                   ) : (
                     trendingProducts.length > 0 && (
                       <div className="flex flex-col gap-6">
-                        {renderProductGrid(
-                          trendingProducts,
-                          true,
-                          productTitle,
-                        )}
-                        {trendingCategories.length > 0 &&
-                          renderCategoryGrid(trendingCategories)}
+                        {renderProductGrid(trendingProducts, true, productTitle)}
+                        {trendingCategories.length > 0 && renderCategoryGrid(trendingCategories)}
                       </div>
                     )
                   )}

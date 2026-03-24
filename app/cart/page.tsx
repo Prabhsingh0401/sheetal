@@ -28,7 +28,6 @@ const CartPage = () => {
     totalDiscount,
     finalAmount,
     applyCoupon,
-    couponOfferType,
     bogoMessage,
     applicableCategories,
     itemWiseDiscount,
@@ -297,8 +296,6 @@ const CartPage = () => {
                 cartItems={cartItems}
                 applicableCategories={applicableCategories}
                 itemWiseDiscount={itemWiseDiscount}
-                couponOfferType={couponOfferType}
-                removeFromCart={removeFromCart}
                 moveFromCartToWishlist={moveFromCartToWishlist}
                 updateCartItemQuantity={updateCartItemQuantity}
                 handleRemoveItem={handleRemoveItem}

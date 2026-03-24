@@ -64,22 +64,31 @@ const AddressPageInner = () => {
     }
   })();
 
+  const normalizeQuantity = (value: unknown) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(1, Math.floor(parsed)) : 1;
+  };
+
   const isBuyNow = !!buyNowItem;
   const activeItems = isBuyNow ? [buyNowItem] : cart;
+  const normalizedActiveItems = activeItems.map((item) => ({
+    ...item,
+    quantity: normalizeQuantity(item.quantity),
+  }));
 
   const activeTotalMrp = isBuyNow
-    ? activeItems.reduce((sum, i) => sum + i.price * i.quantity, 0)
+    ? normalizedActiveItems.reduce((sum, i) => sum + i.price * i.quantity, 0)
     : totalMrp;
 
   const activeTotalDiscount = isBuyNow
-    ? activeItems.reduce(
+    ? normalizedActiveItems.reduce(
         (sum, i) => sum + (i.price - (i.discountPrice || i.price)) * i.quantity,
         0,
       )
     : totalDiscount;
 
   const activeFinalAmount = isBuyNow
-    ? activeItems.reduce(
+    ? normalizedActiveItems.reduce(
         (sum, i) => sum + (i.discountPrice || i.price) * i.quantity,
         0,
       )
@@ -223,7 +232,7 @@ const AddressPageInner = () => {
         selectedShippingAddressId,
         shippingAddress,
         billingAddress,
-        isBuyNow ? activeItems : undefined,
+        isBuyNow ? normalizedActiveItems : undefined,
       );
       toast.dismiss();
       const maybeOrderId =
@@ -275,7 +284,7 @@ const AddressPageInner = () => {
       toast.error("Invalid billing address selected.");
       return;
     }
-    if (activeItems.length === 0) {
+    if (normalizedActiveItems.length === 0) {
       toast.error(isBuyNow ? "No item to order." : "Your cart is empty.");
       return;
     }
@@ -283,7 +292,7 @@ const AddressPageInner = () => {
     const shippingAddress = buildShippingAddress(selectedAddress);
     const billingAddress = buildBillingAddress(billingSelectedAddress);
 
-    const orderItems = activeItems.map((item) => ({
+    const orderItems = normalizedActiveItems.map((item) => ({
       product: item.product._id,
       name: item.product.name,
       image: item.product.mainImage?.url || item.variantImage || "",
@@ -311,7 +320,7 @@ const AddressPageInner = () => {
           taxPrice: platformFee,
           totalPrice: totalAmount,
         },
-        isBuyNow ? activeItems : undefined,
+        isBuyNow ? normalizedActiveItems : undefined,
       );
       toast.dismiss();
       if (response?.success) {
@@ -485,7 +494,7 @@ const AddressPageInner = () => {
 
           {/* RIGHT COLUMN: SUMMARY */}
           <div className="w-full lg:w-[42%] lg:sticky lg:top-6">
-            <MiniCartSummary cartItems={activeItems} />
+            <MiniCartSummary cartItems={normalizedActiveItems} />
 
             <PriceDetails
               couponInput={isBuyNow ? "" : couponInput}
@@ -500,7 +509,7 @@ const AddressPageInner = () => {
               categoryName={isBuyNow ? null : displayCategoryName}
               couponCode={isBuyNow ? "" : couponCode}
               onRemoveCoupon={removeCoupon}
-              cartLength={activeItems.length}
+              cartLength={normalizedActiveItems.length}
               totalMrp={activeTotalMrp}
               totalDiscount={activeTotalDiscount}
               couponDiscount={isBuyNow ? 0 : couponDiscount}

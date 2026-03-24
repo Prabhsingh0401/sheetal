@@ -182,6 +182,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
       return;
     }
 
+    const resolvedQuantity = Math.max(1, Number(quantity) || 1);
     const variantImageUrl = getApiImageUrl(
       selectedVariant.v_image,
       product.mainImage?.url || "/assets/placeholder-product.jpg",
@@ -197,7 +198,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
       },
       size: selectedSize,
       color: selectedColor,
-      quantity,
+      quantity: resolvedQuantity,
       price: selectedSizeObject.price || 0,
       discountPrice:
         selectedSizeObject.discountPrice || selectedSizeObject.price || 0,
@@ -529,7 +530,9 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                       type="number"
                       min="1"
                       value={quantity}
-                      onChange={(e) => setQuantity(parseInt(e.target.value))}
+                      onChange={(e) =>
+                        setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+                      }
                       className="w-16 h-11 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
                     />
                     <button

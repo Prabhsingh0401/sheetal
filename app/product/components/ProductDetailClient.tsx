@@ -6,6 +6,7 @@ import TopInfo from "../../components/TopInfo";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import WishlistLoginModal from "../../components/WishlistLoginModal";
+import StorefrontLoadingShell from "../../components/StorefrontLoadingShell";
 import Breadcrumb from "../components/Breadcrumb";
 import ProductImageGallery from "./ProductImageGallery";
 import ProductInfo from "./ProductInfo";
@@ -384,6 +385,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       return;
     }
 
+    const resolvedQuantity = Math.max(1, Number(quantity) || 1);
     const variantImageUrl = getApiImageUrl(
       selectedVariant.v_image,
       product.mainImage?.url || "/assets/placeholder-product.jpg",
@@ -399,7 +401,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       },
       size: selectedSize,
       color: selectedColor,
-      quantity,
+      quantity: resolvedQuantity,
       price: selectedSizeInfo.price || 0,
       discountPrice:
         selectedSizeInfo.discountPrice || selectedSizeInfo.price || 0,
@@ -448,17 +450,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   }, [galleryImages, selectedImage]);
 
   if (loading)
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="w-16 h-16 border-4 border-[#bd9951] border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <StorefrontLoadingShell message="Loading product..." />;
   if (!product)
-    return (
-      <div className="min-h-screen flex justify-center items-center text-xl text-red-500">
-        {error || "Product not found"}
-      </div>
-    );
+    return <StorefrontLoadingShell message={error || "Product not found"} />;
 
   // Derive all unique colors, all unique sizes, and a map of color to available sizes
   const allUniqueColors: ColorOption[] = [];
@@ -688,7 +682,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         categorySlug={product.category?.slug}
       />
 
-      <div className="container mx-auto">
+      <div className="container mx-auto md:px-8 px-4">
         {/* Mobile Title */}
         <div className="lg:hidden mb-4 mt-2">
           <h1 className="text-2xl font-medium text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
@@ -755,6 +749,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         similarProducts={relatedProductsData}
         isProductInWishlist={isProductInWishlist}
         onToggleWishlist={toggleProductInWishlist}
+        currentSlug={slug}
       />
 
       <Footer />

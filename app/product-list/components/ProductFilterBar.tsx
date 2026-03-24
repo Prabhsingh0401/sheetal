@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { FilterOptions } from "../../hooks/useProductFilters";
 import { PriceRangeSlider } from "./PriceRangeSlider";
-import {ChevronDown} from 'lucide-react'
- 
+import { ChevronDown } from "lucide-react";
+
 interface ProductFilterBarProps {
   filtersOpen: boolean;
   toggleFilters: () => void;
@@ -46,6 +46,9 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 }) => {
   const [openSections, setOpenSections] = useState<string[]>([]);
 
+  const isFilterSelected = (type: string, value: string) =>
+    activeFilters.some((filter) => filter.type === type && filter.value === value);
+
   const toggleSection = (id: string) => {
     if (openSections.includes(id)) {
       setOpenSections(openSections.filter((s) => s !== id));
@@ -61,10 +64,29 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
   return (
     <>
-      {/* Top Filter Bar */}
-      <div className="border-t border-b border-[#e7b96bb8] py-3 sm:py-4 md:py-5 mb-4 sm:mb-5 md:mb-6 relative hidden lg:block px-3 sm:px-4 md:px-0">
-        <div className="flex flex-col items-center gap-3 sm:gap-4">
-          {/* Centered Sort By */}
+      {/* Top Filter Bar
+          - Uses a flex row with justify-between so Filters / Sort / ViewMode
+            stay in their correct positions at every lg+ breakpoint.
+          - Removed the fragile absolute-positioned left/right buttons so the
+            bar scales naturally without overflow or clipping.
+      */}
+      <div className="border-t border-b border-[#e7b96bb8] py-3 sm:py-4 md:py-5 mb-4 sm:mb-5 md:mb-6 hidden lg:block">
+        <div className="flex items-center justify-between w-full">
+          {/* ── Left: Filters button ── */}
+          <button
+            onClick={toggleFilters}
+            className="flex items-center gap-2 text-md font-normal tracking-wider hover:text-[#bd9951] transition-colors cursor-pointer shrink-0"
+          >
+            <Image
+              src="/assets/icons/filter.svg"
+              alt="Filter"
+              width={20}
+              height={20}
+            />
+            Filters
+          </button>
+
+          {/* ── Center: Sort By ── */}
           <div className="relative">
             <button
               onClick={toggleSortBy}
@@ -78,7 +100,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                 className="w-6 h-6"
               />
               Sort By
-              <ChevronDown className="w-6 h-6"/>
+              <ChevronDown className="w-6 h-6" />
             </button>
 
             {/* Sort Dropdown */}
@@ -86,93 +108,36 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white shadow-xl border border-gray-100 z-50 py-2 transition-all duration-300 ${sortByOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
             >
               <ul>
-                <li>
-                  <button
-                    onClick={() => handleSortClick("price_asc")}
-                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
-                      currentSort === "price_asc"
-                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Price: Low to High</span>
-                      {currentSort === "price_asc" && (
-                        <span className="text-[#bd9951]">✓</span>
-                      )}
-                    </div>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleSortClick("price_desc")}
-                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
-                      currentSort === "price_desc"
-                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Price: High to Low</span>
-                      {currentSort === "price_desc" && (
-                        <span className="text-[#bd9951]">✓</span>
-                      )}
-                    </div>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleSortClick("newest")}
-                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
-                      currentSort === "newest"
-                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>New Arrivals</span>
-                      {currentSort === "newest" && (
-                        <span className="text-[#bd9951]">✓</span>
-                      )}
-                    </div>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleSortClick("popularity")}
-                    className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
-                      currentSort === "popularity"
-                        ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Popularity</span>
-                      {currentSort === "popularity" && (
-                        <span className="text-[#bd9951]">✓</span>
-                      )}
-                    </div>
-                  </button>
-                </li>
+                {[
+                  { key: "price_asc", label: "Price: Low to High" },
+                  { key: "price_desc", label: "Price: High to Low" },
+                  { key: "newest", label: "New Arrivals" },
+                  { key: "popularity", label: "Popularity" },
+                ].map(({ key, label }) => (
+                  <li key={key}>
+                    <button
+                      onClick={() => handleSortClick(key)}
+                      className={`block w-full text-left px-4 py-2 text-sm cursor-pointer transition-colors ${
+                        currentSort === key
+                          ? "bg-[#bd9951]/10 text-[#bd9951] font-semibold"
+                          : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{label}</span>
+                        {currentSort === key && (
+                          <span className="text-[#bd9951]">✓</span>
+                        )}
+                      </div>
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
 
-          {/* Filters and View Mode - Positioned Absolutely */}
-          <button
-            onClick={toggleFilters}
-            className="absolute left-0 top-1/2 cursor-pointer -translate-y-1/2 flex items-center gap-2 text-md font-normal tracking-wider hover:text-[#bd9951] transition-colors"
-          >
-            <Image
-              src="/assets/icons/filter.svg"
-              alt="Filter"
-              width={20}
-              height={20}
-            />
-            Filters
-          </button>
-
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3 border-l border-gray-200 pl-6">
+          {/* ── Right: View Mode toggles ── */}
+          <div className="flex items-center gap-3 border-l border-gray-200 pl-6 shrink-0">
             <button
               onClick={() => setViewMode("grid")}
               className={`transition-opacity cursor-pointer ${viewMode === "grid" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
@@ -246,8 +211,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
             )}
           </div>
 
-          
-
           {/* Filter Categories Accordion */}
           <div className="space-y-3 sm:space-y-4 font-[family-name:var(--font-montserrat)]">
             {/* Size Filter */}
@@ -272,7 +235,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("size") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -284,6 +246,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-size-${idx}`}
+                        checked={isFilterSelected("size", size)}
                         onChange={() => onFilterChange("size", size)}
                         className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
                       />
@@ -321,7 +284,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("color") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -333,6 +295,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-color-${idx}`}
+                        checked={isFilterSelected("color", color.name)}
                         onChange={() => onFilterChange("color", color.name)}
                         className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
                       />
@@ -375,13 +338,8 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
-                  className={`pt-4 transition-all duration-300 overflow-hidden ${
-                    openSections.includes("price")
-                      ? "max-h-[200px] opacity-100"
-                      : "max-h-0 opacity-0"
-                  }`}
+                  className={`pt-4 transition-all duration-300 overflow-hidden ${openSections.includes("price") ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
                   <PriceRangeSlider
                     min={filterOptions.priceRanges[0]?.min ?? 0}
@@ -420,7 +378,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("availability") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -432,6 +389,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-availability-${idx}`}
+                        checked={isFilterSelected("availability", avail.label)}
                         onChange={() =>
                           onFilterChange("availability", avail.label)
                         }
@@ -472,7 +430,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("wearType") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -484,6 +441,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-wearType-${idx}`}
+                        checked={isFilterSelected("wearType", wearType.label)}
                         onChange={() =>
                           onFilterChange("wearType", wearType.label)
                         }
@@ -526,7 +484,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("occasion") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -538,6 +495,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-occasion-${idx}`}
+                        checked={isFilterSelected("occasion", occasion.label)}
                         onChange={() =>
                           onFilterChange("occasion", occasion.label)
                         }
@@ -580,7 +538,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("tags") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -592,6 +549,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-tag-${idx}`}
+                        checked={isFilterSelected("tags", tag.label)}
                         onChange={() => onFilterChange("tags", tag.label)}
                         className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
                       />
@@ -630,7 +588,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("style") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -642,6 +599,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-style-${idx}`}
+                        checked={isFilterSelected("style", item.label)}
                         onChange={() => onFilterChange("style", item.label)}
                         className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
                       />
@@ -680,7 +638,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("work") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -692,6 +649,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-work-${idx}`}
+                        checked={isFilterSelected("work", item.label)}
                         onChange={() => onFilterChange("work", item.label)}
                         className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
                       />
@@ -730,7 +688,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("fabric") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -742,6 +699,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-fabric-${idx}`}
+                        checked={isFilterSelected("fabric", item.label)}
                         onChange={() => onFilterChange("fabric", item.label)}
                         className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
                       />
@@ -763,7 +721,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <div className="border-b border-gray-300 pb-2 last:border-0">
                 <button
                   onClick={() => toggleSection("productType")}
-                  className="w-full cursor-pointer flex justify-between items-center font-semibold  tracking-widest text-sm   transition-colors"
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Product Type
                   <svg
@@ -780,7 +738,6 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     />
                   </svg>
                 </button>
-
                 <div
                   className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("productType") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
                 >
@@ -792,6 +749,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       <input
                         type="checkbox"
                         id={`f-productType-${idx}`}
+                        checked={isFilterSelected("productType", item.label)}
                         onChange={() =>
                           onFilterChange("productType", item.label)
                         }
@@ -799,7 +757,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                       />
                       <label
                         htmlFor={`f-productType-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors"
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
                       >
                         {toSentenceCase(item.label)}{" "}
                         <span className="text-gray-400">({item.count})</span>

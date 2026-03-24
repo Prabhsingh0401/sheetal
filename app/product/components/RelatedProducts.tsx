@@ -1,11 +1,24 @@
-import React from "react";
+import React, { useMemo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import ProductCard from "./ProductCard";
 
+interface RelatedProductItem {
+  id: string;
+  productId?: string;
+  name: string;
+  image: string;
+  hoverImage?: string;
+  price?: number;
+  mrp?: number;
+  discount?: string;
+  soldOut?: boolean;
+}
+
 interface RelatedProductsProps {
-  similarProducts: any[];
+  similarProducts: RelatedProductItem[];
   isProductInWishlist: (id: string) => boolean;
   onToggleWishlist: (id: string) => void;
+  currentSlug: string;
 }
 
 const EmblaSlider = ({
@@ -13,7 +26,7 @@ const EmblaSlider = ({
   isProductInWishlist,
   onToggleWishlist,
 }: {
-  products: any[];
+  products: RelatedProductItem[];
   isProductInWishlist: (id: string) => boolean;
   onToggleWishlist: (id: string) => void;
 }) => {
@@ -34,7 +47,7 @@ const EmblaSlider = ({
             <ProductCard
               product={product}
               isWishlisted={isProductInWishlist(
-                product.productId || product._id || product.id, // productId now exists
+                product.productId || product.id, // productId now exists
               )}
               onToggleWishlist={onToggleWishlist}
             />
@@ -49,7 +62,20 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
   similarProducts,
   isProductInWishlist,
   onToggleWishlist,
+  currentSlug,
 }) => {
+  const recentlyViewedProducts = useMemo(() => {
+    if (typeof window === "undefined") return [];
+
+    try {
+      const raw = localStorage.getItem("__rv__");
+      const parsed = raw ? (JSON.parse(raw) as RelatedProductItem[]) : [];
+      return parsed.filter((product) => product.id !== currentSlug).slice(0, 3);
+    } catch {
+      return [];
+    }
+  }, [currentSlug]);
+
   return (
     <>
       <div
@@ -70,11 +96,17 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
         <h3 className="text-[26px] text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
           Recently Viewed
         </h3>
-        <EmblaSlider
-          products={similarProducts.slice(0, 3)}
-          isProductInWishlist={isProductInWishlist}
-          onToggleWishlist={onToggleWishlist}
-        />
+        {recentlyViewedProducts.length > 0 ? (
+          <EmblaSlider
+            products={recentlyViewedProducts}
+            isProductInWishlist={isProductInWishlist}
+            onToggleWishlist={onToggleWishlist}
+          />
+        ) : (
+          <p className="text-center text-gray-500 py-6">
+            Products you view will appear here.
+          </p>
+        )}
       </div>
     </>
   );

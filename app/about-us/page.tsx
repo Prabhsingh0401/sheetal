@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import TopInfo from "../components/TopInfo";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import StorefrontLoadingShell from "../components/StorefrontLoadingShell";
 import Image from "next/image";
 import Link from "next/link";
 import { API_BASE_URL } from "../services/api";
@@ -47,11 +48,7 @@ const AboutUs = () => {
     path || fallback;
 
   if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6a3f07]"></div>
-      </div>
-    );
+    return <StorefrontLoadingShell message="Loading our story..." />;
 
   return (
     <>
