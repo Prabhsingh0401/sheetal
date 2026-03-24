@@ -40,18 +40,20 @@ const normalizeAddress = (
     return { ...emptyAddress, addressLine: value };
   }
 
+  const v = value as Record<string, unknown>;
+
   return {
     addressLine: pickString(
-      value.addressLine,
-      value.addressLine1,
-      value.address,
-      value.line1,
-      value.street,
+      v.addressLine,
+      v.addressLine1,
+      v.address,
+      v.line1,
+      v.street,
     ),
-    pincode: pickString(value.pincode, value.postalCode, value.zip, value.zipcode),
-    city: pickString(value.city),
-    state: pickString(value.state),
-    country: pickString(value.country),
+    pincode: pickString(v.pincode, v.postalCode, v.zip, v.zipcode),
+    city: pickString(v.city),
+    state: pickString(v.state),
+    country: pickString(v.country),
   };
 };
 
