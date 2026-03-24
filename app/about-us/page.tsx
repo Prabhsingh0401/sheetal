@@ -47,8 +47,7 @@ const AboutUs = () => {
   const getImage = (path: string | undefined, fallback: string): string =>
     path || fallback;
 
-  if (loading)
-    return <StorefrontLoadingShell message="Loading our story..." />;
+  if (loading) return <StorefrontLoadingShell message="Loading our story..." />;
 
   return (
     <>
@@ -69,12 +68,12 @@ const AboutUs = () => {
             />
           </div>
           <div className="w-full border-b border-[#ffcf8c] pb-2 bg-white/80 md:bg-transparent py-5">
-            <h1 className="font-optima text-[35px] text-[#6a3f07] font-normal">
+            <h1 className="font-optima text-[30px] text-[#6a3f07] font-normal">
               {data?.banner?.title || "Our Story"}
             </h1>
             <div className="text-[#6a3f07]">
               <ul className="inline-block p-0 m-0">
-                <li className="inline-block mx-3 relative">
+                <li className="inline-block mx-3 relative md:text-[15px]">
                   <Link
                     href="/"
                     className="text-[#6a3f07] hover:text-[#9c6000]"
@@ -83,7 +82,7 @@ const AboutUs = () => {
                   </Link>
                   <span className="absolute -right-[19px] top-0">/</span>
                 </li>
-                <li className="inline-block mx-3 relative">
+                <li className="inline-block mx-3 relative md:text-[15px]">
                   {data?.banner?.title || "Our Story"}
                 </li>
               </ul>
@@ -96,42 +95,42 @@ const AboutUs = () => {
       <div className="container mx-auto px-4 pb-12 relative">
         <div className="flex flex-wrap items-center">
           <div className="w-full lg:w-1/3 mb-10 lg:mb-0">
-            <div className="relative text-right mb-20">
+            <div className="relative text-right md:mb-20">
               <Image
                 src={getImage(data?.journey?.image, "/assets/491400216.png")}
                 alt="Founder"
                 width={500}
                 height={600}
-                className="inline-block max-w-full h-auto"
+                className="inline-block max-w-full w-auto h-120 md:h-150 md:w-125 "
               />
               <Image
                 src="/assets/roud-img.png"
                 alt="Decoration"
-                width={200}
-                height={200}
-                className="absolute bottom-[-43px] right-[11px] animate-spin"
+                width={150}
+                height={150}
+                className="absolute -bottom-1 right-0 md:-right-16 animate-spin"
                 style={{ animationDuration: "6s" }}
               />
             </div>
           </div>
-          <div className="w-full lg:w-2/3 pl-0 lg:pl-12">
-            <div className="w-[90%] md:w-[96%] mx-auto lg:ml-[12%] text-center lg:text-left">
-              <h2 className="font-optima text-[39px] text-[#6a3f07] relative inline-block mb-6 before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
+          <div className="w-full lg:w-2/3 pl-0 ">
+            <div className="w-[90%] md:w-[96%] mx-auto lg:mx-0 lg:ml-[12%] lg:pr-10 text-center lg:text-left">
+              <h2 className="font-optima text-[26px] md:text-[30px] text-[#6a3f07] relative inline-block before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
                 {data?.journey?.title || "Our Journey"}
               </h2>
-              <div className="mx-auto text-[15px] font-[family-name:var(--font-montserrat)] text-black leading-relaxed space-y-4 mr-10 whitespace-pre-wrap">
+              <div className="text-[15px] font-[family-name:var(--font-montserrat)] text-black leading-relaxed space-y-4 whitespace-pre-wrap">
                 {data?.journey?.description ? (
                   <p>{data.journey.description}</p>
                 ) : (
                   <>
                     <p>
-                      Studio By Sheetal isn’t just a name — it’s a feeling woven
+                      Studio By Sheetal isn't just a name — it's a feeling woven
                       into every saree we create. SBS represents the joy of
                       draping tradition, the pride of cultural identity, and the
                       grace of timeless elegance.
                     </p>
                     <p>
-                      Founded in 2017 in Surat’s vibrant Vankar Textile Market,
+                      Founded in 2017 in Surat's vibrant Vankar Textile Market,
                       Studio By Sheetal began as a humble 160 sq. ft. shop. This
                       powerful blend laid the foundation for a brand that would
                       soon change the ethnicwear landscape.
@@ -145,21 +144,21 @@ const AboutUs = () => {
       </div>
 
       {/* Mission / Growth Section */}
-      <div className="container-fluid bg-[#f3f5ed] py-12 md:bg-white md:py-0">
+      <div className="container-fluid bg-[#f3f5ed] md:py-12 md:bg-white md:py-0">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap">
-            <div className="w-full text-center mb-8">
+            <div className="w-full text-center md:mb-8">
               <Image
                 src={getImage(data?.mission?.image, "/assets/343965253.jpg")}
                 alt="Growth Story"
-                width={1200}
-                height={600}
+                width={960}
+                height={640}
                 className="rounded-[20px] md:rounded-[50px] inline-block h-auto w-auto max-w-full"
               />
             </div>
             <div className="w-full">
               <div className="text-center px-4 md:px-8 py-8 md:py-12">
-                <h2 className="font-optima text-[30px] md:text-[39px] text-[#593300] mb-8 font-normal">
+                <h2 className="font-optima text-[26px] md:text-[30px] text-[#593300] mb-8 font-normal">
                   {data?.mission?.title ||
                     "Custom handpicked styles showcased by our founder, experience the quality"}
                 </h2>
@@ -198,7 +197,7 @@ const AboutUs = () => {
       </div>
 
       {/* Craftsmanship Section */}
-      <div className="container-fluid pb-12 bg-white">
+      <div className="container-fluid bg-white">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center">
             <div className="w-full lg:w-1/2 text-center mb-8 lg:mb-0">
@@ -212,7 +211,7 @@ const AboutUs = () => {
             </div>
             <div className="w-full lg:w-1/2 text-center lg:text-left pl-0 lg:pl-12">
               <div className="px-4 md:px-0">
-                <h2 className="font-optima text-[30px] md:text-[39px] text-[#593300] mb-8 font-normal">
+                <h2 className="font-optima text-[26px] md:text-[30px] text-[#593300] mb-4 md:mb-8 font-normal">
                   {data?.craft?.title || "Craftsmanship At The Core"}
                 </h2>
                 <div className="mx-auto lg:mx-0 text-[15px] font-[family-name:var(--font-montserrat)] text-black leading-relaxed whitespace-pre-wrap">

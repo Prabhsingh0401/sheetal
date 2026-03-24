@@ -172,45 +172,44 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                 );
               const isDisabled = !isAvailableForSelectedColor || isOutOfStock;
 
+              const actualStock =
+                isAvailableForSelectedColor && selectedVariantData
+                  ? selectedVariantData.sizes?.find((s) => s.name === size.name)
+                      ?.stock
+                  : undefined;
+
               return (
                 <div
                   key={size.name}
-                  className="flex flex-col items-center gap-1"
+                  className="flex flex-col items-center"
                 >
                   <button
                     disabled={isDisabled}
                     onClick={() => setSelectedSize(size.name)}
                     className={`
-                      ${size.name === "One Size" || size.name === "Free Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
-                      flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative overflow-hidden
-                      ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
-                      ${
-                        selectedSize === size.name && !isDisabled
-                          ? "border-[#bd9951]"
-                          : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-                      }
-                    `}
+              ${size.name === "One Size" || size.name === "Free Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
+              flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative
+              ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
+              ${
+                selectedSize === size.name && !isDisabled
+                  ? "border-[#bd9951]"
+                  : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+              }
+            `}
                   >
                     {size.name}
                     {isDisabled && (
-                      <div className="absolute w-full h-px bg-gray-400 transform rotate-45" />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-full h-px bg-gray-400 transform rotate-45" />
+                      </div>
                     )}
                   </button>
-                  {isAvailableForSelectedColor &&
-                    selectedVariantData &&
-                    (() => {
-                      const actualStock = selectedVariantData.sizes?.find(
-                        (s) => s.name === size.name,
-                      )?.stock;
-                      return (
-                        actualStock !== undefined &&
-                        actualStock <= 5 && (
-                          <span className="text-[9px] md:text-[10px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">
-                            {actualStock} left
-                          </span>
-                        )
-                      );
-                    })()}
+
+                  {actualStock !== undefined && actualStock <= 5 && (
+                    <span className="text-[9px] -mt-2 z-2 md:text-[10px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">
+                      {actualStock} left
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -231,7 +230,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             type="number"
             min="1"
             value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+            onChange={(e) =>
+              setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+            }
             className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
           />
         )}
@@ -253,24 +254,26 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                 type="number"
                 min="1"
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) =>
+                  setQuantity(Math.max(1, parseInt(e.target.value) || 1))
+                }
                 className="w-full h-10 border border-gray-300 text-left px-4 focus:outline-none focus:border-[#bd9951]"
               />
             </div>
             <div className="flex gap-3 w-full">
               <button
-              onClick={onAddToCart}
-              className="flex-1 h-12 bg-white border rounded-md border-[#ff5722] text-[#ff5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors text-[17px] font-semibold"
-            >
-              Add to Cart
-            </button>
-            <button
-              onClick={onBuyNow}
-              disabled={!selectedSize}
-              className="flex-1 h-12 bg-[#ff5722] rounded-md text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg text-[17px] font-semibold disabled:opacity-60"
-            >
-              Buy Now
-            </button>
+                onClick={onAddToCart}
+                className="flex-1 h-12 bg-white border rounded-md border-[#ff5722] text-[#ff5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors text-[17px] font-semibold"
+              >
+                Add to Cart
+              </button>
+              <button
+                onClick={onBuyNow}
+                disabled={!selectedSize}
+                className="flex-1 h-12 bg-[#ff5722] rounded-md text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg text-[17px] font-semibold disabled:opacity-60"
+              >
+                Buy Now
+              </button>
             </div>
           </div>
         )}
@@ -342,7 +345,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           </button>
         </div>
         <div className="text-[13px] my-2 font-medium w-full">
-          Please enter PIN code to check delivery time & Pay on Delivery Availability
+          Please enter PIN code to check delivery time & Pay on Delivery
+          Availability
         </div>
         {pincodeMessage && (
           <p
