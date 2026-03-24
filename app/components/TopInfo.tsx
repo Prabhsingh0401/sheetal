@@ -10,6 +10,8 @@ interface HomepageCoupon {
   offerType: string;
   offerValue: number;
   couponType: string;
+  scope?: "All" | "Category" | "Specific_Product";
+  applicableIds?: Array<{ name?: string; slug?: string } | string>;
 }
 
 const TopInfo = () => {
@@ -18,10 +20,10 @@ const TopInfo = () => {
   useEffect(() => {
     const fetchHomepageCoupon = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/coupons?showOnHomepage=true`);
+        const res = await fetch(`${API_BASE_URL}/coupons/homepage`);
         const data = await res.json();
-        const coupons = data.coupons || data.data || [];
-        if (coupons.length > 0) setCoupon(coupons[0]);
+        const homepageCoupon = data.data || data.coupon || null;
+        if (homepageCoupon) setCoupon(homepageCoupon);
       } catch (err) {
         console.error("Failed to fetch homepage coupon:", err);
       }
@@ -42,6 +44,20 @@ const TopInfo = () => {
     : "Biggest Sale of the Year - Up to 60% Off";
 
   const displayCode = coupon?.couponType === "CouponCode" ? coupon.code : null;
+  const applicableItem =
+    coupon?.applicableIds && coupon.applicableIds.length > 0
+      ? coupon.applicableIds[coupon.applicableIds.length - 1]
+      : null;
+  const applicableSlug =
+    applicableItem && typeof applicableItem === "object"
+      ? applicableItem.slug || null
+      : null;
+  const ctaHref =
+    coupon?.scope === "Specific_Product" && applicableSlug
+      ? `/product/${applicableSlug}`
+      : coupon?.scope === "Category" && applicableSlug
+        ? `/${applicableSlug}`
+        : "/product-list";
 
   return (
     <div className="text-center bg-[#f3bf43] h-[27px] font-[family-name:var(--font-montserrat)]">
@@ -55,7 +71,7 @@ const TopInfo = () => {
           </>
         )}
         {!displayCode && ": "}
-        <Link href="/shop" className="underline font-normal">
+        <Link href={ctaHref} className="underline font-normal">
           Shop Now
         </Link>
       </p>

@@ -309,13 +309,13 @@ const SearchModal: React.FC<SearchModalProps> = ({
             <p className="text-[15px] text-gray-400 mb-2.5">
               10,000+ of the products are in our store
             </p>
-            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
+            <div className="flex flex-wrap gap-4 mt-2.5">
               {trendingCategories.map((cat, i) => (
                 <Link
                   key={i}
                   href={`/${cat.slug}`}
                   onClick={onClose}
-                  className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
+                  className="text-[#8c7e4e] hover:text-[#4a3f1a] border py-2 px-3 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
                 >
                   {cat.name}
                 </Link>
@@ -337,14 +337,14 @@ const SearchModal: React.FC<SearchModalProps> = ({
             <p className="text-[15px] text-gray-400 mb-2.5">
               you searched below keywords in the last session
             </p>
-            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5">
+            <div className="flex flex-wrap gap-4 mt-2.5">
               {previousSearches.map((item, i) => {
                 if (item.type === "query") {
                   return (
                     <button
                       key={i}
                       onClick={() => setQuery(item.name)}
-                      className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
+                      className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] border py-2 px-3 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60 shrink-0">
                         <circle cx="11" cy="11" r="8" />
@@ -366,7 +366,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                       addClickedItem(item);
                       onClose();
                     }}
-                    className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
+                    className="text-[#8c7e4e] hover:text-[#4a3f1a] border py-2 px-3 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
                   >
                     {item.name}
                   </Link>
@@ -583,7 +583,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
             </div>
           </div>
 
-          <div className="mx-2 md:mx-4 mb-3 md:mb-4 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
+          <div className="mx-2 md:mx-4 mb-3 md:mb-4 p-4 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
             <div className="px-3 md:px-5 py-4 md:py-5 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
               {renderMobilePanel()}
               <div className="flex flex-col md:flex-row gap-6 min-h-0">
