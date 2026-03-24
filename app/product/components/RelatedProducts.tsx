@@ -47,7 +47,7 @@ const EmblaSlider = ({
             <ProductCard
               product={product}
               isWishlisted={isProductInWishlist(
-                product.productId || product._id || product.id, // productId now exists
+                product.productId || product.id, // productId now exists
               )}
               onToggleWishlist={onToggleWishlist}
             />
