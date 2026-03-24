@@ -1,4 +1,5 @@
 import React from "react";
+import { sanitizeProductRichText } from "../../utils/productRichTextSanitizer";
 
 interface ProductTabsProps {
   activeTab: string;
@@ -13,8 +14,11 @@ const ProductTabs: React.FC<ProductTabsProps> = ({
   description,
   materialCare,
 }) => {
+  const sanitizedDescription = sanitizeProductRichText(description);
+  const sanitizedMaterialCare = sanitizeProductRichText(materialCare);
+
   return (
-    <div className="border-[#fe5722] border-b mt-8">
+    <div className="product-tabs border-[#fe5722] border-b mt-8">
       <div className="flex justify-center mb-8 border-y border-[#ff5722]">
         <button
           onClick={() => setActiveTab("description")}
@@ -34,48 +38,48 @@ const ProductTabs: React.FC<ProductTabsProps> = ({
           {activeTab === "description" && (
             <div
               className="prose prose-strong:font-semibold prose-headings:text-gray-900 max-w-none animate-fade-in text-gray-900"
-              dangerouslySetInnerHTML={{ __html: description }}
+              dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
             />
           )}
           {activeTab === "material" && (
             <div
               className="prose prose-strong:font-semibold prose-headings:text-gray-900 max-w-none animate-fade-in text-gray-900"
-              dangerouslySetInnerHTML={{ __html: materialCare }}
+              dangerouslySetInnerHTML={{ __html: sanitizedMaterialCare }}
             />
           )}
         </div>
       </div>
-      <style jsx global>{`
+      <style jsx>{`
         /* Custom styles for Tiptap editor output to ensure correct rendering */
-        .prose {
+        .product-tabs :global(.prose) {
           color: #111827;
         }
-        .prose p {
+        .product-tabs :global(.prose p) {
           margin-bottom: 1em; /* Add space between paragraphs */
         }
-        .prose ul {
+        .product-tabs :global(.prose ul) {
           list-style-type: disc; /* Ensure bullet points are discs */
           padding-left: 1.5em; /* Indent bullet points */
           margin-bottom: 1em;
         }
-        .prose ol {
+        .product-tabs :global(.prose ol) {
           list-style-type: decimal; /* Ensure ordered list markers are decimals */
           padding-left: 1.5em; /* Indent ordered list items */
           margin-bottom: 1em;
         }
-        .prose li::marker {
+        .product-tabs :global(.prose li::marker) {
           color: #111827;
           font-weight: 700;
         }
-        .prose li {
+        .product-tabs :global(.prose li) {
           margin-bottom: 0.5em; /* Space between list items */
           color: #111827;
         }
-        .prose li p {
+        .product-tabs :global(.prose li p) {
           margin-bottom: 0; /* Remove extra margin from paragraphs inside list items */
         }
-        .prose strong,
-        .prose b {
+        .product-tabs :global(.prose strong),
+        .product-tabs :global(.prose b) {
           color: #111827;
           font-weight: 600;
         }

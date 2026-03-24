@@ -22,23 +22,41 @@ const emptyAddress = {
   country: "",
 };
 
-const normalizeAddress = (value: Partial<BasicInfoAddress> | string | null | undefined) => {
+const pickString = (...values: unknown[]) => {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return "";
+};
+
+const normalizeAddress = (
+  value: Partial<BasicInfoAddress> | Record<string, unknown> | string | null | undefined,
+) => {
   if (!value) return emptyAddress;
   if (typeof value === "string") {
     return { ...emptyAddress, addressLine: value };
   }
 
   return {
-    addressLine: value.addressLine || "",
-    pincode: value.pincode || "",
-    city: value.city || "",
-    state: value.state || "",
-    country: value.country || "",
+    addressLine: pickString(
+      value.addressLine,
+      value.addressLine1,
+      value.address,
+      value.line1,
+      value.street,
+    ),
+    pincode: pickString(value.pincode, value.postalCode, value.zip, value.zipcode),
+    city: pickString(value.city),
+    state: pickString(value.state),
+    country: pickString(value.country),
   };
 };
 
 export const getBasicInfo = async () => {
-  const res = await apiFetch("/basic-info", { method: "GET" });
+  const res = await apiFetch("/basic-info/public", { method: "GET" });
 
   if (!res?.success || !res?.data) {
     return {
@@ -50,7 +68,12 @@ export const getBasicInfo = async () => {
   return {
     success: true,
     data: {
-      gstNumber: res.data.gstNumber || "",
+      gstNumber: pickString(
+        res.data.gstNumber,
+        res.data.gstinNumber,
+        res.data.gstin,
+        res.data.gstNo,
+      ),
       shippingAddress: normalizeAddress(res.data.shippingAddress),
       billingAddress: normalizeAddress(res.data.billingAddress),
     } as BasicInfo,

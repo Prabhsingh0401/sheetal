@@ -360,7 +360,7 @@ const ProductListContent = ({
         searchQuery={searchQuery}
       />
 
-      <div className="container mx-auto px-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-20">
         <ProductFilterBar
           filtersOpen={filtersOpen}
           toggleFilters={() => setFiltersOpen(!filtersOpen)}
@@ -379,7 +379,14 @@ const ProductListContent = ({
         />
 
         {loading ? (
-          <StorefrontLoadingShell message="Loading products..." />
+          <div className="flex min-h-[40vh] items-center justify-center py-16">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-[#bd9951] animate-spin" />
+              <p className="text-sm md:text-base text-gray-500 tracking-wide">
+                Loading products...
+              </p>
+            </div>
+          </div>
         ) : error ? (
           <div className="flex justify-center py-20">
             <p className="text-red-500">{error}</p>

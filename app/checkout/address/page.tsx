@@ -64,11 +64,16 @@ const AddressPageInner = () => {
     }
   })();
 
+  const normalizeQuantity = (value: unknown) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(1, Math.floor(parsed)) : 1;
+  };
+
   const isBuyNow = !!buyNowItem;
   const activeItems = isBuyNow ? [buyNowItem] : cart;
   const normalizedActiveItems = activeItems.map((item) => ({
     ...item,
-    quantity: Math.max(1, Number(item.quantity) || 1),
+    quantity: normalizeQuantity(item.quantity),
   }));
 
   const activeTotalMrp = isBuyNow

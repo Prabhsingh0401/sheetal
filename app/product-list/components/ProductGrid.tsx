@@ -34,9 +34,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
   return (
     <div
       className={`grid gap-1 md:gap-3 xl:gap-5
-        ${viewMode === "grid"
-          ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          : "grid-cols-1 lg:grid-cols-2"
+        ${
+          viewMode === "grid"
+            ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            : "grid-cols-1 lg:grid-cols-2"
         }`}
     >
       {products.map((product) => (
@@ -49,9 +50,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           {/* Image Container */}
           <div
             className={`relative overflow-hidden bg-[#f7f7f7] rounded-lg shadow-sm shrink-0
-              ${viewMode === "grid"
-                ? "mb-3 md:mb-5 aspect-[3/4] w-full"
-                : "w-[42%] sm:w-[34%] md:w-[42%] lg:w-[38%] aspect-[3/4]"
+              ${
+                viewMode === "grid"
+                  ? "mb-3 md:mb-5 aspect-[3/4] w-full"
+                  : "w-[42%] sm:w-[34%] md:w-[42%] lg:w-[38%] aspect-[3/4]"
               }`}
           >
             {product.soldOut && (
@@ -109,7 +111,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             {/* Quick View — hidden on mobile, visible on hover for md+ */}
             <button
               onClick={() => onQuickView(product.slug)}
-              className="hidden md:block absolute bottom-0 left-0 right-0 bg-white/15 backdrop-blur-xs border-t border-white/20 py-3 md:py-4 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 hover:bg-white/25 hover:text-white cursor-pointer"
+              className="hidden md:block absolute bottom-0 left-0 right-0 bg-white/15 backdrop-blur-xs border-t border-white/20 py-3 md:py-4 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 group-focus-within:translate-y-0 focus:translate-y-0 focus-visible:translate-y-0 hover:bg-white/25 hover:text-white cursor-pointer"
             >
               Quick View
             </button>
@@ -117,7 +119,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
           {/* Info */}
           <div
-          className={`flex flex-col flex-grow px-0.5 md:px-1 font-[family-name:var(--font-montserrat)] mb-2 md:mb-3
+            className={`flex flex-col flex-grow px-0.5 md:px-1 font-[family-name:var(--font-montserrat)] mb-2 md:mb-3
               ${viewMode === "list" ? "pl-1.5 md:pl-3 lg:pl-4" : ""}`}
           >
             <h3 className="text-sm md:text-base lg:text-lg leading-snug line-clamp-2 pb-1">
@@ -134,7 +136,11 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               {[...Array(5)].map((_, i) => (
                 <Image
                   key={i}
-                  src={i < product.rating ? "/assets/y-star.png" : "/assets/gray-star.png"}
+                  src={
+                    i < product.rating
+                      ? "/assets/y-star.png"
+                      : "/assets/gray-star.png"
+                  }
                   alt="star"
                   width={12}
                   height={12}

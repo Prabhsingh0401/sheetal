@@ -115,7 +115,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       100,
                   )
                 : 0;
-            const productHref = `/product/${item.product.slug}`;
+            const productHref = `/product/${encodeURIComponent(item.product.slug)}`;
 
             return (
               <div
