@@ -177,7 +177,7 @@ const Footer = () => {
     <>
       {/* MAIN FOOTER */}
       <footer
-        className="w-full text-[#f8f0b4] font-[family-name:var(--font-montserrat)]"
+        className="w-full mt-20 text-[#f8f0b4] font-[family-name:var(--font-montserrat)]"
         style={{
           backgroundImage: "url('/assets/footer-bg.jpg')",
           backgroundPosition: "center center",
@@ -186,7 +186,7 @@ const Footer = () => {
       >
         <div className="container mx-auto px-6 py-12">
           {/* TOP GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 text-left lg:pr-10">
             {/* LOGO + SOCIAL */}
             <div className="text-center lg:text-left flex flex-col items-center md:border-r px-8">
               <Link href="/" className="mb-4">

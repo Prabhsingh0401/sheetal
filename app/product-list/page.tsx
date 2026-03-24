@@ -13,6 +13,7 @@ import ProductListBanner from "./components/ProductListBanner";
 import ProductFilterBar from "./components/ProductFilterBar";
 import ProductGrid from "./components/ProductGrid";
 import QuickView from "./components/QuickView";
+import StorefrontLoadingShell from "../components/StorefrontLoadingShell";
 
 import { getProductImageUrl } from "../services/productService";
 import { fetchCategoryBySlug } from "../services/categoryService";
@@ -359,7 +360,7 @@ const ProductListContent = ({
         searchQuery={searchQuery}
       />
 
-      <div className="container mx-auto">
+      <div className="container mx-auto px-20">
         <ProductFilterBar
           filtersOpen={filtersOpen}
           toggleFilters={() => setFiltersOpen(!filtersOpen)}
@@ -378,9 +379,7 @@ const ProductListContent = ({
         />
 
         {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-gray-200 border-t-[#bd9951] rounded-full animate-spin" />
-          </div>
+          <StorefrontLoadingShell message="Loading products..." />
         ) : error ? (
           <div className="flex justify-center py-20">
             <p className="text-red-500">{error}</p>
@@ -443,9 +442,7 @@ const ProductList = (props: ProductListProps) => {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex justify-center items-center">
-          <div className="w-12 h-12 border-4 border-gray-200 border-t-[#bd9951] rounded-full animate-spin" />
-        </div>
+        <StorefrontLoadingShell message="Loading products..." />
       }
     >
       <ProductListContent {...props} />

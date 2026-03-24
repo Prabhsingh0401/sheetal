@@ -564,6 +564,7 @@ const NavbarInner = () => {
   const { data: categories } = useSWR("/categories", fetchAllCategories);
 
   const [navItems, setNavItems] = useState<any[]>([]);
+  const wishlistHref = isAuthenticated() ? "/wishlist" : "/login?redirect=/wishlist";
 
   useEffect(() => {
     if (categories) {
@@ -763,7 +764,7 @@ const NavbarInner = () => {
                   </button>
                   <UserIcon />
                   <Link
-                    href="/wishlist"
+                    href={wishlistHref}
                     className="relative hover:opacity-80 transition-opacity"
                   >
                     <Image

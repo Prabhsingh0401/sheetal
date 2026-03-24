@@ -1,20 +1,35 @@
 "use client";
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import TopInfo from "../components/TopInfo";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import WishlistContent from "./components/WishlistContent";
+import { isAuthenticated } from "../services/authService";
+import { redirectToLogin } from "../utils/authRedirect";
+import StorefrontLoadingShell from "../components/StorefrontLoadingShell";
 
 const WishlistPage = () => {
+  const router = useRouter();
+  const isLoggedIn = isAuthenticated();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      redirectToLogin(router, "/wishlist");
+    }
+  }, [router, isLoggedIn]);
+
+  if (!isLoggedIn) {
+    return <StorefrontLoadingShell message="Redirecting to login..." />;
+  }
+
   return (
     <>
       <TopInfo />
       <Navbar />
       <Suspense
         fallback={
-          <div className="min-h-screen flex justify-center items-center">
-            <div className="w-12 h-12 border-4 border-gray-200 border-t-[#bd9951] rounded-full animate-spin"></div>
-          </div>
+          <StorefrontLoadingShell message="Loading wishlist..." />
         }
       >
         <WishlistContent />

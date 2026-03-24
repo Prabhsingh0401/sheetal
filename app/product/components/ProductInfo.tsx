@@ -181,7 +181,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                     disabled={isDisabled}
                     onClick={() => setSelectedSize(size.name)}
                     className={`
-                      ${size.name === "One Size" || "Free Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
+                      ${size.name === "One Size" || size.name === "Free Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
                       flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative overflow-hidden
                       ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
                       ${
@@ -231,7 +231,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             type="number"
             min="1"
             value={quantity}
-            onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
             className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
           />
         )}
@@ -253,21 +253,21 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                 type="number"
                 min="1"
                 value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value))}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                 className="w-full h-10 border border-gray-300 text-left px-4 focus:outline-none focus:border-[#bd9951]"
               />
             </div>
             <div className="flex gap-3 w-full">
               <button
               onClick={onAddToCart}
-              className="flex-1 h-12 bg-white border border-[#ff5722] text-[#ff5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors text-[17px] font-semibold"
+              className="flex-1 h-12 bg-white border rounded-md border-[#ff5722] text-[#ff5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors text-[17px] font-semibold"
             >
               Add to Cart
             </button>
             <button
               onClick={onBuyNow}
               disabled={!selectedSize}
-              className="flex-1 h-12 bg-[#ff5722] text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg text-[17px] font-semibold disabled:opacity-60"
+              className="flex-1 h-12 bg-[#ff5722] rounded-md text-white border border-[#bd9951] uppercase font-medium tracking-wider cursor-pointer transition-colors shadow-lg text-[17px] font-semibold disabled:opacity-60"
             >
               Buy Now
             </button>

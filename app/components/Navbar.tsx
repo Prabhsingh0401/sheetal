@@ -594,6 +594,7 @@ const Navbar = () => {
   // const { data: settings } = useSWR("/settings", getSettings);
 
   const [navItems, setNavItems] = useState<any[]>([]);
+  const wishlistHref = isAuthenticated() ? "/wishlist" : "/login?redirect=/wishlist";
 
   useEffect(() => {
     if (categories) {
@@ -792,7 +793,7 @@ const Navbar = () => {
                   </button>
                   <UserIcon />
                   <Link
-                    href="/wishlist"
+                    href={wishlistHref}
                     className="relative hover:opacity-80 transition-opacity hidden md:block"
                   >
                     <Image
@@ -853,7 +854,7 @@ const Navbar = () => {
               />
             </button>
             <UserIcon />
-            <Link href="/wishlist" className="relative">
+            <Link href={wishlistHref} className="relative">
               <Image
                 src="/assets/icons/heart.svg"
                 alt="Wishlist"

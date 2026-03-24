@@ -217,13 +217,13 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
     return (
       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-        <span className="font-semibold text-gray-900 text-xs">₹{minPrice}</span>
+        <span className="font-semibold text-gray-900 text-[13px]">₹{minPrice}</span>
         {relatedMrp > minPrice && (
           <>
-            <span className="line-through text-[11px] text-gray-400">
+            <span className="line-through text-[13px] text-gray-400">
               ₹{relatedMrp}
             </span>
-            <span className="text-[11px] text-[#B78D65] font-semibold">
+            <span className="text-[13px] text-[#B78D65] font-semibold">
               {discount}% OFF
             </span>
           </>
@@ -324,7 +324,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
               Popular Searches:
             </h4>
             {!compact && (
-              <p className="text-[11px] text-gray-400 italic mb-2.5">
+              <p className="text-[15px] text-gray-400 mb-2.5">
                 10,000+ of the products are in our store
               </p>
             )}
@@ -336,7 +336,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                   key={i}
                   href={`/${cat.slug}`}
                   onClick={onClose}
-                  className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                  className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
                 >
                   {cat.name}
                 </Link>
@@ -356,7 +356,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
               Search History:
             </h4>
             {!compact && (
-              <p className="text-[11px] text-gray-400 italic mb-2.5">
+              <p className="text-[15px] text-gray-400 mb-2.5">
                 you searched below keywords in the last session
               </p>
             )}
@@ -369,7 +369,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                     <button
                       key={i}
                       onClick={() => setQuery(item.name)}
-                      className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                      className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -402,7 +402,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                       addClickedItem(item);
                       onClose();
                     }}
-                    className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[13px] transition-colors"
+                    className="text-[#8c7e4e] hover:text-[#4a3f1a] underline underline-offset-2 text-[15px] transition-colors"
                   >
                     {item.name}
                   </Link>
@@ -544,12 +544,12 @@ const SearchModal: React.FC<SearchModalProps> = ({
                 />
               </div>
               <div className="mt-2 px-0.5 flex flex-col flex-grow">
-                <h5 className="text-[12px] text-gray-800 font-medium line-clamp-2 leading-snug min-h-[36px]">
+                <h5 className="text-[15px] text-gray-800 font-medium line-clamp-2 leading-snug min-h-[36px]">
                   {product.name}
                 </h5>
                 <div className="mt-auto flex flex-col items-start">
                   {getPriceDisplay(product)}
-                  <span className="inline-block mt-1.5 border-b border-black text-[11px] text-black uppercase tracking-wide transition-all duration-300 group-hover:tracking-widest group-hover:text-[#b3a660]">
+                  <span className="inline-block mt-1.5 border-b border-black text-[12px] text-black uppercase tracking-wide transition-all duration-300 group-hover:tracking-widest group-hover:text-[#b3a660]">
                     View Detail
                   </span>
                 </div>
@@ -595,10 +595,10 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
       <div
         className="fixed left-0 right-0 z-[9999] font-[family-name:var(--font-montserrat)] px-0 md:px-[5%] transition-all duration-300 flex justify-center"
-        style={{ top: `${navbarBottom + 10}px` }}
+        style={{ top: `${navbarBottom + 7}px` }}
       >
         <div
-          className="relative w-full max-w-[850px] shadow-2xl md:rounded-b-2xl overflow-hidden"
+          className="relative w-full max-w-[1000px] h-[650px] shadow-2xl md:rounded-b-2xl overflow-hidden"
           style={{
             background: "linear-gradient(135deg, #e2f7cf 0%, #f7efbe 100%)",
           }}
@@ -612,9 +612,9 @@ const SearchModal: React.FC<SearchModalProps> = ({
             ✕
           </button>
 
-          <div className="px-3 md:px-6 pt-4 md:pt-5 pb-3 pr-10 md:pr-12">
+          <div className="px-3 md:px-6 pt-4 md:pt-5 pb-3 pr-10 md:pr-12 max-w-[945px] mx-auto ml-[30px]">
             <div className="relative">
-              <div className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <div className="absolute left-2 md:left-3 top-5 -translate-y-1/2 text-gray-400 pointer-events-none">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="18"
@@ -633,7 +633,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full py-2.5 pl-10 md:pl-11 pr-10 text-sm rounded-xl border border-gray-300 bg-white text-gray-800 focus:outline-none focus:border-[#b3a660] shadow-sm placeholder-gray-400 transition-all"
+                className="w-full py-2.5 pl-10 md:pl-11 mb-2 pr-10 text-sm rounded-xl border border-gray-300 bg-white text-gray-800 focus:outline-none focus:border-[#b3a660] shadow-sm placeholder-gray-400 transition-all"
                 placeholder="I'm Looking for..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

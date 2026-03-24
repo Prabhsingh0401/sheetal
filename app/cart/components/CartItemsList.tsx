@@ -5,14 +5,11 @@ import Link from "next/link";
 import { CartItem } from "../../hooks/useCart";
 import { getApiImageUrl } from "../../services/api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
-import { Trash2, TrashIcon } from "lucide-react";
 
 interface CartItemsListProps {
   cartItems: CartItem[];
   applicableCategories: string[];
   itemWiseDiscount: { [cartItemId: string]: number } | null;
-  couponOfferType: string | null;
-  removeFromCart: (itemId: string) => Promise<void>;
   moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
   updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
   handleRemoveItem: (item: CartItem) => void;
@@ -33,8 +30,6 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   cartItems,
   applicableCategories,
   itemWiseDiscount,
-  couponOfferType,
-  removeFromCart,
   moveFromCartToWishlist,
   updateCartItemQuantity,
   handleRemoveItem,
@@ -120,6 +115,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       100,
                   )
                 : 0;
+            const productHref = `/product/${item.product.slug}`;
 
             return (
               <div
@@ -138,15 +134,17 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
 
                 {/* Image */}
                 <div className="w-[70px] md:w-[90px] shrink-0">
-                  <Image
-                    src={getApiImageUrl(
-                      item.variantImage || item.product.mainImage?.url,
-                    )}
-                    alt={item.product.name}
-                    width={90}
-                    height={120}
-                    className="rounded w-full h-auto"
-                  />
+                  <Link href={productHref} className="block">
+                    <Image
+                      src={getApiImageUrl(
+                        item.variantImage || item.product.mainImage?.url,
+                      )}
+                      alt={item.product.name}
+                      width={90}
+                      height={120}
+                      className="rounded w-full h-auto"
+                    />
+                  </Link>
                 </div>
 
                 {/* Product Info + Price (stacked on mobile, side-by-side on md+) */}
@@ -154,7 +152,12 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                   {/* Left: name, color/size, coupon, wishlist */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-[13px] md:text-[15px] font-semibold leading-snug line-clamp-2">
-                      {item.product.name}
+                      <Link
+                        href={productHref}
+                        className="hover:text-[#bd9951] transition-colors"
+                      >
+                        {item.product.name}
+                      </Link>
                     </h3>
                     <p className="text-xs md:text-sm text-gray-600 mt-1">
                       Color: {item.color} | Size: {item.size}

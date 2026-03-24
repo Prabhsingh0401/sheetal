@@ -16,7 +16,7 @@ const AboutSBS = () => {
               </h2>
               <div className="w-15 h-0.5 bg-[#a2690f]"/>
             </div>
-            <h3 className="text-[26px] font-light ml-16 font-optima text-[#a2690f] font-[family-name:var(--font-outfit)] text-center lg:text-left">
+            <h3 className="text-[26px] font-light lg:ml-16 font-optima text-[#a2690f] font-[family-name:var(--font-outfit)] text-center lg:text-left">
               Innovate the Outfit
             </h3>
           </div>

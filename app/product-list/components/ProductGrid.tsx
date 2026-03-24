@@ -43,7 +43,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
         <div
           key={product._id}
           className={`group flex transition-all rounded-xl p-1 md:p-2
-            ${viewMode === "grid" ? "flex-col h-full" : "flex-row items-center gap-3 md:gap-4 lg:gap-6"}
+            ${viewMode === "grid" ? "flex-col h-full w-full max-w-[90%] mx-auto" : "flex-row items-center gap-3 md:gap-4 lg:gap-6"}
           `}
         >
           {/* Image Container */}
@@ -109,7 +109,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             {/* Quick View — hidden on mobile, visible on hover for md+ */}
             <button
               onClick={() => onQuickView(product.slug)}
-              className="hidden md:block absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm py-3 md:py-4 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 hover:bg-[#bd9951] hover:text-white cursor-pointer"
+              className="hidden md:block absolute bottom-0 left-0 right-0 bg-white/15 backdrop-blur-xs border-t border-white/20 py-3 md:py-4 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 hover:bg-white/25 hover:text-white cursor-pointer"
             >
               Quick View
             </button>
@@ -145,7 +145,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
 
             {/* Price */}
             <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-2 md:mb-3">
-              <span className="text-xs sm:text-sm md:text-base font-bold text-gray-900 whitespace-nowrap">
+              <span className="text-xs sm:text-sm md:text-base font-medium text-gray-900 whitespace-nowrap">
                 ₹{product.price.toLocaleString()}
               </span>
               <span className="text-[10px] sm:text-xs md:text-sm text-gray-400 line-through whitespace-nowrap">
