@@ -16,6 +16,8 @@ import { consumeRedirectTarget, syncRedirectFromQuery } from "../../utils/authRe
 import toast from "react-hot-toast";
 
 const RECAPTCHA_CONTAINER_ID = "recaptcha-container";
+const RESEND_AVAILABLE_AT_KEY = "otp_resend_available_at";
+const RESEND_DELAY_SECONDS = 20;
 
 const OtpForm = () => {
   const router = useRouter();
@@ -24,6 +26,7 @@ const OtpForm = () => {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -47,6 +50,41 @@ const OtpForm = () => {
 
     inputRefs.current[0]?.focus();
   }, [router, searchParams]);
+
+  useEffect(() => {
+    const syncCooldown = () => {
+      const availableAt = Number(
+        sessionStorage.getItem(RESEND_AVAILABLE_AT_KEY) || 0,
+      );
+
+      if (!availableAt) {
+        setResendCooldown(0);
+        return;
+      }
+
+      const remaining = Math.max(
+        0,
+        Math.ceil((availableAt - Date.now()) / 1000),
+      );
+
+      setResendCooldown(remaining);
+      if (remaining === 0) {
+        sessionStorage.removeItem(RESEND_AVAILABLE_AT_KEY);
+      }
+    };
+
+    syncCooldown();
+    const timer = window.setInterval(syncCooldown, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const startResendCooldown = () => {
+    sessionStorage.setItem(
+      RESEND_AVAILABLE_AT_KEY,
+      String(Date.now() + RESEND_DELAY_SECONDS * 1000),
+    );
+    setResendCooldown(RESEND_DELAY_SECONDS);
+  };
 
   const setupRecaptcha = async (forceReset = false) => {
     if (forceReset && window.recaptchaVerifier) {
@@ -165,6 +203,7 @@ const OtpForm = () => {
         login(data.token, data.user);
         sessionStorage.removeItem("otp_phone_number");
         sessionStorage.removeItem("login_phone_number");
+        sessionStorage.removeItem(RESEND_AVAILABLE_AT_KEY);
         window.confirmationResult = undefined;
         // Merge any guest cart items into the user's server cart
         await mergeGuestCartOnLogin();
@@ -208,6 +247,7 @@ const OtpForm = () => {
       );
 
       window.confirmationResult = confirmationResult;
+      startResendCooldown();
       toast.success("OTP sent again.");
       inputRefs.current[0]?.focus();
     } catch (error: unknown) {
@@ -289,10 +329,14 @@ const OtpForm = () => {
                 <button
                   type="button"
                   onClick={handleResendOtp}
-                  disabled={resending}
+                  disabled={resending || resendCooldown > 0}
                   className="text-[#6b4a1f] hover:underline text-md font-medium disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {resending ? "RESENDING..." : "RESEND OTP"}
+                  {resending
+                    ? "RESENDING..."
+                    : resendCooldown > 0
+                      ? `RESEND IN ${resendCooldown}s`
+                      : "RESEND OTP"}
                 </button>
               </div>
 

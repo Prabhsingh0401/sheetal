@@ -24,6 +24,9 @@ declare global {
   }
 }
 
+const RESEND_AVAILABLE_AT_KEY = "otp_resend_available_at";
+const RESEND_DELAY_SECONDS = 20;
+
 const EditProfile: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -53,6 +56,7 @@ const EditProfile: React.FC = () => {
   const [confirmationResult, setConfirmationResult] =
     useState<ConfirmationResult | null>(null);
   const [phoneLoading, setPhoneLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Email Verification States
@@ -126,6 +130,33 @@ const EditProfile: React.FC = () => {
   }, [profilePicturePreview]); // Removed mobileNumber dependency to avoid loops
 
   useEffect(() => {
+    const syncCooldown = () => {
+      const availableAt = Number(
+        sessionStorage.getItem(RESEND_AVAILABLE_AT_KEY) || 0,
+      );
+
+      if (!availableAt) {
+        setResendCooldown(0);
+        return;
+      }
+
+      const remaining = Math.max(
+        0,
+        Math.ceil((availableAt - Date.now()) / 1000),
+      );
+      setResendCooldown(remaining);
+
+      if (remaining === 0) {
+        sessionStorage.removeItem(RESEND_AVAILABLE_AT_KEY);
+      }
+    };
+
+    syncCooldown();
+    const timer = window.setInterval(syncCooldown, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (profilePicturePreview) {
         URL.revokeObjectURL(profilePicturePreview);
@@ -164,6 +195,14 @@ const EditProfile: React.FC = () => {
     return window.recaptchaVerifier;
   };
 
+  const startResendCooldown = () => {
+    sessionStorage.setItem(
+      RESEND_AVAILABLE_AT_KEY,
+      String(Date.now() + RESEND_DELAY_SECONDS * 1000),
+    );
+    setResendCooldown(RESEND_DELAY_SECONDS);
+  };
+
   const handleSendOtp = async () => {
     if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
       toast.error("Please enter a valid 10-digit mobile number");
@@ -193,6 +232,7 @@ const EditProfile: React.FC = () => {
 
       setConfirmationResult(result);
       setShowOtpInput(true);
+      startResendCooldown();
       toast.success("OTP sent successfully!");
     } catch (error: any) {
       console.error("Error sending OTP:", error);
@@ -221,6 +261,7 @@ const EditProfile: React.FC = () => {
         if (verifyRes.success) {
           // If successful, the backend has linked/merged the accounts
           login(verifyRes.token, verifyRes.user);
+          sessionStorage.removeItem(RESEND_AVAILABLE_AT_KEY);
           setIsPhoneVerified(true);
           setShowOtpInput(false);
           toast.success(
@@ -533,9 +574,14 @@ const EditProfile: React.FC = () => {
                     </button>
                     <button
                       onClick={handleSendOtp}
+                      disabled={phoneLoading || resendCooldown > 0}
                       className="ml-auto text-[#8b6b2f] text-sm font-medium hover:underline"
                     >
-                      Resend Code
+                      {resendCooldown > 0
+                        ? `Resend in ${resendCooldown}s`
+                        : phoneLoading
+                          ? "SENDING..."
+                          : "Resend Code"}
                     </button>
                   </div>
                 </div>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   RecaptchaVerifier,
@@ -24,6 +24,8 @@ declare global {
 }
 
 const RECAPTCHA_CONTAINER_ID = "recaptcha-container";
+const RESEND_AVAILABLE_AT_KEY = "otp_resend_available_at";
+const RESEND_DELAY_MS = 20_000;
 
 // ✅ Inner component that safely uses useSearchParams
 const LoginForm = () => {
@@ -85,6 +87,10 @@ const LoginForm = () => {
       );
 
       window.confirmationResult = confirmationResult;
+      sessionStorage.setItem(
+        RESEND_AVAILABLE_AT_KEY,
+        String(Date.now() + RESEND_DELAY_MS),
+      );
       router.push("/otp");
     } catch (error: unknown) {
       const message =
