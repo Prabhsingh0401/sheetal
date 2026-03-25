@@ -24,6 +24,7 @@ import {
 
 // ─── Guest cart localStorage key ────────────────────────────────────────────
 const GUEST_CART_KEY = "guest_cart";
+const COUPON_STATE_KEY = "cart_coupon_state";
 
 /** Shape of a guest cart item stored in localStorage */
 export interface GuestCartItem {
@@ -55,6 +56,16 @@ export interface CartItem {
   variantImage?: string;
   price?: number;
   discountPrice?: number;
+}
+
+interface PersistedCouponState {
+  couponCode: string;
+  couponDiscount: number;
+  couponOfferType: string | null;
+  couponError: string | null;
+  bogoMessage: string | null;
+  applicableCategories: string[];
+  itemWiseDiscount: { [cartItemId: string]: number } | null;
 }
 
 interface CartApiResponse {
@@ -118,6 +129,30 @@ const writeGuestCart = (items: GuestCartItem[]) => {
   localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
 };
 
+const readPersistedCouponState = (): PersistedCouponState | null => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = sessionStorage.getItem(COUPON_STATE_KEY);
+    return raw ? (JSON.parse(raw) as PersistedCouponState) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writePersistedCouponState = (state: PersistedCouponState | null) => {
+  if (typeof window === "undefined") return;
+
+  if (!state || !state.couponCode) {
+    sessionStorage.removeItem(COUPON_STATE_KEY);
+    return;
+  }
+
+  sessionStorage.setItem(COUPON_STATE_KEY, JSON.stringify(state));
+};
+
+const normalizeCouponCode = (code: string) => code.trim().toUpperCase();
+
 /** Converts guest cart items to CartItem shape for uniform UI rendering */
 const guestToCartItems = (guestItems: GuestCartItem[]): CartItem[] =>
   guestItems.map((g) => ({
@@ -170,16 +205,56 @@ export const useCart = (): UseCartReturn => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [couponCode, setCouponCode] = useState("");
-  const [couponDiscount, setCouponDiscount] = useState(0);
-  const [couponError, setCouponError] = useState<string | null>(null);
-  const [couponOfferType, setCouponOfferType] = useState<string | null>(null);
-  const [bogoMessage, setBogoMessage] = useState<string | null>(null);
-  const [applicableCategories, setApplicableCategories] = useState<string[]>([]);
-  const [itemWiseDiscount, setItemWiseDiscount] = useState<{ [cartItemId: string]: number } | null>(null);
+  const persistedCouponState = readPersistedCouponState();
+  const [couponCode, setCouponCode] = useState(
+    persistedCouponState?.couponCode || "",
+  );
+  const [couponDiscount, setCouponDiscount] = useState(
+    persistedCouponState?.couponDiscount || 0,
+  );
+  const [couponError, setCouponError] = useState<string | null>(
+    persistedCouponState?.couponError || null,
+  );
+  const [couponOfferType, setCouponOfferType] = useState<string | null>(
+    persistedCouponState?.couponOfferType || null,
+  );
+  const [bogoMessage, setBogoMessage] = useState<string | null>(
+    persistedCouponState?.bogoMessage || null,
+  );
+  const [applicableCategories, setApplicableCategories] = useState<string[]>(
+    persistedCouponState?.applicableCategories || [],
+  );
+  const [itemWiseDiscount, setItemWiseDiscount] = useState<{ [cartItemId: string]: number } | null>(
+    persistedCouponState?.itemWiseDiscount || null,
+  );
   const [totalMrp, setTotalMrp] = useState(0);
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
+
+  useEffect(() => {
+    if (!couponCode) {
+      writePersistedCouponState(null);
+      return;
+    }
+
+    writePersistedCouponState({
+      couponCode,
+      couponDiscount,
+      couponOfferType,
+      couponError: null,
+      bogoMessage,
+      applicableCategories,
+      itemWiseDiscount,
+    });
+  }, [
+    couponCode,
+    couponDiscount,
+    couponOfferType,
+    couponError,
+    bogoMessage,
+    applicableCategories,
+    itemWiseDiscount,
+  ]);
 
   /**
    * Loads the cart — from the server if authenticated, from localStorage if guest.
@@ -385,10 +460,12 @@ export const useCart = (): UseCartReturn => {
   const resetCoupon = useCallback(() => {
     setCouponCode("");
     setCouponDiscount(0);
+    setCouponError(null);
     setCouponOfferType(null);
     setBogoMessage(null);
     setApplicableCategories([]);
     setItemWiseDiscount(null);
+    writePersistedCouponState(null);
   }, []);
 
   // Calculate totals whenever cart or coupon changes
@@ -410,6 +487,13 @@ export const useCart = (): UseCartReturn => {
 
   const applyCoupon = useCallback(
     async (code: string, userId: string) => {
+      const normalizedCode = normalizeCouponCode(code);
+      if (!normalizedCode) {
+        setCouponError("Please enter a coupon code.");
+        toast.error("Please enter a coupon code.");
+        return;
+      }
+
       setCouponError(null);
       setBogoMessage(null);
       setCouponOfferType(null);
@@ -429,10 +513,19 @@ export const useCart = (): UseCartReturn => {
 
         const currentFinalAmount = currentMrp - currentDiscount;
 
-        const response = await applyCouponApi(code, currentFinalAmount, userId, cart);
+        const response = await applyCouponApi(
+          normalizedCode,
+          currentFinalAmount,
+          userId,
+          cart,
+        );
 
         if (response.success) {
-          setCouponCode(response.data.couponCode || code);
+          const appliedCouponCode = normalizeCouponCode(
+            response.data.couponCode || normalizedCode,
+          );
+          const discountAmount = response.data.discount ?? 0;
+          setCouponCode(appliedCouponCode);
           setCouponOfferType(response.data.offerType);
 
           if (response.data.applicableIds && response.data.applicableIds.length > 0) {
@@ -440,7 +533,6 @@ export const useCart = (): UseCartReturn => {
           }
 
           setItemWiseDiscount(response.data.itemWiseDiscount || {});
-          const discountAmount = response.data.discount ?? 0;
           setCouponDiscount(discountAmount);
 
           if (response.data.offerType === "BOGO") {

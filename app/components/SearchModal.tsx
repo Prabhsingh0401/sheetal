@@ -306,7 +306,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
             <h4 className="text-[16px] text-black tracking-wide mb-0.5">
               Popular Searches:
             </h4>
-            <p className="text-[15px] text-gray-400 mb-2.5">
+            <p className="text-[15px] text-gray-400 pb-2.5 border-b">
               10,000+ of the products are in our store
             </p>
             <div className="flex flex-wrap gap-4 mt-2.5">
@@ -315,7 +315,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                   key={i}
                   href={`/${cat.slug}`}
                   onClick={onClose}
-                  className="text-[#8c7e4e] hover:text-[#4a3f1a] border py-2 px-3 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
+                  className="text-[#8c7e4e] hover:text-[#4a3f1a] border py-2 px-3 md:p-0 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
                 >
                   {cat.name}
                 </Link>
@@ -334,7 +334,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
             <h4 className="text-[16px] text-black tracking-wide mb-0.5">
               Search History:
             </h4>
-            <p className="text-[15px] text-gray-400 mb-2.5">
+            <p className="text-[15px] text-gray-400 pb-2.5 border-b">
               you searched below keywords in the last session
             </p>
             <div className="flex flex-wrap gap-4 mt-2.5">
@@ -344,7 +344,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                     <button
                       key={i}
                       onClick={() => setQuery(item.name)}
-                      className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] border py-2 px-3 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
+                      className="flex items-center gap-1 text-[#8c7e4e] hover:text-[#4a3f1a] border md:p-0 py-2 px-3 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60 shrink-0">
                         <circle cx="11" cy="11" r="8" />
@@ -366,7 +366,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                       addClickedItem(item);
                       onClose();
                     }}
-                    className="text-[#8c7e4e] hover:text-[#4a3f1a] border py-2 px-3 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
+                    className="text-[#8c7e4e] hover:text-[#4a3f1a] border py-2 px-3 md:p-0 rounded-md md:border-none md:underline underline-offset-2 text-[13px] md:text-[15px] transition-colors"
                   >
                     {item.name}
                   </Link>

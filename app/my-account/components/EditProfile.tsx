@@ -14,6 +14,7 @@ import {
   login,
   sendEmailOtp,
   verifyEmailOtp,
+  updateUserDetailsInLocalStorage,
 } from "../../services/authService";
 import toast from "react-hot-toast";
 
@@ -290,14 +291,14 @@ const EditProfile: React.FC = () => {
       const res = await verifyEmailOtp(email, otpString);
 
       if (res.success && res.token) {
-        login(res.token, res.user);
+        const verifiedEmail = res.user?.email || email.trim().toLowerCase();
+        const updatedUser = { ...res.user, email: verifiedEmail };
+        login(res.token, updatedUser);
+        updateUserDetailsInLocalStorage(updatedUser);
+        setEmail(verifiedEmail);
         setIsEmailVerified(true);
         setShowEmailOtpInput(false);
         toast.success("Email verified successfully!");
-        // Refresh page or update local state logic
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
       } else {
         toast.error(res.message || "Invalid OTP or verification failed.");
       }
