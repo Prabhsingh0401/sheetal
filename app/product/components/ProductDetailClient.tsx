@@ -701,9 +701,14 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               onToggleWishlist={() => toggleProductInWishlist(product._id)}
               onScrollToSimilar={scrollToSimilarProducts}
               videoUrl={
-                product.video?.url
-                  ? getApiImageUrl(product.video.url)
-                  : undefined
+                selectedVariantData?.v_video?.url
+                  ? getApiImageUrl(selectedVariantData.v_video.url)
+                  : product.video?.url
+                    ? getApiImageUrl(product.video.url)
+                    : undefined
+              }
+              videoMimeType={
+                selectedVariantData?.v_video?.mimeType || product.video?.mimeType
               }
             />
           </div>

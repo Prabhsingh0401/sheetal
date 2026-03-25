@@ -14,6 +14,7 @@ import {
   login,
   sendEmailOtp,
   verifyEmailOtp,
+  updateUserDetailsInLocalStorage,
 } from "../../services/authService";
 import toast from "react-hot-toast";
 
@@ -129,22 +130,38 @@ const EditProfile: React.FC = () => {
       if (profilePicturePreview) {
         URL.revokeObjectURL(profilePicturePreview);
       }
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-      }
     };
   }, [profilePicturePreview]);
 
-  const setupRecaptcha = () => {
+  useEffect(() => {
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = undefined;
+      }
+    };
+  }, []);
+
+  const setupRecaptcha = async (forceReset = false) => {
+    if (forceReset && window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = undefined;
+    }
+
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
         "recaptcha-container",
         {
           size: "invisible",
+          callback: () => {},
+          "expired-callback": () => {},
         },
       );
+      await window.recaptchaVerifier.render();
     }
+
+    return window.recaptchaVerifier;
   };
 
   const handleSendOtp = async () => {
@@ -155,8 +172,7 @@ const EditProfile: React.FC = () => {
 
     try {
       setPhoneLoading(true);
-      setupRecaptcha();
-      const appVerifier = window.recaptchaVerifier!;
+      const appVerifier = await setupRecaptcha(true);
 
       let result;
       const formattedNumber = `+91${mobileNumber}`;
@@ -290,14 +306,14 @@ const EditProfile: React.FC = () => {
       const res = await verifyEmailOtp(email, otpString);
 
       if (res.success && res.token) {
-        login(res.token, res.user);
+        const verifiedEmail = res.user?.email || email.trim().toLowerCase();
+        const updatedUser = { ...res.user, email: verifiedEmail };
+        login(res.token, updatedUser);
+        updateUserDetailsInLocalStorage(updatedUser);
+        setEmail(verifiedEmail);
         setIsEmailVerified(true);
         setShowEmailOtpInput(false);
         toast.success("Email verified successfully!");
-        // Refresh page or update local state logic
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
       } else {
         toast.error(res.message || "Invalid OTP or verification failed.");
       }

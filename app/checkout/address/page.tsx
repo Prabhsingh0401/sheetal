@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
 import { useSearchParams } from "next/navigation";
+import { peekRedirectField } from "../../utils/authRedirect";
 
 // ── Inner component that uses useSearchParams ─────────────────────────────
 const AddressPageInner = () => {
@@ -41,7 +42,9 @@ const AddressPageInner = () => {
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isEmailFromProfile, setIsEmailFromProfile] = useState(false);
-  const [couponInput, setCouponInput] = useState("");
+  const [couponInput, setCouponInput] = useState(
+    () => couponCode || peekRedirectField<string>("couponInput") || "",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedShippingAddressIdRef = useRef<string | null>(null);
   const selectedBillingAddressIdRef = useRef<string | null>(null);
@@ -501,7 +504,7 @@ const AddressPageInner = () => {
               setCouponInput={setCouponInput}
               handleApplyCoupon={(userId) => {
                 if (!isBuyNow && couponInput && userId)
-                  applyCoupon(couponInput, userId);
+                  applyCoupon(couponInput.trim().toUpperCase(), userId);
               }}
               couponError={isBuyNow ? "" : couponError}
               bogoMessage={isBuyNow ? "" : bogoMessage}

@@ -48,7 +48,12 @@ const OtpForm = () => {
     inputRefs.current[0]?.focus();
   }, [router, searchParams]);
 
-  const setupRecaptcha = async () => {
+  const setupRecaptcha = async (forceReset = false) => {
+    if (forceReset && window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = undefined;
+    }
+
     if (window.recaptchaVerifier) {
       return window.recaptchaVerifier;
     }
@@ -195,7 +200,7 @@ const OtpForm = () => {
     try {
       setResending(true);
       setOtp(["", "", "", "", "", ""]);
-      const appVerifier = await setupRecaptcha();
+      const appVerifier = await setupRecaptcha(true);
       const confirmationResult = await signInWithPhoneNumber(
         auth,
         `+91${phoneNumber}`,

@@ -71,7 +71,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   const [openCouponModal, setOpenCouponModal] = useState(false);
   const [coupons, setCoupons] = useState<CouponOption[]>([]);
   const [selectedCouponCode, setSelectedCouponCode] = useState<string | null>(
-    () => peekRedirectField<string>("selectedCouponCode"),
+    () => peekRedirectField<string>("selectedCouponCode") || couponCode || null,
   );
   const [shouldRestoreCouponModal] = useState(() =>
     peekRedirectModalState("couponModalOpen"),

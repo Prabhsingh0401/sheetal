@@ -47,6 +47,12 @@ export interface ProductVariant {
     url: string;
     public_id?: string;
   };
+  v_video?: {
+    url: string;
+    public_id?: string;
+    mimeType?: string;
+    size?: number;
+  };
   gallery?: VariantGalleryImage[];
 }
 
