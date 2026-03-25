@@ -19,10 +19,6 @@ declare global {
   interface Window {
     recaptchaVerifier?: RecaptchaVerifier;
     confirmationResult?: ConfirmationResult;
-    recaptchaWidgetId?: number;
-    grecaptcha?: {
-      reset: (widgetId?: number) => void;
-    };
   }
 }
 
@@ -113,22 +109,8 @@ const OtpForm = () => {
     );
 
     window.recaptchaVerifier = recaptchaVerifier;
-    window.recaptchaWidgetId = await window.recaptchaVerifier.render();
+    await window.recaptchaVerifier.render();
     return window.recaptchaVerifier;
-  };
-
-  const resetRecaptcha = () => {
-    if (window.recaptchaWidgetId != null && window.grecaptcha) {
-      window.grecaptcha.reset(window.recaptchaWidgetId);
-      return;
-    }
-
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.render().then((widgetId) => {
-        window.recaptchaWidgetId = widgetId;
-        window.grecaptcha?.reset(widgetId);
-      });
-    }
   };
 
   const handleChange = (index: number, value: string) => {
@@ -228,7 +210,6 @@ const OtpForm = () => {
         if (window.recaptchaVerifier) {
           window.recaptchaVerifier.clear();
           window.recaptchaVerifier = undefined;
-          window.recaptchaWidgetId = undefined;
         }
         // Merge any guest cart items into the user's server cart
         await mergeGuestCartOnLogin();
@@ -264,7 +245,6 @@ const OtpForm = () => {
     try {
       setResending(true);
       setOtp(["", "", "", "", "", ""]);
-      resetRecaptcha();
       const appVerifier = await setupRecaptcha();
       window.confirmationResult = undefined;
       const confirmationResult = await signInWithPhoneNumber(

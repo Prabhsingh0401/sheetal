@@ -21,10 +21,6 @@ import toast from "react-hot-toast";
 declare global {
   interface Window {
     recaptchaVerifier?: RecaptchaVerifier;
-    recaptchaWidgetId?: number;
-    grecaptcha?: {
-      reset: (widgetId?: number) => void;
-    };
   }
 }
 
@@ -179,24 +175,10 @@ const EditProfile: React.FC = () => {
           "expired-callback": () => {},
         },
       );
-      window.recaptchaWidgetId = await window.recaptchaVerifier.render();
+      await window.recaptchaVerifier.render();
     }
 
     return window.recaptchaVerifier;
-  };
-
-  const resetRecaptcha = () => {
-    if (window.recaptchaWidgetId != null && window.grecaptcha) {
-      window.grecaptcha.reset(window.recaptchaWidgetId);
-      return;
-    }
-
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.render().then((widgetId) => {
-        window.recaptchaWidgetId = widgetId;
-        window.grecaptcha?.reset(widgetId);
-      });
-    }
   };
 
   const startResendCooldown = () => {
@@ -216,7 +198,6 @@ const EditProfile: React.FC = () => {
     try {
       setPhoneLoading(true);
       setConfirmationResult(null);
-      resetRecaptcha();
       const appVerifier = await setupRecaptcha();
 
       const formattedNumber = `+91${mobileNumber}`;
@@ -274,7 +255,6 @@ const EditProfile: React.FC = () => {
           if (window.recaptchaVerifier) {
             window.recaptchaVerifier.clear();
             window.recaptchaVerifier = undefined;
-            window.recaptchaWidgetId = undefined;
           }
           setIsPhoneVerified(true);
           setShowOtpInput(false);
