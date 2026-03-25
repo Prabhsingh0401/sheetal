@@ -21,6 +21,10 @@ import toast from "react-hot-toast";
 declare global {
   interface Window {
     recaptchaVerifier?: RecaptchaVerifier;
+    recaptchaWidgetId?: number;
+    grecaptcha?: {
+      reset: (widgetId?: number) => void;
+    };
   }
 }
 
@@ -164,21 +168,7 @@ const EditProfile: React.FC = () => {
     };
   }, [profilePicturePreview]);
 
-  useEffect(() => {
-    return () => {
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = undefined;
-      }
-    };
-  }, []);
-
-  const setupRecaptcha = async (forceReset = false) => {
-    if (forceReset && window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = undefined;
-    }
-
+  const setupRecaptcha = async () => {
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
@@ -189,10 +179,24 @@ const EditProfile: React.FC = () => {
           "expired-callback": () => {},
         },
       );
-      await window.recaptchaVerifier.render();
+      window.recaptchaWidgetId = await window.recaptchaVerifier.render();
     }
 
     return window.recaptchaVerifier;
+  };
+
+  const resetRecaptcha = () => {
+    if (window.recaptchaWidgetId != null && window.grecaptcha) {
+      window.grecaptcha.reset(window.recaptchaWidgetId);
+      return;
+    }
+
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.render().then((widgetId) => {
+        window.recaptchaWidgetId = widgetId;
+        window.grecaptcha?.reset(widgetId);
+      });
+    }
   };
 
   const startResendCooldown = () => {
@@ -211,9 +215,10 @@ const EditProfile: React.FC = () => {
 
     try {
       setPhoneLoading(true);
-      const appVerifier = await setupRecaptcha(true);
+      setConfirmationResult(null);
+      resetRecaptcha();
+      const appVerifier = await setupRecaptcha();
 
-      let result;
       const formattedNumber = `+91${mobileNumber}`;
 
       // Check if ALREADY matched in our current Firebase session
@@ -228,7 +233,11 @@ const EditProfile: React.FC = () => {
       // We use signInWithPhoneNumber instead of linkWithPhoneNumber
       // to avoid 'account-exists-with-different-credential' errors.
       // The backend verifyIdToken call will handle the logical merging of accounts.
-      result = await signInWithPhoneNumber(auth, formattedNumber, appVerifier);
+      const result = await signInWithPhoneNumber(
+        auth,
+        formattedNumber,
+        appVerifier,
+      );
 
       setConfirmationResult(result);
       setShowOtpInput(true);
@@ -262,6 +271,11 @@ const EditProfile: React.FC = () => {
           // If successful, the backend has linked/merged the accounts
           login(verifyRes.token, verifyRes.user);
           sessionStorage.removeItem(RESEND_AVAILABLE_AT_KEY);
+          if (window.recaptchaVerifier) {
+            window.recaptchaVerifier.clear();
+            window.recaptchaVerifier = undefined;
+            window.recaptchaWidgetId = undefined;
+          }
           setIsPhoneVerified(true);
           setShowOtpInput(false);
           toast.success(

@@ -15,6 +15,17 @@ import { mergeGuestCartOnLogin } from "../../hooks/useCart";
 import { consumeRedirectTarget, syncRedirectFromQuery } from "../../utils/authRedirect";
 import toast from "react-hot-toast";
 
+declare global {
+  interface Window {
+    recaptchaVerifier?: RecaptchaVerifier;
+    confirmationResult?: ConfirmationResult;
+    recaptchaWidgetId?: number;
+    grecaptcha?: {
+      reset: (widgetId?: number) => void;
+    };
+  }
+}
+
 const RECAPTCHA_CONTAINER_ID = "recaptcha-container";
 const RESEND_AVAILABLE_AT_KEY = "otp_resend_available_at";
 const RESEND_DELAY_SECONDS = 20;
@@ -86,12 +97,7 @@ const OtpForm = () => {
     setResendCooldown(RESEND_DELAY_SECONDS);
   };
 
-  const setupRecaptcha = async (forceReset = false) => {
-    if (forceReset && window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = undefined;
-    }
-
+  const setupRecaptcha = async () => {
     if (window.recaptchaVerifier) {
       return window.recaptchaVerifier;
     }
@@ -107,8 +113,22 @@ const OtpForm = () => {
     );
 
     window.recaptchaVerifier = recaptchaVerifier;
-    await window.recaptchaVerifier.render();
+    window.recaptchaWidgetId = await window.recaptchaVerifier.render();
     return window.recaptchaVerifier;
+  };
+
+  const resetRecaptcha = () => {
+    if (window.recaptchaWidgetId != null && window.grecaptcha) {
+      window.grecaptcha.reset(window.recaptchaWidgetId);
+      return;
+    }
+
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.render().then((widgetId) => {
+        window.recaptchaWidgetId = widgetId;
+        window.grecaptcha?.reset(widgetId);
+      });
+    }
   };
 
   const handleChange = (index: number, value: string) => {
@@ -205,6 +225,11 @@ const OtpForm = () => {
         sessionStorage.removeItem("login_phone_number");
         sessionStorage.removeItem(RESEND_AVAILABLE_AT_KEY);
         window.confirmationResult = undefined;
+        if (window.recaptchaVerifier) {
+          window.recaptchaVerifier.clear();
+          window.recaptchaVerifier = undefined;
+          window.recaptchaWidgetId = undefined;
+        }
         // Merge any guest cart items into the user's server cart
         await mergeGuestCartOnLogin();
         toast.success("Logged in successfully!");
@@ -239,7 +264,9 @@ const OtpForm = () => {
     try {
       setResending(true);
       setOtp(["", "", "", "", "", ""]);
-      const appVerifier = await setupRecaptcha(true);
+      resetRecaptcha();
+      const appVerifier = await setupRecaptcha();
+      window.confirmationResult = undefined;
       const confirmationResult = await signInWithPhoneNumber(
         auth,
         `+91${phoneNumber}`,
