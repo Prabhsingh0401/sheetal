@@ -165,6 +165,11 @@ const EditProfile: React.FC = () => {
   }, [profilePicturePreview]);
 
   const setupRecaptcha = async () => {
+    if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = undefined;
+    }
+
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,

@@ -61,19 +61,21 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
       <div className="w-full lg:w-8/12">
         {/* Header */}
         <div className="flex flex-wrap justify-start items-center gap-3 mb-4">
-          <h2 className="text-2xl flex items-end gap-3 md:text-3xl text-[#6a3f07]">
-            My Cart
-            <span className="text-sm font-light mb-1">
+          <div className="flex items-end gap-2 mr-4">
+            <h2 className="text-[30px] md:text-3xl text-[#6a3f07] font-optima">
+              My Cart
+            </h2>
+            <span className="text-[16px] font-normal mb-1 font-[family-name:var(--font-montserrat)]">
               ({cartLength} items)
             </span>
-          </h2>
-          <div className="flex gap-4 items-center">
+          </div>
+          <div className="flex gap-7 items-center">
             <div className="cursor-pointer">
               <Image
                 src="/assets/icons/share.svg"
                 alt="Share"
-                width={17}
-                height={17}
+                width={20}
+                height={20}
               />
             </div>
             <button
@@ -83,8 +85,8 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
               <Image
                 src="/assets/icons/delete.svg"
                 alt="Delete Selected"
-                width={20}
-                height={20}
+                width={22}
+                height={22}
               />
             </button>
             <button
@@ -94,8 +96,8 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
               <Image
                 src="/assets/icons/heart-b.svg"
                 alt="Wishlist Selected"
-                width={20}
-                height={20}
+                width={22}
+                height={22}
               />
             </button>
           </div>
@@ -118,22 +120,30 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             const productHref = `/product/${encodeURIComponent(item.product.slug)}`;
 
             return (
-              <div
-                key={item._id}
-                className="flex items-start px-2 md:px-4 py-5 gap-3"
-              >
-                {/* Checkbox */}
-                <div className="pt-1 shrink-0">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 accent-green-600 cursor-pointer"
-                    checked={selectedItemIds.includes(item._id)}
-                    onChange={() => onSelectionChange(item._id)}
-                  />
-                </div>
-
+              <div key={item._id} className="flex  items-start py-5 gap-3">
                 {/* Image */}
                 <div className="w-[70px] md:w-[90px] shrink-0">
+                  {/* Checkbox */}
+                  <div className="pt-1 shrink-0 relative">
+                    <input
+                      type="checkbox"
+                      className="peer w-4 h-4 absolute top-2 left-1 appearance-none rounded-full border border-[#bd9951] bg-gray-300 checked:bg-green-600 checked:border-green-600 cursor-pointer"
+                      checked={selectedItemIds.includes(item._id)}
+                      onChange={() => onSelectionChange(item._id)}
+                    />
+
+                    {/* Tick */}
+                    <svg
+                      className="absolute top-[7px] left-[4px] w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="5"
+                    >
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+
                   <Link href={productHref} className="block">
                     <Image
                       src={getApiImageUrl(
@@ -148,10 +158,10 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                 </div>
 
                 {/* Product Info + Price (stacked on mobile, side-by-side on md+) */}
-                <div className="flex flex-1 flex-col md:flex-row md:items-start md:justify-between gap-2 min-w-0">
+                <div className="flex flex-1 flex-col md:flex-row md:items-start md:justify-between gap-2 min-w-0 md:pr-8">
                   {/* Left: name, color/size, coupon, wishlist */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-[13px] md:text-[15px] font-semibold leading-snug line-clamp-2">
+                    <h3 className="text-[13px] md:text-[15px] tracking-[1px] leading-snug line-clamp-2 font-[family-name:var(--font-montserrat)]">
                       <Link
                         href={productHref}
                         className="hover:text-[#bd9951] transition-colors"
@@ -159,8 +169,9 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                         {item.product.name}
                       </Link>
                     </h3>
-                    <p className="text-xs md:text-sm text-gray-600 mt-1">
-                      Color: {item.color} | Size: {item.size}
+                    <p className="text-xs md:text-[12px] tracking-[1px] text-gray-600 mt-1 font-[family-name:var(--font-montserrat)]">
+                      <strong>Color:</strong> {item.color} |{" "}
+                      <strong>Size:</strong> {item.size}
                     </p>
 
                     {applicableCategories.length > 0 &&
@@ -179,7 +190,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       )}
 
                     <button
-                      className="text-xs cursor-pointer md:text-sm text-[#bd9951] hover:underline mt-2 block"
+                      className="text-xs cursor-pointer md:text-[12px] tracking-[1px] text-[#bd9951] font-[family-name:var(--font-montserrat)] underline underline-offset-2 mt-2 block"
                       onClick={() =>
                         moveFromCartToWishlist(item._id, item.product._id)
                       }
@@ -191,18 +202,18 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                   {/* Right: price + qty */}
                   <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-2 shrink-0">
                     {/* Price row */}
-                    <div className="flex flex-wrap items-center gap-1 md:gap-2 md:justify-end">
-                      <span className="font-semibold text-[13px] md:text-[15px]">
-                        ₹ {(displayDiscountPrice*item.quantity).toFixed(2)}
+                    <div className="flex flex-wrap items-center gap-1 md:gap-2 md:justify-end font-bold font-[family-name:var(--font-montserrat)]">
+                      <span className="text-[13px] md:text-[14px]">
+                        ₹ {(displayDiscountPrice * item.quantity).toFixed(2)}
                       </span>
                       {displayOriginalPrice > displayDiscountPrice && (
-                        <span className="text-xs text-gray-500 line-through">
-                          ₹ {(displayOriginalPrice*item.quantity).toFixed(2)}
+                        <span className="text-[14px] text-gray-500 line-through">
+                          ₹ {(displayOriginalPrice * item.quantity).toFixed(2)}
                         </span>
                       )}
                       {discountPercentage > 0 && (
-                        <span className="text-xs text-green-600">
-                          {discountPercentage}% OFF
+                        <span className="text-[14px] text-[#6a3f0e]">
+                          [ {discountPercentage}% OFF ]
                         </span>
                       )}
                       {itemWiseDiscount && itemWiseDiscount[item._id] > 0 && (
@@ -237,7 +248,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                 </div>
 
                 {/* Remove */}
-                <div className="pt-1 shrink-0">
+                <div className="shrink-0">
                   <button
                     className="text-gray-500 hover:text-red-600 cursor-pointer"
                     onClick={() => handleRemoveItem(item)}

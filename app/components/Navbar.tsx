@@ -21,6 +21,16 @@ import {
   getProductHoverImageUrl,
   Product,
 } from "../services/productService";
+import {
+  Heart,
+  HeartIcon,
+  Search,
+  SearchIcon,
+  ShoppingBag,
+  User,
+  User2,
+  User2Icon,
+} from "lucide-react";
 
 // Helper to check if category has any tags
 const hasTags = (category: Category) => {
@@ -51,137 +61,146 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
     },
   ].filter((g) => g.items && g.items.length > 0);
 
-  const isGrid = tagGroups.length > 3;
+  const tagColCount = Math.min(tagGroups.length, 6);
+  const productColCount = Math.min(Math.max(6 - tagColCount, 0), 4);
 
   const [latestProducts, setLatestProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
   useEffect(() => {
     const loadLatestProducts = async () => {
-      // console.log("Fetching mega menu products for:", category.name, category._id);
       try {
         setLoadingProducts(true);
-        // Fetch latest 2 products for this category
         const res = await fetchProducts({
           category: category._id,
-          limit: 2,
+          limit: productColCount || 4,
           sort: "-createdAt",
           status: "Active",
         });
-
-        // console.log("Mega menu products res:", res);
-
         if (res.success && res.products) {
-          setLatestProducts(res.products);
+          setLatestProducts(res.products.slice(0, productColCount || 4));
         }
       } catch (err) {
-        // console.error("Failed to load mega menu products", err);
+        // silent
       } finally {
         setLoadingProducts(false);
       }
     };
 
-    if (category._id) {
-      loadLatestProducts();
-    }
-  }, [category._id]);
+    if (category._id) loadLatestProducts();
+  }, [category._id, productColCount]);
 
   return (
     <div
-      className={`
-        fixed left-0 right-0 w-full text-left 
-        opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-        transition-all duration-300 z-[1004]
-      `}
+      className="fixed left-0 right-0 w-full text-left opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[1004]"
       style={{ top: "calc(15px + 63px)" }}
     >
       <div className="bg-white/98 backdrop-blur-md border-t border-gray-200 shadow-2xl">
-        <div className="container px-4 py-8">
-          <div className="grid grid-cols-12 gap-6">
-            {/* Tag Groups Section */}
-            <div className={`col-span-8 grid grid-cols-5 gap-4`}>
-              {tagGroups.map((group, idx) => (
-                <div
-                  key={idx}
-                  className={`bg-gray-50 p-4 rounded-lg shadow-sxl ${isGrid ? "col-span-1" : "col-span-1"}`}
-                >
-                  <h3 className="font-medium text-lg mb-3 text-[#c18a08] tracking-wide">
-                    {group.title}
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    {group.items?.map((tag) => (
-                      <li key={tag}>
-                        <Link
-                          href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
-                          className="flex items-center font-medium gap-1.5 text-gray-900 hover:text-[#c18a08] transition-colors capitalize"
-                        >
-                          <span className="text-gray-900 text-[20px] leading-none">
-                            •
-                          </span>
-                          {tag}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+        <div className="container px-4 py-6">
+          <div className="grid grid-cols-6 gap-4">
+            {/* Tag group columns — always start from the left */}
+            {tagGroups.slice(0, 6).map((group, idx) => (
+              <div
+                key={idx}
+                className="col-span-1 bg-[#cccccc1c] p-4 rounded-lg"
+              >
+                <h3 className="font-medium text-[15px] md:text-[17px] mb-3 text-[#c18a08] tracking-wide">
+                  {group.title}
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  {group.items?.map((tag) => (
+                    <li key={tag}>
+                      <Link
+                        href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
+                        className="flex items-center font-medium gap-1.5 text-gray-900 hover:text-[#c18a08] transition-colors capitalize text-[15px] font-[family-name:var(--font-mentserrat)] "
+                      >
+                        <span className="text-[#121212] text-[16px] leading-none">
+                          •
+                        </span>
+                        {tag}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
 
-            {/* Product Images Section */}
-            <div className="col-span-4 grid grid-cols-2 gap-4">
-              {loadingProducts ? (
-                // Loading Skeletons
-                <>
-                  <div className="animate-pulse bg-gray-200 h-[250px] rounded-lg"></div>
-                  <div className="animate-pulse bg-gray-200 h-[250px] rounded-lg"></div>
-                </>
-              ) : latestProducts.length > 0 ? (
-                latestProducts.map((product) => (
-                  <div key={product._id} className="text-center group/product">
-                    <div className="mb-2 overflow-hidden rounded-lg relative">
+            {/* Product columns — pinned to the right via gridColumnStart */}
+            {productColCount > 0 && (
+              <>
+                {loadingProducts ? (
+                  Array.from({ length: productColCount }).map((_, i) => (
+                    <div
+                      key={`skel-${i}`}
+                      style={
+                        i === 0
+                          ? { gridColumnStart: 7 - productColCount }
+                          : undefined
+                      }
+                      className="col-span-1 animate-pulse bg-gray-200 h-[260px] rounded-lg"
+                    />
+                  ))
+                ) : latestProducts.length > 0 ? (
+                  latestProducts.slice(0, productColCount).map((product, i) => (
+                    <div
+                      key={product._id}
+                      style={
+                        i === 0
+                          ? { gridColumnStart: 7 - productColCount }
+                          : undefined
+                      }
+                      className="col-span-1 text-center group/product"
+                    >
+                      <div className="mb-2 overflow-hidden rounded-lg relative">
+                        <Link href={`/product/${product.slug}`}>
+                          <Image
+                            src={getProductImageUrl(product)}
+                            alt={product.name}
+                            width={250}
+                            height={300}
+                            className="w-full h-[250px] object-cover opacity-100 group-hover/product:opacity-0 transition-opacity duration-500"
+                          />
+                          <Image
+                            src={getProductHoverImageUrl(product)}
+                            alt={product.name}
+                            width={250}
+                            height={300}
+                            className="absolute inset-0 w-full h-[250px] object-cover opacity-0 group-hover/product:opacity-100 transition-opacity duration-500"
+                          />
+                        </Link>
+                      </div>
                       <Link href={`/product/${product.slug}`}>
-                        <Image
-                          src={getProductImageUrl(product)}
-                          alt={product.name}
-                          width={250}
-                          height={300}
-                          className="w-full h-[250px] object-cover opacity-100 group-hover/product:opacity-0 transition-opacity duration-500"
-                        />
-                        <Image
-                          src={getProductHoverImageUrl(product)}
-                          alt={product.name}
-                          width={250}
-                          height={300}
-                          className="absolute inset-0 w-full h-[250px] object-cover opacity-0 group-hover/product:opacity-100 transition-opacity duration-500"
-                        />
+                        <p className="font-semibold text-sm text-gray-800 mb-1 hover:text-[#b3a660] transition-colors line-clamp-1">
+                          {product.name}
+                        </p>
+                      </Link>
+                      <Link
+                        href={`/product/${product.slug}`}
+                        className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium"
+                      >
+                        Shop Now
                       </Link>
                     </div>
-                    <Link href={`/product/${product.slug}`}>
-                      <p className="font-semibold text-sm text-gray-800 mb-1 hover:text-[#b3a660] transition-colors line-clamp-1">
-                        {product.name}
-                      </p>
-                    </Link>
-                    <Link
-                      href={`/product/${product.slug}`}
-                      className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium"
-                    >
-                      Shop Now
-                    </Link>
+                  ))
+                ) : (
+                  <div
+                    style={{
+                      gridColumnStart: 7 - productColCount,
+                      gridColumn: `span ${productColCount}`,
+                    }}
+                    className="flex items-center justify-center h-[250px] bg-white rounded-lg border border-gray-100"
+                  >
+                    <Image
+                      src="/assets/625030871.png"
+                      alt="Sheetal"
+                      width={180}
+                      height={120}
+                      className="object-contain"
+                    />
                   </div>
-                ))
-              ) : (
-                // Fallback: centered logo on white background
-                <div className="col-span-2 flex items-center justify-center h-[250px] bg-white rounded-lg border border-gray-100">
-                  <Image
-                    src="/assets/625030871.png"
-                    alt="Sheetal"
-                    width={180}
-                    height={120}
-                    className="object-contain"
-                  />
-                </div>
-              )}
-            </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -202,8 +221,7 @@ const DesktopMenuItem = ({ item }: { item: any }) => {
       <Link
         href={item.href || "#"}
         className={`
-          px-[19px] !text-[#b3a660] 
-          tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-2
+          px-[19px] tracking-[1px] font-light text-[15px] text-[#f5eaac] hover:text-[#c18a08] transition-colors flex items-center gap-2
         `}
       >
         {item.label}
@@ -594,7 +612,9 @@ const Navbar = () => {
   // const { data: settings } = useSWR("/settings", getSettings);
 
   const [navItems, setNavItems] = useState<any[]>([]);
-  const wishlistHref = isAuthenticated() ? "/wishlist" : "/login?redirect=/wishlist";
+  const wishlistHref = isAuthenticated()
+    ? "/wishlist"
+    : "/login?redirect=/wishlist";
 
   useEffect(() => {
     if (categories) {
@@ -683,13 +703,7 @@ const Navbar = () => {
     if (!isClient) {
       return (
         <Link href="/login" className="hover:opacity-80 transition-opacity">
-          <Image
-            src="/assets/icons/user.svg"
-            alt="User"
-            width={24}
-            height={24}
-            className="w-6 h-6"
-          />
+          <User2Icon className="font-thin text-[#f4e9ab]" strokeWidth={1} />
         </Link>
       );
     }
@@ -705,12 +719,9 @@ const Navbar = () => {
             href="/my-account"
             className="hover:opacity-80 transition-opacity"
           >
-            <Image
-              src="/assets/icons/user.svg"
-              alt="User"
-              width={24}
-              height={24}
-              className="w-6 h-6"
+            <User2Icon
+              className="w-6 h-6 text-[#f4e9ab] font-extralight"
+              strokeWidth={1}
             />
           </Link>
           {isUserDropdownOpen && (
@@ -740,12 +751,9 @@ const Navbar = () => {
 
     return (
       <Link href="/login" className="hover:opacity-80 transition-opacity">
-        <Image
-          src="/assets/icons/user.svg"
-          alt="User"
-          width={24}
-          height={24}
-          className="w-6 h-6"
+        <User2Icon
+          className="w-6 h-6 text-[#f4e9ab] font-extralight"
+          strokeWidth={1}
         />
       </Link>
     );
@@ -755,7 +763,7 @@ const Navbar = () => {
     <>
       {/* Top Header (Desktop) - Links & Icons */}
       <div
-        className={`hidden md:flex justify-center fixed w-full z-[1003] transition-all duration-100 bg-[#082722]/90 backdrop-blur-sm py-[16px] font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[24px]"}`}
+        className={`hidden md:flex justify-center fixed w-full z-[1003] transition-all duration-100 bg-[#082722]/90 backdrop-blur-sm py-[18px] font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[24px]"}`}
       >
         <div className="container mx-5">
           <div className="flex justify-end items-center w-full">
@@ -778,30 +786,28 @@ const Navbar = () => {
                 ))}
 
                 {/* Icons */}
-                <li className="flex items-center gap-4 pl-5 ml-2">
+                <li className="flex items-center gap-6 pl-5 ml-2">
                   <button
                     onClick={toggleSearch}
                     className="hover:opacity-80 transition-opacity cursor-pointer"
                   >
-                    <Image
-                      src="/assets/icons/search.svg"
-                      alt="Search"
-                      width={24}
-                      height={24}
-                      className="w-7 h-7"
-                    />
+                    <svg
+                      className="text-[#f4e9ab] h-6.5 w-6.5"
+                      viewBox="0 0 50 50"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="currentColor"
+                    >
+                      <path d="M20.745 32.62c2.883 0 5.606-1.022 7.773-2.881L39.052 40.3c.195.196.452.294.708.294.255 0 .511-.097.706-.292.391-.39.392-1.023.002-1.414L29.925 28.319c3.947-4.714 3.717-11.773-.705-16.205-2.264-2.27-5.274-3.52-8.476-3.52s-6.212 1.25-8.476 3.52c-4.671 4.683-4.671 12.304 0 16.987 2.264 2.269 5.274 3.519 8.477 3.519zm-7.06-19.094c1.886-1.891 4.393-2.932 7.06-2.932s5.174 1.041 7.06 2.932c3.895 3.905 3.895 10.258 0 14.163-1.886 1.891-4.393 2.932-7.06 2.932s-5.174-1.041-7.06-2.932c-3.894-3.905-3.894-10.258 0-14.163z" />
+                    </svg>
                   </button>
                   <UserIcon />
                   <Link
                     href={wishlistHref}
                     className="relative hover:opacity-80 transition-opacity hidden md:block"
                   >
-                    <Image
-                      src="/assets/icons/heart.svg"
-                      alt="Wishlist"
-                      width={24}
-                      height={24}
-                      className="w-6 h-6"
+                    <HeartIcon
+                      className="w-5.5 h-5.5 text-[#f4e9ab]"
+                      strokeWidth={1}
                     />
                     <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                       {wishlist.length}
@@ -811,13 +817,43 @@ const Navbar = () => {
                     href="/cart"
                     className="relative hover:opacity-80 transition-opacity"
                   >
-                    <Image
-                      src="/assets/icons/shopping-bag.png"
-                      alt="Cart"
-                      width={24}
-                      height={24}
+                    <svg
                       className="w-7 h-7"
-                    />
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                      <g
+                        id="SVGRepo_tracerCarrier"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></g>
+                      <g id="SVGRepo_iconCarrier">
+                        {" "}
+                        <path
+                          d="M5 9C5 7.89543 5.89543 7 7 7H17C18.1046 7 19 7.89543 19 9V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V9Z"
+                          stroke="#f4e9ab"
+                          stroke-width="0.75"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        ></path>{" "}
+                        <path
+                          d="M15 7V6C15 4.34315 13.6569 3 12 3V3C10.3431 3 9 4.34315 9 6V7"
+                          stroke="#f4e9ab"
+                          stroke-width="0.75"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        ></path>{" "}
+                        <path
+                          d="M9 11L9 12C9 13.6569 10.3431 15 12 15V15C13.6569 15 15 13.6569 15 12L15 11"
+                          stroke="#f4e9ab"
+                          stroke-width="0.75"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        ></path>{" "}
+                      </g>
+                    </svg>
                     <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                       {cartItemCount}
                     </span>
@@ -844,49 +880,90 @@ const Navbar = () => {
             />
           </Link>
           <div className="flex items-center gap-4">
-            <button onClick={toggleSearch}>
-              <Image
-                src="/assets/icons/search.svg"
-                alt="Search"
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
+            <button
+              onClick={toggleSearch}
+              className="hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <Search className="w-6 h-6 text-[#f4e9ab]" strokeWidth={1} />
             </button>
+
             <UserIcon />
-            <Link href={wishlistHref} className="relative">
-              <Image
-                src="/assets/icons/heart.svg"
-                alt="Wishlist"
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
+
+            <Link
+              href={wishlistHref}
+              className="relative hover:opacity-80 transition-opacity"
+            >
+              <Heart className="w-6 h-6 text-[#f4e9ab]" strokeWidth={1} />
               <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                 {wishlist.length}
               </span>
             </Link>
-            <Link href="/cart" className="relative">
-              <Image
-                src="/assets/icons/shopping-bag.svg"
-                alt="Cart"
-                width={24}
-                height={24}
-                className="w-9 h-9 mb-2"
-              />
-              <span className="absolute top-0.5 -right-1 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+
+            <Link
+              href="/cart"
+              className="relative hover:opacity-80 transition-opacity"
+            >
+              <svg
+                className="w-7 h-7"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <path
+                    d="M5 9C5 7.89543 5.89543 7 7 7H17C18.1046 7 19 7.89543 19 9V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V9Z"
+                    stroke="#f4e9ab"
+                    stroke-width="0.75"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                  <path
+                    d="M15 7V6C15 4.34315 13.6569 3 12 3V3C10.3431 3 9 4.34315 9 6V7"
+                    stroke="#f4e9ab"
+                    stroke-width="0.75"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                  <path
+                    d="M9 11L9 12C9 13.6569 10.3431 15 12 15V15C13.6569 15 15 13.6569 15 12L15 11"
+                    stroke="#f4e9ab"
+                    stroke-width="0.75"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>{" "}
+                </g>
+              </svg>
+              <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                 {cartItemCount}
               </span>
             </Link>
-            <div className="cursor-pointer" onClick={toggleMobileMenu}>
-              <Image
-                src="/assets/icons/hambuger.svg"
-                width={24}
-                height={24}
-                alt="Menu"
-                className="w-6 h-6"
-              />
-            </div>
+
+            <button
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={toggleMobileMenu}
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#f4e9ab"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
           </div>
         </div>
       </header>

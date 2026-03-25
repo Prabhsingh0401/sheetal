@@ -168,7 +168,7 @@ const HomeBanner = () => {
                 alt="Studio By Sheetal"
                 width={300}
                 height={100}
-                className="w-auto h-[260px]"
+                className="w-auto h-[230px]"
               />
             </Link>
           </div>
@@ -185,7 +185,7 @@ const HomeBanner = () => {
                 className="banner-carousel-item outline-none"
               >
                 <Link href={banner.link || "#"}>
-                  <div className="relative w-full h-[100svh]">
+                  <div className="relative w-full h-[100vh]">
                     <Image
                       src={getApiImageUrl(
                         banner.image.mobile,
@@ -210,7 +210,7 @@ const HomeBanner = () => {
                 alt="Studio By Sheetal"
                 width={300}
                 height={100}
-                className="w-auto h-[160px]"
+                className="w-auto h-[150px]"
               />
             </Link>
           </div>

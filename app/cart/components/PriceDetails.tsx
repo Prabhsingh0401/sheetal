@@ -142,17 +142,17 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
     <>
       <div className="mt-5 font-[family-name:var(--font-monterrat)]">
         <div className="p-4">
-          <h3 className="text-md font-bold mb-4 uppercase">Coupons</h3>
+          <h3 className="text-[15px] font-bold mb-4 uppercase transform scale-y-90 tracking-[1px] font-[family-name:var(--font-monterrat)]">Coupons</h3>
 
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 flex-1">
+            <div className="flex items-center gap-3 flex-1">
               <Image
                 src="/assets/icons/tag.svg"
                 alt="Coupon"
                 width={20}
                 height={20}
               />
-              <h1 className="text-sm font-semibold uppercase">
+              <h1 className="text-[15px] text-[#333333] font-semibold mb-1">
                 {couponCode ? (
                   <span className="text-green-600">{couponCode}</span>
                 ) : (
@@ -201,36 +201,36 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
             </p>
           )}
 
-          <h3 className="text-md font-bold mb-4 uppercase mt-5">
+          <h3 className="text-[15px] font-bold mb-4 uppercase mt-5">
             Price Details ({cartLength} {cartLength === 1 ? "Item" : "Items"})
           </h3>
 
           <div className="space-y-5 text-sm">
-            <div className="flex justify-between">
-              <span>Total MRP</span>
-              <span>₹{totalMrp.toFixed(2)}</span>
+            <div className="flex justify-between font-[family-name:var(--font-montserrat)]">
+              <span className="font-medium">Total MRP</span>
+              <span className=" font-medium">₹{totalMrp.toFixed(2)}</span>
             </div>
 
             {totalDiscount > 0 && (
-              <div className="flex justify-between">
-                <span>Discount on MRP</span>
-                <span className="text-green-600">
+              <div className="flex justify-between font-[family-name:var(--font-montserrat)]">
+                <span className="font-medium">Discount on MRP</span>
+                <span className="text-green-600 font-medium">
                   -₹{totalDiscount.toFixed(2)}
                 </span>
               </div>
             )}
 
             {couponDiscount > 0 && (
-              <div className="flex justify-between">
-                <span>Coupon Discount</span>
-                <span className="text-green-600 font-semibold">
+              <div className="flex justify-between font-[family-name:var(--font-montserrat)]">
+                <span className="font-medium">Coupon Discount</span>
+                <span className="text-green-600 font-semibold font-medium">
                   -₹{couponDiscount.toFixed(2)}
                 </span>
               </div>
             )}
 
-            <div className="flex justify-between">
-              <span>Shipping Charges</span>
+            <div className="flex justify-between font-[family-name:var(--font-montserrat)]">
+              <span className="font-medium">Shipping Charges</span>
               <span className={shippingCharges === 0 ? "text-green-600" : ""}>
                 {shippingCharges === 0
                   ? "FREE"
@@ -239,12 +239,12 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
             </div>
 
             {platformFee > 0 && (
-              <div className="flex justify-between">
+              <div className="flex justify-between font-[family-name:var(--font-montserrat)]">
                 <span>
                   Platform Fee
                   <Link
                     href="#"
-                    className="text-[#73561e] text-sm underline ml-3"
+                    className="text-[#73561e] text-sm font-medium underline ml-3"
                   >
                     Know More
                   </Link>
@@ -255,19 +255,19 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
             )}
           </div>
 
-          <div className="flex justify-between font-bold text-lg mt-3 border-t border-gray-200 pt-3">
+          <div className="flex font-[family-name:var(--font-montserrat)] justify-between font-bold text-lg mt-3 border-t border-gray-200 pt-3">
             <span>Total Amount</span>
             <span>₹{totalAmount.toFixed(2)}</span>
           </div>
 
-          <p className="text-xs text-gray-500 text-right mt-1">
+          <p className="text-[12px] font-[family-name:var(--font-montserrat)] font-bold text-gray-500 text-right mt-1">
             Tax included. Shipping Calculated at checkout.
           </p>
 
           {!hideProceedButton && (
             <button
               onClick={onProceed}
-              className="w-full block text-center bg-[#be9952] text-white py-3 rounded-[5px] mt-6 font-bold uppercase hover:bg-[#5a3506] transition-colors cursor-pointer"
+              className="w-full block text-[20px] font-[family-name:var(--font-montserrat)] text-center bg-[#72561e] text-white py-3 rounded-[5px] mt-6 font-semibold uppercase hover:bg-green-500 transition-colors cursor-pointer transform duration-200"
             >
               Proceed to Buy
             </button>
@@ -369,7 +369,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
               <button
                 onClick={applyCouponAndClose}
                 disabled={!selectedCouponCode}
-                className="w-full bg-[#ff9900] text-white py-3 font-bold uppercase transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-[#e68a00]"
+                className="w-full bg-[#ff9900] cursor-pointer text-white py-3 font-bold uppercase transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-[#e68a00]"
               >
                 Apply Coupon
               </button>

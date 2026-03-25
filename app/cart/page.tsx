@@ -9,10 +9,8 @@ import CartItemsList from "./components/CartItemsList";
 import PriceDetails from "./components/PriceDetails";
 import { getSettings } from "../services/settingsService";
 import { isAuthenticated } from "../services/authService";
-import {
-  peekRedirectField,
-  redirectToLogin,
-} from "../utils/authRedirect";
+import { peekRedirectField, redirectToLogin } from "../utils/authRedirect";
+import Footer from "../components/Footer";
 
 const CartPage = () => {
   const router = useRouter();
@@ -129,7 +127,9 @@ const CartPage = () => {
         for (const id of selectedItemIds) {
           const item = cartItems.find((i) => i._id === id);
           if (item) {
-            await moveFromCartToWishlist(id, item.product._id, { silent: true });
+            await moveFromCartToWishlist(id, item.product._id, {
+              silent: true,
+            });
           }
         }
         toast.success(
@@ -137,7 +137,10 @@ const CartPage = () => {
         );
         setSelectedItemIds([]);
       } else if (itemToRemove) {
-        await moveFromCartToWishlist(itemToRemove._id, itemToRemove.product._id);
+        await moveFromCartToWishlist(
+          itemToRemove._id,
+          itemToRemove.product._id,
+        );
         setItemToRemove(null);
       }
       setIsModalOpen(false);
@@ -233,8 +236,8 @@ const CartPage = () => {
   return (
     <div className="font-montserrat">
       {/* Header */}
-      <div className="w-full border-b border-gray-100">
-        <div className="flex justify-between items-center py-3 px-6 md:px-10">
+      <div className="w-full">
+        <div className="flex justify-between items-center py-8 px-6 md:px-10">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/">
@@ -248,15 +251,17 @@ const CartPage = () => {
           </div>
 
           {/* Checkout Steps */}
-          <div className="hidden md:flex items-center space-x-8 text-sm font-medium">
-            <div className="text-[#bd9951]">BAG</div>
+          <div className="hidden md:flex items-center text-[15px] space-x-2 font-[family-name:var(--font-montserrat)]">
+            <div className="text-[#0d9842] font-medium ">BAG</div>
+            <div className="text-[#bd9951]">----------</div>
             <Link
               href="/checkout/address"
-              className="text-gray-400 hover:text-[#bd9951]"
+              className="text-black font-medium hover:text-[#bd9951]"
             >
               ADDRESS
             </Link>
-            <div className="text-gray-400">PAYMENT</div>
+            <div className="text-[#bd9951]">----------</div>
+            <div className="textblack cursor-not-allowed font-medium">PAYMENT</div>
           </div>
 
           {/* Secure Badge */}
@@ -264,8 +269,8 @@ const CartPage = () => {
             <Image
               src="/assets/icons/shield.svg"
               alt="Secure"
-              width={20}
-              height={20}
+              width={30}
+              height={30}
             />
             <span>100% SECURE</span>
           </div>
@@ -372,6 +377,7 @@ const CartPage = () => {
           </>
         )}
       </div>
+      <Footer/>
     </div>
   );
 };

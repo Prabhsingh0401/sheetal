@@ -42,6 +42,11 @@ const LoginForm = () => {
 
   const setupRecaptcha = async () => {
     if (window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = undefined;
+    }
+
+    if (window.recaptchaVerifier) {
       return window.recaptchaVerifier;
     }
 
