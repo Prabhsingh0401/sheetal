@@ -130,22 +130,38 @@ const EditProfile: React.FC = () => {
       if (profilePicturePreview) {
         URL.revokeObjectURL(profilePicturePreview);
       }
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-      }
     };
   }, [profilePicturePreview]);
 
-  const setupRecaptcha = () => {
+  useEffect(() => {
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = undefined;
+      }
+    };
+  }, []);
+
+  const setupRecaptcha = async (forceReset = false) => {
+    if (forceReset && window.recaptchaVerifier) {
+      window.recaptchaVerifier.clear();
+      window.recaptchaVerifier = undefined;
+    }
+
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
         auth,
         "recaptcha-container",
         {
           size: "invisible",
+          callback: () => {},
+          "expired-callback": () => {},
         },
       );
+      await window.recaptchaVerifier.render();
     }
+
+    return window.recaptchaVerifier;
   };
 
   const handleSendOtp = async () => {
@@ -156,8 +172,7 @@ const EditProfile: React.FC = () => {
 
     try {
       setPhoneLoading(true);
-      setupRecaptcha();
-      const appVerifier = window.recaptchaVerifier!;
+      const appVerifier = await setupRecaptcha(true);
 
       let result;
       const formattedNumber = `+91${mobileNumber}`;
