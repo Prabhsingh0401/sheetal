@@ -147,7 +147,7 @@ const Collections = () => {
                 {products.map((product) => (
                   <div
                     key={product._id}
-                    className="flex-shrink-0 w-[75%] sm:w-[48%] md:w-[32%] lg:w-[25%]"
+                    className="shrink-0 w-[75%] sm:w-[48%] md:w-[32%] lg:w-[25%]"
                   >
                     <ProductCard
                       product={product}
@@ -257,7 +257,7 @@ function ProductCard({
           </button>
         </div>
 
-        <Link href={href} className="block h-full w-full relative">
+        <Link href={href} className="block h-full w-[full] relative">
           <Image
             src={product.image}
             alt={product.imageAlt}

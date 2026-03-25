@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   MouseEvent,
 } from "react";
 import Image from "next/image";
@@ -21,6 +22,7 @@ interface ProductImageGalleryProps {
   onToggleWishlist: () => void;
   onScrollToSimilar: () => void;
   videoUrl?: string;
+  videoMimeType?: string;
 }
 
 const ZOOM_SCALE = 2.5; // How much to zoom in on hover
@@ -34,6 +36,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   onToggleWishlist,
   onScrollToSimilar,
   videoUrl,
+  videoMimeType,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -46,7 +49,20 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   const [isZooming, setIsZooming] = useState(false);
   const [transformOrigin, setTransformOrigin] = useState("50% 50%");
 
-  const media = videoUrl ? [...images, videoUrl] : images;
+  const media = useMemo(
+    () => (videoUrl ? [...images, videoUrl] : images),
+    [images, videoUrl],
+  );
+  const isVideoVisible = Boolean(videoUrl) && showVideo;
+  const resolvedVideoType =
+    videoMimeType ||
+    (videoUrl?.match(/\.(webm)(\?|#|$)/i)
+      ? "video/webm"
+      : videoUrl?.match(/\.(mov)(\?|#|$)/i)
+        ? "video/quicktime"
+        : videoUrl?.match(/\.(mkv)(\?|#|$)/i)
+          ? "video/x-matroska"
+          : "video/mp4");
 
   // Embla for Mobile Slider
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
@@ -94,7 +110,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   }, []);
 
   useEffect(() => {
-    updateScrollState();
+    const frame = window.requestAnimationFrame(updateScrollState);
 
     const container = scrollRef.current;
     if (!container) return;
@@ -103,6 +119,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     window.addEventListener("resize", updateScrollState);
 
     return () => {
+      window.cancelAnimationFrame(frame);
       container.removeEventListener("scroll", updateScrollState);
       window.removeEventListener("resize", updateScrollState);
     };
@@ -112,7 +129,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
   const handleMouseMove = useCallback(
     (e: MouseEvent<HTMLDivElement>) => {
-      if (showVideo) return;
+      if (isVideoVisible) return;
       const container = imageContainerRef.current;
       if (!container) return;
 
@@ -122,11 +139,11 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
       setTransformOrigin(`${x}% ${y}%`);
     },
-    [showVideo],
+    [isVideoVisible],
   );
 
   const handleMouseEnter = () => {
-    if (!showVideo) setIsZooming(true);
+    if (!isVideoVisible) setIsZooming(true);
   };
 
   const handleMouseLeave = () => {
@@ -156,7 +173,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
               <div
                 key={idx}
                 className={`border cursor-pointer transition-all flex-shrink-0 ${
-                  selectedImage === img && !showVideo
+                  selectedImage === img && !isVideoVisible
                     ? "border-[#bd9951]"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
@@ -177,7 +194,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             {videoUrl && (
               <div
                 className={`border cursor-pointer transition-all flex-shrink-0 relative ${
-                  showVideo
+                  isVideoVisible
                     ? "border-[#bd9951]"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
@@ -240,7 +257,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                         muted
                         loop
                       >
-                        <source src={videoUrl} type="video/mp4" />
+                        <source src={videoUrl} type={resolvedVideoType} />
                         Your browser does not support the video tag.
                       </video>
                     ) : (
@@ -261,8 +278,8 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 <div
                   key={i}
                   className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                    (selectedImage === item && !showVideo) ||
-                    (item === videoUrl && showVideo)
+                    (selectedImage === item && !isVideoVisible) ||
+                    (item === videoUrl && isVideoVisible)
                       ? "bg-[#bd9951]"
                       : "bg-gray-300"
                   }`}
@@ -276,7 +293,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             ref={imageContainerRef}
             className="hidden md:block relative aspect-[3/4] w-full overflow-hidden bg-white"
             style={{
-              cursor: showVideo
+              cursor: isVideoVisible
                 ? "default"
                 : isZooming
                   ? "zoom-in"
@@ -286,10 +303,10 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={() => {
-              if (!showVideo) setIsModalOpen(true);
+              if (!isVideoVisible) setIsModalOpen(true);
             }}
           >
-            {showVideo ? (
+            {isVideoVisible ? (
               <video
                 key={videoUrl}
                 className="w-full h-full object-contain"
@@ -298,7 +315,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 muted
                 loop
               >
-                <source src={videoUrl} type="video/mp4" />
+                <source src={videoUrl} type={resolvedVideoType} />
                 Your browser does not support the video tag.
               </video>
             ) : (

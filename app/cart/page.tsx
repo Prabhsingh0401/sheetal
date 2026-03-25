@@ -51,7 +51,7 @@ const CartPage = () => {
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponInput, setCouponInput] = useState(
-    () => peekRedirectField<string>("couponInput") || "",
+    () => peekRedirectField<string>("couponInput") || couponCode || "",
   );
 
   /* Selection Handlers */

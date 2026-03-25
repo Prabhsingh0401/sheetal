@@ -10,11 +10,11 @@ const AboutSBS = () => {
         <div className="lg:col-span-1">
           <div className="h-full flex flex-col justify-center items-center lg:items-start">
             <div className="flex items-center justify-center gap-4 w-full">
-              <div className="w-15 h-0.5 bg-[#a2690f]"/>
-              <h2 className="text-[30px] md:text-[30px] lg:text-[40px] font-light text-[#6a3f07] font-[family-name:var(--font-optima)] whitespace-nowrap">
+              <div className="md:block hidden w-15 h-0.5 bg-[#a2690f]"/>
+              <h2 className="text-[26px] md:text-[30px] font-light text-[#6a3f07] font-optima whitespace-nowrap">
                 About SBS
               </h2>
-              <div className="w-15 h-0.5 bg-[#a2690f]"/>
+              <div className="md:block hidden w-15 h-0.5 bg-[#a2690f]"/>
             </div>
             <h3 className="text-[26px] font-light lg:ml-16 font-optima text-[#a2690f] font-[family-name:var(--font-outfit)] text-center lg:text-left">
               Innovate the Outfit
@@ -28,9 +28,9 @@ const AboutSBS = () => {
                 <Image
                   src="/assets/990320548.png"
                   alt="About SBS"
-                  width={500}
+                  width={400}
                   height={500}
-                  className="max-w-full h-auto"
+                  className="max-w-[95%] h-auto"
                 />
                 <Image
                   src="/assets/roud-img.png"
