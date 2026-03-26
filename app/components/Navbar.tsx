@@ -114,7 +114,7 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                         href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
                         className="flex items-center font-medium gap-1.5 text-gray-900 hover:text-[#c18a08] transition-colors capitalize text-[15px] font-[family-name:var(--font-mentserrat)] "
                       >
-                        <span className="text-[#121212] text-[16px] leading-none">
+                        <span className="text-[#121212] font-bold text-[18`px] leading-none">
                           •
                         </span>
                         {tag}
