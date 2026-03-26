@@ -120,9 +120,9 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             const productHref = `/product/${encodeURIComponent(item.product.slug)}`;
 
             return (
-              <div key={item._id} className="flex  items-start py-5 gap-3">
+              <div key={item._id} className="flex items-start py-3 gap-3">
                 {/* Image */}
-                <div className="w-[70px] md:w-[90px] shrink-0">
+                <div className="w-[70px] md:w-[100px] shrink-0">
                   {/* Checkbox */}
                   <div className="pt-1 shrink-0 relative">
                     <input
@@ -150,15 +150,15 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                         item.variantImage || item.product.mainImage?.url,
                       )}
                       alt={item.product.name}
-                      width={90}
-                      height={120}
-                      className="rounded w-full h-auto"
+                      width={120}
+                      height={160}
+                      className="w-full h-auto"
                     />
                   </Link>
                 </div>
 
                 {/* Product Info + Price (stacked on mobile, side-by-side on md+) */}
-                <div className="flex flex-1 flex-col md:flex-row md:items-start md:justify-between gap-2 min-w-0 md:pr-8">
+                <div className="flex flex-1 flex-col md:flex-row md:items-start md:justify-between gap-2 min-w-0 md:pr-20">
                   {/* Left: name, color/size, coupon, wishlist */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-[13px] md:text-[15px] tracking-[1px] leading-snug line-clamp-2 font-[family-name:var(--font-montserrat)]">
@@ -200,7 +200,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                   </div>
 
                   {/* Right: price + qty */}
-                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-2 shrink-0">
+                  <div className="flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-2 shrink-0">
                     {/* Price row */}
                     <div className="flex flex-wrap items-center gap-1 md:gap-2 md:justify-end font-bold font-[family-name:var(--font-montserrat)]">
                       <span className="text-[13px] md:text-[14px]">
@@ -245,6 +245,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       </button>
                     </div>
                   </div>
+                  <div></div>
                 </div>
 
                 {/* Remove */}
