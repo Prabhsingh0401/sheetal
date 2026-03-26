@@ -106,7 +106,18 @@ const SearchModal: React.FC<SearchModalProps> = ({
         fetchProducts({ sort: "-viewCount", limit: 4, status: "Active" })
           .then((prodRes) => {
             if (prodRes.success && prodRes.products) {
-              setTrendingProducts(prodRes.products);
+              setTrendingProducts(
+                prodRes.products.filter(
+                  (product) =>
+                    Boolean(
+                      product &&
+                        product._id &&
+                        product.slug &&
+                        product.name &&
+                        product.status === "Active",
+                    ),
+                ),
+              );
             }
           })
           .catch((err) =>
@@ -132,34 +143,49 @@ const SearchModal: React.FC<SearchModalProps> = ({
             const productResults = rawResults.filter(
               (r) => r.type === "product",
             );
+            const visibleProductResults = productResults.filter(
+              (r) =>
+                Boolean(
+                  r.data &&
+                    r.data._id &&
+                    r.data.slug &&
+                    r.data.name &&
+                    r.data.status === "Active",
+                ),
+            );
 
-            if (productResults.length === 0) {
+            if (visibleProductResults.length === 0) {
               setResults(categoryResults);
               return;
             }
 
-            const ids = productResults
+            const ids = visibleProductResults
               .map((r) => r.data._id ?? r.data.id)
               .filter(Boolean)
               .join(",");
 
             const fullRes = await fetchProducts({
               ids,
-              limit: productResults.length,
+              limit: visibleProductResults.length,
               status: "Active",
             });
 
             if (fullRes.success && fullRes.products?.length) {
               const fullProductMap = new Map<string, Product>(
-                fullRes.products.map((p: Product) => [p._id, p]),
+                fullRes.products
+                  .filter(
+                    (p: Product) =>
+                      Boolean(p && p._id && p.slug && p.name && p.status === "Active"),
+                  )
+                  .map((p: Product) => [p._id, p]),
               );
-              const enrichedProductResults = productResults.map((r) => ({
+              const enrichedProductResults = visibleProductResults.map((r) => ({
                 ...r,
                 data: fullProductMap.get(r.data._id ?? r.data.id) ?? r.data,
               }));
               setResults([...categoryResults, ...enrichedProductResults]);
             } else {
-              setResults(rawResults);
+              setResults([...categoryResults, ...visibleProductResults]);
             }
           })
           .catch((err) => console.error(err))
@@ -527,7 +553,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                 onClose();
               }}
             >
-              <div className="relative aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden shrink-0">
+              <div className="relative aspect-[3/4] bg-gray-50 rounded-2xl overflow-hidden shrink-0">
                 <Image
                   src={imageUrl}
                   alt={product.name}

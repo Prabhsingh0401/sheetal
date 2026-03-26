@@ -73,11 +73,11 @@ const TimelessWomenCollection = () => {
       : defaultImages.map((url) => ({ url }));
 
   return (
-    <div className="flex justify-center w-full py-4 bg-[#fbfbfb]">
+    <div className="flex justify-center w-full py-4 px-6 bg-[#fbfbfb]">
       <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
           {/* LEFT SLIDER */}
-          <div className="w-full h-[320px]">
+          <div className="w-[400px] h-auto">
             <Slider
               {...sliderSettings}
               autoplaySpeed={3000}
@@ -85,7 +85,7 @@ const TimelessWomenCollection = () => {
             >
               {leftSliderData.map((img, i) => (
                 <div key={i} className="cursor-pointer outline-none">
-                  <div className="relative w-full h-[320px]">
+                  <div className="relative w-[400px] h-[310px]">
                     <Image
                       src={img.url}
                       alt={`Deal ${i + 1}`}
@@ -100,12 +100,12 @@ const TimelessWomenCollection = () => {
           </div>
 
           {/* CENTER CONTENT */}
-          <div className="w-full h-[320px] flex relative">
-            <div className="absolute top-20 -left-5 h-0.5 w-15 bg-[#a2690f]"></div>
-            <div className="absolute top-20 -right-5  h-0.5 w-15 bg-[#a2690f]"></div>
+          <div className="w-[400px] h-[320px] flex relative">
+            <div className="hidden md:block absolute top-20 -left-5 h-0.5 w-15 bg-[#a2690f]"></div>
+            <div className="hidden md:block absolute top-20 -right-5  h-0.5 w-15 bg-[#a2690f]"></div>
             <Link
               href={centerContent.buttonLink || "#"}
-              className="flex w-full h-full border border-[#cc8a00] rounded-2xl items-center justify-center hover:shadow-xl transition-shadow duration-300"
+              className="flex w-full h-full border border-[#FFC107] rounded-2xl items-center justify-center hover:shadow-xl transition-shadow duration-300"
             >
               <div className="text-center px-8">
                 {centerContent.label && (
@@ -114,7 +114,7 @@ const TimelessWomenCollection = () => {
                   </p>
                 )}
                 {centerContent.heading && (
-                  <h2 className="text-[26px] lg:text-[39px] font-optima mb-4 text-[#6a3f07] leading-snug">
+                  <h2 className="text-[26px] lg:text-[30px] font-optima mb-4 text-[#6a3f07] leading-snug">
                     {centerContent.heading}
                   </h2>
                 )}
@@ -137,7 +137,7 @@ const TimelessWomenCollection = () => {
           </div>
 
           {/* RIGHT SLIDER */}
-          <div className="w-full h-[320px]">
+          <div className="w-[400px] h-auto">
             <Slider
               {...sliderSettings}
               autoplaySpeed={3500}
@@ -145,7 +145,7 @@ const TimelessWomenCollection = () => {
             >
               {rightSliderData.map((img, i) => (
                 <div key={i} className="cursor-pointer outline-none">
-                  <div className="relative w-full h-[320px]">
+                  <div className="relative w-[400px] h-[310px]">
                     <Image
                       src={img.url}
                       alt={`Deal ${i + 1}`}

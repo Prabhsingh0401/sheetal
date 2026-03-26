@@ -1,6 +1,12 @@
 // app/product/[id]/ProductDetailClient.tsx
 "use client";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import TopInfo from "../../components/TopInfo";
 import Footer from "../../components/Footer";
@@ -101,6 +107,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   );
   const [pincode, setPincode] = useState("");
   const [pincodeMessage, setPincodeCheckMessage] = useState("");
+  const hasIncrementedViewRef = useRef(false);
   const {
     isProductInWishlist,
     toggleProductInWishlist,
@@ -268,7 +275,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           }
 
           // Increment View Count
-          incrementProductView(slug).catch(console.error);
+          if (!hasIncrementedViewRef.current) {
+            hasIncrementedViewRef.current = true;
+            incrementProductView(slug).catch(console.error);
+          }
 
           // Fetch Reviews
           fetchProductReviews(res.data._id)
@@ -420,9 +430,11 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   };
 
   const scrollToSimilarProducts = useCallback(() => {
-    document
-      .getElementById("similar-products-section")
-      ?.scrollIntoView({ behavior: "smooth" });
+    const target =
+      document.getElementById("similar-products-section") ||
+      document.getElementById("recently-viewed-section");
+
+    target?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   useEffect(() => {

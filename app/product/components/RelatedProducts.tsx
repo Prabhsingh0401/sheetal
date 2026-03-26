@@ -76,38 +76,46 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
     }
   }, [currentSlug]);
 
+  const hasSimilarProducts = similarProducts.length > 0;
+  const hasRecentlyViewedProducts = recentlyViewedProducts.length > 0;
+
+  if (!hasSimilarProducts && !hasRecentlyViewedProducts) {
+    return null;
+  }
+
   return (
     <>
-      <div
-        id="similar-products-section"
-        className="container mx-auto px-4 py-12"
-      >
-        <h3 className="text-[26px] text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
-          Similar Products
-        </h3>
-        <EmblaSlider
-          products={similarProducts}
-          isProductInWishlist={isProductInWishlist}
-          onToggleWishlist={onToggleWishlist}
-        />
-      </div>
+      {hasSimilarProducts && (
+        <div
+          id="similar-products-section"
+          className="container mx-auto px-4 py-12"
+        >
+          <h3 className="text-[26px] text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
+            Similar Products
+          </h3>
+          <EmblaSlider
+            products={similarProducts}
+            isProductInWishlist={isProductInWishlist}
+            onToggleWishlist={onToggleWishlist}
+          />
+        </div>
+      )}
 
-      <div className="container mx-auto px-4 py-12 mb-12">
-        <h3 className="text-[26px] text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
-          Recently Viewed
-        </h3>
-        {recentlyViewedProducts.length > 0 ? (
+      {hasRecentlyViewedProducts && (
+        <div
+          id="recently-viewed-section"
+          className="container mx-auto px-4 py-12 mb-12"
+        >
+          <h3 className="text-[26px] text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
+            Recently Viewed
+          </h3>
           <EmblaSlider
             products={recentlyViewedProducts}
             isProductInWishlist={isProductInWishlist}
             onToggleWishlist={onToggleWishlist}
           />
-        ) : (
-          <p className="text-center text-gray-500 py-6">
-            Products you view will appear here.
-          </p>
-        )}
-      </div>
+        </div>
+      )}
     </>
   );
 };

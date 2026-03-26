@@ -21,7 +21,10 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const url = endpoint.startsWith("http")
     ? endpoint
     : `${API_BASE_URL}${endpoint}`;
-  const token = Cookies.get("token");
+  const token =
+    Cookies.get("token") ||
+    (typeof window !== "undefined" ? localStorage.getItem("token") : null) ||
+    undefined;
 
   const requestHeaders: Record<string, string> = {};
 

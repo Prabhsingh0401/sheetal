@@ -179,10 +179,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                   : undefined;
 
               return (
-                <div
-                  key={size.name}
-                  className="flex flex-col items-center"
-                >
+                <div key={size.name} className="flex flex-col items-center">
                   <button
                     disabled={isDisabled}
                     onClick={() => setSelectedSize(size.name)}
@@ -403,7 +400,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
       {/* Accordion */}
       <div className="rounded mt-2">
         <details open className="group border-b border-gray-200">
-          <summary className="flex justify-between items-center text-[#ff5722] px-2 py-2 cursor-pointer font-semibold hover:bg-gray-300 list-none bg-gray-100 transition-colors uppercase text-[16px]">
+          <summary className="flex justify-between items-center text-[#ff5722] px-2 py-2 cursor-pointer font-semibold list-none bg-gray-100 transition-colors uppercase text-[16px]">
             Specifications
             <span className="text-xl font-semibold">
               <span className="group-open:hidden">+</span>
@@ -437,7 +434,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </details>
 
         <details className="group">
-          <summary className="flex justify-between items-center px-2 py-2 cursor-pointer font-semibold text-[#ff5722] hover:bg-gray-300 bg-gray-100 list-none bg-gray-00 transition-colors uppercase text-[15px]">
+          <summary className="flex justify-between items-center px-2 py-2 cursor-pointer font-semibold text-[#ff5722]  bg-gray-100 list-none bg-gray-00 transition-colors uppercase text-[15px]">
             Delivery & Returns
             <span className="text-xl font-semibold">
               <span className="group-open:hidden">+</span>

@@ -15,7 +15,7 @@ import {
   toggleWishlist as toggleWishlistApi,
   Product,
 } from "../services/productService";
-import { isAuthenticated } from "../services/authService";
+import { AUTH_UPDATED_EVENT, isAuthenticated } from "../services/authService";
 import {
   CART_UPDATED_EVENT,
   dispatchCartUpdated,
@@ -275,6 +275,16 @@ export const useCart = (): UseCartReturn => {
           const validItems = response.data.items.filter(
             (item: CartItem) => item.product != null,
           );
+
+          if (validItems.length === 0) {
+            const guestItems = readGuestCart();
+            if (guestItems.length > 0) {
+              setCart(guestToCartItems(guestItems));
+              void mergeGuestCartOnLogin();
+              return;
+            }
+          }
+
           setCart(validItems);
         } else {
           setError("Failed to fetch cart");
@@ -297,6 +307,18 @@ export const useCart = (): UseCartReturn => {
 
   useEffect(() => {
     loadCart();
+  }, [loadCart]);
+
+  useEffect(() => {
+    const handleAuthUpdated = () => {
+      loadCart(false);
+    };
+
+    window.addEventListener(AUTH_UPDATED_EVENT, handleAuthUpdated);
+
+    return () => {
+      window.removeEventListener(AUTH_UPDATED_EVENT, handleAuthUpdated);
+    };
   }, [loadCart]);
 
   useEffect(() => {

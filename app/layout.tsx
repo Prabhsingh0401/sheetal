@@ -1,28 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Montserrat, Outfit } from "next/font/google";
+import type { CSSProperties } from "react";
 import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-});
-
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-});
 
 const optima = localFont({
   src: [
@@ -83,7 +63,15 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} ${outfit.variable} ${optima.variable} antialiased`}
+        className={`${optima.variable} antialiased`}
+        style={
+          {
+            "--font-montserrat": "Montserrat, Arial, sans-serif",
+            "--font-outfit": "Outfit, Arial, sans-serif",
+            "--font-geist-sans": "Arial, sans-serif",
+            "--font-geist-mono": "Consolas, monospace",
+          } as CSSProperties
+        }
       >
         <Toaster
           position="top-center"

@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Product,
   ProductVariant,
   fetchProductBySlug,
+  incrementProductView,
   getProductImageUrl,
   getVariantGalleryUrls,
 } from "../../services/productService";
@@ -33,6 +34,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedVariantId, setSelectedVariantId] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
+  const hasIncrementedViewRef = useRef(false);
   // Removed lowestPrice and lowestMrp states
   const {
     isProductInWishlist,
@@ -52,6 +54,10 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
           const response = await fetchProductBySlug(productSlug);
           if (response.success && response.data) {
             setProduct(response.data);
+            if (!hasIncrementedViewRef.current) {
+              hasIncrementedViewRef.current = true;
+              incrementProductView(productSlug).catch(console.error);
+            }
             const mainImg = getProductImageUrl(response.data);
             setSelectedImage(mainImg);
 

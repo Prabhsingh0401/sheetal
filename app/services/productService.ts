@@ -279,6 +279,7 @@ export interface CollectionProduct {
   _id: string;
   name: string;
   slug: string;
+  status?: string;
   image: string;
   imageAlt: string;
   hoverImage: string;

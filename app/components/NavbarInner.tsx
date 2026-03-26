@@ -9,6 +9,7 @@ import {
   isAuthenticated,
   logout,
   getUserDetails,
+  AUTH_UPDATED_EVENT,
 } from "../services/authService";
 import toast from "react-hot-toast";
 import SearchModal from "./SearchModal";
@@ -615,13 +616,21 @@ const NavbarInner = () => {
 
     window.addEventListener("scroll", handleScroll);
 
-    if (isAuthenticated()) {
-      setCurrentUser(getUserDetails());
-    } else {
-      setCurrentUser(null);
-    }
+    const syncAuthState = () => {
+      if (isAuthenticated()) {
+        setCurrentUser(getUserDetails());
+      } else {
+        setCurrentUser(null);
+      }
+    };
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener(AUTH_UPDATED_EVENT, syncAuthState);
+    syncAuthState();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(AUTH_UPDATED_EVENT, syncAuthState);
+    };
   }, [pathname]);
 
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
