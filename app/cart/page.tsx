@@ -172,7 +172,9 @@ const CartPage = () => {
 
   const handleProceedToBuy = () => {
     if (!isAuthenticated()) {
-      redirectToLogin(router, "/checkout/address");
+      redirectToLogin(router, "/checkout/address", {
+        cartSnapshot: cartItems,
+      });
       return;
     }
     router.push("/checkout/address");

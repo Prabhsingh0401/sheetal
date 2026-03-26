@@ -189,7 +189,18 @@ const TrendingThisWeek = () => {
       try {
         const res = await fetchTrendingProducts();
         if (res.success && res.data) {
-          const formatted: TrendingProduct[] = res.data.map((p: Product) => {
+          const visibleProducts = res.data.filter(
+            (p: Product) =>
+              Boolean(
+                p &&
+                  p._id &&
+                  p.slug &&
+                  p.name &&
+                  p.status === "Active",
+              ),
+          );
+
+          const formatted: TrendingProduct[] = visibleProducts.map((p: Product) => {
             let minPrice = Infinity;
             let relatedMrp = 0;
 
@@ -228,6 +239,8 @@ const TrendingThisWeek = () => {
             };
           });
           setProducts(formatted);
+        } else {
+          setProducts([]);
         }
       } catch (error) {
         console.error("Failed to load trending products", error);
@@ -250,13 +263,13 @@ const TrendingThisWeek = () => {
         {/* Heading */}
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center justify-center gap-10 w-full">
-            <div className="h-[1px] bg-[#68400f] hidden md:flex-1" />
-            <h2 className="text-[26px] lg:text-[40px] font-medium text-[#6a3f07] whitespace-nowrap font-[family-name:var(--font-optima)]">
+            <div className="h-[2px] w-15 bg-[#68400f] hidden md:block" />
+            <h2 className="text-[26px] lg:text-[30px] font-normal text-[#6a3f07] whitespace-nowrap font-[family-name:var(--font-optima)]">
               Trending This Week
             </h2>
-            <div className="h-[1px] bg-[#68400f] hidden md:flex-1" />
+            <div className="h-[2px] w-15 bg-[#68400f] hidden md:block" />
           </div>
-          <p className="text-center max-w-2xl text-[15px] mt-1 font-[family-name:var(--font-montserrat)]">
+          <p className="text-center text-[15px] mt-1 mb-6 font-[family-name:var(--font-montserrat)]">
             Best-Selling Gems: Signature sarees, ensembles, and Indo-Western
             pieces that define Studio By Sheetal.
           </p>

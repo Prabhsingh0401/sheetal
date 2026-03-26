@@ -102,7 +102,10 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({
       )}
 
       {hasRecentlyViewedProducts && (
-        <div className="container mx-auto px-4 py-12 mb-12">
+        <div
+          id="recently-viewed-section"
+          className="container mx-auto px-4 py-12 mb-12"
+        >
           <h3 className="text-[26px] text-[#a2690f] w-full text-center border-y-[1px] py-4 border-gray-300 mb-8 font-[family-name:var(--font-optima)]">
             Recently Viewed
           </h3>

@@ -15,6 +15,7 @@ import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
 import { useSearchParams } from "next/navigation";
 import { peekRedirectField } from "../../utils/authRedirect";
+import type { CartItem } from "../../hooks/useCart";
 
 // ── Inner component that uses useSearchParams ─────────────────────────────
 const AddressPageInner = () => {
@@ -32,6 +33,7 @@ const AddressPageInner = () => {
     bogoMessage,
     applicableCategories,
   } = useCart();
+  const cartSnapshot = peekRedirectField<CartItem[]>("cartSnapshot") || [];
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
@@ -73,7 +75,11 @@ const AddressPageInner = () => {
   };
 
   const isBuyNow = !!buyNowItem;
-  const activeItems = isBuyNow ? [buyNowItem] : cart;
+  const activeItems = isBuyNow
+    ? [buyNowItem]
+    : cart.length > 0
+      ? cart
+      : cartSnapshot;
   const normalizedActiveItems = activeItems.map((item) => ({
     ...item,
     quantity: normalizeQuantity(item.quantity),
@@ -236,6 +242,7 @@ const AddressPageInner = () => {
         shippingAddress,
         billingAddress,
         isBuyNow ? normalizedActiveItems : undefined,
+        isBuyNow ? undefined : normalizedActiveItems,
       );
       toast.dismiss();
       const maybeOrderId =
@@ -324,6 +331,7 @@ const AddressPageInner = () => {
           totalPrice: totalAmount,
         },
         isBuyNow ? normalizedActiveItems : undefined,
+        isBuyNow ? undefined : normalizedActiveItems,
       );
       toast.dismiss();
       if (response?.success) {
@@ -360,9 +368,11 @@ const AddressPageInner = () => {
     }
   };
 
+  const itemsForPricing = isBuyNow ? normalizedActiveItems : activeItems;
+
   const categoryNames =
     applicableCategories.length > 0
-      ? cart
+      ? itemsForPricing
           .filter(
             (item) =>
               item.product.category &&
@@ -377,7 +387,7 @@ const AddressPageInner = () => {
   return (
     <div className="font-montserrat">
       {/* Header */}
-      <div className="w-full border-b border-gray-100">
+      <div className="w-full border py-5 border-gray-100">
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center py-3 px-4 sm:px-6 md:px-10">
           {/* Logo */}
           <div className="flex items-center justify-between sm:justify-start">
@@ -392,21 +402,26 @@ const AddressPageInner = () => {
           </div>
 
           {/* Checkout Steps */}
-          <div className="flex items-center justify-between sm:justify-center gap-4 sm:gap-8 text-xs sm:text-sm font-medium">
-            <Link href="/cart" className="text-black hover:text-[#bd9951] cursor-pointer">
-              BAG
+         <div className="hidden md:flex items-center text-[15px] space-x-2 font-[family-name:var(--font-montserrat)]">
+            <Link href='/cart' className="text-black font-medium ">BAG</Link>
+            <div className="text-[#bd9951]">----------</div>
+            <Link
+              href="#"
+              className="text-[#0d9842] font-medium hover:text-[#bd9951]"
+            >
+              ADDRESS
             </Link>
-            <div className="text-[#bd9951]">ADDRESS</div>
-            <div className="text-gray-400 cursor-not-allowed">PAYMENT</div>
+            <div className="text-[#bd9951]">----------</div>
+            <div className="textblack cursor-not-allowed font-medium">PAYMENT</div>
           </div>
 
           {/* Secure Badge */}
-          <div className="flex items-center justify-start sm:justify-end space-x-2 text-xs sm:text-sm font-semibold">
+          <div className="flex items-center justify-start sm:justify-end space-x-2 text-xs sm:text-[15px] font-[family-name:var(--font-montserrat)]">
             <Image
               src="/assets/icons/shield.svg"
               alt="Secure"
-              width={18}
-              height={18}
+              width={30}
+              height={30}
             />
             <span>100% SECURE</span>
           </div>
@@ -414,15 +429,15 @@ const AddressPageInner = () => {
       </div>
 
       <div className="container mx-auto py-5 sm:py-8 px-3 sm:px-4 md:px-8 lg:px-12">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start md:px-4">
           {/* LEFT COLUMN: ADDRESS */}
           <div className="w-full lg:w-[58%]">
             <div className="mb-6">
-              <h4 className="text-lg sm:text-xl text-[#785e32] mb-3 sm:mb-4 font-montserrat">
+              <h4 className="text-lg sm:text-[24px] border-b border-gray-300 py-2 text-[#70480c] mb-3 sm:mb-4 font-medium font-[family-name:var(--font-montserrat)]">
                 Customer Information
               </h4>
               <div className="mb-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1 cursor-default">
+                <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-bold text-black mb-1 cursor-default">
                   Enter Email Address *
                 </label>
                 <input
@@ -433,14 +448,14 @@ const AddressPageInner = () => {
                   }
                   readOnly={isEmailFromProfile}
                   placeholder="Email Id"
-                  className={`w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951] ${
+                  className={`w-full border-b border-gray-300 rounded px-3 py-2 md:mb-1 text-sm focus:outline-none focus:border-[#bd9951] ${
                     isEmailFromProfile
                       ? "bg-gray-50 cursor-not-allowed"
                       : "cursor-text"
                   }`}
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-[13px] italic font-[family-name:var(--font-montserrat)] text-gray-500 mt-1">
                   This email will be used to send you offers & updates
                 </p>
               </div>

@@ -123,15 +123,15 @@ const AddressForm: React.FC<AddressFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border border-gray-200 p-4 md:p-6 bg-white shadow-sm mt-4"
+      className="mt-4"
     >
-      <h3 className="text-xl text-[#785e32] mb-4 font-montserrat">
+      <h3 className="text-[24px] text-[#70480c] font-medium mb-4 font-[family-name:var(--font-montserrat)]">
         {addressId ? "Edit Address" : "Add New Address"}
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-1">
             First Name *
           </label>
           <input
@@ -139,12 +139,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
+            className="w-full border-b bg-white h-14 border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-1">
             Last Name *
           </label>
           <input
@@ -152,14 +152,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
+            className="w-full border-b bg-white h-14 border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
             required
           />
         </div>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-1">
           Enter Mobile Number *
         </label>
         <input
@@ -167,16 +167,16 @@ const AddressForm: React.FC<AddressFormProps> = ({
           name="phoneNumber"
           value={formData.phoneNumber}
           onChange={handleChange}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
+          className="w-full border-b bg-white h-14 border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
           required
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-[13px] italic font-[family-name:var(--font-montserrat)] text-gray-500 mt-1">
           This phone number will be used to send you offers & updates
         </p>
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-1">
           Address *
         </label>
         <textarea
@@ -184,14 +184,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
           value={formData.addressLine1}
           onChange={handleChange}
           rows={3}
-          className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
+          className="w-full border-b bg-white border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
           required
         ></textarea>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-1">
             Pincode *
           </label>
           <input
@@ -199,12 +199,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
             name="postalCode"
             value={formData.postalCode}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
+            className="w-full border-b bg-white h-14 border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-1">
             City *
           </label>
           <input
@@ -212,7 +212,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             name="city"
             value={formData.city}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
+            className="w-full border-b bg-white h-14 border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
             required
           />
         </div>
@@ -220,7 +220,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-1">
             State *
           </label>
           <input
@@ -228,12 +228,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
             name="state"
             value={formData.state}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
+            className="w-full border-b bg-white h-14 border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-1">
             Country *
           </label>
           <input
@@ -241,14 +241,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
             name="country"
             value={formData.country}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
+            className="w-full border-b bg-white h-14 border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#bd9951]"
             required
           />
         </div>
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-[15px] font-[family-name:var(--font-montserrat)] font-medium text-gray-700 mb-2">
           Save this address as (optional)
         </label>
         <div className="flex gap-3">
@@ -257,10 +257,10 @@ const AddressForm: React.FC<AddressFormProps> = ({
               key={type}
               type="button"
               onClick={() => handleTypeSelect(type)}
-              className={`px-4 py-1.5 rounded-full text-sm border transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-[15px] font-[family-name:var(--font-montserrat)] border transition-colors ${
                 formData.addressType === type
                   ? "bg-transparent text-[#bd9951] border-[#bd9951]"
-                  : "bg-white text-black border-black hover:bg-transparent hover:text-[#bd9951] hover:border-[#bd9951]"
+                  : "bg-white text-black border-gray-300 hover:bg-transparent hover:text-[#bd9951] hover:border-[#bd9951]"
               }`}
             >
               {type}
@@ -289,7 +289,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 cursor-pointer bg-[#bd9951] text-white py-3 rounded text-sm font-semibold hover:bg-[#a38038] transition-colors disabled:opacity-50"
+          className="flex-1 cursor-pointer bg-[#72561e] text-white py-3 rounded text-sm font-semibold hover:bg-[#a38038] transition-colors disabled:opacity-50"
         >
           {loading
             ? "Saving..."

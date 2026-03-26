@@ -200,10 +200,10 @@ const NewArrivals = () => {
 
           {/* LEFT CONTENT */}
           <div className="lg:col-span-3 xl:col-span-4 text-center md:text-left">
-            <h2 className="text-[26px] md:text-[2.5rem] lg:text-[45px] font-medium text-[#6a3f07] mb-3 font-[family-name:var(--font-optima)] leading-tight">
+            <h2 className="text-[26px] md:text-[30px] text-[#6a3f07] mb-3 font-[family-name:var(--font-optima)] leading-tight">
               New Arrivals
             </h2>
-            <p className="text-[#555] text-[15px] font-[font-fmaily:var(--font-monteserrat)] px-8 md:text-lg lg:text-xl leading-relaxed mb-5 md:mb-8">
+            <p className="text-black text-[15px] font-[font-fmaily:var(--font-monteserrat)] px-8 md:p-0 md:text-[18px] mb-5 md:mb-8">
               Pick your beauty products today. 50% OFF on the new brands. Order
               all classy products today!
             </p>

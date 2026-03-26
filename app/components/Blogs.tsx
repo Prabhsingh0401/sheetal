@@ -35,19 +35,54 @@ const Blogs = () => {
     });
   };
 
+  const SectionHeader = () => (
+    <div className="text-center mb-10 md:mb-12">
+      <div className="flex items-center justify-center gap-4">
+        <span className="md:block hidden w-12 h-px bg-[#6a3f07]" />
+        <h2 className="text-[26px] lg:text-[40px] font-normal text-[#6a3f07] font-[family-name:var(--font-optima)]">
+          Latest Articles & Blogs
+        </h2>
+        <span className="md:block hidden w-12 h-px bg-[#6a3f07]" />
+      </div>
+    </div>
+  );
+
+  // Shared card content (date, title, explore more)
+  const BlogCardContent = ({
+    href,
+    date,
+    title,
+  }: {
+    href: string;
+    date: string;
+    title: string;
+  }) => (
+    <div>
+      <div className="text-[13px] font-[family-name:var(--font-montserrat)] text-gray-500 mb-3 font-medium">
+        {date}
+      </div>
+      <h3 className="text-[15px] font-medium text-black mb-4 font-[family-name:var(--font-optima)] leading-snug">
+        <Link href={href} className="hover:text-[#d18702] transition-colors">
+          {title}
+        </Link>
+      </h3>
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-px bg-black" />
+        <Link
+          href={href}
+          className="inline-block text-[16px] font-[family-name:var(--font-montserrat)] uppercase text-gray-700 pb-0.5 hover:text-[#d18702] hover:border-[#d18702] transition-colors"
+        >
+          Explore More
+        </Link>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="w-full pb-16 md:py-24 relative">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-4">
-              <span className="block w-12 h-px bg-[#6a3f07]" />
-              <h2 className="text-[26px] lg:text-[40px] font-normal text-[#6a3f07] font-[family-name:var(--font-optima)]">
-                Latest Articles & Blogs
-              </h2>
-              <span className="block w-12 h-px bg-[#6a3f07]" />
-            </div>
-          </div>
+          <SectionHeader />
           <div className="flex justify-center items-center py-20">
             <div className="relative w-12 h-12">
               <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
@@ -59,68 +94,83 @@ const Blogs = () => {
     );
   }
 
+  // ── Static fallback blogs ──────────────────────────────────────────
+  const staticBlogs = [
+    {
+      href: "/blog/banarasi-saree-guide",
+      src: "/assets/484942625.jpg",
+      alt: "Banarasi Saree",
+      date: "December 31, 2024",
+      title: "What to Look for When Buying a Banarasi Saree Online",
+    },
+    {
+      href: "/blog/wedding-wardrobe-magic",
+      src: "/assets/823107476.jpg",
+      alt: "Wedding Wardrobe",
+      date: "December 31, 2024",
+      title: "How SBS Brings Banarasi Magic to Your Wedding Wardrobe",
+    },
+    {
+      href: "/blog/colour-trends-2025",
+      src: "/assets/410718746.jpg",
+      alt: "Colour Trends",
+      date: "December 31, 2024",
+      title:
+        "Colour Trends in Sarees for 2025: Jewel Tones from Studio by Sheetal's Festive Collection",
+    },
+  ];
+
   if (blogs.length === 0) {
     return (
       <div className="w-full py-16 md:py-24 relative border-t border-[#6a3f07]">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-4">
-              <span className="block w-12 h-px bg-[#6a3f07]" />
-              <h2 className="text-[26px] lg:text-[40px] font-normal text-[#6a3f07] font-[family-name:var(--font-optima)]">
-                Latest Articles & Blogs
-              </h2>
-              <span className="block w-12 h-px bg-[#6a3f07]" />
-            </div>
+          <SectionHeader />
+
+          {/* ── MOBILE: vertical stack ── */}
+          <div className="flex flex-col gap-8 lg:hidden">
+            {staticBlogs.map((blog, i) => (
+              <div key={i}>
+                <div className="relative w-full h-[240px] overflow-hidden rounded-xl mb-4">
+                  <Link href={blog.href} className="block w-full h-full">
+                    <Image
+                      src={blog.src}
+                      alt={blog.alt}
+                      fill
+                      className="object-cover transition-transform duration-700 hover:scale-105"
+                    />
+                  </Link>
+                </div>
+                <BlogCardContent href={blog.href} date={blog.date} title={blog.title} />
+              </div>
+            ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-4">
+          {/* ── DESKTOP: original overlapping layout ── */}
+          <div className="hidden lg:grid grid-cols-2 gap-8 mt-4">
             {/* Left: Featured */}
             <div className="relative w-full group pb-24">
-              <div className="relative w-full h-[420px] md:h-[540px] overflow-hidden rounded-lg">
-                <Link href="/blog/banarasi-saree-guide" className="block w-full h-full">
+              <div className="relative w-full h-[540px] overflow-hidden rounded-lg">
+                <Link href={staticBlogs[0].href} className="block w-full h-full">
                   <Image
-                    src="/assets/484942625.jpg"
-                    alt="Banarasi Saree"
+                    src={staticBlogs[0].src}
+                    alt={staticBlogs[0].alt}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </Link>
               </div>
-              <div className="absolute bottom-0 left-4 right-4 md:left-8 md:right-8 bg-white shadow-lg rounded-lg p-5 z-10 translate-y-1/3">
-                <div className="text-xs text-gray-500 mb-2 font-medium">December 31, 2024</div>
-                <h3 className="text-lg lg:text-xl font-medium text-[#333] mb-4 font-[family-name:var(--font-optima)] leading-snug">
-                  <Link href="/blog/banarasi-saree-guide" className="hover:text-[#d18702] transition-colors">
-                    What to Look for When Buying a Banarasi Saree Online
-                  </Link>
-                </h3>
-                <div className="w-16 h-px bg-gray-300 mb-3" />
-                <Link
-                  href="/blog/banarasi-saree-guide"
-                  className="inline-block text-[11px] uppercase tracking-widest text-gray-700 border-b border-gray-700 pb-0.5 hover:text-[#d18702] hover:border-[#d18702] transition-colors"
-                >
-                  Explore More
-                </Link>
+              <div className="absolute bottom-4 left-8 right-8 bg-white/90 shadow-lg rounded-4xl p-5 z-10 translate-y-1/3">
+                <BlogCardContent
+                  href={staticBlogs[0].href}
+                  date={staticBlogs[0].date}
+                  title={staticBlogs[0].title}
+                />
               </div>
             </div>
 
             {/* Right: Blog list */}
-            <div className="flex flex-col gap-10 mt-8 lg:mt-0">
-              {[
-                {
-                  href: "/blog/wedding-wardrobe-magic",
-                  src: "/assets/823107476.jpg",
-                  alt: "Wedding Wardrobe",
-                  date: "December 31, 2024",
-                  title: "How SBS Brings Banarasi Magic to Your Wedding Wardrobe",
-                },
-                {
-                  href: "/blog/colour-trends-2025",
-                  src: "/assets/410718746.jpg",
-                  alt: "Colour Trends",
-                  date: "December 31, 2024",
-                  title: "Colour Trends in Sarees for 2025: Jewel Tones from Studio by Sheetal's Festive Collection",
-                },
-              ].map((blog, i) => (
+            <div className="flex flex-col gap-20 mt-0">
+              {staticBlogs.slice(1).map((blog, i) => (
                 <div key={i} className="relative flex items-stretch min-h-[200px]">
                   <div className="relative w-[62%] shrink-0 overflow-hidden rounded-lg">
                     <Link href={blog.href} className="block w-full h-full">
@@ -132,20 +182,8 @@ const Blogs = () => {
                       />
                     </Link>
                   </div>
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[52%] bg-white shadow-md rounded-lg p-4 z-10">
-                    <div className="text-xs text-gray-500 mb-1 font-medium">{blog.date}</div>
-                    <h4 className="text-sm lg:text-base font-medium text-[#333] mb-3 font-[family-name:var(--font-optima)] leading-snug">
-                      <Link href={blog.href} className="hover:text-[#d18702] transition-colors">
-                        {blog.title}
-                      </Link>
-                    </h4>
-                    <div className="w-16 h-px bg-gray-300 mb-3" />
-                    <Link
-                      href={blog.href}
-                      className="inline-block text-[11px] uppercase tracking-widest text-gray-700 border-b border-gray-700 pb-0.5 hover:text-[#d18702] hover:border-[#d18702] transition-colors"
-                    >
-                      Explore More
-                    </Link>
+                  <div className="absolute bottom-5 -right-4 w-80 bg-white/90 shadow-lg rounded-4xl p-5 z-10 translate-y-1/3">
+                    <BlogCardContent href={blog.href} date={blog.date} title={blog.title} />
                   </div>
                 </div>
               ))}
@@ -156,29 +194,44 @@ const Blogs = () => {
     );
   }
 
+  // ── Dynamic blogs from API ─────────────────────────────────────────
   const [featuredBlog, ...otherBlogs] = blogs;
 
   return (
     <div className="w-full pb-16 pt-8 md:py-24 relative border-t border-[#6a3f07]">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-10">
+        <SectionHeader />
 
-        {/* Section Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4">
-            <span className="block w-12 h-px bg-[#6a3f07]" />
-            <h2 className="text-[26px] lg:text-[40px] font-normal text-[#6a3f07] font-[family-name:var(--font-optima)]">
-              Latest Articles & Blogs
-            </h2>
-            <span className="block w-12 h-px bg-[#6a3f07]" />
-          </div>
+        {/* ── MOBILE: vertical stack ── */}
+        <div className="flex flex-col gap-8 lg:hidden">
+          {blogs.map((blog) => (
+            <div key={blog._id}>
+              <div className="relative w-full h-[240px] overflow-hidden rounded-xl mb-4">
+                <Link href={`/blog/${blog.slug}`} className="block w-full h-full">
+                  <Image
+                    src={getBlogImageUrl(blog)}
+                    alt={blog.imageAlt || blog.title}
+                    fill
+                    className="object-cover transition-transform duration-700 hover:scale-105"
+                  />
+                </Link>
+              </div>
+              <BlogCardContent
+                href={`/blog/${blog.slug}`}
+                date={formatDate(blog.createdAt)}
+                title={blog.title}
+              />
+            </div>
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-4">
+        {/* ── DESKTOP: original overlapping layout ── */}
+        <div className="hidden lg:grid grid-cols-2 gap-8 mt-4">
 
-          {/* Left: Featured blog — white card overlapping bottom */}
+          {/* Left: Featured blog */}
           {featuredBlog && (
             <div className="relative w-full group pb-24">
-              <div className="relative w-full h-[420px] md:h-[540px] overflow-hidden rounded-lg">
+              <div className="relative w-full h-[540px] overflow-hidden rounded-lg">
                 <Link href={`/blog/${featuredBlog.slug}`} className="block w-full h-full">
                   <Image
                     src={getBlogImageUrl(featuredBlog)}
@@ -188,36 +241,20 @@ const Blogs = () => {
                   />
                 </Link>
               </div>
-              {/* White card */}
-              <div className="absolute bottom-0 left-4 right-4 md:left-8 md:right-8 bg-white shadow-lg rounded-lg p-5 z-10 translate-y-1/3">
-                <div className="text-xs text-gray-500 mb-2 font-medium">
-                  {formatDate(featuredBlog.createdAt)}
-                </div>
-                <h3 className="text-lg lg:text-xl font-medium text-[#333] mb-4 font-[family-name:var(--font-optima)] leading-snug">
-                  <Link
-                    href={`/blog/${featuredBlog.slug}`}
-                    className="hover:text-[#d18702] transition-colors"
-                  >
-                    {featuredBlog.title}
-                  </Link>
-                </h3>
-                <div className="w-16 h-px bg-gray-300 mb-3" />
-                <Link
+              <div className="absolute bottom-10 left-8 right-8 bg-white/90 shadow-lg rounded-4xl p-5 z-10 translate-y-1/3">
+                <BlogCardContent
                   href={`/blog/${featuredBlog.slug}`}
-                  className="inline-block text-[11px] uppercase tracking-widest text-gray-700 border-b border-gray-700 pb-0.5 hover:text-[#d18702] hover:border-[#d18702] transition-colors"
-                >
-                  Explore More
-                </Link>
+                  date={formatDate(featuredBlog.createdAt)}
+                  title={featuredBlog.title}
+                />
               </div>
             </div>
           )}
 
-          {/* Right: Blog list — image left, white card overlapping right */}
-          <div className="flex flex-col gap-10 mt-8 lg:mt-0">
+          {/* Right: Blog list */}
+          <div className="flex flex-col gap-20 mt-0">
             {otherBlogs.map((blog) => (
               <div key={blog._id} className="relative flex items-stretch min-h-[200px]">
-
-                {/* Image */}
                 <div className="relative w-[62%] shrink-0 overflow-hidden rounded-lg">
                   <Link href={`/blog/${blog.slug}`} className="block w-full h-full">
                     <Image
@@ -228,29 +265,13 @@ const Blogs = () => {
                     />
                   </Link>
                 </div>
-
-                {/* White card overlapping from right */}
-                <div className="absolute right-0 top-4/5 -translate-y-1/2 w-[52%] bg-white/90 shadow-md rounded-lg p-4 z-10">
-                  <div className="text-xs text-gray-500 mb-1 font-medium">
-                    {formatDate(blog.createdAt)}
-                  </div>
-                  <h4 className="text-sm lg:text-base font-medium text-[#333] mb-3 font-[family-name:var(--font-optima)] leading-snug">
-                    <Link
-                      href={`/blog/${blog.slug}`}
-                      className="hover:text-[#d18702] transition-colors"
-                    >
-                      {blog.title}
-                    </Link>
-                  </h4>
-                  <div className="w-16 h-px bg-gray-300 mb-3" />
-                  <Link
+                <div className="absolute bottom-5 -right-4 w-80 bg-white/90 shadow-lg rounded-4xl p-5 z-10 translate-y-1/3">
+                  <BlogCardContent
                     href={`/blog/${blog.slug}`}
-                    className="inline-block text-[11px] uppercase tracking-widest text-gray-700 border-b border-gray-700 pb-0.5 hover:text-[#d18702] hover:border-[#d18702] transition-colors"
-                  >
-                    Explore More
-                  </Link>
+                    date={formatDate(blog.createdAt)}
+                    title={blog.title}
+                  />
                 </div>
-
               </div>
             ))}
           </div>

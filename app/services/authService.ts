@@ -1,8 +1,9 @@
 import Cookies from "js-cookie";
 import { apiFetch } from "./api";
 
-const TOKEN_KEY = "token";
+export const TOKEN_KEY = "token";
 const USER_KEY = "user_details";
+export const AUTH_UPDATED_EVENT = "auth-state-changed";
 
 interface User {
   id: string;
@@ -73,16 +74,33 @@ export const login = (token: string, user: User) => {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
   });
+  localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(AUTH_UPDATED_EVENT));
+  }
 };
 
 export const logout = () => {
   Cookies.remove(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(AUTH_UPDATED_EVENT));
+  }
 };
 
 export const getToken = (): string | undefined => {
-  return Cookies.get(TOKEN_KEY);
+  const cookieToken = Cookies.get(TOKEN_KEY);
+  if (cookieToken) {
+    return cookieToken;
+  }
+
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return localStorage.getItem(TOKEN_KEY) || undefined;
 };
 
 export const getUserDetails = (): User | null => {
@@ -91,11 +109,19 @@ export const getUserDetails = (): User | null => {
     return null;
   }
   const userJson = localStorage.getItem(USER_KEY);
-  return userJson ? JSON.parse(userJson) : null;
+  if (!userJson) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(userJson) as User;
+  } catch {
+    return null;
+  }
 };
 
 export const isAuthenticated = (): boolean => {
-  return !!getToken() && !!getUserDetails();
+  return Boolean(getToken());
 };
 
 export const updateUserDetailsInLocalStorage = (user: User) => {

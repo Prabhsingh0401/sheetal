@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+// import "slick-carousel/slick/slick.css";
+// import "slick-carousel/slick/slick-theme.css";
 import { API_BASE_URL } from "../services/api";
 
 const fallbackTestimonials = [
@@ -59,11 +59,11 @@ const Testimonials = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-center">
           {/* Left Text Section */}
-          <div className="lg:col-span-4 lg:border-r border-gray-300 pr-0 lg:pr-12 text-left mb-10 lg:mb-0">
-            <p className="text-[#a2690f] font-[font-family:var(--font-montserrat)] text-center text-[26px] tracking-wider text-sm font-nornal mb-3">
+          <div className="lg:col-span-4 lg:border-r border-gray-300 pr-0 lg:pr-12 text-center md:text-left mb-10 lg:mb-0">
+            <p className="text-[#a2690f] font-[font-family:var(--font-montserrat)] text-center md:text-left text-[26px] tracking-wider text-sm font-nornal mb-3">
               Your words
             </p>
-            <h2 className="text-[26px] lg:text-[40px] text-center px-8  text-[#6a3f07] leading-tight font-[family-name:var(--font-optima)]">
+            <h2 className="text-[26px] lg:text-[40px] text-center md:text-left  text-[#6a3f07] leading-tight font-[family-name:var(--font-optima)]">
               What Our Customers Have To Say
             </h2>
           </div>
@@ -71,7 +71,7 @@ const Testimonials = () => {
           {/* Right Carousel Section */}
           <div className="lg:col-span-8 pl-0 lg:pl-16 relative">
             {/* Left Quote Icon */}
-            <div className="absolute -top-10 left-4 lg:left-12 z-0 opacity-80 w-12 h-12 lg:w-16 lg:h-16">
+            <div className="absolute top-0 left-4 lg:left-0 z-0 opacity-80 w-8 h-8 lg:w-16 lg:h-16">
               <Image
                 src="/assets/dq-left.png"
                 alt="Quote Left"
@@ -87,12 +87,12 @@ const Testimonials = () => {
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10">
                     {/* Avatar */}
                     <div className="shrink-0">
-                      <div className="w-64 h-64 md:w-72 md:h-72 rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-100 flex items-center justify-center">
+                      <div className="w-48 h-64 md:w-48 md:h-72 rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-100 flex items-center justify-center">
                         {item.image?.url ? (
                           <Image
                             src={item.image.url}
                             alt={item.image.alt || item.name}
-                            width={128}
+                            width={80}
                             height={128}
                             className="w-full h-full object-cover"
                           />
@@ -106,7 +106,7 @@ const Testimonials = () => {
 
                     {/* Content */}
                     <div className="text-center md:text-left pt-2">
-                      <p className="text-[15px] md:text-xl text-gray-600 leading-relaxed mb-6 font-[family-name:var(--font-montserrat)]">
+                      <p className="text-[15px] text-gray-600 lg:pr-36 leading-relaxed mb-6 font-[family-name:var(--font-montserrat)]">
                         &quot;{item.comment}&quot;
                       </p>
                       <p className="text-black font-semibold text-[15px] uppercase tracking-wide">
@@ -119,7 +119,7 @@ const Testimonials = () => {
             </Slider>
 
             {/* Right Quote Icon */}
-            <div className="absolute -bottom-8 right-4 lg:right-12 z-0 opacity-80 w-12 h-12 lg:w-16 lg:h-16">
+            <div className="absolute top-0 right-4 lg:right-12 z-0 opacity-80 w-8 h-8 lg:w-16 lg:h-16">
               <Image
                 src="/assets/dq.png"
                 alt="Quote Right"

@@ -124,7 +124,7 @@ const BookAppointmentWidget: React.FC = () => {
   return (
     <>
       {/* ── Floating trigger ── */}
-      <div className="fixed bottom-6 right-6" style={{ zIndex: 9998 }}>
+      <div className="fixed bottom-18 right-6" style={{ zIndex: 9998 }}>
         <div className="relative inline-block">
           <span
             className="absolute -top-2 left-0 px-1.5 text-[10px] uppercase text-black font-bold whitespace-nowrap"

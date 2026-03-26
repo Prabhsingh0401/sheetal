@@ -18,6 +18,7 @@ export const createRazorpayPaymentLink = async (
   shippingAddress: CheckoutAddress,
   billingAddress: CheckoutAddress,
   buyNowItems?: object[],
+  cartItems?: object[],
 ) => {
   const callbackUrl = `${window.location.origin}/checkout/success`;
 
@@ -29,6 +30,7 @@ export const createRazorpayPaymentLink = async (
         billingAddress,
         callbackUrl,
         ...(buyNowItems ? { buyNowItems } : {}),
+        ...(cartItems ? { cartItems } : {}),
       }),
   });
 };

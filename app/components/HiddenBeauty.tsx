@@ -48,7 +48,7 @@ const HiddenBeauty = () => {
           </h2>
           <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
         </div>
-        <p className="max-w-2xl mx-auto text-[16px] lg:text-[18px] mb-8 text-[#a2690f]">
+        <p className=" mx-auto text-[12px] lg:text-[15px] mb-8 text-[#a2690f]">
           Designer pieces that blend traditional charm with modern silhouettes
           for every occasion.
         </p>
@@ -83,13 +83,13 @@ const HiddenBeauty = () => {
   return (
     <div className="container mx-auto pb-12 px-4 text-center font-[family-name:var(--font-optima)]">
       <div className="flex gap-8 items-center justify-center">
-        <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
-        <h2 className="text-[26px] font-optima lg:text-[36px] font-light text-[#6a3f07]">
+        <div className="hidden md:block h-[2px] bg-[#a2690f] w-15" />
+        <h2 className="text-[26px] font-optima lg:text-[30px] font-light text-[#6a3f07]">
           Bring Out The Hidden Beauty
         </h2>
-        <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
+        <div className="hidden md:block h-[2px] bg-[#a2690f] w-15" />
       </div>
-      <p className="max-w-2xl mx-auto text-[15px] lg:text-[16px] mb-8 text-black font-[family-name:var(--font-montserrat)]">
+      <p className="max-w-3xl mx-auto text-[12px] lg:text-[15px] mb-16 text-black font-[family-name:var(--font-montserrat)]">
         Designer pieces that blend traditional charm with modern silhouettes for
         every occasion.
       </p>
@@ -97,22 +97,19 @@ const HiddenBeauty = () => {
       {/* Embla Wrapper */}
       <div className="relative group/slider">
         <div ref={emblaRef} className="overflow-hidden">
-          <div className="flex gap-4 px-4">
+          <div className="flex gap-8 px-8">
             {categories.map((cat) => (
               <div
                 key={cat._id}
                 className="
-                  flex-shrink-0
-                  w-[85%]
-                  sm:w-[45%]
-                  lg:w-[20%]
-                "
+    flex-shrink-0
+    w-[72%]
+    sm:w-[38%]
+    lg:w-[20%]
+  "
               >
-                <div className="relative rounded-[22px] overflow-hidden group">
-                  <Link
-                    href={`/${cat.slug}`}
-                    className="block"
-                  >
+                <div className="relative rounded-[16px] overflow-hidden group">
+                  <Link href={`/${cat.slug}`} className="block">
                     <Image
                       src={getCategoryImageUrl(
                         cat,
@@ -121,7 +118,7 @@ const HiddenBeauty = () => {
                       alt={cat.name}
                       width={400}
                       height={600}
-                      className="w-full h-[420px] object-cover"
+                      className="w-full h-[320px] object-cover"
                       priority={false}
                     />
                   </Link>
@@ -129,13 +126,13 @@ const HiddenBeauty = () => {
                   <Link
                     href={`/${cat.slug}`}
                     className="
-                      absolute bottom-0 left-0 w-full
-                      text-center text-white text-[22px]
-                      bg-gradient-to-t from-[#251d05] to-transparent
-                      pt-[120px] pb-[30px]
-                      transition-all duration-300"
+        absolute bottom-0 left-0 w-full
+        text-center text-white text-[18px]
+        bg-gradient-to-t from-[#251d05] to-transparent
+        pt-[80px] pb-[20px]
+        transition-all duration-300"
                   >
-                    <span className="inline-block group-hover:text-[#ffc107] group-hover:-translate-y-3 transition-transform duration-300">
+                    <span className="inline-block group-hover:text-[#ffc107] group-hover:-translate-y-3 transition-transform duration-300 text-[25px]">
                       {cat.name}
                     </span>
                   </Link>

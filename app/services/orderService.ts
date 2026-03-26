@@ -19,6 +19,7 @@ export const createCODOrder = async (
     totalPrice: number;
   },
   buyNowItems?: object[],
+  cartItems?: object[],
 ) => {
   return apiFetch("/orders/create", {
     method: "POST",
@@ -31,6 +32,7 @@ export const createCODOrder = async (
         status: "Pending",
       },
       ...(buyNowItems ? { buyNowItems } : {}),
+      ...(cartItems ? { cartItems } : {}),
       ...pricing,
     }),
   });

@@ -4,7 +4,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import Link from "next/link";
-import { getCollectionProducts, CollectionProduct } from "../services/productService";
+import {
+  getCollectionProducts,
+  CollectionProduct,
+} from "../services/productService";
 import { useWishlist } from "../hooks/useWishlist";
 import WishlistLoginModal from "./WishlistLoginModal";
 
@@ -103,7 +106,17 @@ const Collections = () => {
     const load = async () => {
       try {
         const data = await getCollectionProducts();
-        setProducts(data?.length > 0 ? data : FALLBACK_PRODUCTS);
+        const visibleProducts = (data || []).filter(
+          (product) =>
+            Boolean(
+              product &&
+                product._id &&
+                product.slug &&
+                product.name &&
+                (product.status ? product.status === "Active" : true),
+            ),
+        );
+        setProducts(visibleProducts);
       } catch (err) {
         console.error("Collections fetch error:", err);
         setProducts(FALLBACK_PRODUCTS);
@@ -122,18 +135,18 @@ const Collections = () => {
 
   return (
     <div className="container-fluid pb-12 home-page-product font-[family-name:var(--font-montserrat)]">
-      <div className="container mx-auto px-4 pb-10">
+      <div className="container mx-auto px-4">
 
         {/* HEADING */}
         <div className="flex flex-col items-center mb-10">
-          <div className="flex items-center justify-center gap-10 w-full">
-            <div className="h-[1px] bg-[#68400f] flex-1 hidden md:flex" />
-            <h2 className="text-[26px] lg:text-[40px] font-[family-name:var(--font-optima)] font-medium text-[#6a3f0e] whitespace-nowrap">
+          <div className="flex items-center justify-center gap-6 w-full">
+            <div className="h-[2px] bg-[#68400f] w-15 hidden md:flex" />
+            <h2 className="text-[26px] lg:text-[30px] font-[family-name:var(--font-optima)] text-[#6a3f0e] whitespace-nowrap">
               Collections
             </h2>
-            <div className="h-[1px] bg-[#68400f] flex-1 hidden md:flex" />
+            <div className="h-[2px] bg-[#68400f] w-15 hidden md:flex" />
           </div>
-          <p className="text-center max-w-2xl text-[15px] mt-2">
+          <p className="text-center mb-6 text-[15px] mt-2">
             Best-Selling Gems: Signature sarees, ensembles, and Indo-Western
             pieces that define Studio By Sheetal.
           </p>

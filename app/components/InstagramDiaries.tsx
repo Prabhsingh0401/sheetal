@@ -102,7 +102,7 @@ const InstagramDiaries = () => {
   );
 
   return (
-    <div className="relative w-full py-16 md:py-20 bg-[#f9f9f9] overflow-hidden">
+    <div className="relative w-full py-4 bg-[#f9f9f9] overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -116,11 +116,15 @@ const InstagramDiaries = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
-        <div className="text-center mb-10 md:mb-14">
-          <h2 className="text-[26px] md:text-4xl lg:text-5xl font-normal text-[#6a3f07] mb-1 font-[family-name:var(--font-optima)]">
-            Visit Our Instagram Diaries
-          </h2>
-          <p className="text-[#666] text-[15px] md:text-lg tracking-wide">
+        <div className="text-center mb-10 md:mb-4">
+          <div className="flex items-center justify-center gap-6 w-full">
+            <div className="h-[2px] bg-[#68400f] w-15 hidden md:flex" />
+            <h2 className="text-[26px] lg:text-[30px] font-[family-name:var(--font-optima)] text-[#6a3f0e] whitespace-nowrap">
+              Visit Our Instagram Diaries
+            </h2>
+            <div className="h-[2px] bg-[#68400f] w-15 hidden md:flex" />
+          </div>
+          <p className="text-[#666] text-[15px] tracking-wide">
             Follow To Know More <a href="#" className="cursor-pointer underline">@sbsinstagram</a>
           </p>
         </div>
