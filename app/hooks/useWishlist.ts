@@ -42,9 +42,19 @@ const isUnauthorized = (err: ErrorLike): boolean =>
   Boolean(err?.message?.toLowerCase().includes("not logged in")) ||
   Boolean(err?.message?.toLowerCase().includes("token"));
 
+let cachedWishlistSnapshot: Product[] | null = null;
+
+const getInitialWishlistSnapshot = (): Product[] =>
+  cachedWishlistSnapshot ?? [];
+
+const commitWishlistSnapshot = (items: Product[]): Product[] => {
+  cachedWishlistSnapshot = items;
+  return items;
+};
+
 export const useWishlist = (): UseWishlistReturn => {
   const router = useRouter();
-  const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [wishlist, setWishlist] = useState<Product[]>(() => getInitialWishlistSnapshot());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -57,15 +67,15 @@ export const useWishlist = (): UseWishlistReturn => {
     try {
       const response = await fetchWishlist();
       if (response.success && Array.isArray(response.data)) {
-        setWishlist(response.data);
+        setWishlist(commitWishlistSnapshot(response.data));
       } else {
-        setWishlist([]);
+        setWishlist(commitWishlistSnapshot([]));
       }
     } catch (err: unknown) {
       const error = err as ErrorLike;
       // Unauthenticated users get a 401 fetching wishlist. That is expected.
       if (isUnauthorized(error)) {
-        setWishlist([]);
+        setWishlist(commitWishlistSnapshot([]));
       } else {
         console.error("Error loading wishlist:", err);
         setError(error.message || "An error occurred while fetching wishlist");

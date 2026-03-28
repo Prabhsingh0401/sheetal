@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { bookAppointment } from "../services/appointmentServices";
 import toast from "react-hot-toast";
 
@@ -27,18 +27,39 @@ const INITIAL_FORM: AppointmentForm = {
 const inputClass =
   "w-full bg-transparent border-b border-[#ffa624] text-sm text-gray-700 placeholder-gray-400 py-2 outline-none focus:border-[#8a6e2f] transition-colors";
 
-// Field label with required asterisk
 const Label = ({ text }: { text: string }) => (
   <span className="text-xs text-gray-500 mb-0.5 block">
     {text} <span className="text-red-500">*</span>
   </span>
 );
 
+const parseRgb = (value: string) => {
+  const match = value.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/i);
+  if (!match) return null;
+
+  return {
+    r: Number(match[1]),
+    g: Number(match[2]),
+    b: Number(match[3]),
+    a: match[4] === undefined ? 1 : Number(match[4]),
+  };
+};
+
+const getLuminance = (color: string) => {
+  const parsed = parseRgb(color);
+  if (!parsed || parsed.a === 0) return null;
+
+  const { r, g, b } = parsed;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
 const BookAppointmentWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState<AppointmentForm>(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const [isTriggerOnDarkBg, setIsTriggerOnDarkBg] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -121,10 +142,53 @@ const BookAppointmentWidget: React.FC = () => {
     setSubmitted(false);
   };
 
+  useEffect(() => {
+    const updateTriggerContrast = () => {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+
+      const rect = trigger.getBoundingClientRect();
+      const points = [
+        [rect.left - 12, rect.top + rect.height / 2],
+        [rect.left - 12, rect.top - 12],
+        [rect.left + rect.width / 2, rect.top - 12],
+      ];
+
+      const luminances = points
+        .map(([x, y]) => document.elementFromPoint(x, y) as HTMLElement | null)
+        .filter((element): element is HTMLElement => Boolean(element))
+        .map((element) => {
+          let node: HTMLElement | null = element;
+          while (node) {
+            const luminance = getLuminance(getComputedStyle(node).backgroundColor);
+            if (luminance !== null) return luminance;
+            node = node.parentElement;
+          }
+          return null;
+        })
+        .filter((value): value is number => value !== null);
+
+      if (!luminances.length) return;
+
+      const average =
+        luminances.reduce((sum, value) => sum + value, 0) / luminances.length;
+      setIsTriggerOnDarkBg(average < 150);
+    };
+
+    updateTriggerContrast();
+    window.addEventListener("scroll", updateTriggerContrast, { passive: true });
+    window.addEventListener("resize", updateTriggerContrast);
+
+    return () => {
+      window.removeEventListener("scroll", updateTriggerContrast);
+      window.removeEventListener("resize", updateTriggerContrast);
+    };
+  }, []);
+
   return (
     <>
-      {/* ── Floating trigger ── */}
-      <div className="fixed bottom-18 right-6" style={{ zIndex: 9998 }}>
+      {/* Floating trigger */}
+      <div className="fixed bottom-18 right-6" style={{ zIndex: 9998, isolation: "isolate" }}>
         <div className="relative inline-block">
           <span
             className="absolute -top-2 left-0 px-1.5 text-[10px] uppercase text-black font-bold whitespace-nowrap"
@@ -133,12 +197,14 @@ const BookAppointmentWidget: React.FC = () => {
             For Customization
           </span>
           <button
+            ref={triggerRef}
             onClick={() => setIsOpen(true)}
-            className="border border-black rounded-sm shadow-lg px-5 py-2.5 text-[11px] font-bold text-black hover:text-[#705004] transition-colors tracking-wide whitespace-nowrap cursor-pointer"
+            className="border border-black rounded-sm shadow-lg px-5 py-2.5 text-[11px] font-bold transition-colors tracking-wide whitespace-nowrap cursor-pointer"
             style={{
               background: "rgba(189, 153, 81, 0.15)",
               backdropFilter: "blur(80px)",
               WebkitBackdropFilter: "blur(80px)",
+              color: isTriggerOnDarkBg ? "#ffffff" : "#000000",
             }}
           >
             Book Appointment
@@ -146,7 +212,7 @@ const BookAppointmentWidget: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Backdrop ── */}
+      {/* Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 flex items-center justify-center"
@@ -158,22 +224,20 @@ const BookAppointmentWidget: React.FC = () => {
           }}
           onClick={handleClose}
         >
-          {/* ── Modal ── */}
+          {/* Modal */}
           <div
             className="relative w-full max-w-lg mx-4 rounded-4xl border-4 border-[#ffa624] p-8 overflow-y-auto max-h-[90vh]"
             style={{ backgroundColor: "#f7f0e3" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close */}
             <button
               onClick={handleClose}
               className="absolute top-4 right-5 text-[#ffa624] cursor-pointer text-xl font-light hover:text-[#ffa624] transition-colors"
               aria-label="Close"
             >
-              ✕
+              ×
             </button>
 
-            {/* Title */}
             <h2 className="text-xl font-semibold text-[#5a3e10] mb-1 tracking-wide">
               Book An Appointment
             </h2>
@@ -206,7 +270,6 @@ const BookAppointmentWidget: React.FC = () => {
               </div>
             ) : (
               <div className="flex flex-col gap-5">
-                {/* Name */}
                 <div>
                   <Label text="Name" />
                   <input
@@ -218,7 +281,6 @@ const BookAppointmentWidget: React.FC = () => {
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <Label text="Email" />
                   <input
@@ -231,7 +293,6 @@ const BookAppointmentWidget: React.FC = () => {
                   />
                 </div>
 
-                {/* Contact */}
                 <div>
                   <Label text="Contact" />
                   <input
@@ -244,7 +305,6 @@ const BookAppointmentWidget: React.FC = () => {
                   />
                 </div>
 
-                {/* Address */}
                 <div>
                   <Label text="Address" />
                   <input
@@ -256,7 +316,6 @@ const BookAppointmentWidget: React.FC = () => {
                   />
                 </div>
 
-                {/* City + Pincode */}
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <Label text="City" />
@@ -281,7 +340,6 @@ const BookAppointmentWidget: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Requirement — optional */}
                 <div>
                   <span className="text-xs text-gray-500 mb-0.5 block">
                     Your Requirement{" "}
@@ -297,12 +355,11 @@ const BookAppointmentWidget: React.FC = () => {
                   />
                 </div>
 
-                {/* Submit */}
                 <div className="flex justify-center mt-2">
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="px-8 py-2.5 border border-gray-800 text-gray-800 text-sm font-medium rounded-sm hover:bg-gray-800 hover:text-white transition-colors tracking-wide cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="px-8 py-2.5 border border-gray-800 text-black text-sm font-medium rounded-sm hover:bg-gray-800 hover:text-white transition-colors tracking-wide cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? "Booking..." : "Book Appointment"}
                   </button>

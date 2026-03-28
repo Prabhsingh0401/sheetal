@@ -34,7 +34,7 @@ export const orderConfirmationTemplate = (data: {
     <meta name="x-apple-disable-message-reformatting">
     <title>Order Confirmation — Studio By Sheetal</title>
     <style>
-      table, td, div, h1, h2, h3, p { font-family: Arial, sans-serif; }
+      table, td, div, h1, h2, h3, p { font-family: Montserrat, "Helvetica Neue", Helvetica, sans-serif; }
     </style>
   </head>
   <body style="margin:20px;padding:0;background:#ffffff;">
@@ -70,36 +70,36 @@ export const orderConfirmationTemplate = (data: {
                         <tr>
                           <td style="padding:0 0 36px 0;color:#153643;">
 
-                            <p style="margin:0 0 12px 0;font-size:20px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:20px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               Dear ${data.userName},
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               Thank you for your order! Your order has been placed successfully. Here are the details:
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <strong>Order Details</strong><br>
                               Submitted on: ${data.submittedOn}
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <strong>Your Message/Details:</strong>
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <strong>Order ID:</strong> ${data.orderId}
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <strong>Order Date:</strong> ${data.orderDate}
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <strong>Status:</strong> ${data.orderStatus}
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <h3 style="margin:8px 0;font-size:18px;">Products</h3>
                             </p>
 
@@ -134,37 +134,37 @@ export const orderConfirmationTemplate = (data: {
                               </tbody>
                             </table>
 
-                            <p style="margin:20px 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:20px 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <strong>Shipping Address:</strong>
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               ${data.shippingName}
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               ${data.shippingLine1}<br>
                               ${data.shippingLine2}<br>
                               ${data.shippingLine3}
                             </p>
 
-                            <p style="margin:20px 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:20px 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <hr style="border:none;border-top:1px solid #ccc;">
                             </p>
 
-                            <p style="margin:20px 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:20px 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               We will process your order once the payment is confirmed. You will receive updates on your order status.
                             </p>
 
-                            <p style="margin:20px 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:20px 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               If you have any questions, please contact us.
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               Thank you for your patience.
                             </p>
 
-                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Arial,sans-serif;">
+                            <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;">
                               <strong>Best regards,</strong><br>
                               Studio By Sheetal Team
                             </p>
@@ -183,7 +183,7 @@ export const orderConfirmationTemplate = (data: {
                       <tbody>
                         <tr>
                           <td style="padding:0;width:50%;" align="center">
-                            <p style="margin:0;font-size:14px;line-height:16px;font-family:Arial,sans-serif;color:#ffffff;">
+                            <p style="margin:0;font-size:14px;line-height:16px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;color:#ffffff;">
                               &copy; 2026. <a href="https://www.studiobysheetal.com" style="color:#ffffff;text-decoration:underline;">Studio By Sheetal</a>
                             </p>
                           </td>
@@ -199,7 +199,7 @@ export const orderConfirmationTemplate = (data: {
                       <tbody>
                         <tr>
                           <td style="padding:0;width:50%;" align="center">
-                            <p style="margin:0;font-size:14px;line-height:25px;font-family:Arial,sans-serif;color:#9b9b9b;">
+                            <p style="margin:0;font-size:14px;line-height:25px;font-family:Montserrat,'Helvetica Neue',Helvetica,sans-serif;color:#9b9b9b;">
                               This is an automated email. Please do not reply to this message.<br>
                               If you have any urgent queries, please contact us directly.
                             </p>

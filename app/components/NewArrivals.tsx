@@ -82,7 +82,7 @@ const NewArrivals = () => {
     const isWishlisted = wishlist.some((p) => p._id === product._id);
 
     return (
-      <div className="rounded-xl overflow-hidden group">
+      <div className="rounded-xl overflow-hidden group h-full flex flex-col">
         <div className="relative aspect-[3/4] overflow-hidden">
           {product.stock === 0 && (
             <div className="absolute top-0 left-0 z-20">
@@ -130,7 +130,7 @@ const NewArrivals = () => {
           </Link>
         </div>
 
-        <div className="p-3 md:p-4 text-center">
+        <div className="p-3 md:p-4 text-center flex flex-col flex-1">
           <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
             <Link
               href={`/product/${product.slug}`}
@@ -140,41 +140,43 @@ const NewArrivals = () => {
             </Link>
           </h6>
 
-          <div className="flex justify-center gap-0.5 mb-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Image key={i} src="/assets/gray-star.png" alt="star" width={16} height={16} />
-            ))}
-          </div>
+          <div className="mt-auto">
+            <div className="flex justify-center gap-0.5 mb-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Image key={i} src="/assets/gray-star.png" alt="star" width={16} height={16} />
+              ))}
+            </div>
 
-          <div
-            className="w-full flex flex-wrap items-center justify-center gap-1 mb-3 px-1"
-            style={{ containerType: "inline-size" } as React.CSSProperties}
-          >
-            {displayPrice.discount ? (
-              <>
-                <span className="text-[15px] text-[#000000] font-medium whitespace-nowrap">
-                  {displayPrice.price}
-                </span>
-                <span className="text-[13px] text-gray-400 line-through whitespace-nowrap">
+            <div
+              className="w-full flex flex-wrap items-center justify-center gap-1 mb-3 px-1"
+              style={{ containerType: "inline-size" } as React.CSSProperties}
+            >
+              {displayPrice.discount ? (
+                <>
+                  <span className="text-[15px] text-[#000000] font-medium whitespace-nowrap">
+                    {displayPrice.price}
+                  </span>
+                  <span className="text-[13px] text-gray-400 line-through whitespace-nowrap">
+                    {displayPrice.mrp}
+                  </span>
+                  <span className="text-[15px] text-[#6a3f0e] font-bold whitespace-nowrap">
+                    {displayPrice.discount}
+                  </span>
+                </>
+              ) : (
+                <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
                   {displayPrice.mrp}
                 </span>
-                <span className="text-[15px] text-[#6a3f0e] font-bold whitespace-nowrap">
-                  {displayPrice.discount}
-                </span>
-              </>
-            ) : (
-              <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
-                {displayPrice.mrp}
-              </span>
-            )}
-          </div>
+              )}
+            </div>
 
-          <Link
-            href={`/product/${product.slug}`}
-            className="inline-block rounded border-y border-black text-black py-1.5 md:py-2 px-6 md:px-8 text-[10px] md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
-          >
-            View Product
-          </Link>
+            <Link
+              href={`/product/${product.slug}`}
+              className="inline-block rounded border-y border-black text-black py-1.5 md:py-3 px-6 md:px-8 text-[10px] md:text-[16px] uppercase transition-all duration-500 hover:border-[#a2690f]"
+            >
+              View Product
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -203,7 +205,7 @@ const NewArrivals = () => {
             <h2 className="text-[26px] md:text-[30px] text-[#6a3f07] mb-3 font-[family-name:var(--font-optima)] leading-tight">
               New Arrivals
             </h2>
-            <p className="text-black text-[15px] font-[font-fmaily:var(--font-monteserrat)] px-8 md:p-0 md:text-[18px] mb-5 md:mb-8">
+            <p className="text-black text-[15px] font-[family-name:var(--font-montserrat)] px-8 md:p-0 md:text-[18px] mb-5 md:mb-8">
               Pick your beauty products today. 50% OFF on the new brands. Order
               all classy products today!
             </p>

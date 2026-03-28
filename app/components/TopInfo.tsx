@@ -41,7 +41,7 @@ const TopInfo = () => {
 
   const displayText = coupon
     ? coupon.description || `${getOfferText(coupon)}`
-    : "Biggest Sale of the Year - Up to 60% Off";
+    : "";
 
   const displayCode = coupon?.couponType === "CouponCode" ? coupon.code : null;
   const applicableItem =
@@ -70,10 +70,12 @@ const TopInfo = () => {
             {": "}
           </>
         )}
-        {!displayCode && ": "}
-        <Link href={ctaHref} className="underline font-normal">
+        {!displayCode && displayText !== "" && ": "}
+        {displayText !== "" && (
+          <Link href={ctaHref} className="underline font-normal">
           Shop Now
         </Link>
+        )}
       </p>
     </div>
   );

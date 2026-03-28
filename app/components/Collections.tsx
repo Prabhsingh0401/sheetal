@@ -233,7 +233,7 @@ function ProductCard({
   const href = `/product/${product.slug}`;
 
   return (
-    <div className="rounded-xl overflow-hidden group">
+    <div className="rounded-xl overflow-hidden group h-full flex flex-col">
       <div className="relative aspect-[3/4] overflow-hidden">
         {product.soldOut && (
           <div className="absolute -top-1 left-0 z-20">
@@ -270,7 +270,7 @@ function ProductCard({
           </button>
         </div>
 
-        <Link href={href} className="block h-full w-[full] relative">
+        <Link href={href} className="block h-full w-full relative">
           <Image
             src={product.image}
             alt={product.imageAlt}
@@ -288,7 +288,7 @@ function ProductCard({
         </Link>
       </div>
 
-      <div className="p-4 text-center">
+      <div className="p-4 text-center flex flex-col flex-1">
         <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
           <Link
             href={href}
@@ -298,30 +298,32 @@ function ProductCard({
           </Link>
         </h6>
 
-        <div className="mb-3 flex justify-center gap-0.5">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Image key={i} src="/assets/gray-star.png" alt="star" width={20} height={20} />
-          ))}
-        </div>
+        <div className="mt-auto">
+          <div className="mb-3 flex justify-center gap-0.5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Image key={i} src="/assets/gray-star.png" alt="star" width={20} height={20} />
+            ))}
+          </div>
 
-        <div className="mb-4 flex justify-center items-center gap-2 flex-wrap">
-          {product.price && (
-            <span className="text-[15px] md:text-lg text-[#281b00] font-medium">{product.price}</span>
-          )}
-          {product.mrp && (
-            <span className="text-[13px] text-gray-400 line-through">{product.mrp}</span>
-          )}
-          {product.discount && (
-            <span className="text-[15pxs] text-[#6a3f0e] font-normal">{product.discount}</span>
-          )}
-        </div>
+          <div className="mb-4 flex justify-center items-center gap-2 flex-wrap">
+            {product.price && (
+              <span className="text-[15px] md:text-lg text-[#281b00] font-medium">{product.price}</span>
+            )}
+            {product.mrp && (
+              <span className="text-[13px] text-gray-400 line-through">{product.mrp}</span>
+            )}
+            {product.discount && (
+              <span className="text-[15px] text-[#6a3f0e] font-normal">{product.discount}</span>
+            )}
+          </div>
 
-        <Link
-          href={href}
-          className="inline-block rounded border-y border-black text-black py-2 px-6 md:px-8 text-[10px] md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
-        >
-          View Product
-        </Link>
+          <Link
+            href={href}
+            className="inline-block rounded border-y border-black text-black py-3 px-6 md:px-8 text-[10px] md:text-[16px] uppercase transition-all duration-500 hover:border-[#a2690f]"
+          >
+            View Product
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -43,11 +43,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
       {products.map((product) => (
         <div
           key={product._id}
-          className={`group flex transition-all rounded-xl p-1 md:p-2
-            ${viewMode === "grid" ? "flex-col h-full w-full max-w-[90%] mx-auto" : "flex-row items-center gap-3 md:gap-4 lg:gap-6"}
-          `}
+          className={`group flex transition-all rounded-xl p-1 md:p-2 h-full
+            ${viewMode === "grid" ? "flex-col w-full max-w-[90%] mx-auto" : "flex-row items-center gap-3 md:gap-4 lg:gap-6"}`}
         >
-          {/* Image Container */}
           <div
             className={`relative overflow-hidden bg-[#f7f7f7] rounded-lg shadow-sm shrink-0
               ${
@@ -84,7 +82,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               </div>
             </Link>
 
-            {/* Wishlist icon */}
             <div className="absolute top-2 right-2 flex flex-col gap-3 transform translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
               <button
                 className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center group/icon cursor-pointer"
@@ -108,7 +105,6 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               </button>
             </div>
 
-            {/* Quick View — hidden on mobile, visible on hover for md+ */}
             <button
               onClick={() => onQuickView(product.slug)}
               className="hidden md:block absolute bottom-0 left-0 right-0 bg-white/15 backdrop-blur-xs border-t border-white/20 py-3 md:py-4 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-white stroke-3 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 group-focus-within:translate-y-0 focus:translate-y-0 focus-visible:translate-y-0 hover:bg-white/25 hover:text-white cursor-pointer"
@@ -117,12 +113,12 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </button>
           </div>
 
-          {/* Info */}
           <div
-            className={`flex flex-col flex-grow px-0.5 md:px-1 font-[family-name:var(--font-montserrat)] mb-2 md:mb-3
-              ${viewMode === "list" ? "pl-1.5 md:pl-3 lg:pl-4" : ""}`}
+            className={`flex flex-col flex-grow h-full px-0.5 md:px-1 font-[family-name:var(--font-montserrat)] ${
+              viewMode === "list" ? "pl-1.5 md:pl-3 lg:pl-4" : ""
+            }`}
           >
-            <h3 className="text-sm md:text-base lg:text-lg leading-snug line-clamp-2 pb-1">
+            <h3 className="text-sm md:text-base lg:text-lg leading-snug line-clamp-2 pb-1 mb-2">
               <Link
                 href={`/product/${product.slug}`}
                 className="hover:text-[#bd9951] transition-colors uppercase tracking-tight"
@@ -131,41 +127,39 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               </Link>
             </h3>
 
-            {/* Stars */}
-            <div className="flex items-center gap-0.5 my-2">
-              {[...Array(5)].map((_, i) => (
-                <Image
-                  key={i}
-                  src={
-                    i < product.rating
-                      ? "/assets/y-star.png"
-                      : "/assets/gray-star.png"
-                  }
-                  alt="star"
-                  width={12}
-                  height={12}
-                  className="w-3 h-3 md:w-4 md:h-4"
-                />
-              ))}
-            </div>
-
-            {/* Price */}
-            <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-2 md:mb-3">
-              <span className="text-xs sm:text-sm md:text-base font-medium text-gray-900 whitespace-nowrap">
-                ₹{product.price.toLocaleString()}
-              </span>
-              <span className="text-[10px] sm:text-xs md:text-sm text-gray-400 line-through whitespace-nowrap">
-                ₹{product.mrp.toLocaleString()}
-              </span>
-              <span className="text-[10px] sm:text-xs md:text-sm text-[#B78D65] font-semibold whitespace-nowrap uppercase">
-                {product.discount}
-              </span>
-            </div>
-
             <div className="mt-auto">
+              <div className="flex items-center gap-0.5 my-2">
+                {[...Array(5)].map((_, i) => (
+                  <Image
+                    key={i}
+                    src={
+                      i < product.rating
+                        ? "/assets/y-star.png"
+                        : "/assets/gray-star.png"
+                    }
+                    alt="star"
+                    width={12}
+                    height={12}
+                    className="w-3 h-3 md:w-4 md:h-4"
+                  />
+                ))}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-2 md:mb-3">
+                <span className="text-xs sm:text-sm md:text-base font-medium text-gray-900 whitespace-nowrap">
+                  ₹{product.price.toLocaleString("en-IN")}
+                </span>
+                <span className="text-[10px] sm:text-xs md:text-sm text-gray-400 line-through whitespace-nowrap">
+                  ₹{product.mrp.toLocaleString("en-IN")}
+                </span>
+                <span className="text-[10px] sm:text-xs md:text-sm text-[#B78D65] font-semibold whitespace-nowrap uppercase">
+                  {product.discount}
+                </span>
+              </div>
+
               <Link
                 href={`/product/${product.slug}`}
-                className="inline-block border-b border-black text-black py-1.5 md:py-2 pr-4 md:pr-8 uppercase text-[11px] md:text-[13px] transition-all duration-500 "
+                className="inline-block border-b border-black text-black py-1.5 md:py-2 hover:tracking-[2px] hover:text-red-500 uppercase text-[11px] md:text-[13px] transition-all duration-500"
               >
                 View Detail
               </Link>

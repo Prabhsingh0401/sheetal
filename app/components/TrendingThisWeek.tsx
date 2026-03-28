@@ -41,7 +41,7 @@ function ProductCard({
   const href = `/product/${product.id}`;
 
   return (
-    <div className="rounded-xl overflow-hidden group">
+    <div className="rounded-xl overflow-hidden group h-full flex flex-col">
       <div className="relative aspect-[3/4] overflow-hidden">
         {product.soldOut && (
           <div className="absolute -top-1 left-0 z-20">
@@ -96,7 +96,7 @@ function ProductCard({
         </Link>
       </div>
 
-      <div className="p-4 text-center">
+      <div className="p-4 text-center flex flex-col flex-1">
         <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
           <Link
             href={href}
@@ -106,41 +106,43 @@ function ProductCard({
           </Link>
         </h6>
 
-        <div className="mb-3 flex justify-center gap-0.5">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Image key={i} src="/assets/gray-star.png" alt="star" width={18} height={18} />
-          ))}
-        </div>
+        <div className="mt-auto">
+          <div className="mb-3 flex justify-center gap-0.5">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Image key={i} src="/assets/gray-star.png" alt="star" width={18} height={18} />
+            ))}
+          </div>
 
-        <div
-          className="w-full flex flex-nowrap items-center justify-center gap-1 mb-4 px-1"
-          style={{ containerType: "inline-size" } as React.CSSProperties}
-        >
-          {product.discount ? (
-            <>
-              <span className="text-[16px] text-[#281b00] font-medium whitespace-nowrap">
-                {product.price}
-              </span>
-              <span className="text-[13px] text-gray-400 line-through whitespace-nowrap">
+          <div
+            className="w-full flex flex-nowrap items-center justify-center gap-1 mb-4 px-1"
+            style={{ containerType: "inline-size" } as React.CSSProperties}
+          >
+            {product.discount ? (
+              <>
+                <span className="text-[16px] text-[#281b00] font-medium whitespace-nowrap">
+                  {product.price}
+                </span>
+                <span className="text-[13px] text-gray-400 line-through whitespace-nowrap">
+                  {product.mrp}
+                </span>
+                <span className="text-[16px] text-[#6a3f0e] font-normal whitespace-nowrap">
+                  {product.discount}
+                </span>
+              </>
+            ) : (
+              <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
                 {product.mrp}
               </span>
-              <span className="text-[16px] text-[#6a3f0e] font-normal whitespace-nowrap">
-                {product.discount}
-              </span>
-            </>
-          ) : (
-            <span className="text-[clamp(11px,5cqw,18px)] text-[#281b00] font-bold whitespace-nowrap">
-              {product.mrp}
-            </span>
-          )}
-        </div>
+            )}
+          </div>
 
-        <Link
-          href={href}
-          className="inline-block rounded border-y border-black text-black py-2 px-6 md:px-8 text-[10px] md:text-sm uppercase transition-all duration-500 hover:border-[#a2690f]"
-        >
-          View Product
-        </Link>
+          <Link
+            href={href}
+            className="inline-block rounded border-y border-black text-black py-3 px-6 md:px-8 text-[10px] md:text-[16px] uppercase transition-all duration-500 hover:border-[#a2690f]"
+          >
+            View Product
+          </Link>
+        </div>
       </div>
     </div>
   );

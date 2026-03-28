@@ -273,7 +273,7 @@ const OtpForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f6f4] flex items-center justify-center px-4 font-['Montserrat']">
+    <div className="min-h-screen bg-[#f6f6f4] flex items-center justify-center px-4 font-montserrat">
       <div className="w-full max-w-4xl bg-white shadow-xl overflow-hidden my-30">
         <div className="grid grid-cols-1 md:grid-cols-2 min-h-[570px]">
           {/* Left Side - Image */}

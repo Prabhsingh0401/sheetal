@@ -1,6 +1,7 @@
 import React from "react";
 import toast from "react-hot-toast";
 import { deleteAddress } from "../../services/userService";
+import { CircleCheckBig } from "lucide-react";
 
 // Define based on backend schema
 export interface Address {
@@ -31,7 +32,7 @@ interface AddressListProps {
   onEdit: (address: Address) => void;
 }
 
-const AddressList: React.FC<AddressListProps> = ({
+const   AddressList: React.FC<AddressListProps> = ({
   addresses,
   selectedShippingAddressId,
   selectedBillingAddressId,
@@ -89,7 +90,7 @@ const AddressList: React.FC<AddressListProps> = ({
           <span className="font-bold text-gray-800">
             {addr.firstName} {addr.lastName}
           </span>
-          <span className="text-xs text-white uppercase bg-[#956a2c] px-1.5 py-0.5 rounded tracking-wide">
+          <span className="text-xs text-[#956a2c] uppercase border border-[#956a2c] px-1.5 py-0.5 rounded tracking-wide">
             {addr.addressType}
           </span>
         </div>
@@ -107,47 +108,24 @@ const AddressList: React.FC<AddressListProps> = ({
         </button>
       )}
       {isSelected && (
-        <div className="absolute top-2 right-2">
-          <svg
-            clipRule="evenodd"
-            height="20"
-            width="20"
-            fillRule="evenodd"
-            imageRendering="optimizeQuality"
-            shapeRendering="geometricPrecision"
-            textRendering="geometricPrecision"
-            viewBox="0 0 254000 254000"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-              <path
-                d="m37253 0h179494c20518 0 37253 16735 37253 37253v179494c0 20518-16735 37253-37253 37253h-179494c-20518 0-37253-16735-37253-37253v-179494c0-20518 16735-37253 37253-37253z"
-                fill="none"
-              />
-                <path
-                  id="_228534648"
-                  d="m96229 162644 89510-89509c2637-2638 6967-2611 9578 0l8642 8642c2611 2611 2611 6968 0 9578l-89509 89510c-2611 2611-6941 2638-9579 0l-8642-8642c-2638-2638-2638-6941 0-9579z"
-                />
-                <path
-                  id="_228534744"
-                  d="m68270 108089 54525 54525c2637 2638 2606 6973 0 9579l-8642 8642c-2606 2605-6973 2605-9579 0l-54525-54525c-2606-2606-2637-6941 0-9579l8642-8642c2638-2637 6941-2637 9579 0z"
-                />
-          </svg>
+        <div className="absolute -top-1 -right-1 bg-white">
+          <img src="/assets/tick-green.png" alt="" className="h-5" />
         </div>
       )}
 
-      <div className="flex gap-2 mt-2 pt-2 border-t border-gray-100 text-sm">
+      <div className="flex gap-10 mt-2 pt-2 border-t border-gray-100 text-sm">
         <button
           onClick={(e) => {
             e.stopPropagation();
             onEdit(addr);
           }}
-          className="cursor-pointer flex-1 py-1 px-2 border border-gray-200 rounded text-center hover:bg-gray-50 text-gray-600"
+          className="cursor-pointer flex-1 py-1 px-2 border rounded-full border-gray-400  text-center hover:bg-gray-50 text-gray-600"
         >
           Edit
         </button>
         <button
           onClick={(e) => handleDelete(e, addr._id)}
-          className="cursor-pointer flex-1 py-1 px-2 border border-gray-200 rounded text-center hover:text-red-500 hover:border-red-200 text-gray-600"
+          className="cursor-pointer flex-1 py-1 px-2 border border-gray-400 rounded-full text-center hover:text-red-500 hover:border-red-200 text-gray-600"
         >
           Delete
         </button>

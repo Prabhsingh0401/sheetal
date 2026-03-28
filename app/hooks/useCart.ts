@@ -115,6 +115,8 @@ interface UseCartReturn {
 
 // ─── Guest cart helpers ──────────────────────────────────────────────────────
 
+let cachedCartSnapshot: CartItem[] | null = null;
+
 const readGuestCart = (): GuestCartItem[] => {
   if (typeof window === "undefined") return [];
   try {
@@ -166,6 +168,23 @@ const guestToCartItems = (guestItems: GuestCartItem[]): CartItem[] =>
     discountPrice: g.discountPrice,
   }));
 
+const getInitialCartSnapshot = (): CartItem[] => {
+  if (cachedCartSnapshot) {
+    return cachedCartSnapshot;
+  }
+
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  return isAuthenticated() ? [] : guestToCartItems(readGuestCart());
+};
+
+const commitCartSnapshot = (items: CartItem[]): CartItem[] => {
+  cachedCartSnapshot = items;
+  return items;
+};
+
 /** Clears guest cart from localStorage */
 export const clearGuestCart = () => {
   if (typeof window !== "undefined") {
@@ -202,7 +221,7 @@ export const mergeGuestCartOnLogin = async (): Promise<void> => {
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export const useCart = (): UseCartReturn => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => getInitialCartSnapshot());
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const persistedCouponState = readPersistedCouponState();
@@ -279,20 +298,20 @@ export const useCart = (): UseCartReturn => {
           if (validItems.length === 0) {
             const guestItems = readGuestCart();
             if (guestItems.length > 0) {
-              setCart(guestToCartItems(guestItems));
+              setCart(commitCartSnapshot(guestToCartItems(guestItems)));
               void mergeGuestCartOnLogin();
               return;
             }
           }
 
-          setCart(validItems);
+          setCart(commitCartSnapshot(validItems));
         } else {
           setError("Failed to fetch cart");
         }
       } else {
         // ── Guest: read from localStorage ──
         const guestItems = readGuestCart();
-        setCart(guestToCartItems(guestItems));
+        setCart(commitCartSnapshot(guestToCartItems(guestItems)));
       }
     } catch (err: any) {
       console.error("Error loading cart:", err);
@@ -396,7 +415,7 @@ export const useCart = (): UseCartReturn => {
           }
 
           writeGuestCart(guestItems);
-          setCart(guestToCartItems(guestItems));
+          setCart(commitCartSnapshot(guestToCartItems(guestItems)));
           dispatchCartUpdated();
           toast.success("Added to cart!");
         }
@@ -430,7 +449,7 @@ export const useCart = (): UseCartReturn => {
           // Guest: remove from localStorage
           const guestItems = readGuestCart().filter((g) => g._id !== itemId);
           writeGuestCart(guestItems);
-          setCart(guestToCartItems(guestItems));
+          setCart(commitCartSnapshot(guestToCartItems(guestItems)));
           dispatchCartUpdated();
           if (!options?.silent) {
             toast.success("Item removed from cart!");
@@ -588,8 +607,14 @@ export const useCart = (): UseCartReturn => {
           if (response.success) {
             toast.success(response.message || "Cart updated!");
             setCart((prevCart) => {
-              if (quantity <= 0) return prevCart.filter((item) => item._id !== itemId);
-              return prevCart.map((item) => item._id === itemId ? { ...item, quantity } : item);
+              const nextCart =
+                quantity <= 0
+                  ? prevCart.filter((item) => item._id !== itemId)
+                  : prevCart.map((item) =>
+                      item._id === itemId ? { ...item, quantity } : item,
+                    );
+              cachedCartSnapshot = nextCart;
+              return nextCart;
             });
             dispatchCartUpdated();
             resetCoupon();
@@ -603,7 +628,7 @@ export const useCart = (): UseCartReturn => {
             return { ...g, quantity };
           }).filter((g) => g.quantity > 0);
           writeGuestCart(guestItems);
-          setCart(guestToCartItems(guestItems));
+          setCart(commitCartSnapshot(guestToCartItems(guestItems)));
           dispatchCartUpdated();
           resetCoupon();
         }
@@ -629,7 +654,7 @@ export const useCart = (): UseCartReturn => {
         }
         const response = await clearCartApi(userId);
         if (response && response.success) {
-          setCart([]);
+          setCart(commitCartSnapshot([]));
           setTotalMrp(0);
           setTotalDiscount(0);
           setFinalAmount(0);
@@ -641,7 +666,7 @@ export const useCart = (): UseCartReturn => {
         }
       } else {
         clearGuestCart();
-        setCart([]);
+        setCart(commitCartSnapshot([]));
         setTotalMrp(0);
         setTotalDiscount(0);
         setFinalAmount(0);

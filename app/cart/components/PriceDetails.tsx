@@ -140,9 +140,9 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
 
   return (
     <>
-      <div className="mt-5 font-[family-name:var(--font-monterrat)]">
+      <div className="mt-5 font-[family-name:var(--font-montserrat)]">
         <div className="p-4">
-          <h3 className="text-[15px] font-bold mb-4 uppercase transform scale-y-90 tracking-[1px] font-[family-name:var(--font-monterrat)]">Coupons</h3>
+          <h3 className="text-[15px] font-bold mb-4 uppercase transform scale-y-90 tracking-[1px] font-[family-name:var(--font-montserrat)]">Coupons</h3>
 
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3 flex-1">
@@ -195,9 +195,11 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
             </p>
           )}
 
-          {applicableCategories.length > 0 && (
+          {couponDiscount > 0 && (
             <p className="text-blue-600 text-sm mt-2">
-              Coupon applied to applicable items.
+              {applicableCategories.length > 0
+                ? "Coupon applied to applicable items."
+                : "Coupon applied to all items."}
             </p>
           )}
 

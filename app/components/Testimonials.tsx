@@ -60,7 +60,7 @@ const Testimonials = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-center">
           {/* Left Text Section */}
           <div className="lg:col-span-4 lg:border-r border-gray-300 pr-0 lg:pr-12 text-center md:text-left mb-10 lg:mb-0">
-            <p className="text-[#a2690f] font-[font-family:var(--font-montserrat)] text-center md:text-left text-[26px] tracking-wider text-sm font-nornal mb-3">
+            <p className="text-[#a2690f] font-[family-name:var(--font-montserrat)] text-center md:text-left text-[26px] tracking-wider text-sm font-normal mb-3">
               Your words
             </p>
             <h2 className="text-[26px] lg:text-[40px] text-center md:text-left  text-[#6a3f07] leading-tight font-[family-name:var(--font-optima)]">
