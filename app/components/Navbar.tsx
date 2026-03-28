@@ -598,8 +598,8 @@ const MobileMenuOverlay = ({
 
 const Navbar = () => {
   const router = useRouter();
-  const { wishlist } = useWishlist();
-  const { cart } = useCart();
+  const { wishlist, loading: wishlistLoading } = useWishlist();
+  const { cart, loading: cartLoading } = useCart();
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -819,9 +819,11 @@ const Navbar = () => {
                       className="w-5.5 h-5.5 text-[#f4e9ab]"
                       strokeWidth={1}
                     />
-                    <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                      {wishlist.length}
-                    </span>
+                    {!wishlistLoading && wishlist.length > 0 ? (
+                      <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f4e9ab] text-[#f4e9ab] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                        {wishlist.length}
+                      </span>
+                    ) : null}
                   </Link>
                   <Link
                     href="/cart"
@@ -855,9 +857,11 @@ const Navbar = () => {
                           strokeLinejoin="round"
                         ></path>
                     </svg>
-                    <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                      {cartItemCount}
-                    </span>
+                    {!cartLoading && cartItemCount > 0 ? (
+                      <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f4e9ab] text-[#f4e9ab] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                        {cartItemCount}
+                      </span>
+                    ) : null}
                   </Link>
                 </li>
               </ul>
@@ -895,9 +899,11 @@ const Navbar = () => {
               className="relative hover:opacity-80 transition-opacity"
             >
               <Heart className="w-6 h-6 text-[#f4e9ab]" strokeWidth={1} />
-              <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                {wishlist.length}
-              </span>
+              {!wishlistLoading && wishlist.length > 0 ? (
+                <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                  {wishlist.length}
+                </span>
+              ) : null}
             </Link>
 
             <Link
@@ -932,9 +938,11 @@ const Navbar = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                {cartItemCount}
-              </span>
+              {!cartLoading && cartItemCount > 0 ? (
+                <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                  {cartItemCount}
+                </span>
+              ) : null}
             </Link>
 
             <button

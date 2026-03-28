@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { CSSProperties } from "react";
+import { Montserrat, Outfit } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
@@ -28,6 +29,16 @@ const optima = localFont({
     },
   ],
   variable: "--font-optima",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
 });
 
 export const metadata: Metadata = {
@@ -63,12 +74,10 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${optima.variable} antialiased`}
+        className={`${optima.variable} ${montserrat.variable} ${outfit.variable} antialiased`}
         style={
           {
-            "--font-montserrat": "Montserrat, Arial, sans-serif",
-            "--font-outfit": "Outfit, Arial, sans-serif",
-            "--font-geist-sans": "Arial, sans-serif",
+            "--font-geist-sans": "var(--font-montserrat), sans-serif",
             "--font-geist-mono": "Consolas, monospace",
           } as CSSProperties
         }

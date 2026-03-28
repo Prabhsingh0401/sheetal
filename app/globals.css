@@ -3,6 +3,8 @@
 
 @theme {
   --font-optima: var(--font-optima);
+  --font-montserrat: var(--font-montserrat);
+  --font-outfit: var(--font-outfit);
 }
 
 @layer base {

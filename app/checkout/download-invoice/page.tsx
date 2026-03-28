@@ -226,7 +226,7 @@ const InvoicePageInner = () => {
   return (
     <>
       <style>{`
-        * { font-family: Arial, sans-serif; }
+        * { font-family: var(--font-montserrat), sans-serif; }
         @media print { .no-print { display: none !important; } }
       `}</style>
 

@@ -16,13 +16,10 @@ const ProductCard = ({
   isWishlisted = false,
   onToggleWishlist,
 }: ProductCardProps) => {
-  // productId = real MongoDB _id (passed explicitly from RelatedProducts)
-  // _id       = real MongoDB _id (passed from other contexts)
-  // id        = slug (used for routing only — never for wishlist)
   const wishlistProductId = product.productId || product._id;
 
   return (
-    <div className="p-2 group">
+    <div className="p-2 group h-full flex flex-col">
       <div className="relative overflow-hidden mb-3">
         {product.soldOut && (
           <div className="absolute top-0 left-0 z-10 bg-red-600 px-2 py-1 rounded-lg">
@@ -32,11 +29,10 @@ const ProductCard = ({
           </div>
         )}
 
-        {/* Wishlist button */}
         <div className="absolute top-2 right-2 z-10">
           <button
             type="button"
-            className=" p-2 rounded-full shadow-md cursor-pointer hover:text-white transition-colors"
+            className="p-2 rounded-full shadow-md cursor-pointer hover:text-white transition-colors"
             onClick={() => {
               if (wishlistProductId && onToggleWishlist) {
                 onToggleWishlist(wishlistProductId);
@@ -75,8 +71,8 @@ const ProductCard = ({
         </Link>
       </div>
 
-      <div className="text-left">
-        <h6 className="mb-1 text-[16px] font-medium line-clamp-2 h-[40px] leading-tight font-[family-name:var(--font-montserrat)]">
+      <div className="text-left flex h-full flex-col">
+        <h6 className="mb-2 text-[16px] font-medium line-clamp-2 leading-tight font-[family-name:var(--font-montserrat)]">
           <Link
             href={`/product/${product.id}`}
             className="hover:text-[#bd9951] transition-colors"
@@ -85,28 +81,30 @@ const ProductCard = ({
           </Link>
         </h6>
 
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-[16px] text-gray-800">Size: XL</span>
-          <StarRating rating={4} />
-        </div>
+        <div className="mt-auto space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[16px] text-gray-800">Size: XL</span>
+            <StarRating rating={4} />
+          </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <span className="font-normal text-[16px] text-[#281b00]">
-            ₹ {product.price?.toFixed(2)}
-          </span>
-          <span className="line-through text-gray-400 text-[14px]">
-            ₹ {product.mrp?.toFixed(2)}
-          </span>
-          <span className="text-[#6a3f0b] text-[16px]">[{product.discount}]</span>
-        </div>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-normal text-[16px] text-[#281b00]">
+              ₹ {typeof product.price === "number" ? product.price.toFixed(2) : product.price}
+            </span>
+            <span className="line-through text-gray-400 text-[14px]">
+              ₹ {typeof product.mrp === "number" ? product.mrp.toFixed(2) : product.mrp}
+            </span>
+            <span className="text-[#6a3f0b] text-[16px]">[{product.discount}]</span>
+          </div>
 
-        <div className="mt-5 flex justify-start">
-          <Link
-            href={`/product/${product.id}`}
-            className="inline-block border-b border-black text-left text-black py-2 pr-4 uppercase text-[12px] font-medium transition-all duration-500"
-          >
-            View Detail
-          </Link>
+          <div className="flex justify-start">
+            <Link
+              href={`/product/${product.id}`}
+              className="inline-block border-b border-black text-left text-black py-2 uppercase text-[12px] font-medium transition-all duration-500"
+            >
+              View Detail
+            </Link>
+          </div>
         </div>
       </div>
     </div>

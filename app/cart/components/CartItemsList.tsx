@@ -118,6 +118,10 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                   )
                 : 0;
             const productHref = `/product/${encodeURIComponent(item.product.slug)}`;
+            const showCouponBadge =
+              applicableCategories.length > 0 &&
+              itemWiseDiscount &&
+              itemWiseDiscount[item._id] > 0;
 
             return (
               <div key={item._id} className="flex items-start py-3 gap-3">
@@ -144,7 +148,13 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                     </svg>
                   </div>
 
-                  <Link href={productHref} className="block">
+                  <button
+                    type="button"
+                    className="block w-full cursor-pointer text-left"
+                    onClick={() => onSelectionChange(item._id)}
+                    aria-pressed={selectedItemIds.includes(item._id)}
+                    aria-label={`Select ${item.product.name}`}
+                  >
                     <Image
                       src={getApiImageUrl(
                         item.variantImage || item.product.mainImage?.url,
@@ -154,7 +164,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       height={160}
                       className="w-full h-auto"
                     />
-                  </Link>
+                  </button>
                 </div>
 
                 {/* Product Info + Price (stacked on mobile, side-by-side on md+) */}
@@ -216,7 +226,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                           [ {discountPercentage}% OFF ]
                         </span>
                       )}
-                      {itemWiseDiscount && itemWiseDiscount[item._id] > 0 && (
+                      {showCouponBadge && (
                         <span className="text-xs text-green-600 px-2 py-0.5 rounded-full bg-green-50 border border-green-200">
                           -₹{itemWiseDiscount[item._id].toFixed(2)}
                         </span>

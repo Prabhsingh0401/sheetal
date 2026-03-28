@@ -551,8 +551,8 @@ const MobileMenuOverlay = ({
 
 const NavbarInner = () => {
   const router = useRouter();
-  const { wishlist } = useWishlist();
-  const { cart } = useCart();
+  const { wishlist, loading: wishlistLoading } = useWishlist();
+  const { cart, loading: cartLoading } = useCart();
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -783,9 +783,11 @@ const NavbarInner = () => {
                       height={24}
                       className="w-6 h-6"
                     />
-                    <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                      {wishlist.length}
-                    </span>
+                    {!wishlistLoading && wishlist.length > 0 ? (
+                      <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                        {wishlist.length}
+                      </span>
+                    ) : null}
                   </Link>
                   <Link
                     href="/cart"
@@ -798,9 +800,11 @@ const NavbarInner = () => {
                       height={24}
                       className="w-7 h-7"
                     />
-                    <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                      {cartItemCount}
-                    </span>
+                    {!cartLoading && cartItemCount > 0 ? (
+                      <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                        {cartItemCount}
+                      </span>
+                    ) : null}
                   </Link>
                 </li>
               </ul>
@@ -845,9 +849,11 @@ const NavbarInner = () => {
                 height={24}
                 className="w-6 h-6"
               />
-              <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                {cartItemCount}
-              </span>
+              {!cartLoading && cartItemCount > 0 ? (
+                <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                  {cartItemCount}
+                </span>
+              ) : null}
             </Link>
             <div className="cursor-pointer" onClick={toggleMobileMenu}>
               <Image
