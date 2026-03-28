@@ -17,6 +17,7 @@ export const createRazorpayPaymentLink = async (
   addressId: string,
   shippingAddress: CheckoutAddress,
   billingAddress: CheckoutAddress,
+  email: string,
   buyNowItems?: object[],
   cartItems?: object[],
 ) => {
@@ -28,6 +29,7 @@ export const createRazorpayPaymentLink = async (
         addressId,
         shippingAddress,
         billingAddress,
+        email,
         callbackUrl,
         ...(buyNowItems ? { buyNowItems } : {}),
         ...(cartItems ? { cartItems } : {}),

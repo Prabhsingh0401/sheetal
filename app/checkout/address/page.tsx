@@ -56,6 +56,9 @@ const AddressPageInner = () => {
   const [baseShippingFee, setBaseShippingFee] = useState(0);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
 
+  const isValidEmail = (value: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
   // ── Buy Now param ─────────────────────────────────────────────────────────
   const searchParams = useSearchParams();
 
@@ -127,8 +130,9 @@ const AddressPageInner = () => {
         setAddresses(userAddresses);
 
         if (response.data.email) {
-          setUserEmail(response.data.email);
-          setIsEmailFromProfile(true);
+          const email = String(response.data.email).trim();
+          setUserEmail(email);
+          setIsEmailFromProfile(isValidEmail(email));
         }
 
         const defaultAddr = userAddresses.find((a: Address) => a.isDefault);
@@ -211,6 +215,15 @@ const AddressPageInner = () => {
   });
 
   const handlePayOnline = async () => {
+    const normalizedEmail = userEmail.trim();
+    if (!normalizedEmail) {
+      toast.error("Please enter your email address.");
+      return;
+    }
+    if (!isValidEmail(normalizedEmail)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
     if (!selectedShippingAddressId) {
       toast.error("Please select a delivery address.");
       return;
@@ -241,6 +254,7 @@ const AddressPageInner = () => {
         selectedShippingAddressId,
         shippingAddress,
         billingAddress,
+        normalizedEmail,
         isBuyNow ? normalizedActiveItems : undefined,
         isBuyNow ? undefined : normalizedActiveItems,
       );
@@ -275,6 +289,15 @@ const AddressPageInner = () => {
   };
 
   const handleCOD = async () => {
+    const normalizedEmail = userEmail.trim();
+    if (!normalizedEmail) {
+      toast.error("Please enter your email address.");
+      return;
+    }
+    if (!isValidEmail(normalizedEmail)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
     if (!selectedShippingAddressId) {
       toast.error("Please select a delivery address.");
       return;
@@ -324,6 +347,7 @@ const AddressPageInner = () => {
         shippingAddress,
         billingAddress,
         orderItems,
+        normalizedEmail,
         {
           itemsPrice: activeFinalAmount,
           shippingPrice: shippingCharges,

@@ -75,7 +75,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           {/* ── Left: Filters button ── */}
           <button
             onClick={toggleFilters}
-            className="flex items-center gap-2 text-md font-normal tracking-wider hover:text-[#bd9951] transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-2 text-md font-[family-name:var(--font-montserrat)] font-normal tracking-wider hover:text-[#bd9951] transition-colors cursor-pointer shrink-0"
           >
             <Image
               src="/assets/icons/filter.svg"
@@ -90,7 +90,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
           <div className="relative">
             <button
               onClick={toggleSortBy}
-              className="flex cursor-pointer items-center gap-2 text-md font-medium tracking-normal hover:text-[#bd9951] transition-colors"
+              className="flex cursor-pointer font-[familty-name:var(--font-montserrat)] items-center gap-2 text-md font-medium tracking-normal hover:text-[#bd9951] transition-colors"
             >
               <Image
                 src="/assets/icons/sort.svg"

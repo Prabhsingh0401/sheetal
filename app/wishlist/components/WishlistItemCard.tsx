@@ -66,7 +66,7 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
         </Link>
       </div>
       <div className="flex flex-col flex-grow pt-4 text-left font-[family-name:var(--font-montserrat)]">
-        <h6 className="text-lg leading-snug line-clamp-2 pb-1">
+        <h6 className="text-[17px] line-clamp-2 pb-1">
           <Link
             href={`/product/${product.slug}`}
             className="hover:text-[#bd9951] transition-colors"
@@ -74,16 +74,16 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
             {product.name}
           </Link>
         </h6>
-        <div className="flex items-baseline gap-2 mb-4">
-          <span className="text-md text-gray-900">
+        <div className="flex items-baseline gap-2 mb-4 font-medium">
+          <span className="text-[16px] text-[#281b00]">
             &#8377; {product.lowestPrice.toLocaleString()}
           </span>
           {product.discountPercent > 0 && (
             <>
-              <span className="text-md text-gray-500 line-through">
+              <span className="text-[14px] text-gray-500 line-through">
                 &#8377; {product.lowestMrp.toLocaleString()}
               </span>
-              <span className="text-md text-[#70480c]">
+              <span className="text-[16px] text-[#70480c]">
                 {product.discountPercent}% OFF
               </span>
             </>
@@ -94,14 +94,14 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
             <button
               disabled={isMovingToCart}
               onClick={() => onMoveToCart(product)}
-              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 text-left text-sm border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
+              className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 text-left text-[12px] border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
             >
-              {isMovingToCart ? "Moving..." : "Move to Cart"}
+              {isMovingToCart ? "Adding..." : "Add to Cart"}
             </button>
           ) : (
             <Link
               href={`/product/${product.slug}?scroll=similar`}
-              className="cursor-pointer inline-block text-left text-sm border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
+              className="cursor-pointer inline-block text-left text-[12px] border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
             >
               Show Similar
             </Link>

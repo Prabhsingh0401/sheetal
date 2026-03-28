@@ -12,6 +12,7 @@ export const createCODOrder = async (
   shippingAddress: object,
   billingAddress: object,
   orderItems: object[],
+  email: string,
   pricing: {
     itemsPrice: number;
     shippingPrice: number;
@@ -27,6 +28,7 @@ export const createCODOrder = async (
       orderItems,
       shippingAddress,
       billingAddress,
+      email,
       paymentInfo: {
         method: "COD",
         status: "Pending",

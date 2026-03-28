@@ -144,12 +144,12 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({
         id="category-scroll"
         className="scroll-mt-30 flex flex-col items-center justify-center text-[#694708] mt-10 pb-6 border-b border-[#ffcf8c]"
       >
-        <h1 className="text-4xl md:text-[29px] font-medium text-[#6a3f07] font-light mb-2 font-[family-name:var(--font-optima)] tracking-normal">
+        <h1 className="text-4xl md:text-[35px] text-[#6a3f07] font-light mb-2 font-[family-name:var(--font-optima)] tracking-normal">
           {title}
         </h1>
-        <nav className="text-md font-light tracking-widest flex items-center gap-3">
+        <nav className="text-[15px] font-[family-name:var(--font-montserrat)] font-extralight tracking-widest flex items-center gap-3 text-[#6a3f07]">
           <Link href="/">Home</Link>
-          <span className="text-[#f3bf43]">/</span>
+          <span className="text-[#6a3f07]">/</span>
           <span className="">{title}</span>
         </nav>
       </div>
@@ -165,7 +165,7 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({
             </h2>
             <div className="w-20 h-px bg-[#bd9951]"></div>
           </div>
-          <p className="text-black font-light text-md">
+          <p className="text-black font-light text-[15px] font-[family-name:var(--font-montserrat)] tracking-wide">
             {description}
           </p>
         </div>

@@ -103,9 +103,9 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
             {tagGroups.slice(0, 6).map((group, idx) => (
               <div
                 key={idx}
-                className="col-span-1 bg-[#cccccc1c] p-4 rounded-lg"
+                className="col-span-1 bg-[#cccccc1c] p-4 px-6 rounded-lg"
               >
-                <h3 className="font-medium text-[15px] md:text-[17px] mb-3 text-[#c18a08] tracking-wide">
+                <h3 className="font-medium font-[family-name:var(--font-montserrat)] text-[15px] md:text-[18px] mb-3 text-[#c18a08] tracking-wide">
                   {group.title}
                 </h3>
                 <ul className="space-y-2 text-sm">
@@ -613,7 +613,7 @@ const Navbar = () => {
   // const { data: settings } = useSWR("/settings", getSettings);
 
   const [navItems, setNavItems] = useState<any[]>([]);
-  const wishlistHref = isAuthenticated()
+  const wishlistHref = isClient && isAuthenticated()
     ? "/wishlist"
     : "/login?redirect=/wishlist";
 
@@ -833,36 +833,27 @@ const Navbar = () => {
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                      <g
-                        id="SVGRepo_tracerCarrier"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      ></g>
-                      <g id="SVGRepo_iconCarrier">
-                        {" "}
                         <path
                           d="M5 9C5 7.89543 5.89543 7 7 7H17C18.1046 7 19 7.89543 19 9V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V9Z"
                           stroke="#f4e9ab"
-                          stroke-width="0.75"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeWidth="0.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         ></path>{" "}
                         <path
                           d="M15 7V6C15 4.34315 13.6569 3 12 3V3C10.3431 3 9 4.34315 9 6V7"
                           stroke="#f4e9ab"
-                          stroke-width="0.75"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          strokeWidth="0.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         ></path>{" "}
                         <path
                           d="M9 11L9 12C9 13.6569 10.3431 15 12 15V15C13.6569 15 15 13.6569 15 12L15 11"
                           stroke="#f4e9ab"
-                          stroke-width="0.75"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        ></path>{" "}
-                      </g>
+                          strokeWidth="0.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        ></path>
                     </svg>
                     <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                       {cartItemCount}

@@ -179,7 +179,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                 setCouponInput(couponCode || "");
                 setOpenCouponModal(true);
               }}
-              className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded-[2px] px-4 py-1 text-sm cursor-pointer"
+              className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded px-2.5 py-0.5 text-sm cursor-pointer"
             >
               {couponCode ? "CHANGE" : "APPLY"}
             </button>
