@@ -226,7 +226,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                     {/* Quantity */}
                     <div className="flex items-center gap-2 text-sm">
                       <button
-                        className="border border-gray-200 rounded-full cursor-pointer w-6 h-6 flex items-center justify-center"
+                        className="rounded-full cursor-pointer w-6 h-6 flex items-center justify-center"
                         onClick={() =>
                           updateCartItemQuantity(item._id, item.quantity - 1)
                         }
@@ -236,7 +236,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       </button>
                       <span className="w-4 text-center">{item.quantity}</span>
                       <button
-                        className="border border-gray-200 rounded-full cursor-pointer w-6 h-6 flex items-center justify-center"
+                        className="rounded-full cursor-pointer w-6 h-6 flex items-center justify-center"
                         onClick={() =>
                           updateCartItemQuantity(item._id, item.quantity + 1)
                         }

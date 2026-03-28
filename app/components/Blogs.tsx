@@ -58,15 +58,15 @@ const Blogs = () => {
     title: string;
   }) => (
     <div>
-      <div className="text-[13px] font-[family-name:var(--font-montserrat)] text-gray-500 mb-3 font-medium">
+      <div className="text-[13px] md:text-[15px] font-[family-name:var(--font-montserrat)] mb-3 font-medium">
         {date}
       </div>
-      <h3 className="text-[15px] font-medium text-black mb-4 font-[family-name:var(--font-optima)] leading-snug">
+      <h3 className="text-[20px] text-black mb-8 font-[family-name:var(--font-optima)] leading-snug">
         <Link href={href} className="hover:text-[#d18702] transition-colors">
           {title}
         </Link>
       </h3>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mt-4">
         <div className="w-16 h-px bg-black" />
         <Link
           href={href}
@@ -241,7 +241,7 @@ const Blogs = () => {
                   />
                 </Link>
               </div>
-              <div className="absolute bottom-10 left-8 right-8 bg-white/90 shadow-lg rounded-4xl p-5 z-10 translate-y-1/3">
+              <div className="absolute bottom-10 left-8 w-[456px] h-[250px] text-[22px] font-optima right-8 bg-white/75 shadow-lg rounded-4xl px-9.5 py-7.5 z-10 translate-y-1/3">
                 <BlogCardContent
                   href={`/blog/${featuredBlog.slug}`}
                   date={formatDate(featuredBlog.createdAt)}

@@ -111,7 +111,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             {/* Quick View — hidden on mobile, visible on hover for md+ */}
             <button
               onClick={() => onQuickView(product.slug)}
-              className="hidden md:block absolute bottom-0 left-0 right-0 bg-white/15 backdrop-blur-xs border-t border-white/20 py-3 md:py-4 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 group-focus-within:translate-y-0 focus:translate-y-0 focus-visible:translate-y-0 hover:bg-white/25 hover:text-white cursor-pointer"
+              className="hidden md:block absolute bottom-0 left-0 right-0 bg-white/15 backdrop-blur-xs border-t border-white/20 py-3 md:py-4 text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-white stroke-3 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] transform translate-y-full transition-transform duration-500 group-hover:translate-y-0 group-focus-within:translate-y-0 focus:translate-y-0 focus-visible:translate-y-0 hover:bg-white/25 hover:text-white cursor-pointer"
             >
               Quick View
             </button>

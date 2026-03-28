@@ -1,6 +1,10 @@
+"use client";
+import React from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import StarRating from "./StarRating";
 import { ProductVariant } from "../../services/productService";
-import Image from "next/image";
 import { getApiImageUrl } from "../../services/api";
 
 interface ProductInfoProps {
@@ -16,7 +20,7 @@ interface ProductInfoProps {
     colors: { name: string; image: string }[];
     allSizes: { name: string; available: boolean; left: number }[];
     colorToAvailableSizesMap: { [colorName: string]: string[] };
-    specifications: any[];
+    specifications: { key: string; value: string }[];
   };
   selectedSize: string;
   setSelectedSize: (size: string) => void;
@@ -35,6 +39,71 @@ interface ProductInfoProps {
   hasSizeChart?: boolean;
   isOutOfStock: boolean;
   selectedVariantData?: ProductVariant | null;
+}
+
+function AccordionSection({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [maxHeight, setMaxHeight] = useState(defaultOpen ? "0px" : "0px");
+
+  useEffect(() => {
+    const node = contentRef.current;
+    if (!node) return;
+
+    if (open) {
+      setMaxHeight(`${node.scrollHeight}px`);
+      return;
+    }
+
+    setMaxHeight(`${node.scrollHeight}px`);
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        setMaxHeight("0px");
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+    };
+  }, [open]);
+
+  return (
+    <div className="border-b border-gray-200 last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between bg-gray-100 px-2 py-2 text-[15px] font-semibold uppercase text-[#ff5722] transition-colors hover:bg-gray-200"
+        aria-expanded={open}
+      >
+        <span>{title}</span>
+        <span className="text-xl font-semibold leading-none">
+          {open ? "-" : "+"}
+        </span>
+      </button>
+      <div
+        style={{
+          maxHeight,
+          overflow: "hidden",
+          transition: "max-height 320ms ease-in-out",
+          willChange: "max-height",
+        }}
+      >
+        <div ref={contentRef} className="bg-gray-50 p-3 text-sm md:p-4">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const ProductInfo: React.FC<ProductInfoProps> = ({
@@ -64,8 +133,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
     : 0;
 
   return (
-    <div className="px-">
-      {/* Desktop Title / Rating / Code */}
+    <div className="px-0">
       <div className="hidden lg:block mb-4">
         <h1 className="text-[26px] md:text-[30px] font-normal text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
           {product.title}
@@ -73,18 +141,16 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         <div className="flex items-center gap-4 mb-2">
           <StarRating rating={product.rating} />
         </div>
-        <div className="text-emerald-900 text-sm hidden md:block">
+        <div className="text-emerald-900 text-[15px] hidden md:block">
           <span className="font-semibold">Product Code:</span>{" "}
           {product.productCode}
         </div>
       </div>
 
-      {/* Short description */}
       <p className="text-[15px] mb-5 leading-relaxed text-gray-800 hidden md:block">
         {product.mainDescription}
       </p>
 
-      {/* Price */}
       <div className="mb-5">
         <div className="flex flex-wrap items-end gap-2 md:gap-3">
           <span className="text-[22px] font-normal">
@@ -99,30 +165,31 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             </span>
           )}
         </div>
-        <p className="text-xs text-gray-500 mt-1">Inclusive of all taxes.</p>
+        <p className="text-[13px] text-gray-500 mt-1">
+          Inclusive of all taxes.
+        </p>
       </div>
 
-      {/* Stock badge */}
       <div className="mb-5">
         <span
           className={`inline-block text-xs px-2 py-1 text-[15px] rounded ${
-            isOutOfStock ? " text-red-700 " : " text-green-700 "
+            isOutOfStock ? "text-red-700" : "text-green-700"
           }`}
         >
           {isOutOfStock ? "Out of Stock" : "In Stock"}
         </span>
       </div>
 
-      {/* Color Selection */}
       <div className="mb-5">
-        <label className="block text-[17px] font-noermal text-black mb-2">
+        <label className="block text-[17px] font-normal text-black mb-2">
           Select Color:
         </label>
         <div className="flex flex-wrap gap-2 md:gap-3">
-          {Array.isArray(product?.colors) &&
+          {Array.isArray(product.colors) &&
             product.colors.map((color, i) => (
-              <div
-                key={i}
+              <button
+                type="button"
+                key={`${color.name}-${i}`}
                 className={`w-16 h-20 border cursor-pointer hover:border-[#bd9951] p-0.5 relative flex-shrink-0 ${
                   selectedColor === color.name
                     ? "border-[#bd9951]"
@@ -134,20 +201,19 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                   src={getApiImageUrl(color.image, "/assets/default-image.png")}
                   alt={color.name}
                   fill
-                  className="object-cover h-24 w-auto"
+                  className="object-cover"
                 />
-              </div>
+              </button>
             ))}
         </div>
       </div>
 
-      {/* Size Selection */}
       <div className="mb-5">
         <div className="flex justify-between items-center mb-2">
           <label className="block text-[17px] font-medium text-black">
             Select Size:
           </label>
-          {product.allSizes.length > 1 && (
+          {(hasSizeChart || product.allSizes.length > 1) && (
             <button
               onClick={onSizeChartOpen}
               className="flex items-center text-sm text-red-500 font-semibold hover:underline cursor-pointer"
@@ -164,7 +230,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           )}
         </div>
         <div className="flex flex-wrap gap-2 md:gap-3">
-          {Array.isArray(product?.allSizes) &&
+          {Array.isArray(product.allSizes) &&
             product.allSizes.map((size) => {
               const isAvailableForSelectedColor =
                 product.colorToAvailableSizesMap[selectedColor]?.includes(
@@ -181,18 +247,23 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               return (
                 <div key={size.name} className="flex flex-col items-center">
                   <button
+                    type="button"
                     disabled={isDisabled}
                     onClick={() => setSelectedSize(size.name)}
                     className={`
-              ${size.name === "One Size" || size.name === "Free Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
-              flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative
-              ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
-              ${
-                selectedSize === size.name && !isDisabled
-                  ? "border-[#bd9951]"
-                  : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
-              }
-            `}
+                      ${
+                        size.name === "One Size" || size.name === "Free Size"
+                          ? "px-3 py-2 rounded-md"
+                          : "w-9 h-9 md:w-10 md:h-10 rounded-full"
+                      }
+                      flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative
+                      ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
+                      ${
+                        selectedSize === size.name && !isDisabled
+                          ? "border-[#bd9951]"
+                          : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
+                      }
+                    `}
                   >
                     {size.name}
                     {isDisabled && (
@@ -213,7 +284,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </div>
       </div>
 
-      {/* Mobile quantity / notify (above sticky footer) */}
       <div className="flex flex-col lg:hidden mb-5 border-b border-gray-100 pb-5 space-y-3">
         {isOutOfStock ? (
           <button
@@ -235,7 +305,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         )}
       </div>
 
-      {/* Desktop actions */}
       <div className="mb-6 hidden lg:block">
         {isOutOfStock ? (
           <button
@@ -257,10 +326,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                 className="w-full h-10 border border-gray-300 text-left px-4 focus:outline-none focus:border-[#bd9951]"
               />
             </div>
-            <div className="flex gap-3 w-full">
+            <div className="flex gap-5 w-[450px]">
               <button
                 onClick={onAddToCart}
-                className="flex-1 h-12 bg-white border rounded-md border-[#ff5722] text-[#ff5722] uppercase font-medium tracking-wider hover:bg-gray-100 cursor-pointer transition-colors text-[17px] font-semibold"
+                className="flex-1 h-12 bg-white border rounded-md border-[#ff5722] text-[#ff5722] uppercase tracking-wider hover:bg-gray-100 cursor-pointer transition-colors text-[17px] font-semibold"
               >
                 Add to Cart
               </button>
@@ -276,7 +345,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         )}
       </div>
 
-      {/* Mobile Sticky Footer */}
       <div className="fixed bottom-0 left-0 w-full bg-white z-[100] border-t border-gray-200 px-3 py-2 lg:hidden flex gap-2 items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="flex flex-col shrink-0">
           <span className="text-base font-bold leading-tight">
@@ -314,7 +382,6 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </div>
       </div>
 
-      {/* Delivery */}
       <div className="mb-5 border-t border-gray-100 pt-5">
         <label className="flex items-center text-[17px] font-semibold mb-3">
           Delivery Options
@@ -326,7 +393,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             className="w-7 h-7 ml-2"
           />
         </label>
-        <div className="flex relative max-w-72 mb-2">
+        <div className="flex relative h-12 max-w-72 mb-2">
           <input
             type="text"
             placeholder="Enter pincode"
@@ -380,127 +447,90 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         <div className="mt-4 px-1 text-gray-800">100% Original Products</div>
       </div>
 
-      {/* Trust badges */}
-      {/* <div className="flex flex-wrap justify-around items-center py-4 gap-y-4 border-t border-gray-100">
-        {[
-          { src: "/assets/icons/secure-payment.svg",   label: "Secure Payments" },
-          { src: "/assets/icons/transaction.svg",       label: "Cash on delivery" },
-          { src: "/assets/icons/quality-assurance.svg", label: "Assured Quality" },
-          { src: "/assets/icons/product-return1.svg",   label: "Easy returns" },
-        ].map(({ src, label }) => (
-          <div key={label} className="flex items-center gap-1.5 w-1/2 md:w-auto justify-center px-1">
-            <Image src={src} alt={label} width={24} height={24} className="shrink-0" />
-            <span className="text-xs md:text-sm text-[#706a42] font-semibold whitespace-nowrap">
-              {label}
-            </span>
-          </div>
-        ))}
-      </div> */}
-
-      {/* Accordion */}
       <div className="rounded mt-2">
-        <details open className="group border-b border-gray-200">
-          <summary className="flex justify-between items-center text-[#ff5722] px-2 py-2 cursor-pointer font-semibold list-none bg-gray-100 transition-colors uppercase text-[16px]">
-            Specifications
-            <span className="text-xl font-semibold">
-              <span className="group-open:hidden">+</span>
-              <span className="hidden group-open:inline">−</span>
-            </span>
-          </summary>
-          <div className="p-3 md:p-4 bg-gray-50 text-sm">
-            {Array.isArray(product?.specifications) &&
-            product.specifications.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 md:gap-x-8">
-                {product.specifications.map((spec: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="flex flex-col border-b border-gray-200 pb-2"
-                  >
-                    <span className="font-semibold text-gray-700 text-xs md:text-[15px]">
-                      {spec.key}
-                    </span>
-                    <span className="text-gray-900 text-xs md:text-[16px]">
-                      {spec.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 italic text-sm">
-                No specifications available.
-              </p>
-            )}
-          </div>
-        </details>
-
-        <details className="group">
-          <summary className="flex justify-between items-center px-2 py-2 cursor-pointer font-semibold text-[#ff5722]  bg-gray-100 list-none bg-gray-00 transition-colors uppercase text-[15px]">
-            Delivery & Returns
-            <span className="text-xl font-semibold">
-              <span className="group-open:hidden">+</span>
-              <span className="hidden group-open:inline">−</span>
-            </span>
-          </summary>
-          <div className="p-3 md:p-4 bg-gray-50 text-sm">
-            <h3 className="font-semibold text-gray-900 mb-3">
-              Available Shipping Methods
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs md:text-sm">
-                <thead>
-                  <tr className="border-b font-bold">
-                    <th className="text-left pb-1 pr-4">Shipping Method</th>
-                    <th className="text-left pb-1 pr-4">Shipping To</th>
-                    <th className="text-left pb-1">Shipping Charge</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b">
-                    <td className="py-2 pr-4">Pre-Paid</td>
-                    <td className="py-2 pr-4">All over India</td>
-                    <td className="py-2">Free Shipping</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 pr-4">COD Charges</td>
-                    <td className="py-2 pr-4">All over India</td>
-                    <td className="py-2">Free Shipping</td>
-                  </tr>
-                </tbody>
-              </table>
+        <AccordionSection title="Specifications" defaultOpen>
+          {Array.isArray(product.specifications) &&
+          product.specifications.length > 0 ? (
+            <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 md:gap-x-8">
+              {product.specifications.map((spec, idx) => (
+                <div
+                  key={`${spec.key}-${idx}`}
+                  className="flex flex-col border-b border-gray-200 pb-2"
+                >
+                  <span className="font-semibold text-gray-700 text-xs md:text-[15px]">
+                    {spec.key}
+                  </span>
+                  <span className="text-gray-900 text-xs md:text-[16px]">
+                    {spec.value}
+                  </span>
+                </div>
+              ))}
             </div>
-            <p className="mt-3 font-semibold text-xs md:text-sm">
-              For more details please read{" "}
-              <a
-                href="/shipping-policy"
-                className="underline text-gray-900 hover:text-black"
-              >
-                Shipping Policy
-              </a>
-              .
+          ) : (
+            <p className="text-sm italic text-gray-500">
+              No specifications available.
             </p>
-            <h3 className="font-semibold text-gray-900 mt-4 mb-1 text-xs md:text-sm">
-              Return Policy
-            </h3>
-            <p className="leading-relaxed text-xs md:text-sm">
-              Your satisfaction is our top priority. If you're not completely
-              satisfied with the product, we offer a hassle-free, no questions
-              asked 7 days return and refund.
-            </p>
-            <p className="mt-2 text-xs md:text-sm">
-              For more details please read{" "}
-              <a
-                href="/return-and-cancellation-policy"
-                className="underline text-gray-900 hover:text-black"
-              >
-                Return and Cancellation Policy
-              </a>
-              .
-            </p>
+          )}
+        </AccordionSection>
+
+        <AccordionSection title="Delivery & Returns">
+          <h3 className="mb-3 font-semibold text-gray-900">
+            Available Shipping Methods
+          </h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs md:text-sm">
+              <thead>
+                <tr className="border-b font-bold">
+                  <th className="pb-1 pr-4 text-left">Shipping Method</th>
+                  <th className="pb-1 pr-4 text-left">Shipping To</th>
+                  <th className="pb-1 text-left">Shipping Charge</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-2 pr-4">Pre-Paid</td>
+                  <td className="py-2 pr-4">All over India</td>
+                  <td className="py-2">Free Shipping</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 pr-4">COD Charges</td>
+                  <td className="py-2 pr-4">All over India</td>
+                  <td className="py-2">Free Shipping</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </details>
+          <p className="mt-3 text-xs font-semibold md:text-sm">
+            For more details please read{" "}
+            <Link
+              href="/shipping-policy"
+              className="text-gray-900 underline hover:text-black"
+            >
+              Shipping Policy
+            </Link>
+            .
+          </p>
+          <h3 className="mb-1 mt-4 text-xs font-semibold text-gray-900 md:text-sm">
+            Return Policy
+          </h3>
+          <p className="text-xs leading-relaxed md:text-sm">
+            Your satisfaction is our top priority. If you&apos;re not
+            completely satisfied with the product, we offer a hassle-free, no
+            questions asked 7 days return and refund.
+          </p>
+          <p className="mt-2 text-xs md:text-sm">
+            For more details please read{" "}
+            <Link
+              href="/return-and-cancellation-policy"
+              className="text-gray-900 underline hover:text-black"
+            >
+              Return and Cancellation Policy
+            </Link>
+            .
+          </p>
+        </AccordionSection>
       </div>
 
-      {/* Contact */}
       <div className="mt-5 p-4 md:p-6 border">
         <h4 className="font-semibold text-gray-800 mb-3 text-sm md:text-base">
           Have a question? We are here to help!

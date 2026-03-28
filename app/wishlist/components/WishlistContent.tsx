@@ -149,9 +149,9 @@ const WishlistContent = () => {
   return (
     <div className="container mx-auto px-4 py-12 sm:py-16 mt-15">
       <div className="text-center mb-8">
-        <h4 className="text-3xl font-medium font-optima text-[#70480c]">
+        <h4 className="text-[24px] tracking-wide font-medium font-[family-name:var(--font-montserrat)] text-[#70480c]">
           My Wishlist{" "}
-          <span className="text-gray-500 font-light text-xl">
+          <span className="font-light text-[15px]">
             ({wishlist.length} items)
           </span>{" "}
         </h4>

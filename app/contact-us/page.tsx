@@ -148,11 +148,11 @@ const ContactUs = () => {
                   <div className="relative">
                     <div className="w-full px-2 mb-8">
                       <div className="mb-4">
-                        <h2 className="font-optima text-[39px] text-[#6a3f07] relative inline-block before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
+                        <h2 className="font-optima text-[30px] text-[#6a3f07] relative inline-block before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
                           Get In Touch
                         </h2>
                       </div>
-                      <h5 className="font-[family-name:var(--font-montserrat)] text-[20px] font-normal">
+                      <h5 className="font-[family-name:var(--font-montserrat)] text-[18px] tracking-wider text-[#252525] font-extralight">
                         Please contact us with any questions or concerns.
                       </h5>
                     </div>
@@ -163,10 +163,10 @@ const ContactUs = () => {
                           <div className="info">
                             <div className="email">
                               <i className="bi bi-envelope text-[20px] mr-[9px]"></i>
-                              <h4 className="inline-block font-medium text-[15px]">
+                              <h4 className="inline-block text-[#70480c] font-medium text-[24px] font-[family-name:var(--font-montserrat)]">
                                 Email:
                               </h4>
-                              <p className="font-[family-name:var(--font-montserrat)] text-black mt-2">
+                              <p className="font-[family-name:var(--font-montserrat)] text-[15px] text-black mt-2">
                                 info@studiobysheetal.com
                               </p>
                             </div>
@@ -179,10 +179,10 @@ const ContactUs = () => {
                           <div className="info">
                             <div className="email">
                               <i className="bi bi-phone text-[20px] mr-[9px]"></i>
-                              <h4 className="inline-block font-medium text-[15px]">
+                              <h4 className="inline-block text-[#70480c] font-medium text-[24px] font-[family-name:var(--font-montserrat)]">
                                 Mobile:
                               </h4>
-                              <p className="font-[family-name:var(--font-montserrat)] text-black mt-2">
+                              <p className="font-[family-name:var(--font-montserrat)] text-[15px] text-black mt-2">
                                 +91 99588 13913
                               </p>
                             </div>
