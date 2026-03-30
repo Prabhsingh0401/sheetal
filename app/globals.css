@@ -13,6 +13,10 @@
     scrollbar-color: #bd9951 transparent;
   }
 
+  h2 {
+    @apply text-[26px] md:text-[26px] lg:text-[30px] 2xl:text-[39px] leading-tight;
+  }
+
   *::-webkit-scrollbar {
     width: 6px;
     height: 6px;

@@ -12,6 +12,7 @@ import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 
 import ProductImageModal from "./ProductImageModal";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface ProductImageGalleryProps {
   images: string[];
@@ -25,7 +26,7 @@ interface ProductImageGalleryProps {
   videoMimeType?: string;
 }
 
-const ZOOM_SCALE = 2.5; // How much to zoom in on hover
+const ZOOM_SCALE = 1.75; // How much to zoom in on hover
 
 const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   images,
@@ -158,10 +159,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         <div className="hidden md:flex flex-col items-center w-16 lg:w-24 flex-shrink-0 gap-2">
           <button
             onClick={() => scroll("up")}
-            hidden={!canScrollUp}
-            className="w-full py-1 text-[#bd9951] hover:bg-gray-100 rounded transition-colors flex justify-center items-center h-8"
+            className="w-full py-1 text-[#bd9951] cursor-pointer hover:bg-gray-100 rounded transition-colors flex justify-center items-center h-8"
           >
-            <span className="text-xs">▲</span>
+            <span className="text-xs text-black"><ChevronUp/></span>
           </button>
 
           <div
@@ -230,10 +230,9 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 
           <button
             onClick={() => scroll("down")}
-            hidden={!canScrollDown}
-            className="w-full py-1 text-[#bd9951] hover:bg-gray-100 rounded transition-colors flex justify-center items-center h-8"
+            className="w-full py-1 text-[#bd9951] cursor-pointer hover:bg-gray-100 rounded transition-colors flex justify-center items-center h-8"
           >
-            <span className="text-xs">▼</span>
+            <span className="text-xs text-black"><ChevronDown/></span>
           </button>
         </div>
 

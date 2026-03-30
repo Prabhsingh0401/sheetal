@@ -153,13 +153,13 @@ const NewArrivals = () => {
             >
               {displayPrice.discount ? (
                 <>
-                  <span className="text-[15px] text-[#000000] font-medium whitespace-nowrap">
+                  <span className="text-[16px] text-[#000000] font-medium whitespace-nowrap">
                     {displayPrice.price}
                   </span>
-                  <span className="text-[13px] text-gray-400 line-through whitespace-nowrap">
+                  <span className="text-[14px] text-gray-400 line-through whitespace-nowrap">
                     {displayPrice.mrp}
                   </span>
-                  <span className="text-[15px] text-[#6a3f0e] font-bold whitespace-nowrap">
+                  <span className="text-[16px] text-[#6a3f0e] font-bold whitespace-nowrap">
                     {displayPrice.discount}
                   </span>
                 </>
@@ -202,7 +202,7 @@ const NewArrivals = () => {
 
           {/* LEFT CONTENT */}
           <div className="lg:col-span-3 xl:col-span-4 text-center md:text-left">
-            <h2 className="text-[26px] md:text-[30px] text-[#6a3f07] mb-3 font-[family-name:var(--font-optima)] leading-tight">
+            <h2 className="text-[#6a3f07] mb-3 font-[family-name:var(--font-optima)] leading-tight">
               New Arrivals
             </h2>
             <p className="text-black text-[15px] font-[family-name:var(--font-montserrat)] px-8 md:p-0 md:text-[18px] mb-5 md:mb-8">
@@ -220,13 +220,13 @@ const NewArrivals = () => {
           {/* RIGHT – CAROUSEL or GRID */}
           <div className="lg:col-span-9 xl:col-span-8 w-full">
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 px-4">
                 {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : isCarousel ? (
               <div className="relative group/slider">
                 <div ref={emblaRef} className="overflow-hidden">
-                  <div className="flex gap-3 md:gap-4">
+                  <div className="flex gap-3 md:gap-4 md:px-4 px-3">
                     {products.map((product) => (
                       <div
                         key={product._id}

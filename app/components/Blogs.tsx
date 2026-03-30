@@ -39,7 +39,7 @@ const Blogs = () => {
     <div className="text-center mb-10 md:mb-12">
       <div className="flex items-center justify-center gap-4">
         <span className="md:block hidden w-12 h-px bg-[#6a3f07]" />
-        <h2 className="text-[26px] lg:text-[40px] font-normal text-[#6a3f07] font-[family-name:var(--font-optima)]">
+        <h2 className="font-normal text-[#6a3f07] font-[family-name:var(--font-optima)]">
           Latest Articles & Blogs
         </h2>
         <span className="md:block hidden w-12 h-px bg-[#6a3f07]" />

@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import {
   fetchProducts,
@@ -13,6 +12,7 @@ import {
 const INSTAGRAM_DIARIES_PRODUCT_LIMIT = 10;
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
 const MIN_FOR_CAROUSEL_MOBILE = 2;
+const INSTAGRAM_URL = "https://www.instagram.com/";
 
 const fallbackImages = [
   "/assets/i1.webp",
@@ -30,7 +30,7 @@ interface InstaCard {
 
 const InstagramDiaries = () => {
   const [cards, setCards] = useState<InstaCard[]>(
-    fallbackImages.map((url) => ({ url, link: "#", alt: null })),
+    fallbackImages.map((url) => ({ url, link: INSTAGRAM_URL, alt: null })),
   );
   const [isCarousel, setIsCarousel] = useState(false);
 
@@ -72,7 +72,7 @@ const InstagramDiaries = () => {
           setCards(
             response.products.map((product: Product) => ({
               url: getProductImageUrl(product),
-              link: `/product/${product.slug}`,
+              link: INSTAGRAM_URL,
               alt: product.mainImage?.alt || product.name,
             })),
           );
@@ -85,7 +85,7 @@ const InstagramDiaries = () => {
   }, []);
 
   const CardItem = ({ card, index }: { card: InstaCard; index: number }) => (
-    <Link href={card.link}>
+    <a href={card.link} target="_blank" rel="noreferrer">
       <div className="relative overflow-hidden rounded-xl shadow-md group cursor-pointer aspect-[3/4]">
         <Image
           src={card.url}
@@ -98,7 +98,7 @@ const InstagramDiaries = () => {
           <i className="fab fa-instagram text-white text-3xl drop-shadow-lg" />
         </div>
       </div>
-    </Link>
+    </a>
   );
 
   return (
@@ -119,7 +119,7 @@ const InstagramDiaries = () => {
         <div className="text-center mb-10 md:mb-4">
           <div className="flex items-center justify-center gap-6 w-full">
             <div className="h-[2px] bg-[#68400f] w-15 hidden md:flex" />
-            <h2 className="text-[26px] lg:text-[30px] font-[family-name:var(--font-optima)] text-[#6a3f0e] whitespace-nowrap">
+            <h2 className="font-[family-name:var(--font-optima)] text-[#6a3f0e] whitespace-nowrap">
               Visit Our Instagram Diaries
             </h2>
             <div className="h-[2px] bg-[#68400f] w-15 hidden md:flex" />

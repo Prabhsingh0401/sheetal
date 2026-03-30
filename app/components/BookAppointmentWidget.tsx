@@ -150,8 +150,11 @@ const BookAppointmentWidget: React.FC = () => {
       const rect = trigger.getBoundingClientRect();
       const points = [
         [rect.left - 12, rect.top + rect.height / 2],
-        [rect.left - 12, rect.top - 12],
+        [rect.right + 12, rect.top + rect.height / 2],
         [rect.left + rect.width / 2, rect.top - 12],
+        [rect.left + rect.width / 2, rect.bottom + 12],
+        [rect.left - 12, rect.bottom + 12],
+        [rect.right + 12, rect.bottom + 12],
       ];
 
       const luminances = points
@@ -168,7 +171,10 @@ const BookAppointmentWidget: React.FC = () => {
         })
         .filter((value): value is number => value !== null);
 
-      if (!luminances.length) return;
+      if (!luminances.length) {
+        setIsTriggerOnDarkBg(false);
+        return;
+      }
 
       const average =
         luminances.reduce((sum, value) => sum + value, 0) / luminances.length;
@@ -238,7 +244,7 @@ const BookAppointmentWidget: React.FC = () => {
               ×
             </button>
 
-            <h2 className="text-xl font-semibold text-[#5a3e10] mb-1 tracking-wide">
+            <h2 className="font-semibold text-[#5a3e10] mb-1 tracking-wide">
               Book An Appointment
             </h2>
             <p className="text-xs text-gray-400 mb-6">

@@ -160,7 +160,7 @@ const ProductListBanner: React.FC<ProductListBannerProps> = ({
         <div className="text-center mb-8 max-w-3xl mx-auto">
           <div className="flex items-center gap-8 justify-center">
             <div className="w-20 h-px bg-[#bd9951]"></div>
-            <h2 className="text-2xl md:text-3xl font-light text-[#6a3f07] font-[family-name:var(--font-optima)]">
+            <h2 className="font-light text-[#6a3f07] font-[family-name:var(--font-optima)]">
               {bannertext}
             </h2>
             <div className="w-20 h-px bg-[#bd9951]"></div>

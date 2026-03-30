@@ -62,7 +62,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
         {/* Header */}
         <div className="flex flex-wrap justify-start items-center gap-3 mb-4">
           <div className="flex items-end gap-2 mr-4">
-            <h2 className="text-[30px] md:text-3xl text-[#6a3f07] font-optima">
+            <h2 className="text-[#6a3f07] font-optima">
               My Cart
             </h2>
             <span className="text-[16px] font-normal mb-1 font-[family-name:var(--font-montserrat)]">

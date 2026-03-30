@@ -238,18 +238,29 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           // ── Persist to recently-viewed ────────────────────────────────
           try {
             const RV_KEY = "__rv__";
-            const minPrice = (() => {
-              let p = 0;
-              res.data.variants?.forEach((v: ProductVariant) => {
-                v.sizes?.forEach(
-                  (s: { price: number; discountPrice: number }) => {
-                    const eff = s.discountPrice > 0 ? s.discountPrice : s.price;
-                    if (eff > 0 && (p === 0 || eff < p)) p = eff;
-                  },
-                );
+            let minPrice = Infinity;
+            let minMRP = Infinity;
+
+            res.data.variants?.forEach((v: ProductVariant) => {
+              v.sizes?.forEach((s: { price: number; discountPrice: number }) => {
+                if (s.price > 0 && s.price < minMRP) {
+                  minMRP = s.price;
+                }
+
+                const eff = s.discountPrice > 0 ? s.discountPrice : s.price;
+                if (eff > 0 && eff < minPrice) {
+                  minPrice = eff;
+                }
               });
-              return p;
-            })();
+            });
+
+            if (minPrice === Infinity) minPrice = 0;
+            if (minMRP === Infinity) minMRP = 0;
+
+            const currentDiscount =
+              minMRP > 0 && minPrice < minMRP
+                ? `${Math.round(((minMRP - minPrice) / minMRP) * 100)}%`
+                : "0%";
             const entry = {
               id: res.data.slug,
               name: res.data.name,
@@ -258,8 +269,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
                 ? getApiImageUrl(res.data.hoverImage.url)
                 : getProductImageUrl(res.data),
               price: minPrice,
-              mrp: minPrice,
-              discount: "0%",
+              mrp: minMRP,
+              discount: currentDiscount,
               soldOut: res.data.stock <= 0,
             };
             const prev = JSON.parse(

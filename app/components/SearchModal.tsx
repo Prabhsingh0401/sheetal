@@ -610,18 +610,18 @@ const SearchModal: React.FC<SearchModalProps> = ({
         aria-hidden="true"
       />
 
-      {/* ── Outer wrapper: full-screen on mobile, offset from navbar on desktop ── */}
+      {/* ── Outer wrapper: anchored directly under the navbar ── */}
       <div
         className="fixed left-0 right-0 bottom-0 z-[9999] font-[family-name:var(--font-montserrat)] px-0 md:px-[5%] transition-all duration-300 flex justify-center"
-        style={{ top: isMobile ? 0 : `${navbarBottom + 11}px` }}
+        style={{ top: isMobile ? 0 : `${navbarBottom}px` }}
       >
-        {/* ── Inner modal: 100dvh on mobile, capped height on desktop ── */}
+        {/* ── Inner modal: fills the viewport space below the navbar ── */}
         <div
           className="relative flex w-full max-w-[1130px] md:px-7 min-h-0 flex-col shadow-2xl md:rounded-b-2xl overflow-hidden"
           style={{
             height: isMobile
               ? "100dvh"
-              : `min(650px, calc(100vh - ${navbarBottom + 7}px - 16px))`,
+              : `calc(100dvh - ${navbarBottom}px)`,
             background: `${isMobile ? "#fff7f4" : "radial-gradient(circle at 98% 2%, #edf4bc 0%, rgba(237,244,188,0.5) 20%, transparent 35%),#d1ffd9"}`,
           }}
           onClick={(e) => e.stopPropagation()}
