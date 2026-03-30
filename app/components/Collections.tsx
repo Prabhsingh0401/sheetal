@@ -141,7 +141,7 @@ const Collections = () => {
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center justify-center gap-6 w-full">
             <div className="h-[2px] bg-[#68400f] w-15 hidden md:flex" />
-            <h2 className="text-[26px] lg:text-[30px] font-[family-name:var(--font-optima)] text-[#6a3f0e] whitespace-nowrap">
+            <h2 className="font-[family-name:var(--font-optima)] text-[#6a3f0e] whitespace-nowrap">
               Collections
             </h2>
             <div className="h-[2px] bg-[#68400f] w-15 hidden md:flex" />
@@ -292,7 +292,7 @@ function ProductCard({
         <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
           <Link
             href={href}
-            className="text-[15px] text-black hover:text-[#B78D65] font-medium line-clamp-2 leading-tight"
+            className="text-[17px] text-black hover:text-[#B78D65] line-clamp-2 leading-tight"
           >
             {product.name}
           </Link>
@@ -307,13 +307,13 @@ function ProductCard({
 
           <div className="mb-4 flex justify-center items-center gap-2 flex-wrap">
             {product.price && (
-              <span className="text-[15px] md:text-lg text-[#281b00] font-medium">{product.price}</span>
+              <span className="text-[16px] text-[#281b00] font-medium">{product.price}</span>
             )}
             {product.mrp && (
-              <span className="text-[13px] text-gray-400 line-through">{product.mrp}</span>
+              <span className="text-[14px] text-gray-400 line-through">{product.mrp}</span>
             )}
             {product.discount && (
-              <span className="text-[15px] text-[#6a3f0e] font-normal">{product.discount}</span>
+              <span className="text-[16px] text-[#6a3f0e] font-normal">{product.discount}</span>
             )}
           </div>
 

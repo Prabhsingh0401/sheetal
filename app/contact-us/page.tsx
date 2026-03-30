@@ -148,7 +148,7 @@ const ContactUs = () => {
                   <div className="relative">
                     <div className="w-full px-2 mb-8">
                       <div className="mb-4">
-                        <h2 className="font-optima text-[30px] text-[#6a3f07] relative inline-block before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
+                        <h2 className="font-optima text-[#6a3f07] relative inline-block before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
                           Get In Touch
                         </h2>
                       </div>
@@ -191,7 +191,7 @@ const ContactUs = () => {
                       </div>
 
                       <div className="w-full text-center mt-12 px-4">
-                        <h2 className="font-optima text-[39px] text-[#6a3f07] relative inline-block mb-4 before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
+                        <h2 className="font-optima text-[#6a3f07] relative inline-block mb-4 before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
                           Write to us:
                         </h2>
                         <p className="font-[family-name:var(--font-montserrat)] text-black mb-4">

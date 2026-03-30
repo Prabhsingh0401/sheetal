@@ -115,7 +115,7 @@ const AboutUs = () => {
           </div>
           <div className="w-full lg:w-2/3 pl-0 ">
             <div className="w-[90%] md:w-[96%] mx-auto lg:mx-0 lg:ml-[12%] lg:pr-10 text-center lg:text-left">
-              <h2 className="font-optima text-[26px] md:text-[30px] text-[#6a3f07] relative inline-block before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
+              <h2 className="font-optima text-[#6a3f07] relative inline-block before:hidden after:hidden md:before:block md:after:block md:before:content-[''] md:before:w-[60px] md:before:h-[2px] md:before:bg-[#a2690f] md:before:absolute md:before:-left-[85px] md:before:top-1/2 md:after:content-[''] md:after:w-[60px] md:after:h-[2px] md:after:bg-[#a2690f] md:after:absolute md:after:-right-[85px] md:after:top-1/2">
                 {data?.journey?.title || "Our Journey"}
               </h2>
               <div className="text-[15px] font-[family-name:var(--font-montserrat)] text-black leading-relaxed space-y-4 whitespace-pre-wrap">
@@ -158,7 +158,7 @@ const AboutUs = () => {
             </div>
             <div className="w-full">
               <div className="text-center px-4 md:px-8 py-8 md:py-12">
-                <h2 className="font-optima text-[26px] md:text-[30px] text-[#593300] mb-8 font-normal">
+                <h2 className="font-optima text-[#593300] mb-8 font-normal">
                   {data?.mission?.title ||
                     "Custom handpicked styles showcased by our founder, experience the quality"}
                 </h2>
@@ -211,7 +211,7 @@ const AboutUs = () => {
             </div>
             <div className="w-full lg:w-1/2 text-center lg:text-left pl-0 lg:pl-12">
               <div className="px-4 md:px-0">
-                <h2 className="font-optima text-[26px] md:text-[30px] text-[#593300] mb-4 md:mb-8 font-normal">
+                <h2 className="font-optima text-[#593300] mb-4 md:mb-8 font-normal">
                   {data?.craft?.title || "Craftsmanship At The Core"}
                 </h2>
                 <div className="mx-auto lg:mx-0 text-[15px] font-[family-name:var(--font-montserrat)] text-black leading-relaxed whitespace-pre-wrap">

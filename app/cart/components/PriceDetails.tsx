@@ -281,7 +281,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <div className="bg-white w-full max-w-2xl h-[80vh] flex flex-col">
             <div className="flex justify-between items-center p-4 border-b border-gray-200">
-              <h2 className="font-semibold text-lg">Apply Coupon</h2>
+              <h2 className="font-semibold">Apply Coupon</h2>
               <button
                 className="cursor-pointer text-2xl hover:text-gray-600"
                 onClick={() => setOpenCouponModal(false)}

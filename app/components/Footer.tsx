@@ -198,16 +198,18 @@ const Footer = () => {
                   className="lg:mx-0"
                 />
               </Link>
-              <div className="flex justify-center gap-4 text-[#f8f0b6]">
-                {["Fb", "In", "Pi", "Yt"].map((s) => (
-                  <a
-                    key={s}
-                    href="#"
-                    target="_blank"
-                    className="hover:text-white transition-colors"
-                  >
-                    {s}
-                  </a>
+              <div className="flex justify-center gap-3 text-[#f8f0b6]">
+                {["Fb", "In", "Pi", "Yt"].map((s, index) => (
+                  <span key={s} className="flex gap-3">
+                    <a
+                      href="#"
+                      target="_blank"
+                      className="hover:text-white transition-colors text-[15px] font-[family-name:var(--font-montserrat)]"
+                    >
+                      {s}
+                    </a>
+                    {index < 3 && <span>-</span>}
+                  </span>
                 ))}
               </div>
             </div>
@@ -240,7 +242,7 @@ const Footer = () => {
                                       <Link
                                         key={link.id}
                                         href={link.href}
-                                        className="hover:text-white transition-colors text-[13px] sm:text-[16px] font-light tracking-wide leading-snug"
+                                        className="hover:text-white transition-colors text-[13px] sm:text-[16px] font-light tracking-wider leading-snug font-[family-name:var(--font-montserrat)] "
                                       >
                                         {link.label}
                                       </Link>
@@ -285,13 +287,13 @@ const Footer = () => {
               <p className="mb-4 text-[#f8f0b6] font-light font-optima">
                 Subscribe to get special offers, new products and sales deals.
               </p>
-              <div className="relative border-b border-[#777] pb-2">
+              <div className="relative border-b border-[#777] pb-2 w-3/4">
                 <input
                   type="email"
                   placeholder="Your e-mail"
                   className="bg-transparent w-full outline-none text-[#f8f0b6] placeholder-[#f8f0b4] font-light"
                 />
-                <button className="absolute right-0 bottom-2 text-[#f8f0b6] uppercase text-sm hover:text-white transition-colors">
+                <button className="absolute -right-25 bottom-0 border border-[#f8f0b6] p-2 text-[#f8f0b6] uppercase text-sm hover:text-white transition-colors">
                   Subscribe
                 </button>
               </div>

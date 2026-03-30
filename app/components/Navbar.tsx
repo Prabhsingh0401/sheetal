@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -34,7 +40,7 @@ import {
 } from "lucide-react";
 
 // Helper to check if category has any tags
-const hasTags = (category: Category) => {
+const hasTags = (category: Partial<Category>) => {
   return (
     (category.occasion && category.occasion.length > 0) ||
     (category.fabric && category.fabric.length > 0) ||
@@ -47,7 +53,9 @@ const hasTags = (category: Category) => {
 };
 
 // Dynamic Mega Menu Component
-const DynamicMegaMenu = ({ category }: { category: Category }) => {
+const DynamicMegaMenu = ({ category }: { category: Partial<Category> }) => {
+  if (!category._id) return null;
+
   const tagGroups = [
     { title: "By Occasion", items: category.occasion, type: "occasion" },
     { title: "By Fabric", items: category.fabric, type: "fabric" },
@@ -88,7 +96,7 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
       }
     };
 
-    if (category._id) loadLatestProducts();
+    loadLatestProducts();
   }, [category._id, productColCount]);
 
   return (
@@ -171,7 +179,7 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
                         </Link>
                       </div>
                       <Link href={`/product/${product.slug}`}>
-                        <p className="font-semibold text-sm text-gray-800 mb-1 hover:text-[#b3a660] transition-colors line-clamp-1">
+                        <p className="font-medium text-[17px] text-[#c18a0a] mb-1 hover:text-[#b3a660] transition-colors line-clamp-1">
                           {product.name}
                         </p>
                       </Link>
@@ -209,8 +217,87 @@ const DynamicMegaMenu = ({ category }: { category: Category }) => {
   );
 };
 
+interface NavbarUserIconProps {
+  isClient: boolean;
+  isUserDropdownOpen: boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onLogout: () => void;
+  getDisplayName: () => string;
+}
+
+const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
+  isClient,
+  isUserDropdownOpen,
+  onMouseEnter,
+  onMouseLeave,
+  onLogout,
+  getDisplayName,
+}) => {
+  if (!isClient) {
+    return (
+      <Link href="/login" className="hover:opacity-80 transition-opacity">
+        <User2Icon className="font-thin text-[#f4e9ab]" strokeWidth={1} />
+      </Link>
+    );
+  }
+
+  if (isAuthenticated()) {
+    return (
+      <div
+        className="relative group"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        <Link href="/my-account" className="hover:opacity-80 transition-opacity">
+          <User2Icon
+            className="w-6 h-6 text-[#f4e9ab] font-extralight"
+            strokeWidth={1}
+          />
+        </Link>
+        {isUserDropdownOpen && (
+          <div className="absolute right-0 top-full pt-2 w-48 z-50">
+            <div className="bg-[#153427]/95 backdrop-blur-md p-3 border border-[#f5de7e] text-[#b3a660] text-sm shadow-lg">
+              <p className="px-3 py-2 border-b border-white/20 truncate">
+                Hello, {getDisplayName()}
+              </p>
+              <Link
+                href="/my-account"
+                className="block px-3 py-2 hover:text-white transition-colors cursor-pointer"
+              >
+                My Account
+              </Link>
+              <button
+                onClick={onLogout}
+                className="w-full text-left px-3 py-2 hover:text-white transition-colors cursor-pointer"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Link href="/login" className="hover:opacity-80 transition-opacity">
+      <User2Icon className="w-6 h-6 text-[#f4e9ab] font-extralight" strokeWidth={1} />
+    </Link>
+  );
+};
+
+type NavbarNavItem = Partial<Category> & {
+  id: string;
+  label: string;
+  href?: string;
+  hidden?: boolean;
+  isCategory?: boolean;
+  children?: NavbarNavItem[];
+};
+
 // Recursive Desktop Menu Item
-const DesktopMenuItem = ({ item }: { item: any }) => {
+const DesktopMenuItem = ({ item }: { item: NavbarNavItem }) => {
   if (item.hidden) return null;
 
   const hasChildren = item.children && item.children.length > 0;
@@ -256,7 +343,7 @@ const DesktopMenuItem = ({ item }: { item: any }) => {
           `}
         >
           <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
-            {item.children.map((child: any, idx: number) => (
+            {item.children?.map((child, idx: number) => (
               <DesktopSubMenuItem key={`${child.id}-${idx}`} item={child} />
             ))}
           </ul>
@@ -267,7 +354,7 @@ const DesktopMenuItem = ({ item }: { item: any }) => {
 };
 
 // Helper for Recursive Submenus (Level 2+)
-const DesktopSubMenuItem = ({ item }: { item: any }) => {
+const DesktopSubMenuItem = ({ item }: { item: NavbarNavItem }) => {
   if (item.hidden) return null;
   const hasChildren = item.children && item.children.length > 0;
 
@@ -288,7 +375,7 @@ const DesktopSubMenuItem = ({ item }: { item: any }) => {
       {hasChildren && (
         <div className="absolute right-full top-0 w-full hidden group-hover/sub:block z-[999] pr-1">
           <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e]">
-            {item.children.map((child: any, idx: number) => (
+            {item.children?.map((child, idx: number) => (
               <DesktopSubMenuItem key={`${child.id}-${idx}`} item={child} />
             ))}
           </ul>
@@ -304,7 +391,7 @@ const MobileSubMenuView = ({
   onBack,
   onClose,
 }: {
-  item: any;
+  item: NavbarNavItem;
   onBack: () => void;
   onClose: () => void;
 }) => {
@@ -374,7 +461,7 @@ const MobileSubMenuView = ({
           </svg>
           Back
         </button>
-        <h2 className="text-[#f2bf42] text-lg font-serif tracking-wide capitalize">
+        <h2 className="text-[#f2bf42] font-serif tracking-wide capitalize">
           {item.label}
         </h2>
         <button onClick={onClose} className="text-[#f2bf42] text-xl">
@@ -471,9 +558,9 @@ const MobileMenuOverlay = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  navItems: any[];
+  navItems: NavbarNavItem[];
 }) => {
-  const [activeItem, setActiveItem] = useState<any>(null);
+  const [activeItem, setActiveItem] = useState<NavbarNavItem | null>(null);
 
   // Reset active item when menu closes
   useEffect(() => {
@@ -482,7 +569,7 @@ const MobileMenuOverlay = ({
     }
   }, [isOpen]);
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: NavbarNavItem) => {
     // If item has tags/categories to show in submenu, set active
     const hasSubMenu =
       (item.isCategory && hasTags(item)) ||
@@ -605,57 +692,60 @@ const Navbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [isClient, setIsClient] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{
+    name?: string;
+    phoneNumber?: string;
+    email?: string;
+  } | null>(null);
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const [navbarBottom, setNavbarBottom] = useState(0);
+  const headerRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch categories dynamically
   const { data: categories } = useSWR("/categories", fetchAllCategories);
   // const { data: settings } = useSWR("/settings", getSettings);
 
-  const [navItems, setNavItems] = useState<any[]>([]);
+  const navItems = useMemo<NavbarNavItem[]>(() => {
+    if (!categories) return [];
+
+    const topLevel = categories.filter((c) => !c.parentCategory);
+
+    const buildMenuTree = (cats: Category[]): NavbarNavItem[] => {
+      return cats.map((cat) => {
+        const childrenCats = categories.filter(
+          (c) =>
+            c.parentCategory &&
+            typeof c.parentCategory === "object" &&
+            (c.parentCategory as { _id?: string })._id === cat._id,
+        );
+
+        return {
+          ...cat,
+          label: cat.name,
+          href: `/${cat.slug}`,
+          id: cat._id,
+          isCategory: true,
+          children: buildMenuTree(childrenCats),
+        };
+      });
+    };
+
+    return [
+      ...buildMenuTree(topLevel),
+      { label: "Our Story", href: "/about-us", id: "about" },
+    ];
+  }, [categories]);
   const wishlistHref = isClient && isAuthenticated()
     ? "/wishlist"
     : "/login?redirect=/wishlist";
 
-  useEffect(() => {
-    if (categories) {
-      const topLevel = categories.filter((c) => !c.parentCategory);
-
-      const buildMenuTree = (cats: Category[]): any[] => {
-        return cats.map((cat) => {
-          const childrenCats = categories.filter(
-            (c) =>
-              c.parentCategory &&
-              typeof c.parentCategory === "object" &&
-              (c.parentCategory as any)._id === cat._id,
-          );
-
-          return {
-            ...cat,
-            label: cat.name,
-            href: `/${cat.slug}`,
-            id: cat._id,
-            isCategory: true,
-            children: buildMenuTree(childrenCats),
-          };
-        });
-      };
-
-      const dynamicNavItems = buildMenuTree(topLevel);
-
-      const finalNavItems = [
-        ...dynamicNavItems,
-        { label: "Our Story", href: "/about-us", id: "about" },
-      ];
-
-      setNavItems(finalNavItems);
-    }
-  }, [categories]);
-
   const pathname = usePathname();
 
   useEffect(() => {
-    setIsClient(true);
     const handleScroll = () => {
       if (window.scrollY > 50) {
         setScrolled(true);
@@ -684,6 +774,23 @@ const Navbar = () => {
     };
   }, [isClient, pathname]);
 
+  useEffect(() => {
+    const updateNavbarBottom = () => {
+      const header = headerRef.current;
+      if (!header) return;
+      setNavbarBottom(Math.round(header.getBoundingClientRect().bottom));
+    };
+
+    updateNavbarBottom();
+    window.addEventListener("resize", updateNavbarBottom);
+    window.addEventListener("scroll", updateNavbarBottom, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", updateNavbarBottom);
+      window.removeEventListener("scroll", updateNavbarBottom);
+    };
+  }, [scrolled]);
+
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
   const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
   const handleLogout = () => {
@@ -708,71 +815,11 @@ const Navbar = () => {
     return "User";
   };
 
-  // User Icon Component
-  const UserIcon = () => {
-    if (!isClient) {
-      return (
-        <Link href="/login" className="hover:opacity-80 transition-opacity">
-          <User2Icon className="font-thin text-[#f4e9ab]" strokeWidth={1} />
-        </Link>
-      );
-    }
-
-    if (isAuthenticated()) {
-      return (
-        <div
-          className="relative group"
-          onMouseEnter={handleMouseEnterUser}
-          onMouseLeave={handleMouseLeaveUser}
-        >
-          <Link
-            href="/my-account"
-            className="hover:opacity-80 transition-opacity"
-          >
-            <User2Icon
-              className="w-6 h-6 text-[#f4e9ab] font-extralight"
-              strokeWidth={1}
-            />
-          </Link>
-          {isUserDropdownOpen && (
-            <div className="absolute right-0 top-full pt-2 w-48 z-50">
-              <div className="bg-[#153427]/95 backdrop-blur-md p-3 border border-[#f5de7e] text-[#b3a660] text-sm shadow-lg">
-                <p className="px-3 py-2 border-b border-white/20 truncate">
-                  Hello, {getDisplayName()}
-                </p>
-                <Link
-                  href="/my-account"
-                  className="block px-3 py-2 hover:text-white transition-colors cursor-pointer"
-                >
-                  My Account
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-3 py-2 hover:text-white transition-colors cursor-pointer"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <Link href="/login" className="hover:opacity-80 transition-opacity">
-        <User2Icon
-          className="w-6 h-6 text-[#f4e9ab] font-extralight"
-          strokeWidth={1}
-        />
-      </Link>
-    );
-  };
-
   return (
     <>
       {/* Top Header (Desktop) - Links & Icons */}
       <div
+        ref={headerRef}
         className={`hidden md:flex justify-center fixed w-full z-[1003] transition-all duration-100 bg-[#082722]/90 backdrop-blur-sm py-[18px] font-[family-name:var(--font-montserrat)] ${scrolled ? "top-0 shadow-lg" : "top-[24px]"}`}
       >
         <div className="container mx-5">
@@ -810,7 +857,14 @@ const Navbar = () => {
                       <path d="M20.745 32.62c2.883 0 5.606-1.022 7.773-2.881L39.052 40.3c.195.196.452.294.708.294.255 0 .511-.097.706-.292.391-.39.392-1.023.002-1.414L29.925 28.319c3.947-4.714 3.717-11.773-.705-16.205-2.264-2.27-5.274-3.52-8.476-3.52s-6.212 1.25-8.476 3.52c-4.671 4.683-4.671 12.304 0 16.987 2.264 2.269 5.274 3.519 8.477 3.519zm-7.06-19.094c1.886-1.891 4.393-2.932 7.06-2.932s5.174 1.041 7.06 2.932c3.895 3.905 3.895 10.258 0 14.163-1.886 1.891-4.393 2.932-7.06 2.932s-5.174-1.041-7.06-2.932c-3.894-3.905-3.894-10.258 0-14.163z" />
                     </svg>
                   </button>
-                  <UserIcon />
+                  <NavbarUserIcon
+                    isClient={isClient}
+                    isUserDropdownOpen={isUserDropdownOpen}
+                    onMouseEnter={handleMouseEnterUser}
+                    onMouseLeave={handleMouseLeaveUser}
+                    onLogout={handleLogout}
+                    getDisplayName={getDisplayName}
+                  />
                   <Link
                     href={wishlistHref}
                     className="relative hover:opacity-80 transition-opacity hidden md:block"
@@ -819,7 +873,7 @@ const Navbar = () => {
                       className="w-5.5 h-5.5 text-[#f4e9ab]"
                       strokeWidth={1}
                     />
-                    {!wishlistLoading && wishlist.length > 0 ? (
+                    {wishlist.length > 0 ? (
                       <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f4e9ab] text-[#f4e9ab] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                         {wishlist.length}
                       </span>
@@ -857,7 +911,7 @@ const Navbar = () => {
                           strokeLinejoin="round"
                         ></path>
                     </svg>
-                    {!cartLoading && cartItemCount > 0 ? (
+                    {cartItemCount > 0 ? (
                       <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f4e9ab] text-[#f4e9ab] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                         {cartItemCount}
                       </span>
@@ -892,14 +946,21 @@ const Navbar = () => {
               <Search className="w-6 h-6 text-[#f4e9ab]" strokeWidth={1} />
             </button>
 
-            <UserIcon />
+            <NavbarUserIcon
+              isClient={isClient}
+              isUserDropdownOpen={isUserDropdownOpen}
+              onMouseEnter={handleMouseEnterUser}
+              onMouseLeave={handleMouseLeaveUser}
+              onLogout={handleLogout}
+              getDisplayName={getDisplayName}
+            />
 
             <Link
               href={wishlistHref}
               className="relative hover:opacity-80 transition-opacity"
             >
               <Heart className="w-6 h-6 text-[#f4e9ab]" strokeWidth={1} />
-              {!wishlistLoading && wishlist.length > 0 ? (
+              {wishlist.length > 0 ? (
                 <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                   {wishlist.length}
                 </span>
@@ -938,7 +999,7 @@ const Navbar = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              {!cartLoading && cartItemCount > 0 ? (
+              {cartItemCount > 0 ? (
                 <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                   {cartItemCount}
                 </span>
@@ -971,7 +1032,7 @@ const Navbar = () => {
       <SearchModal
         isOpen={searchOpen}
         onClose={closeSearch}
-        navbarBottom={scrolled ? 70 : 99}
+        navbarBottom={navbarBottom}
       />
 
       {/* Mobile Menu Drawer */}

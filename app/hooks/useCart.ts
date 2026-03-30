@@ -605,7 +605,6 @@ export const useCart = (): UseCartReturn => {
         if (isAuthenticated()) {
           const response = await updateCartItemQuantityApi(itemId, quantity);
           if (response.success) {
-            toast.success(response.message || "Cart updated!");
             setCart((prevCart) => {
               const nextCart =
                 quantity <= 0

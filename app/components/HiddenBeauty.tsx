@@ -29,7 +29,7 @@ const HiddenBeauty = () => {
     return (
       <div className="flex gap-8 items-center justify-center">
         <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
-        <h2 className="text-[1rem] lg:text-[36px] font-light text-[#6a3f07]">
+        <h2 className="font-light text-[#6a3f07]">
           Bring Out The Hidden Beauty
         </h2>
         <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
@@ -43,7 +43,7 @@ const HiddenBeauty = () => {
       <div className="container mx-auto py-12 px-4 text-center font-[family-name:var(--font-optima)]">
         <div className="flex gap-8 items-center justify-center">
           <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
-          <h2 className="text-[1rem] lg:text-[36px] font-light text-[#6a3f07]">
+          <h2 className="font-light text-[#6a3f07]">
             Bring Out The Hidden Beauty
           </h2>
           <div className="hidden md:block h-[1px] bg-[#a2690f] w-15" />
@@ -84,7 +84,7 @@ const HiddenBeauty = () => {
     <div className="container mx-auto pb-12 px-4 text-center font-[family-name:var(--font-optima)]">
       <div className="flex gap-8 items-center justify-center">
         <div className="hidden md:block h-[2px] bg-[#a2690f] w-15" />
-        <h2 className="text-[26px] font-optima lg:text-[30px] font-light text-[#6a3f07]">
+        <h2 className="font-optima font-light text-[#6a3f07]">
           Bring Out The Hidden Beauty
         </h2>
         <div className="hidden md:block h-[2px] bg-[#a2690f] w-15" />
@@ -132,7 +132,7 @@ const HiddenBeauty = () => {
         pt-[80px] pb-[20px]
         transition-all duration-300"
                   >
-                    <span className="inline-block group-hover:text-[#ffc107] group-hover:-translate-y-3 transition-transform duration-300 text-[25px]">
+                    <span className="inline-block group-hover:text-[#ffc107] group-hover:-translate-y-3 transition-transform font-[family-name:var(--font-montserrat)] duration-300 text-[25px]">
                       {cat.name}
                     </span>
                   </Link>
