@@ -20,6 +20,7 @@ const ProductCard = ({
 
   return (
     <div className="p-2 group h-full flex flex-col">
+      {/* Image */}
       <div className="relative overflow-hidden mb-3">
         {product.soldOut && (
           <div className="absolute top-0 left-0 z-10 bg-red-600 px-2 py-1 rounded-lg">
@@ -71,8 +72,13 @@ const ProductCard = ({
         </Link>
       </div>
 
-      <div className="text-left flex h-full flex-col">
-        <h6 className="mb-2 text-[16px] font-medium line-clamp-2 leading-tight font-[family-name:var(--font-montserrat)]">
+      {/* Text content — grows to fill remaining space so bottom items always align */}
+      <div className="flex flex-col flex-1 text-left">
+        {/* Title — fixed 2-line height so all cards reserve the same space */}
+        <h6
+          className="text-[16px] font-medium line-clamp-2 leading-tight font-[family-name:var(--font-montserrat)]"
+          style={{ minHeight: "2.5rem" }}
+        >
           <Link
             href={`/product/${product.id}`}
             className="hover:text-[#bd9951] transition-colors"
@@ -81,7 +87,8 @@ const ProductCard = ({
           </Link>
         </h6>
 
-        <div className="mt-auto space-y-3">
+        {/* Bottom-pinned section */}
+        <div className="mt-auto pt-2 space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-[16px] text-gray-800">Size: XL</span>
             <StarRating rating={4} />
@@ -89,12 +96,20 @@ const ProductCard = ({
 
           <div className="flex items-center gap-2 text-sm">
             <span className="font-normal text-[16px] text-[#281b00]">
-              ₹ {typeof product.price === "number" ? product.price.toFixed(2) : product.price}
+              ₹{" "}
+              {typeof product.price === "number"
+                ? product.price.toFixed(2)
+                : product.price}
             </span>
             <span className="line-through text-gray-400 text-[14px]">
-              ₹ {typeof product.mrp === "number" ? product.mrp.toFixed(2) : product.mrp}
+              ₹{" "}
+              {typeof product.mrp === "number"
+                ? product.mrp.toFixed(2)
+                : product.mrp}
             </span>
-            <span className="text-[#6a3f0b] text-[16px]">[{product.discount}]</span>
+            <span className="text-[#6a3f0b] text-[16px]">
+              [{product.discount}]
+            </span>
           </div>
 
           <div className="flex justify-start">

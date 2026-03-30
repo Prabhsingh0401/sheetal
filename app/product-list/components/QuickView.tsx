@@ -408,7 +408,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                 className="w-full sm:w-[48%] flex flex-col text-left p-6 px-10"
               >
                 {/* Name */}
-                <h2 className="text-[28px] font-normal text-[#683e14] mb-3 font-[family-name:var(--font-optima)] leading-snug">
+                <h2 className="font-normal text-[#683e14] mb-3 font-[family-name:var(--font-optima)] leading-snug">
                   {product.name}
                 </h2>
 

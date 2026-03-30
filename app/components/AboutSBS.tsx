@@ -11,12 +11,12 @@ const AboutSBS = () => {
           <div className="h-full flex flex-col justify-center items-center lg:items-start">
             <div className="flex items-center justify-center gap-4 w-full">
               <div className="md:block hidden w-15 h-0.5 bg-[#a2690f]"/>
-              <h2 className="text-[26px] md:text-[30px] font-light text-[#6a3f07] font-optima whitespace-nowrap">
+              <h2 className="font-light text-[#6a3f07] font-optima whitespace-nowrap">
                 About SBS
               </h2>
               <div className="md:block hidden w-15 h-0.5 bg-[#a2690f]"/>
             </div>
-            <h3 className="text-[26px] font-light lg:ml-16 font-optima text-[#a2690f] font-[family-name:var(--font-outfit)] text-center lg:text-left">
+            <h3 className="text-[26px] font-light lg:ml-22 font-optima text-[#a2690f] font-[family-name:var(--font-outfit)] text-center lg:text-left">
               Innovate the Outfit
             </h3>
           </div>
@@ -56,7 +56,7 @@ const AboutSBS = () => {
                 <div className="flex justify-center lg:justify-end">
                   <Link
                     href="/about-us"
-                    className="inline-block border-y rounded-sm border-black text-black font-normal py-2 px-8 uppercase transition-all duration-500 font-[family-name:var(--font-montserrat)] hover:text-black hover:border-[#a2690f] duration-300"
+                    className="inline-block border-y rounded-sm border-black text-black font-normal py-3 px-6 uppercase transition-all duration-500 font-[family-name:var(--font-montserrat)] hover:text-black hover:border-[#a2690f] duration-300"
                   >
                     Explore More
                   </Link>

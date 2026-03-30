@@ -14,7 +14,7 @@ import { useWishlist } from "../hooks/useWishlist";
 import WishlistLoginModal from "./WishlistLoginModal";
 
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
-const MIN_FOR_CAROUSEL_MOBILE  = 2;
+const MIN_FOR_CAROUSEL_MOBILE = 2;
 
 interface TrendingProduct {
   id: string;
@@ -28,7 +28,6 @@ interface TrendingProduct {
   soldOut: boolean;
 }
 
-// ─── Individual card ───────────────────────────────────────────────────────────
 function ProductCard({
   product,
   isWishlisted,
@@ -109,7 +108,13 @@ function ProductCard({
         <div className="mt-auto">
           <div className="mb-3 flex justify-center gap-0.5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Image key={i} src="/assets/gray-star.png" alt="star" width={18} height={18} />
+              <Image
+                key={i}
+                src="/assets/gray-star.png"
+                alt="star"
+                width={18}
+                height={18}
+              />
             ))}
           </div>
 
@@ -148,10 +153,9 @@ function ProductCard({
   );
 }
 
-// ─── Main component ────────────────────────────────────────────────────────────
 const TrendingThisWeek = () => {
-  const [products, setProducts]     = useState<TrendingProduct[]>([]);
-  const [loading, setLoading]       = useState(true);
+  const [products, setProducts] = useState<TrendingProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isCarousel, setIsCarousel] = useState(false);
   const {
     wishlist,

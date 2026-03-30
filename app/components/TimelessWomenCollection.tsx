@@ -128,7 +128,7 @@ const TimelessWomenCollection = () => {
                   />
                 )}
                 {centerContent.buttonText && (
-                  <span className="inline-block text-[16px] uppercase tracking-[0.2em] text-gray-800 border-y py-2 px-6 rounded border-gray-800  hover:text-[#cc8a00] hover:border-[#cc8a00] transition-colors">
+                  <span className="inline-block text-[16px] uppercase tracking-[0.2em] text-gray-800 border-y py-2 px-6 rounded border-gray-800 hover:text-[#cc8a00] hover:border-[#cc8a00] transition-colors">
                     View more
                   </span>
                 )}
