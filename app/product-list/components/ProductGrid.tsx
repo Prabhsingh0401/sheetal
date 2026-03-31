@@ -114,8 +114,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
           </div>
 
           <div
-            className={`flex flex-col flex-grow h-full px-0.5 md:px-1 font-[family-name:var(--font-montserrat)] ${
-              viewMode === "list" ? "pl-1.5 md:pl-3 lg:pl-4" : ""
+            className={` h-full px-0.5 md:px-1 font-[family-name:var(--font-montserrat)] ${
+              viewMode === "list" ? "pl-1.5 md:pl-3 lg:pl-4" : "flex flex-col flex-grow"
             }`}
           >
             

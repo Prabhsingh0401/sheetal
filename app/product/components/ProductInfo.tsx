@@ -260,7 +260,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                       ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
                       ${
                         selectedSize === size.name && !isDisabled
-                          ? "border-[#bd9951]"
+                          ? "border-[#bd9951] text-[#bd9951]"
                           : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"
                       }
                     `}
