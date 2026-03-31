@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 
 interface PriceRangeSliderProps {
   min: number;
@@ -8,15 +8,60 @@ interface PriceRangeSliderProps {
   onChange: (min: number, max: number) => void;
 }
 
-export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min, max, onChange }) => {
-  const [minVal, setMinVal] = useState(min);
-  const [maxVal, setMaxVal] = useState(max);
+/**
+ * Converts a slider position (0..STEPS) to a price value.
+ * Steps 0..8  → ₹0..₹2000   (step size 250)
+ * Steps 8..N  → ₹2000..max  (step size 500)
+ */
+const BREAKPOINT = 2000;
+const SMALL_STEP = 250;
+const LARGE_STEP = 500;
+
+const buildStops = (min: number, max: number): number[] => {
+  const stops: number[] = [];
+  // below breakpoint
+  for (let v = min; v < Math.min(BREAKPOINT, max); v += SMALL_STEP) {
+    stops.push(v);
+  }
+  // at and above breakpoint
+  for (let v = Math.max(BREAKPOINT, min); v <= max; v += LARGE_STEP) {
+    if (stops[stops.length - 1] !== v) stops.push(v);
+  }
+  // ensure max is included
+  if (stops[stops.length - 1] !== max) stops.push(max);
+  return stops;
+};
+
+const snapToStop = (value: number, stops: number[]): number => {
+  return stops.reduce((prev, curr) =>
+    Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+  );
+};
+
+const valueToPercent = (value: number, stops: number[]): number => {
+  const idx = stops.findIndex((s) => s >= value);
+  if (idx <= 0) return 0;
+  if (idx >= stops.length - 1) return 100;
+  const lo = stops[idx - 1];
+  const hi = stops[idx];
+  const frac = (value - lo) / (hi - lo);
+  return ((idx - 1 + frac) / (stops.length - 1)) * 100;
+};
+
+export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
+  min,
+  max,
+  onChange,
+}) => {
+  const stops = buildStops(min, max);
+  const totalSteps = stops.length - 1;
+
+  const [minIdx, setMinIdx] = useState(0);
+  const [maxIdx, setMaxIdx] = useState(totalSteps);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const getPercent = useCallback(
-    (value: number) => Math.round(((value - min) / (max - min)) * 100),
-    [min, max]
-  );
+  const minVal = stops[minIdx];
+  const maxVal = stops[maxIdx];
 
   const debouncedOnChange = (minV: number, maxV: number) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -24,23 +69,22 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min, max, on
   };
 
   const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Math.min(Number(e.target.value), maxVal - 1);
-    setMinVal(value);
-    debouncedOnChange(value, maxVal);
+    const idx = Math.min(Number(e.target.value), maxIdx - 1);
+    setMinIdx(idx);
+    debouncedOnChange(stops[idx], maxVal);
   };
 
   const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Math.max(Number(e.target.value), minVal + 1);
-    setMaxVal(value);
-    debouncedOnChange(minVal, value);
+    const idx = Math.max(Number(e.target.value), minIdx + 1);
+    setMaxIdx(idx);
+    debouncedOnChange(minVal, stops[idx]);
   };
 
-  const minPercent = getPercent(minVal);
-  const maxPercent = getPercent(maxVal);
+  const minPercent = (minIdx / totalSteps) * 100;
+  const maxPercent = (maxIdx / totalSteps) * 100;
 
   return (
     <>
-      {/* Inject thumb styles globally once */}
       <style>{`
         .price-slider::-webkit-slider-thumb {
           -webkit-appearance: none;
@@ -70,12 +114,8 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min, max, on
           cursor: grab;
           pointer-events: all;
         }
-        .price-slider::-webkit-slider-runnable-track {
-          background: transparent;
-        }
-        .price-slider::-moz-range-track {
-          background: transparent;
-        }
+        .price-slider::-webkit-slider-runnable-track { background: transparent; }
+        .price-slider::-moz-range-track { background: transparent; }
       `}</style>
 
       <div className="px-1 pb-2">
@@ -110,30 +150,32 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ min, max, on
             }}
           />
 
-          {/* Min range input */}
+          {/* Min thumb — uses index-based range */}
           <input
             type="range"
-            min={min}
-            max={max}
-            value={minVal}
+            min={0}
+            max={totalSteps}
+            step={1}
+            value={minIdx}
             onChange={handleMinChange}
             className="price-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none"
-            style={{ zIndex: minVal > max - 100 ? 5 : 3 }}
+            style={{ zIndex: minIdx > totalSteps - 2 ? 5 : 3 }}
           />
 
-          {/* Max range input */}
+          {/* Max thumb */}
           <input
             type="range"
-            min={min}
-            max={max}
-            value={maxVal}
+            min={0}
+            max={totalSteps}
+            step={1}
+            value={maxIdx}
             onChange={handleMaxChange}
             className="price-slider absolute w-full h-full appearance-none bg-transparent pointer-events-none"
             style={{ zIndex: 4 }}
           />
         </div>
 
-        {/* Min / Max bounds */}
+        {/* Bounds */}
         <div className="flex justify-between mt-3">
           <span className="text-[11px] text-gray-400">₹{min.toLocaleString("en-IN")}</span>
           <span className="text-[11px] text-gray-400">₹{max.toLocaleString("en-IN")}</span>

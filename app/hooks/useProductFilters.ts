@@ -240,7 +240,7 @@ function generatePriceRanges(
   const rangesWithCount = ranges
     .map((range) => {
       const count = prices.filter(
-        (p) => p >= range.min && p < range.max,
+        (p) => p >= range.min && p <= range.max,
       ).length;
 
       let label: string;

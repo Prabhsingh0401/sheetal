@@ -310,7 +310,7 @@ const ProductListContent = ({
       filteredProducts = filteredProducts.filter((p) =>
         values.some((val) => {
           const [min, max] = val.split("-").map(Number);
-          return p.price >= min && (isNaN(max) || p.price < max);
+          return p.price >= min && (isNaN(max) || p.price <= max);
         }),
       );
     } else if (type === "availability") {
