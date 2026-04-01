@@ -12,6 +12,7 @@ import {
 import { getApiImageUrl } from "../services/api";
 import { useWishlist } from "../hooks/useWishlist";
 import WishlistLoginModal from "./WishlistLoginModal";
+import { ArrowLeft } from "lucide-react";
 
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
 const MIN_FOR_CAROUSEL_MOBILE = 2;
@@ -262,7 +263,7 @@ const TrendingThisWeek = () => {
 
   return (
     <div
-      className="container-fluid py-12 home-page-product font-[family-name:var(--font-montserrat)]"
+      className="container-fluid py-12 px-20 home-page-product font-[family-name:var(--font-montserrat)]"
       style={{ backgroundImage: "url('/assets/650465765.png')", backgroundSize: "cover" }}
     >
       <div className="container mx-auto px-4 py-10">
@@ -304,20 +305,16 @@ const TrendingThisWeek = () => {
             <button
               onClick={scrollPrev}
               aria-label="Previous product"
-              className="absolute left-[-15px] cursor-pointer top-[35%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
+              className="absolute left-[-50px] cursor-pointer bottom-[40%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg>
+              <img src="/assets/left-image.png" alt="" className="w-full" />
             </button>
             <button
               onClick={scrollNext}
               aria-label="Next product"
-              className="absolute right-[-15px] cursor-pointer top-[35%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
+              className="absolute right-[-50px] cursor-pointer bottom-[40%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
+              <img src="/assets/right-image.png" alt="" className="w-full" />
             </button>
           </div>
         ) : (

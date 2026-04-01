@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { getToken, getUserDetails } from "@/app/services/authService";
 import { getAllCouponsClient } from "@/app/services/couponService";
+import { hasRedeemedCoupon, isSingleUseCoupon } from "@/app/utils/couponRedemption";
 import {
   consumeRedirectField,
   consumeRedirectModalState,
@@ -17,7 +18,10 @@ import {
 interface PriceDetailsProps {
   couponInput: string;
   setCouponInput: (value: string) => void;
-  handleApplyCoupon: (userId: string | undefined) => void;
+  handleApplyCoupon: (
+    userId: string | undefined,
+    couponMeta?: unknown,
+  ) => void;
   couponError: string | null;
   bogoMessage: string | null;
   applicableCategories: string[];
@@ -30,6 +34,7 @@ interface PriceDetailsProps {
   platformFee: number;
   totalAmount: number;
   couponCode?: string;
+  couponMeta?: unknown;
   onRemoveCoupon?: () => void;
   hideProceedButton?: boolean;
   /** Called when the user clicks Proceed to Buy */
@@ -63,6 +68,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   platformFee,
   totalAmount,
   couponCode,
+  couponMeta,
   onRemoveCoupon,
   hideProceedButton = false,
   onProceed,
@@ -72,6 +78,9 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   const [coupons, setCoupons] = useState<CouponOption[]>([]);
   const [selectedCouponCode, setSelectedCouponCode] = useState<string | null>(
     () => peekRedirectField<string>("selectedCouponCode") || couponCode || null,
+  );
+  const [selectedCouponMeta, setSelectedCouponMeta] = useState<unknown>(
+    couponMeta || null,
   );
   const [shouldRestoreCouponModal] = useState(() =>
     peekRedirectModalState("couponModalOpen"),
@@ -126,7 +135,15 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
       });
       return;
     }
-    handleApplyCoupon(user?.id);
+    if (
+      (selectedCouponMeta || couponMeta) &&
+      isSingleUseCoupon(selectedCouponMeta || couponMeta) &&
+      hasRedeemedCoupon(user.id, couponInput.trim())
+    ) {
+      toast.error("You have already used this coupon.");
+      return;
+    }
+    handleApplyCoupon(user?.id, selectedCouponMeta || couponMeta);
     setOpenCouponModal(false);
   };
 
@@ -173,12 +190,13 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
               </button>
             ) : null}
 
-            <button
-              onClick={() => {
-                setSelectedCouponCode(couponCode || null);
-                setCouponInput(couponCode || "");
-                setOpenCouponModal(true);
-              }}
+              <button
+                onClick={() => {
+                  setSelectedCouponCode(couponCode || null);
+                  setCouponInput(couponCode || "");
+                  setSelectedCouponMeta(couponMeta || null);
+                  setOpenCouponModal(true);
+                }}
               className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded px-2.5 py-0.5 text-sm cursor-pointer"
             >
               {couponCode ? "CHANGE" : "APPLY"}
@@ -302,6 +320,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                     onClick={() => {
                       setSelectedCouponCode(coupon.code);
                       setCouponInput(coupon.code);
+                      setSelectedCouponMeta(coupon);
                     }}
                   >
                     <div className="font-bold border border-dashed border-gray-500 text-[#6b5639] mb-2 uppercase text-lg p-2 w-full">

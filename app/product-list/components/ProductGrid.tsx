@@ -118,8 +118,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               viewMode === "list" ? "pl-1.5 md:pl-3 lg:pl-4" : "flex flex-col flex-grow"
             }`}
           >
-            
-            <h3 className="text-[13px] md:text-[15px] lg:text-[17px] leading-snug line-clamp-2 pb-1 mb-2">
+            <h3
+              className={`text-[13px] md:text-[15px] lg:text-[17px] leading-snug line-clamp-2 pb-1 mb-2 ${
+                viewMode === "list"
+                  ? "min-h-[2.9rem] md:min-h-[3.4rem] lg:min-h-[3.8rem]"
+                  : ""
+              }`}
+            >
               <Link
                 href={`/product/${product.slug}`}
                 className="hover:text-[#bd9951] transition-colors tracking-tight"

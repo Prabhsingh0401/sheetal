@@ -10,12 +10,14 @@ interface HomepageCoupon {
   offerType: string;
   offerValue: number;
   couponType: string;
+  endDate?: string;
   scope?: "All" | "Category" | "Specific_Product";
   applicableIds?: Array<{ name?: string; slug?: string } | string>;
 }
 
 const TopInfo = () => {
   const [coupon, setCoupon] = useState<HomepageCoupon | null>(null);
+  const defaultText = "Check back soon for fresh offers.";
 
   useEffect(() => {
     const fetchHomepageCoupon = async () => {
@@ -32,18 +34,21 @@ const TopInfo = () => {
     fetchHomepageCoupon();
   }, []);
 
-  const getOfferText = (coupon: HomepageCoupon) => {
-    if (coupon.offerType === "Percentage") return `Up to ${coupon.offerValue}% Off`;
-    if (coupon.offerType === "FixedAmount") return `Flat ₹${coupon.offerValue} Off`;
-    if (coupon.offerType === "BOGO") return "Buy One Get One Free";
+  const getOfferText = (homepageCoupon: HomepageCoupon) => {
+    if (homepageCoupon.offerType === "Percentage") return `Up to ${homepageCoupon.offerValue}% Off`;
+    if (homepageCoupon.offerType === "FixedAmount") return `Flat ₹${homepageCoupon.offerValue} Off`;
+    if (homepageCoupon.offerType === "BOGO") return "Buy One Get One Free";
     return "";
   };
 
-  const displayText = coupon
-    ? coupon.description || `${getOfferText(coupon)}`
-    : "";
+  const isExpired = coupon?.endDate ? new Date(coupon.endDate) < new Date() : false;
 
-  const displayCode = coupon?.couponType === "CouponCode" ? coupon.code : null;
+  const displayText =
+    coupon && !isExpired ? coupon.description || getOfferText(coupon) : defaultText;
+
+  const displayCode =
+    coupon && !isExpired && coupon.couponType === "CouponCode" ? coupon.code : null;
+
   const applicableItem =
     coupon?.applicableIds && coupon.applicableIds.length > 0
       ? coupon.applicableIds[coupon.applicableIds.length - 1]
@@ -53,9 +58,9 @@ const TopInfo = () => {
       ? applicableItem.slug || null
       : null;
   const ctaHref =
-    coupon?.scope === "Specific_Product" && applicableSlug
+    coupon && !isExpired && coupon.scope === "Specific_Product" && applicableSlug
       ? `/product/${applicableSlug}`
-      : coupon?.scope === "Category" && applicableSlug
+      : coupon && !isExpired && coupon.scope === "Category" && applicableSlug
         ? `/${applicableSlug}`
         : "/product-list";
 
@@ -65,7 +70,7 @@ const TopInfo = () => {
         {displayText}
         {displayCode && (
           <>
-            {" "}— Use code{" "}
+            {" "}â€” Use code{" "}
             <span className="font-bold tracking-widest">{displayCode}</span>
             {": "}
           </>
@@ -73,8 +78,8 @@ const TopInfo = () => {
         {!displayCode && displayText !== "" && ": "}
         {displayText !== "" && (
           <Link href={ctaHref} className="underline font-normal">
-          Shop Now
-        </Link>
+            Shop Now
+          </Link>
         )}
       </p>
     </div>
