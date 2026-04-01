@@ -12,7 +12,7 @@ import { useWishlist } from "../hooks/useWishlist";
 import WishlistLoginModal from "./WishlistLoginModal";
 
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
-const MIN_FOR_CAROUSEL_MOBILE  = 2;
+const MIN_FOR_CAROUSEL_MOBILE = 2;
 
 const FALLBACK_PRODUCTS: CollectionProduct[] = [
   {
@@ -71,7 +71,7 @@ const FALLBACK_PRODUCTS: CollectionProduct[] = [
 
 const Collections = () => {
   const [products, setProducts] = useState<CollectionProduct[]>([]);
-  const [loading, setLoading]   = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [isCarousel, setIsCarousel] = useState(false);
   const {
     wishlist,
@@ -106,15 +106,14 @@ const Collections = () => {
     const load = async () => {
       try {
         const data = await getCollectionProducts();
-        const visibleProducts = (data || []).filter(
-          (product) =>
-            Boolean(
-              product &&
-                product._id &&
-                product.slug &&
-                product.name &&
-                (product.status ? product.status === "Active" : true),
-            ),
+        const visibleProducts = (data || []).filter((product) =>
+          Boolean(
+            product &&
+            product._id &&
+            product.slug &&
+            product.name &&
+            (product.status ? product.status === "Active" : true),
+          ),
         );
         setProducts(visibleProducts);
       } catch (err) {
@@ -134,9 +133,8 @@ const Collections = () => {
   if (loading) return null;
 
   return (
-    <div className="container-fluid pb-12 home-page-product font-[family-name:var(--font-montserrat)]">
+    <div className="container-fluid pb-12 px-20 home-page-product font-[family-name:var(--font-montserrat)]">
       <div className="container mx-auto px-4">
-
         {/* HEADING */}
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center justify-center gap-6 w-full">
@@ -174,21 +172,17 @@ const Collections = () => {
 
             <button
               onClick={scrollPrev}
-              aria-label="Previous"
-              className="absolute left-[-15px] cursor-pointer top-[30%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
+              aria-label="Previous product"
+              className="absolute left-[-50px] cursor-pointer bottom-[40%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg>
+              <img src="/assets/left-image.png" alt="" className="w-full" />
             </button>
             <button
               onClick={scrollNext}
-              aria-label="Next"
-              className="absolute right-[-15px] cursor-pointer top-[30%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
+              aria-label="Next product"
+              className="absolute right-[-50px] cursor-pointer bottom-[40%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
+              <img src="/assets/right-image.png" alt="" className="w-full" />
             </button>
           </div>
         ) : (
@@ -208,7 +202,6 @@ const Collections = () => {
             ))}
           </div>
         )}
-
       </div>
 
       <WishlistLoginModal
@@ -301,19 +294,31 @@ function ProductCard({
         <div className="mt-auto">
           <div className="mb-3 flex justify-center gap-0.5">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Image key={i} src="/assets/gray-star.png" alt="star" width={20} height={20} />
+              <Image
+                key={i}
+                src="/assets/gray-star.png"
+                alt="star"
+                width={20}
+                height={20}
+              />
             ))}
           </div>
 
           <div className="mb-4 flex justify-center items-center gap-2 flex-wrap">
             {product.price && (
-              <span className="text-[16px] text-[#281b00] font-medium">{product.price}</span>
+              <span className="text-[16px] text-[#281b00] font-medium">
+                {product.price}
+              </span>
             )}
             {product.mrp && (
-              <span className="text-[14px] text-gray-400 line-through">{product.mrp}</span>
+              <span className="text-[14px] text-gray-400 line-through">
+                {product.mrp}
+              </span>
             )}
             {product.discount && (
-              <span className="text-[16px] text-[#6a3f0e] font-normal">{product.discount}</span>
+              <span className="text-[16px] text-[#6a3f0e] font-normal">
+                {product.discount}
+              </span>
             )}
           </div>
 

@@ -339,7 +339,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   </svg>
                 </button>
                 <div
-                  className={`transition-all duration-300 overflow-hidden ${openSections.includes("price") ? "max-h-[200px] opacity-100 pt-4" : "max-h-0 opacity-0"}`}
+                  className={`transition-all duration-300 overflow-hidden ${openSections.includes("price") ? "max-h-[200px] opacity-100 pt-4" : "max-h-0 opacity-0 pt-2"}`}
                 >
                   <PriceRangeSlider
                     min={filterOptions.priceRanges[0]?.min ?? 0}

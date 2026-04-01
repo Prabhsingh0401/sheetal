@@ -21,6 +21,11 @@ import {
   dispatchCartUpdated,
   dispatchWishlistUpdated,
 } from "./shopEvents";
+import {
+  hasRedeemedCoupon,
+  isSingleUseCoupon,
+  markCouponRedeemed,
+} from "../utils/couponRedemption";
 
 // ─── Guest cart localStorage key ────────────────────────────────────────────
 const GUEST_CART_KEY = "guest_cart";
@@ -66,6 +71,7 @@ interface PersistedCouponState {
   bogoMessage: string | null;
   applicableCategories: string[];
   itemWiseDiscount: { [cartItemId: string]: number } | null;
+  couponMeta?: unknown;
 }
 
 interface CartApiResponse {
@@ -84,6 +90,7 @@ interface UseCartReturn {
   bogoMessage: string | null;
   applicableCategories: string[];
   itemWiseDiscount: { [cartItemId: string]: number } | null;
+  couponMeta?: unknown;
   totalMrp: number;
   totalDiscount: number;
   finalAmount: number;
@@ -107,7 +114,11 @@ interface UseCartReturn {
     productId: string,
     options?: { silent?: boolean },
   ) => Promise<void>;
-  applyCoupon: (code: string, userId: string) => Promise<void>;
+  applyCoupon: (
+    code: string,
+    userId: string,
+    couponMeta?: UseCartReturn["couponMeta"],
+  ) => Promise<void>;
   updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
   removeCoupon: () => void;
   clearCart: (userId: string) => Promise<void>;
@@ -212,7 +223,18 @@ export const mergeGuestCartOnLogin = async (): Promise<void> => {
 
   try {
     await mergeGuestCartApi(payload);
-    clearGuestCart();
+
+    // Only clear the local guest cart after the server cart reflects the merge.
+    // This avoids losing the cart if the merge request succeeds but the cart
+    // fetch is briefly stale or the backend fails to persist the items.
+    const verification = await fetchCart();
+    const mergedItems = verification?.success && verification.data && Array.isArray(verification.data.items)
+      ? verification.data.items.filter((item: CartItem) => item.product != null)
+      : [];
+
+    if (mergedItems.length > 0) {
+      clearGuestCart();
+    }
   } catch (err) {
     console.error("Failed to merge guest cart:", err);
   }
@@ -246,6 +268,9 @@ export const useCart = (): UseCartReturn => {
   const [itemWiseDiscount, setItemWiseDiscount] = useState<{ [cartItemId: string]: number } | null>(
     persistedCouponState?.itemWiseDiscount || null,
   );
+  const [couponMeta, setCouponMeta] = useState<unknown>(
+    persistedCouponState?.couponMeta || null,
+  );
   const [totalMrp, setTotalMrp] = useState(0);
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
@@ -264,6 +289,7 @@ export const useCart = (): UseCartReturn => {
       bogoMessage,
       applicableCategories,
       itemWiseDiscount,
+      couponMeta,
     });
   }, [
     couponCode,
@@ -273,6 +299,7 @@ export const useCart = (): UseCartReturn => {
     bogoMessage,
     applicableCategories,
     itemWiseDiscount,
+    couponMeta,
   ]);
 
   /**
@@ -527,11 +554,26 @@ export const useCart = (): UseCartReturn => {
   }, [cart, couponDiscount]);
 
   const applyCoupon = useCallback(
-    async (code: string, userId: string) => {
+    async (
+      code: string,
+      userId: string,
+      couponMeta?: UseCartReturn["couponMeta"],
+    ) => {
       const normalizedCode = normalizeCouponCode(code);
       if (!normalizedCode) {
         setCouponError("Please enter a coupon code.");
         toast.error("Please enter a coupon code.");
+        return;
+      }
+
+      if (
+        couponMeta &&
+        isSingleUseCoupon(couponMeta) &&
+        hasRedeemedCoupon(userId, normalizedCode)
+      ) {
+        const message = "You have already used this coupon.";
+        setCouponError(message);
+        toast.error(message);
         return;
       }
 
@@ -540,6 +582,7 @@ export const useCart = (): UseCartReturn => {
       setCouponOfferType(null);
       setApplicableCategories([]);
       setItemWiseDiscount(null);
+      setCouponMeta(null);
 
       try {
         let currentMrp = 0;
@@ -566,8 +609,10 @@ export const useCart = (): UseCartReturn => {
             response.data.couponCode || normalizedCode,
           );
           const discountAmount = response.data.discount ?? 0;
+          const responseMeta = response.data as Record<string, unknown>;
           setCouponCode(appliedCouponCode);
           setCouponOfferType(response.data.offerType);
+          setCouponMeta(responseMeta);
 
           if (response.data.applicableIds && response.data.applicableIds.length > 0) {
             setApplicableCategories(response.data.applicableIds);
@@ -575,6 +620,10 @@ export const useCart = (): UseCartReturn => {
 
           setItemWiseDiscount(response.data.itemWiseDiscount || {});
           setCouponDiscount(discountAmount);
+
+          if (isSingleUseCoupon(couponMeta) || isSingleUseCoupon(responseMeta)) {
+            markCouponRedeemed(userId, appliedCouponCode);
+          }
 
           if (response.data.offerType === "BOGO") {
             setBogoMessage(`Congrats! Your BOGO offer has been applied. You saved ₹${discountAmount.toFixed(2)}!`);
@@ -585,11 +634,13 @@ export const useCart = (): UseCartReturn => {
           toast.success("Coupon applied successfully!");
         } else {
           setCouponError(response.message || "Invalid coupon code.");
+          setCouponMeta(null);
           toast.error(response.message || "Invalid coupon code.");
         }
       } catch (err: any) {
         console.error("Error applying coupon:", err);
         setCouponError("Could not apply coupon. Please try again.");
+        setCouponMeta(null);
         toast.error("Could not apply coupon. Please try again.");
       }
     },
@@ -690,6 +741,7 @@ export const useCart = (): UseCartReturn => {
     bogoMessage,
     applicableCategories,
     itemWiseDiscount,
+    couponMeta,
     totalMrp,
     totalDiscount,
     finalAmount,
