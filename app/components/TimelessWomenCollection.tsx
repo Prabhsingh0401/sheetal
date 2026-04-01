@@ -73,9 +73,9 @@ const TimelessWomenCollection = () => {
   return (
     <div className="flex justify-center w-full py-4 px-6 bg-[#fbfbfb]">
       <div className="container">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch justify-items-center">
           {/* LEFT SLIDER */}
-          <div className="w-[400px] h-auto">
+          <div className="w-full max-w-[400px] h-auto">
             <Slider
               {...sliderSettings}
               autoplaySpeed={3000}
@@ -83,7 +83,7 @@ const TimelessWomenCollection = () => {
             >
               {leftSliderData.map((img, i) => (
                 <div key={i} className="cursor-pointer outline-none">
-                  <div className="relative w-[400px] h-[310px]">
+                  <div className="relative w-full h-[310px]">
                     <Image
                       src={img.url}
                       alt={`Deal ${i + 1}`}
@@ -98,7 +98,7 @@ const TimelessWomenCollection = () => {
           </div>
 
           {/* CENTER CONTENT */}
-          <div className="w-[400px] h-[320px] flex relative">
+          <div className="w-full max-w-[400px] h-[320px] flex relative">
             <div className="hidden md:block absolute top-20 -left-5 h-0.5 w-15 bg-[#a2690f]"></div>
             <div className="hidden md:block absolute top-20 -right-5  h-0.5 w-15 bg-[#a2690f]"></div>
             <Link
@@ -135,7 +135,7 @@ const TimelessWomenCollection = () => {
           </div>
 
           {/* RIGHT SLIDER */}
-          <div className="w-[400px] h-auto">
+          <div className="w-full max-w-[400px] h-auto">
             <Slider
               {...sliderSettings}
               autoplaySpeed={3500}
@@ -143,7 +143,7 @@ const TimelessWomenCollection = () => {
             >
               {rightSliderData.map((img, i) => (
                 <div key={i} className="cursor-pointer outline-none">
-                  <div className="relative w-[400px] h-[310px]">
+                  <div className="relative w-full h-[310px]">
                     <Image
                       src={img.url}
                       alt={`Deal ${i + 1}`}

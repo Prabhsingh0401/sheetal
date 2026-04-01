@@ -4,6 +4,8 @@ import { Montserrat, Outfit } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const optima = localFont({
   src: [
