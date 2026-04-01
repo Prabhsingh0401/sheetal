@@ -239,23 +239,19 @@ const NewArrivals = () => {
                 </div>
 
                 <button
-                  onClick={scrollPrev}
-                  aria-label="Previous"
-                  className="absolute left-[-15px] cursor-pointer top-[35%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                  </svg>
-                </button>
-                <button
-                  onClick={scrollNext}
-                  aria-label="Next"
-                  className="absolute right-[-15px] cursor-pointer top-[35%] -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10 hover:bg-gray-50"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                  </svg>
-                </button>
+              onClick={scrollPrev}
+              aria-label="Previous product"
+              className="absolute left-[-50px] cursor-pointer bottom-[40%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
+            >
+              <img src="/assets/left-image.png" alt="" className="w-full" />
+            </button>
+            <button
+              onClick={scrollNext}
+              aria-label="Next product"
+              className="absolute right-[-50px] cursor-pointer bottom-[40%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
+            >
+              <img src="/assets/right-image.png" alt="" className="w-full" />
+            </button>
               </div>
             ) : (
               /* Static grid when fewer than 5 products */

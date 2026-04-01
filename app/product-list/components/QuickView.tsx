@@ -332,6 +332,9 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
   });
 
   const allSizesForDisplay = Array.from(allUniqueSizeNames);
+  const hasDescription = Boolean(product?.shortDescription?.trim());
+  const hasColors = allUniqueColors.length > 0;
+  const hasSizes = allSizesForDisplay.length > 0;
 
   const handleColorChange = (color: { name: string; image: string }) => {
     setSelectedColor(color.name);
@@ -404,9 +407,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
               </div>
 
               {/* Right — product details */}
-              <div
-                className="w-full sm:w-[48%] flex flex-col text-left p-6 px-10"
-              >
+              <div className="w-full sm:w-[48%] flex flex-col text-left p-6 px-10 gap-4">
                 {/* Name */}
                 <h2 className="font-normal text-[#683e14] mb-3 font-[family-name:var(--font-optima)] leading-snug">
                   {product.name}
@@ -424,9 +425,11 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                 </div>
 
                 {/* Short desc */}
-                <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                  {product.shortDescription}
-                </p>
+                {hasDescription && (
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {product.shortDescription}
+                  </p>
+                )}
 
                 {/* Price */}
                 <div className="mb-4 pb-4 border-b border-gray-100">
@@ -451,86 +454,90 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                 </div>
 
                 {/* Color */}
-                <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    Select Color:
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {allUniqueColors.map((color, i: number) => (
-                      <div
-                        key={i}
-                        className={`w-10 h-14 md:w-12 md:h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative flex-shrink-0 ${
-                          selectedColor === color.name
-                            ? "border-[#bd9951]"
-                            : "border-gray-200"
-                        }`}
-                        onClick={() => handleColorChange(color)}
-                      >
-                        <Image
-                          src={color.image}
-                          alt={color.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ))}
+                {hasColors && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
+                      Select Color:
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {allUniqueColors.map((color, i: number) => (
+                        <div
+                          key={i}
+                          className={`w-10 h-14 md:w-12 md:h-16 border cursor-pointer hover:border-[#bd9951] p-0.5 relative flex-shrink-0 ${
+                            selectedColor === color.name
+                              ? "border-[#bd9951]"
+                              : "border-gray-200"
+                          }`}
+                          onClick={() => handleColorChange(color)}
+                        >
+                          <Image
+                            src={color.image}
+                            alt={color.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Size */}
-                <div className="mb-5">
-                  <label className="block text-sm font-semibold text-gray-800 mb-2">
-                    Select Size:
-                  </label>
-                  <div className="flex flex-wrap gap-3">
-                    {allSizesForDisplay.map((sizeName) => {
-                      const isAvailableForSelectedColor =
-                        colorToAvailableSizesMap
-                          .get(selectedColor)
-                          ?.has(sizeName);
-                      const isDisabled = !isAvailableForSelectedColor;
-                      const selectedVariant = product.variants.find(
-                        (v) => v.color?.name === selectedColor,
-                      );
-                      const stock =
-                        selectedVariant?.sizes.find((s) => s.name === sizeName)
-                          ?.stock ?? 0;
+                {hasSizes && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
+                      Select Size:
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {allSizesForDisplay.map((sizeName) => {
+                        const isAvailableForSelectedColor =
+                          colorToAvailableSizesMap
+                            .get(selectedColor)
+                            ?.has(sizeName);
+                        const isDisabled = !isAvailableForSelectedColor;
+                        const selectedVariant = product.variants.find(
+                          (v) => v.color?.name === selectedColor,
+                        );
+                        const stock =
+                          selectedVariant?.sizes.find((s) => s.name === sizeName)
+                            ?.stock ?? 0;
 
-                      return (
-                        <div
-                          key={sizeName}
-                          className="flex flex-col items-center gap-1"
-                        >
-                          <button
-                            disabled={isDisabled}
-                            onClick={() => setSelectedSize(sizeName)}
-                            className={`
-                          ${sizeName === "One Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
-                          flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative overflow-hidden
-                          ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
-                          ${selectedSize === sizeName && !isDisabled ? "border-[#bd9951]" : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"}
-                        `}
+                        return (
+                          <div
+                            key={sizeName}
+                            className="flex flex-col items-center gap-1"
                           >
-                            {sizeName}
-                            {isDisabled && (
-                              <div className="absolute w-full h-px bg-gray-400 transform rotate-45" />
-                            )}
-                          </button>
-                          {isAvailableForSelectedColor &&
-                            stock <= 5 &&
-                            stock > 0 && (
-                              <span className="text-[9px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">
-                                {stock} left
-                              </span>
-                            )}
-                        </div>
-                      );
-                    })}
+                            <button
+                              disabled={isDisabled}
+                              onClick={() => setSelectedSize(sizeName)}
+                              className={`
+                            ${sizeName === "One Size" ? "px-3 py-2 rounded-md" : "w-9 h-9 md:w-10 md:h-10 rounded-full"}
+                            flex items-center justify-center border text-xs md:text-sm font-medium transition-colors relative overflow-hidden
+                            ${isDisabled ? "bg-gray-100 text-gray-400 cursor-not-allowed" : ""}
+                            ${selectedSize === sizeName && !isDisabled ? "border-[#bd9951]" : "border-gray-300 text-gray-700 hover:border-[#bd9951] cursor-pointer"}
+                          `}
+                            >
+                              {sizeName}
+                              {isDisabled && (
+                                <div className="absolute w-full h-px bg-gray-400 transform rotate-45" />
+                              )}
+                            </button>
+                            {isAvailableForSelectedColor &&
+                              stock <= 5 &&
+                              stock > 0 && (
+                                <span className="text-[9px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">
+                                  {stock} left
+                                </span>
+                              )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Actions */}
-                <div className="mt-auto">
+                <div className="pt-2">
                   <div className="flex gap-3 items-center">
                     <input
                       type="number"

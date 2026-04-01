@@ -8,6 +8,7 @@ import AddressForm from "../components/AddressForm";
 import MiniCartSummary from "../components/MiniCartSummary";
 import PriceDetails from "../../cart/components/PriceDetails";
 import { useCart } from "../../hooks/useCart";
+import { applyCoupon as applyCouponApi } from "../../services/cartService";
 import { getCurrentUser } from "../../services/userService";
 import { getSettings } from "../../services/settingsService";
 import toast from "react-hot-toast";
@@ -15,6 +16,7 @@ import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
 import { useSearchParams } from "next/navigation";
 import { peekRedirectField } from "../../utils/authRedirect";
+import { hasRedeemedCoupon, isSingleUseCoupon, markCouponRedeemed } from "../../utils/couponRedemption";
 import type { CartItem } from "../../hooks/useCart";
 
 // ── Inner component that uses useSearchParams ─────────────────────────────
@@ -27,6 +29,7 @@ const AddressPageInner = () => {
     couponDiscount,
     finalAmount,
     couponCode,
+    couponMeta,
     applyCoupon,
     removeCoupon,
     couponError,
@@ -50,6 +53,11 @@ const AddressPageInner = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedShippingAddressIdRef = useRef<string | null>(null);
   const selectedBillingAddressIdRef = useRef<string | null>(null);
+  const [buyNowCouponCode, setBuyNowCouponCode] = useState("");
+  const [buyNowCouponDiscount, setBuyNowCouponDiscount] = useState(0);
+  const [buyNowCouponError, setBuyNowCouponError] = useState<string | null>(null);
+  const [buyNowBogoMessage, setBuyNowBogoMessage] = useState<string | null>(null);
+  const [buyNowApplicableCategories, setBuyNowApplicableCategories] = useState<string[]>([]);
 
   const [platformFee, setPlatformFee] = useState(0);
   const [shippingCharges, setShippingCharges] = useState(0);
@@ -105,6 +113,25 @@ const AddressPageInner = () => {
         0,
       )
     : finalAmount;
+
+  const effectiveCouponCode = isBuyNow ? buyNowCouponCode : couponCode;
+  const effectiveCouponDiscount = isBuyNow ? buyNowCouponDiscount : couponDiscount;
+  const effectiveCouponError = isBuyNow ? buyNowCouponError : couponError;
+  const effectiveBogoMessage = isBuyNow ? buyNowBogoMessage : bogoMessage;
+  const effectiveApplicableCategories = isBuyNow
+    ? buyNowApplicableCategories
+    : applicableCategories;
+  const itemsAmountAfterCoupon = isBuyNow
+    ? Math.max(0, activeFinalAmount - effectiveCouponDiscount)
+    : activeFinalAmount;
+
+  useEffect(() => {
+    if (!isBuyNow) {
+      return;
+    }
+
+    setCouponInput(peekRedirectField<string>("couponInput") || "");
+  }, [isBuyNow]);
   // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -166,7 +193,7 @@ const AddressPageInner = () => {
         setFreeShippingThreshold(Number(settings.freeShippingThreshold) || 0);
 
         const threshold = Number(settings.freeShippingThreshold) || 0;
-        if (activeFinalAmount > threshold && threshold > 0) {
+        if (itemsAmountAfterCoupon > threshold && threshold > 0) {
           setShippingCharges(0);
         } else {
           setShippingCharges(Number(settings.shippingFee) || 0);
@@ -176,15 +203,15 @@ const AddressPageInner = () => {
       }
     };
     fetchSettingsData();
-  }, [activeFinalAmount]);
+  }, [itemsAmountAfterCoupon]);
 
   useEffect(() => {
-    if (activeFinalAmount > freeShippingThreshold && freeShippingThreshold > 0) {
+    if (itemsAmountAfterCoupon > freeShippingThreshold && freeShippingThreshold > 0) {
       setShippingCharges(0);
     } else {
       setShippingCharges(baseShippingFee);
     }
-  }, [activeFinalAmount, freeShippingThreshold, baseShippingFee]);
+  }, [itemsAmountAfterCoupon, freeShippingThreshold, baseShippingFee]);
 
   const handleEditAddress = (address: Address) => {
     setEditingAddress(address);
@@ -213,6 +240,104 @@ const AddressPageInner = () => {
     postalCode: selectedAddress.postalCode,
     country: selectedAddress.country || "India",
   });
+
+  const applyBuyNowCoupon = async (userId: string, couponMeta?: unknown) => {
+    const normalizedCode = couponInput.trim().toUpperCase();
+    if (!normalizedCode) {
+      toast.error("Please enter a coupon code.");
+      return;
+    }
+
+    if (couponMeta && isSingleUseCoupon(couponMeta) && hasRedeemedCoupon(userId, normalizedCode)) {
+      setBuyNowCouponError("You have already used this coupon.");
+      toast.error("You have already used this coupon.");
+      return;
+    }
+
+    setBuyNowCouponError(null);
+    setBuyNowBogoMessage(null);
+    setBuyNowApplicableCategories([]);
+
+    try {
+      const response = await applyCouponApi(
+        normalizedCode,
+        activeFinalAmount,
+        userId,
+        normalizedActiveItems,
+      );
+
+      if (response.success) {
+        const appliedCouponCode = String(response.data?.couponCode || normalizedCode);
+        const discountAmount = Number(response.data?.discount) || 0;
+
+        setBuyNowCouponCode(appliedCouponCode);
+        setBuyNowCouponDiscount(discountAmount);
+
+        if (response.data?.applicableIds && response.data.applicableIds.length > 0) {
+          setBuyNowApplicableCategories(response.data.applicableIds);
+        }
+
+        if (response.data?.offerType === "BOGO") {
+          setBuyNowBogoMessage(
+            `Congrats! Your BOGO offer has been applied. You saved ₹${discountAmount.toFixed(2)}!`,
+          );
+        } else if (response.data?.offerType === "FixedAmount") {
+          setBuyNowBogoMessage(`₹${discountAmount.toFixed(2)} flat discount applied!`);
+        }
+
+        if (isSingleUseCoupon(couponMeta) || isSingleUseCoupon(response.data as Record<string, unknown>)) {
+          markCouponRedeemed(userId, appliedCouponCode);
+        }
+
+        toast.success("Coupon applied successfully!");
+      } else {
+        setBuyNowCouponCode("");
+        setBuyNowCouponDiscount(0);
+        setBuyNowCouponError(response.message || "Invalid coupon code.");
+        toast.error(response.message || "Invalid coupon code.");
+      }
+    } catch (error) {
+      console.error("Error applying buy-now coupon:", error);
+      setBuyNowCouponCode("");
+      setBuyNowCouponDiscount(0);
+      setBuyNowCouponError("Could not apply coupon. Please try again.");
+      toast.error("Could not apply coupon. Please try again.");
+    }
+  };
+
+  const handleApplyCoupon = (userId: string | undefined, couponMeta?: unknown) => {
+    if (!userId) {
+      toast.error("Please login to apply coupons.");
+      return;
+    }
+
+    if (isBuyNow) {
+      void applyBuyNowCoupon(userId, couponMeta);
+      return;
+    }
+
+    if (!couponInput.trim()) {
+      toast.error("Please enter a coupon code.");
+      return;
+    }
+
+    applyCoupon(couponInput.trim().toUpperCase(), userId, couponMeta || undefined);
+  };
+
+  const handleRemoveCoupon = () => {
+    if (isBuyNow) {
+      setCouponInput("");
+      setBuyNowCouponCode("");
+      setBuyNowCouponDiscount(0);
+      setBuyNowCouponError(null);
+      setBuyNowBogoMessage(null);
+      setBuyNowApplicableCategories([]);
+      toast.success("Coupon removed");
+      return;
+    }
+
+    removeCoupon();
+  };
 
   const handlePayOnline = async () => {
     const normalizedEmail = userEmail.trim();
@@ -338,7 +463,7 @@ const AddressPageInner = () => {
       },
     }));
 
-    const totalAmount = activeFinalAmount + shippingCharges + platformFee;
+    const totalAmount = itemsAmountAfterCoupon + shippingCharges + platformFee;
 
     try {
       setIsSubmitting(true);
@@ -349,7 +474,7 @@ const AddressPageInner = () => {
         orderItems,
         normalizedEmail,
         {
-          itemsPrice: activeFinalAmount,
+          itemsPrice: itemsAmountAfterCoupon,
           shippingPrice: shippingCharges,
           taxPrice: platformFee,
           totalPrice: totalAmount,
@@ -395,12 +520,12 @@ const AddressPageInner = () => {
   const itemsForPricing = isBuyNow ? normalizedActiveItems : activeItems;
 
   const categoryNames =
-    applicableCategories.length > 0
+    effectiveApplicableCategories.length > 0
       ? itemsForPricing
           .filter(
             (item) =>
               item.product.category &&
-              applicableCategories.includes(item.product.category._id),
+              effectiveApplicableCategories.includes(item.product.category._id),
           )
           .map((item) => item.product.category.name)
       : [];
@@ -539,25 +664,23 @@ const AddressPageInner = () => {
             <MiniCartSummary cartItems={normalizedActiveItems} />
 
             <PriceDetails
-              couponInput={isBuyNow ? "" : couponInput}
+              couponInput={couponInput}
               setCouponInput={setCouponInput}
-              handleApplyCoupon={(userId) => {
-                if (!isBuyNow && couponInput && userId)
-                  applyCoupon(couponInput.trim().toUpperCase(), userId);
-              }}
-              couponError={isBuyNow ? "" : couponError}
-              bogoMessage={isBuyNow ? "" : bogoMessage}
-              applicableCategories={isBuyNow ? [] : applicableCategories}
-              categoryName={isBuyNow ? null : displayCategoryName}
-              couponCode={isBuyNow ? "" : couponCode}
-              onRemoveCoupon={removeCoupon}
+              handleApplyCoupon={handleApplyCoupon}
+              couponError={effectiveCouponError}
+              bogoMessage={effectiveBogoMessage}
+              applicableCategories={effectiveApplicableCategories}
+              categoryName={displayCategoryName}
+              couponCode={effectiveCouponCode}
+              couponMeta={couponMeta}
+              onRemoveCoupon={handleRemoveCoupon}
               cartLength={normalizedActiveItems.length}
               totalMrp={activeTotalMrp}
               totalDiscount={activeTotalDiscount}
-              couponDiscount={isBuyNow ? 0 : couponDiscount}
+              couponDiscount={effectiveCouponDiscount}
               shippingCharges={shippingCharges}
               platformFee={platformFee}
-              totalAmount={activeFinalAmount + shippingCharges + platformFee}
+              totalAmount={itemsAmountAfterCoupon + shippingCharges + platformFee}
               hideProceedButton={true}
             />
 

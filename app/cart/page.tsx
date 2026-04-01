@@ -22,6 +22,7 @@ const CartPage = () => {
     couponCode,
     couponDiscount,
     couponError,
+    couponMeta,
     totalMrp,
     totalDiscount,
     finalAmount,
@@ -158,7 +159,10 @@ const CartPage = () => {
     setModalAction("remove");
   };
 
-  const handleApplyCoupon = (userId: string | undefined) => {
+  const handleApplyCoupon = (
+    userId: string | undefined,
+    couponMeta?: unknown,
+  ) => {
     if (!userId) {
       toast.error("Please login to apply coupons.");
       return;
@@ -167,7 +171,7 @@ const CartPage = () => {
       toast.error("Please enter a coupon code.");
       return;
     }
-    applyCoupon(couponInput.trim().toUpperCase(), userId);
+    applyCoupon(couponInput.trim().toUpperCase(), userId, couponMeta || undefined);
   };
 
   const handleProceedToBuy = () => {
@@ -329,6 +333,7 @@ const CartPage = () => {
                   applicableCategories={applicableCategories}
                   categoryName={displayCategoryName}
                   couponCode={couponCode}
+                  couponMeta={couponMeta}
                   onRemoveCoupon={removeCoupon}
                   cartLength={cartItems.length}
                   totalMrp={totalMrp}
