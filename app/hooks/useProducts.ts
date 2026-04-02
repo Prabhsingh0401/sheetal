@@ -4,6 +4,7 @@ import {
   Product,
   ProductQueryParams,
 } from "../services/productService";
+import { ORDER_CONFIRMED_EVENT } from "./shopEvents";
 
 interface UseProductsReturn {
   products: Product[];
@@ -83,6 +84,51 @@ export const useProducts = (
     });
     return () => {
       requestIdRef.current += 1;
+    };
+  }, [
+    enabled,
+    loadProducts,
+    page,
+    limit,
+    search,
+    sort,
+    category,
+    subCategory,
+    brand,
+    status,
+    color,
+  ]);
+
+  useEffect(() => {
+    if (
+      !enabled ||
+      typeof window === "undefined" ||
+      ORDER_CONFIRMED_EVENT.length === 0
+    ) {
+      return;
+    }
+
+    const handleOrderConfirmed = () => {
+      loadProducts({
+        page,
+        limit,
+        search,
+        sort,
+        category,
+        subCategory,
+        brand,
+        status,
+        color,
+      });
+    };
+
+    window.addEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
+
+    return () => {
+      window.removeEventListener(
+        ORDER_CONFIRMED_EVENT,
+        handleOrderConfirmed,
+      );
     };
   }, [
     enabled,

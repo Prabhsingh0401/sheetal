@@ -4,6 +4,8 @@ import ProductDetailClient from "../components/ProductDetailClient";
 import { fetchProductBySlug } from "../../services/productService";
 import { getApiImageUrl } from "../../services/api";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

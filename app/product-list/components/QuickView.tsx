@@ -20,6 +20,7 @@ import WishlistLoginModal from "../../components/WishlistLoginModal";
 
 import { useCart } from "../../hooks/useCart";
 import { redirectToLogin } from "../../utils/authRedirect";
+import { ORDER_CONFIRMED_EVENT } from "../../hooks/shopEvents";
 
 interface QuickViewProps {
   productSlug: string | null;
@@ -46,60 +47,125 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
   const { addToCart } = useCart();
   const router = useRouter();
 
+  const getProduct = React.useCallback(async () => {
+    if (!productSlug) return;
+
+    setLoading(true);
+    try {
+      const response = await fetchProductBySlug(productSlug);
+      if (response.success && response.data) {
+        setProduct(response.data);
+        if (!hasIncrementedViewRef.current) {
+          hasIncrementedViewRef.current = true;
+          incrementProductView(productSlug).catch(console.error);
+        }
+        const mainImg = getProductImageUrl(response.data);
+        setSelectedImage(mainImg);
+
+        const matchedVariant =
+          selectedColor
+            ? response.data.variants?.find(
+                (v: ProductVariant) => v.color?.name === selectedColor,
+              )
+            : null;
+        const matchedSize = selectedSize
+          ? matchedVariant?.sizes.find(
+              (s: ProductVariant["sizes"][number]) => s.name === selectedSize,
+            ) || null
+          : null;
+
+        if (matchedVariant) {
+          setSelectedVariantId(matchedVariant._id);
+          if (matchedVariant.color?.name) {
+            setSelectedColor(matchedVariant.color.name);
+          }
+          const refreshedGallery = getVariantGalleryUrls(
+            response.data,
+            matchedVariant,
+          );
+          setSelectedImage(
+            refreshedGallery[0] || getProductImageUrl(response.data),
+          );
+          setSelectedSize(
+            matchedSize?.name ||
+              matchedVariant.sizes.find(
+                (s: ProductVariant["sizes"][number]) => s.stock > 0,
+              )?.name ||
+              "",
+          );
+        } else {
+          // Default size and color logic: find first available variant, its color, and its size
+          const firstAvailableVariant = response.data.variants?.find(
+            (v: ProductVariant) =>
+              Array.isArray(v.sizes) &&
+              v.sizes.length > 0 &&
+              v.sizes.some((s) => s.stock > 0),
+          );
+          if (firstAvailableVariant) {
+            setSelectedVariantId(firstAvailableVariant._id);
+            if (firstAvailableVariant.color?.name) {
+              setSelectedColor(firstAvailableVariant.color.name);
+            }
+            const initialGallery = getVariantGalleryUrls(
+              response.data,
+              firstAvailableVariant,
+            );
+            setSelectedImage(
+              initialGallery[0] || getProductImageUrl(response.data),
+            );
+            const firstAvailableSize = firstAvailableVariant.sizes.find(
+              (s: ProductVariant["sizes"][number]) => s.stock > 0,
+            );
+            setSelectedSize(firstAvailableSize?.name || "");
+          } else {
+            setSelectedVariantId("");
+            setSelectedColor("");
+            setSelectedSize("");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch product", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [productSlug, selectedColor, selectedSize]);
+
   useEffect(() => {
     if (productSlug) {
-      const getProduct = async () => {
-        setLoading(true);
-        try {
-          const response = await fetchProductBySlug(productSlug);
-          if (response.success && response.data) {
-            setProduct(response.data);
-            if (!hasIncrementedViewRef.current) {
-              hasIncrementedViewRef.current = true;
-              incrementProductView(productSlug).catch(console.error);
-            }
-            const mainImg = getProductImageUrl(response.data);
-            setSelectedImage(mainImg);
+      void getProduct();
 
-            // Default size and color logic: find first available variant, its color, and its size
-            const firstAvailableVariant = response.data.variants?.find(
-              (v: ProductVariant) =>
-                Array.isArray(v.sizes) &&
-                v.sizes.length > 0 &&
-                v.sizes.some((s) => s.stock > 0),
-            );
-            if (firstAvailableVariant) {
-              setSelectedVariantId(firstAvailableVariant._id);
-              if (firstAvailableVariant.color?.name) {
-                setSelectedColor(firstAvailableVariant.color.name);
-              }
-              const initialGallery = getVariantGalleryUrls(
-                response.data,
-                firstAvailableVariant,
-              );
-              setSelectedImage(
-                initialGallery[0] || getProductImageUrl(response.data),
-              );
-              const firstAvailableSize = firstAvailableVariant.sizes.find(
-                (s: ProductVariant["sizes"][number]) => s.stock > 0,
-              );
-              if (firstAvailableSize) {
-                setSelectedSize(firstAvailableSize.name);
-              }
-            } else {
-              const mainImg = getProductImageUrl(response.data);
-              setSelectedImage(mainImg);
-            }
-          }
-        } catch (error) {
-          console.error("Failed to fetch product", error);
-        } finally {
-          setLoading(false);
+      const handleOrderConfirmed = () => {
+        void getProduct();
+      };
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === "visible") {
+          void getProduct();
         }
       };
-      getProduct();
+
+      const handlePageFocus = () => {
+        void getProduct();
+      };
+
+      const handlePageShow = () => {
+        void getProduct();
+      };
+
+      window.addEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
+      window.addEventListener("focus", handlePageFocus);
+      window.addEventListener("pageshow", handlePageShow);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+
+      return () => {
+        window.removeEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
+        window.removeEventListener("focus", handlePageFocus);
+        window.removeEventListener("pageshow", handlePageShow);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
     }
-  }, [productSlug]);
+  }, [getProduct, productSlug]);
 
   const { currentPrice, currentOriginalPrice, currentDiscount } =
     React.useMemo(() => {
@@ -202,6 +268,8 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
         sku: product.sku,
         category: product.category,
       },
+      variantId: selectedVariant._id,
+      variantSku: selectedVariant.v_sku || product.sku,
       size: selectedSize,
       color: selectedColor,
       quantity: resolvedQuantity,

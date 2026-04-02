@@ -11,11 +11,17 @@ import {
   clearCart as clearCartApi,
   mergeGuestCart as mergeGuestCartApi,
 } from "../services/cartService";
+import { getAllCouponsClient } from "../services/couponService";
 import {
   toggleWishlist as toggleWishlistApi,
   Product,
 } from "../services/productService";
-import { AUTH_UPDATED_EVENT, isAuthenticated } from "../services/authService";
+import {
+  AUTH_UPDATED_EVENT,
+  getToken,
+  getUserDetails,
+  isAuthenticated,
+} from "../services/authService";
 import {
   CART_UPDATED_EVENT,
   dispatchCartUpdated,
@@ -55,6 +61,7 @@ export interface GuestCartItem {
 export interface CartItem {
   _id: string;
   product: Product;
+  variantId?: string;
   quantity: number;
   color: string;
   size: string;
@@ -72,6 +79,12 @@ interface PersistedCouponState {
   applicableCategories: string[];
   itemWiseDiscount: { [cartItemId: string]: number } | null;
   couponMeta?: unknown;
+}
+
+interface CouponCandidate {
+  code?: string;
+  couponType?: string;
+  isAutomatic?: boolean;
 }
 
 interface CartApiResponse {
@@ -118,9 +131,10 @@ interface UseCartReturn {
     code: string,
     userId: string,
     couponMeta?: UseCartReturn["couponMeta"],
-  ) => Promise<void>;
+    options?: { silent?: boolean },
+  ) => Promise<boolean>;
   updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
-  removeCoupon: () => void;
+  removeCoupon: (options?: { silent?: boolean }) => void;
   clearCart: (userId: string) => Promise<void>;
 }
 
@@ -171,6 +185,7 @@ const guestToCartItems = (guestItems: GuestCartItem[]): CartItem[] =>
   guestItems.map((g) => ({
     _id: g._id,
     product: g.product as unknown as Product,
+    variantId: g.variantId,
     quantity: g.quantity,
     color: g.color,
     size: g.size,
@@ -274,6 +289,7 @@ export const useCart = (): UseCartReturn => {
   const [totalMrp, setTotalMrp] = useState(0);
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
+  const [autoApplyAttempted, setAutoApplyAttempted] = useState(false);
 
   useEffect(() => {
     if (!couponCode) {
@@ -533,6 +549,7 @@ export const useCart = (): UseCartReturn => {
     setBogoMessage(null);
     setApplicableCategories([]);
     setItemWiseDiscount(null);
+    setCouponMeta(null);
     writePersistedCouponState(null);
   }, []);
 
@@ -558,12 +575,17 @@ export const useCart = (): UseCartReturn => {
       code: string,
       userId: string,
       couponMeta?: UseCartReturn["couponMeta"],
-    ) => {
+      options?: { silent?: boolean },
+    ): Promise<boolean> => {
       const normalizedCode = normalizeCouponCode(code);
       if (!normalizedCode) {
-        setCouponError("Please enter a coupon code.");
-        toast.error("Please enter a coupon code.");
-        return;
+        if (!options?.silent) {
+          setCouponError("Please enter a coupon code.");
+        }
+        if (!options?.silent) {
+          toast.error("Please enter a coupon code.");
+        }
+        return false;
       }
 
       if (
@@ -572,9 +594,13 @@ export const useCart = (): UseCartReturn => {
         hasRedeemedCoupon(userId, normalizedCode)
       ) {
         const message = "You have already used this coupon.";
-        setCouponError(message);
-        toast.error(message);
-        return;
+        if (!options?.silent) {
+          setCouponError(message);
+        }
+        if (!options?.silent) {
+          toast.error(message);
+        }
+        return false;
       }
 
       setCouponError(null);
@@ -631,21 +657,120 @@ export const useCart = (): UseCartReturn => {
             setBogoMessage(`₹${discountAmount.toFixed(2)} flat discount applied!`);
           }
 
-          toast.success("Coupon applied successfully!");
+          if (!options?.silent) {
+            toast.success("Coupon applied successfully!");
+          }
+          return true;
         } else {
-          setCouponError(response.message || "Invalid coupon code.");
+          if (!options?.silent) {
+            setCouponError(response.message || "Invalid coupon code.");
+          }
           setCouponMeta(null);
-          toast.error(response.message || "Invalid coupon code.");
+          if (!options?.silent) {
+            toast.error(response.message || "Invalid coupon code.");
+          }
+          return false;
         }
       } catch (err: any) {
         console.error("Error applying coupon:", err);
-        setCouponError("Could not apply coupon. Please try again.");
+        if (!options?.silent) {
+          setCouponError("Could not apply coupon. Please try again.");
+        }
         setCouponMeta(null);
-        toast.error("Could not apply coupon. Please try again.");
+        if (!options?.silent) {
+          toast.error("Could not apply coupon. Please try again.");
+        }
+        return false;
       }
     },
     [cart],
   );
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      setAutoApplyAttempted(false);
+      return;
+    }
+
+    if (couponCode || cart.length === 0 || loading || autoApplyAttempted) {
+      return;
+    }
+
+    const token = getToken();
+    const user = getUserDetails();
+    const userId = user?.id;
+
+    if (!token || !userId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const tryAutoApplyFestiveCoupon = async () => {
+      try {
+        const response = await getAllCouponsClient(token, {
+          page: 1,
+          limit: 100,
+        });
+        const couponList = response?.data?.data || response?.data || [];
+
+        if (!Array.isArray(couponList)) {
+          setAutoApplyAttempted(true);
+          return;
+        }
+
+        const festiveAutoCoupons = couponList.filter(
+          (coupon: CouponCandidate) =>
+            coupon?.couponType === "FestiveSale" &&
+            (coupon.isAutomatic === true || coupon.code?.startsWith("AUTO-")),
+        );
+
+        if (festiveAutoCoupons.length === 0) {
+          setAutoApplyAttempted(true);
+          return;
+        }
+
+        for (const couponToApply of festiveAutoCoupons) {
+          const couponCodeToApply = couponToApply?.code
+            ? normalizeCouponCode(couponToApply.code)
+            : "";
+
+          if (!couponCodeToApply || cancelled) {
+            continue;
+          }
+
+          const applied = await applyCoupon(couponCodeToApply, userId, couponToApply, {
+            silent: true,
+          });
+
+          if (applied || cancelled) {
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Error auto-applying festive coupon:", error);
+      } finally {
+        if (!cancelled) {
+          setAutoApplyAttempted(true);
+        }
+      }
+    };
+
+    void tryAutoApplyFestiveCoupon();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyCoupon, autoApplyAttempted, cart, couponCode, loading]);
+
+  useEffect(() => {
+    if (couponCode) {
+      setAutoApplyAttempted(true);
+      return;
+    }
+
+    setAutoApplyAttempted(false);
+  }, [couponCode, cart]);
 
   /**
    * Updates the quantity of a cart item.
@@ -690,9 +815,11 @@ export const useCart = (): UseCartReturn => {
     [resetCoupon],
   );
 
-  const removeCoupon = useCallback(() => {
+  const removeCoupon = useCallback((options?: { silent?: boolean }) => {
     resetCoupon();
-    toast.success("Coupon removed");
+    if (!options?.silent) {
+      toast.success("Coupon removed");
+    }
   }, [resetCoupon]);
 
   const clearCart = useCallback(async (userId: string) => {

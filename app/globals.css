@@ -143,3 +143,40 @@
     @apply border border-gray-300 px-4 py-2;
   }
 }
+
+@layer utilities {
+  .animate-slide-left {
+    animation: slide-left 0.35s ease forwards;
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.35s ease forwards;
+  }
+  .animate-slide-out-right {
+    animation: slide-out-right 0.35s ease forwards;
+  }
+}
+
+@keyframes slide-left {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes slide-out-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}

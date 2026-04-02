@@ -70,7 +70,7 @@ const TopInfo = () => {
         {displayText}
         {displayCode && (
           <>
-            {" "}â€” Use code{" "}
+            {" "}Use code{" "}
             <span className="font-bold tracking-widest">{displayCode}</span>
             {": "}
           </>

@@ -10,7 +10,7 @@ interface BlogSidebarProps {
 const BlogSidebar: React.FC<BlogSidebarProps> = ({ recentPosts }) => {
   return (
     <div className="p-6 sticky top-24">
-      <h4 className="text-xl font-medium text-[#bb976b] mb-6 font-[family-name:var(--font-optima)] border-b border-gray-200 pb-2">
+      <h4 className="text-[24px] text-[#70480c] mb-6 font-[family-name:var(--font-montserrat)] border-b border-gray-200 pb-2">
         Recent Articles
       </h4>
       {recentPosts.length === 0 ? (
@@ -27,10 +27,10 @@ const BlogSidebar: React.FC<BlogSidebarProps> = ({ recentPosts }) => {
               className="group border-b border-gray-200 pb-4 hover:bg-gray-50 p-2 transition-colors"
             >
               <Link href={`/blog/${post.slug}`} className="block">
-                <h5 className="text-sm font-medium text-gray-800 group-hover:text-[#bd9951] transition-colors leading-snug mb-1">
+                <h5 className="text-[15px] font-[family-name:var(--font-montserrat)] group-hover:text-[#bd9951] transition-colors leading-snug mb-1">
                   {post.title}
                 </h5>
-                <p className="text-xs text-gray-500">
+                <p className="text-[15px] font-[family-name:var(--font-montserrat)]">
                   {new Date(post.createdAt).toLocaleDateString("en-US", {
                     month: "long",
                     day: "numeric",
