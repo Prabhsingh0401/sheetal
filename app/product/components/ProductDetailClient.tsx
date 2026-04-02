@@ -37,6 +37,7 @@ import { isAuthenticated } from "../../services/authService";
 import { useWishlist } from "../../hooks/useWishlist";
 import { useCart } from "../../hooks/useCart";
 import { redirectToLogin } from "../../utils/authRedirect";
+import { ORDER_CONFIRMED_EVENT } from "../../hooks/shopEvents";
 import toast from "react-hot-toast";
 
 interface ColorOption {
@@ -116,14 +117,46 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     handleLoginRedirect,
   } = useWishlist();
 
-  useEffect(() => {
-    const loadProduct = async () => {
+  const loadProduct = useCallback(async () => {
       setLoading(true);
       try {
         const res = await fetchProductBySlug(slug);
         if (res.success && res.data) {
           setProduct(res.data);
 
+          const matchedVariant =
+            selectedColor
+              ? res.data.variants?.find(
+                  (v: ProductVariant) => v.color?.name === selectedColor,
+                )
+              : null;
+          const matchedSize = selectedSize
+            ? matchedVariant?.sizes.find(
+                (s: ProductVariant["sizes"][number]) => s.name === selectedSize,
+              ) || null
+            : null;
+
+          if (matchedVariant) {
+            setSelectedVariantData(matchedVariant);
+            if (matchedVariant.color?.name) {
+              setSelectedColor(matchedVariant.color.name);
+            }
+
+            const refreshedGallery = getVariantGalleryUrls(res.data, matchedVariant);
+            setSelectedImage(refreshedGallery[0] || getProductImageUrl(res.data));
+
+            if (matchedSize) {
+              setSelectedSize(matchedSize.name);
+              setSelectedSizeObject(matchedSize);
+            } else {
+              const nextAvailableSize =
+                matchedVariant.sizes.find(
+                  (s: ProductVariant["sizes"][number]) => s.stock > 0,
+                ) || null;
+              setSelectedSize(nextAvailableSize?.name || "");
+              setSelectedSizeObject(nextAvailableSize);
+            }
+          } else {
           // Default size logic: find first available size
           const firstAvailableVariant = res.data.variants?.find(
             (v: ProductVariant) =>
@@ -157,6 +190,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
           } else {
             const mainImg = getProductImageUrl(res.data);
             setSelectedImage(mainImg);
+            setSelectedVariantData(null);
+            setSelectedSize("");
+            setSelectedSizeObject(null);
+          }
           }
 
           // ── Similar Products: always scoped to same category ──────────
@@ -306,9 +343,41 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       } finally {
         setLoading(false);
       }
+    }, [selectedColor, selectedSize, slug]);
+
+  useEffect(() => {
+    void loadProduct();
+
+    const handleOrderConfirmed = () => {
+      void loadProduct();
     };
-    loadProduct();
-  }, [slug]);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void loadProduct();
+      }
+    };
+
+    const handlePageFocus = () => {
+      void loadProduct();
+    };
+
+    const handlePageShow = () => {
+      void loadProduct();
+    };
+
+    window.addEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
+    window.addEventListener("focus", handlePageFocus);
+    window.addEventListener("pageshow", handlePageShow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
+      window.removeEventListener("focus", handlePageFocus);
+      window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [loadProduct]);
 
   // Fetch Size Chart data
   useEffect(() => {
@@ -420,6 +489,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         sku: product.sku,
         category: product.category,
       },
+      variantId: selectedVariant._id,
+      variantSku: selectedVariant.v_sku || product.sku,
       size: selectedSize,
       color: selectedColor,
       quantity: resolvedQuantity,
@@ -643,6 +714,9 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const productFabricSet = new Set(
     (product.fabric ?? []).map((f: string) => f.trim().toLowerCase()),
   );
+  const currentSelectedVariant =
+    product.variants.find((variant) => variant.color?.name === selectedColor) ||
+    null;
 
   const relatedProductsData: RelatedProduct[] = similarProducts
     .map((p: Product) => {
@@ -755,6 +829,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               checkPincode={checkPincode}
               isOutOfStock={product.stock <= 0}
               selectedVariantData={selectedVariantData}
+              selectedVariantSizes={currentSelectedVariant?.sizes || []}
             />
           </div>
         </div>

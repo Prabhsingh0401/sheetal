@@ -16,7 +16,7 @@ const BlogBanner: React.FC<BlogBannerProps> = ({ title, image }) => {
       </div>
       <div>
         <div className="flex flex-col justify-center items-center text-center px-4">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl font-medium text-[#69460c] mb-4 mt-10 font-[family-name:var(--font-optima)] max-w-4xl leading-tight">
+          <h1 className="text-[26px] md:text-[35px] text-[#69460c] mb-4 mt-10 font-[family-name:var(--font-optima)] max-w-4xl leading-tight">
             {title}
           </h1>
           <nav className="text-sm md:text-base text-gray-600 font-light tracking-wide">
@@ -24,22 +24,22 @@ const BlogBanner: React.FC<BlogBannerProps> = ({ title, image }) => {
               <li>
                 <Link
                   href="/"
-                  className="hover:text-[#f3bf43] transition-colors"
+                  className="text-[#6a3f07] transition-colors"
                 >
                   Home
                 </Link>
               </li>
-              <li>/</li>
+              <li className=" text-[#6a3f07]">/</li>
               <li>
                 <Link
                   href="/blogs"
-                  className="hover:text-[#f3bf43] transition-colors"
+                  className="text-[#6a3f07] transition-colors"
                 >
                   Blogs
                 </Link>
               </li>
-              <li>/</li>
-              <li className="line-clamp-1 max-w-[200px] md:max-w-none">
+              <li className=" text-[#6a3f07]">/</li>
+              <li className="line-clamp-1 text-[#6a3f07] max-w-[200px] md:max-w-none">
                 {title}
               </li>
             </ul>

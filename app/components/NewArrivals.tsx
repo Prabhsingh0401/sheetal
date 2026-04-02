@@ -193,7 +193,7 @@ const NewArrivals = () => {
   );
 
   return (
-    <div className="container-fluid py-12 md:py-16 font-[family-name:var(--font-montserrat)]">
+    <div className="container-fluid py-12 px-20 md:py-16 font-[family-name:var(--font-montserrat)]">
       <div className="container mx-auto px-4">
 
         {/* On mobile: heading + text stacked above carousel.
@@ -241,14 +241,14 @@ const NewArrivals = () => {
                 <button
               onClick={scrollPrev}
               aria-label="Previous product"
-              className="absolute left-[-50px] cursor-pointer bottom-[40%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
+              className="absolute left-[-50px] cursor-pointer bottom-[50%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
               <img src="/assets/left-image.png" alt="" className="w-full" />
             </button>
             <button
               onClick={scrollNext}
               aria-label="Next product"
-              className="absolute right-[-50px] cursor-pointer bottom-[40%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
+              className="absolute right-[-50px] cursor-pointer bottom-[50%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
               <img src="/assets/right-image.png" alt="" className="w-full" />
             </button>

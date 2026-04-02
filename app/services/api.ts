@@ -53,8 +53,12 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     requestHeaders["Authorization"] = `Bearer ${token}`;
   }
 
+  const method = (options.method || "GET").toUpperCase();
+  const resolvedCache = options.cache ?? (method === "GET" ? "no-store" : undefined);
+
   const res = await fetch(url, {
     ...options,
+    cache: resolvedCache,
     headers: requestHeaders,
   });
 

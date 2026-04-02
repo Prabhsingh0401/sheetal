@@ -12,11 +12,11 @@ interface BlogContentProps {
 const BlogContent: React.FC<BlogContentProps> = ({ blog }) => {
   return (
     <div className="flex flex-col">
-      <h3 className="text-2xl md:text-3xl font-medium text-[#bb976b] mb-3 font-[family-name:var(--font-optima)]">
+      <h3 className="text-[20px] md:text-[26px] font-medium text-[#a2690f] mb-3 font-[family-name:var(--font-optima)]">
         {blog.title}
       </h3>
-      <div className="text-sm text-gray-500 mb-6 flex items-center gap-2">
-        <span className="font-semibold text-[#bd9951]">
+      <div className="text-[15px] font-[family-name:var(--font-montserrat)] text-gray-500 mb-6 flex items-center gap-2">
+        <span className="">
           {blog.author?.name || "Admin"}
         </span>
         <span>|</span>
