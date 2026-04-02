@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   SizeChartData,
@@ -33,8 +33,18 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
   const [activeTab, setActiveTab] = useState<"sizechart" | "measure">("sizechart");
   const [unit, setUnit] = useState<"in" | "cm">("in");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [shouldRender, setShouldRender] = useState(isOpen);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      return;
+    }
+    const timer = setTimeout(() => setShouldRender(false), 320);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+
+  if (!shouldRender) return null;
   if (!sizeChartData) return null;
 
   const convertToCm = (inches: string | number) => {
@@ -61,14 +71,16 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
   };
 
   return (
-    <div className={`fixed inset-0 z-[9999] transition-all duration-300 ${isOpen ? "visible" : "invisible"}`}>
+    <div className="fixed inset-0 z-[9999]">
       <div
-        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
       />
       <div
-        className={`absolute right-0 top-0 h-full w-full max-w-4xl bg-white transform transition-transform duration-300 ease-in-out overflow-y-auto ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`absolute right-0 top-0 h-full w-full max-w-4xl bg-white ${
+          isOpen ? "animate-slide-in-right" : "animate-slide-out-right"
         }`}
       >
         <button

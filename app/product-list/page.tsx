@@ -26,6 +26,7 @@ import {
   consumeRedirectField,
   consumeRedirectModalState,
 } from "../utils/authRedirect";
+import { ORDER_CONFIRMED_EVENT } from "../hooks/shopEvents";
 
 interface ProductListProps {
   categorySlug?: string;
@@ -152,6 +153,7 @@ const ProductListContent = ({
     products,
     loading: productsLoading,
     error,
+    refetch,
   } = useProducts({
     category: categoryId,
     subCategory: subCategory || undefined,
@@ -166,6 +168,33 @@ const ProductListContent = ({
   const filterOptions = useProductFilters(products);
 
   const loading = isResolvingCategory || productsLoading;
+  const queryString = searchParams.toString();
+
+  useEffect(() => {
+    if (!queryString) return;
+    const target = document.getElementById("product-grid-section");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [queryString]);
+
+  useEffect(() => {
+    const handleOrderConfirmed = () => {
+      void refetch({
+        category: categoryId,
+        subCategory: subCategory || undefined,
+        search: searchQuery || undefined,
+        sort: sortOption,
+        limit: 50,
+      });
+    };
+
+    window.addEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
+
+    return () => {
+      window.removeEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
+    };
+  }, [categoryId, categorySlug, refetch, searchQuery, sortOption, subCategory]);
 
   /* =======================
      Handlers
@@ -378,35 +407,37 @@ const ProductListContent = ({
           currentSort={sortOption}
         />
 
-        {loading ? (
-          <div className="flex min-h-[40vh] items-center justify-center py-16">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-[#bd9951] animate-spin" />
-              <p className="text-sm md:text-base text-gray-500 tracking-wide">
-                Loading products...
+        <div id="product-grid-section">
+          {loading ? (
+            <div className="flex min-h-[40vh] items-center justify-center py-16">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-[#bd9951] animate-spin" />
+                <p className="text-sm md:text-base text-gray-500 tracking-wide">
+                  Loading products...
+                </p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="flex justify-center py-20">
+              <p className="text-red-500">{error}</p>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="flex justify-center py-12 md:py-20 px-4 text-center">
+              <p className="text-gray-500">
+                {activeFilters.length > 0
+                  ? "No products match your filters. Try adjusting your selection."
+                  : "No products found."}
               </p>
             </div>
-          </div>
-        ) : error ? (
-          <div className="flex justify-center py-20">
-            <p className="text-red-500">{error}</p>
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="flex justify-center py-12 md:py-20 px-4 text-center">
-            <p className="text-gray-500">
-              {activeFilters.length > 0
-                ? "No products match your filters. Try adjusting your selection."
-                : "No products found."}
-            </p>
-          </div>
-        ) : (
-          <ProductGrid
-            products={filteredProducts}
-            viewMode={viewMode}
-            onToggleWishlist={toggleProductInWishlist}
-            onQuickView={handleQuickView}
-          />
-        )}
+          ) : (
+            <ProductGrid
+              products={filteredProducts}
+              viewMode={viewMode}
+              onToggleWishlist={toggleProductInWishlist}
+              onQuickView={handleQuickView}
+            />
+          )}
+        </div>
       </div>
 
       <Footer />

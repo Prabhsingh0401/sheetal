@@ -197,7 +197,7 @@ const BookAppointmentWidget: React.FC = () => {
       <div className="fixed bottom-18 right-6" style={{ zIndex: 9998, isolation: "isolate" }}>
         <div className="relative inline-block">
           <span
-            className="absolute -top-2 left-0 px-1.5 text-[10px] uppercase text-black font-bold whitespace-nowrap"
+            className="absolute -top-2 left-0 px-1.5 text-[10px] uppercase text-black font-extrabold font-[family-name:var(--font-montserrat)] whitespace-nowrap"
             style={{ background: "#ffffff", zIndex: "99" }}
           >
             For Customization
@@ -205,7 +205,7 @@ const BookAppointmentWidget: React.FC = () => {
           <button
             ref={triggerRef}
             onClick={() => setIsOpen(true)}
-            className="border border-black rounded-sm shadow-lg px-5 py-2.5 text-[11px] font-bold transition-colors tracking-wide whitespace-nowrap cursor-pointer"
+            className="border border-black shadow-lg px-4 py-2.5 text-[12px] font-[family-name:var(--font-montserrat)] font-bold transition-colors tracking-wide whitespace-nowrap cursor-pointer"
             style={{
               background: "rgba(189, 153, 81, 0.15)",
               backdropFilter: "blur(80px)",

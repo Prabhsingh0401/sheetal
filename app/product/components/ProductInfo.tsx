@@ -39,6 +39,7 @@ interface ProductInfoProps {
   hasSizeChart?: boolean;
   isOutOfStock: boolean;
   selectedVariantData?: ProductVariant | null;
+  selectedVariantSizes?: ProductVariant["sizes"];
 }
 
 function AccordionSection({
@@ -82,7 +83,7 @@ function AccordionSection({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center justify-between bg-gray-100 px-2 py-2 text-[15px] font-semibold uppercase text-[#ff5722] transition-colors"
+        className="flex w-full items-center justify-between cursor-pointer bg-gray-100 px-2 py-2 text-[15px] font-semibold uppercase text-[#ff5722] transition-colors"
         aria-expanded={open}
       >
         <span>{title}</span>
@@ -125,6 +126,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   hasSizeChart = false,
   isOutOfStock,
   selectedVariantData,
+  selectedVariantSizes = [],
 }) => {
   const priceToDisplay = product.selectedPrice || product.selectedOriginalPrice;
   const originalPriceToDisplay = product.selectedOriginalPrice;
@@ -239,8 +241,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               const isDisabled = !isAvailableForSelectedColor || isOutOfStock;
 
               const actualStock =
-                isAvailableForSelectedColor && selectedVariantData
-                  ? selectedVariantData.sizes?.find((s) => s.name === size.name)
+                isAvailableForSelectedColor && selectedVariantSizes.length > 0
+                  ? selectedVariantSizes.find((s) => s.name === size.name)
                       ?.stock
                   : undefined;
 

@@ -131,7 +131,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                   <div className="pt-1 shrink-0 relative">
                     <input
                       type="checkbox"
-                      className="peer w-4 h-4 absolute top-2 left-1 appearance-none rounded-full border border-[#bd9951] bg-gray-100 hover:bg-gray-300 checked:hover:bg-green-800 checked:bg-green-600 cursor-pointer"
+                      className="peer w-4 h-4 absolute top-2 left-1 appearance-none rounded-full border border-[#bd9951] bg-gray-100 hover:bg-gray-300 checked:hover:bg-[#aee470] checked:bg-[#8bc34a] cursor-pointer"
                       checked={selectedItemIds.includes(item._id)}
                       onChange={() => onSelectionChange(item._id)}
                     />

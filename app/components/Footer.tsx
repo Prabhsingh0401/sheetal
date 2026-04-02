@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getSettings } from "../services/settingsService";
 import { usePathname } from "next/navigation";
+import { ArrowUp, ArrowUp01 } from "lucide-react";
 
 interface FooterLink {
   id: string;
@@ -345,10 +346,10 @@ const Footer = () => {
       {showBackToTop && (
         <a
           href="#"
-          className="fixed right-[30px] bottom-[90px] z-50 w-[38px] h-[38px] flex items-center justify-center
-                     text-white rounded-full bg-[#1e3b37] hover:bg-[#90c03e] hover:text-white transition-colors"
+          className="fixed right-[30px] bottom-[90px] z-50 w-[40px] h-[40px] flex items-center justify-center
+                     text-[#90c03e] rounded-full border border-[#90c03e] transition-colors"
         >
-          ↑
+         <ArrowUp/>
         </a>
       )}
 

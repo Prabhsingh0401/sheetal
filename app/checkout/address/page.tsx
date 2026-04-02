@@ -452,6 +452,7 @@ const AddressPageInner = () => {
 
     const orderItems = normalizedActiveItems.map((item) => ({
       product: item.product._id,
+      variantId: item.variantId,
       name: item.product.name,
       image: item.product.mainImage?.url || item.variantImage || "",
       price: item.discountPrice || item.price,
@@ -459,7 +460,10 @@ const AddressPageInner = () => {
       variant: {
         size: item.size,
         color: item.color,
-        v_sku: item.product?.sku || "",
+        v_sku:
+          ("variantSku" in item && typeof item.variantSku === "string"
+            ? item.variantSku
+            : item.product?.sku) || "",
       },
     }));
 

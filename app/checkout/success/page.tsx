@@ -3,6 +3,8 @@ import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { verifyRazorpayPayment } from "../../services/paymentService";
+import { useCart } from "../../hooks/useCart";
+import { dispatchCartUpdated, dispatchOrderConfirmed } from "../../hooks/shopEvents";
 
 const INVOICE_ORDER_ID_KEY = "checkout_invoice_order_id";
 
@@ -15,6 +17,7 @@ const resolveOrderId = (values: Array<string | null | undefined>) => {
 
 const SuccessContent = () => {
     const searchParams = useSearchParams();
+    const { removeCoupon } = useCart();
 
     // Razorpay appends these to the callback URL after payment
     const paymentLinkId = searchParams.get("razorpay_payment_link_id");
@@ -91,6 +94,16 @@ const SuccessContent = () => {
         verify();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if (verifying || verifyError) {
+            return;
+        }
+
+        dispatchOrderConfirmed();
+        dispatchCartUpdated();
+        removeCoupon({ silent: true });
+    }, [removeCoupon, verifyError, verifying]);
 
     // Loading - verifying payment signature
     if (verifying) {
