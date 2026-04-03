@@ -270,12 +270,15 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                     {size.name}
                     {isDisabled && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="w-full h-px bg-gray-400 transform rotate-45" />
+                        <div className={`w-full h-px bg-gray-400 transform ${size.name === "One Size" || size.name === "Free Size" ? "rotate-25" : "rotate-45"}`} />
                       </div>
                     )}
                   </button>
 
-                  {actualStock !== undefined && actualStock <= 5 && (
+                  {!isOutOfStock &&
+                    actualStock !== undefined &&
+                    actualStock <= 5 &&
+                    actualStock > 0 && (
                     <span className="text-[9px] -mt-2 z-2 md:text-[10px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">
                       {actualStock} left
                     </span>
