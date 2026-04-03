@@ -3,12 +3,43 @@ import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
 import Image from "next/image";
 import Link from "next/link";
+import type { CustomArrowProps } from "react-slick";
 import { getActiveBanners } from "../services/bannerService";
 import { getApiImageUrl } from "../services/api";
 
+type BannerItem = {
+  _id: string;
+  title: string;
+  link?: string;
+  image?: {
+    desktop?: { url?: string };
+    mobile?: { url?: string };
+  };
+};
+
+type BannerWithDesktopImage = BannerItem & {
+  image: {
+    desktop: { url?: string };
+    mobile?: { url?: string };
+  };
+};
+
+type BannerWithMobileImage = BannerItem & {
+  image: {
+    desktop?: { url?: string };
+    mobile: { url?: string };
+  };
+};
+
+const hasDesktopImage = (banner: BannerItem): banner is BannerWithDesktopImage =>
+  Boolean(banner.image?.desktop);
+
+const hasMobileImage = (banner: BannerItem): banner is BannerWithMobileImage =>
+  Boolean(banner.image?.mobile);
+
 // Custom Arrow Components
-const CustomPrevArrow = (props: any) => {
-  const { className, style, onClick } = props;
+const CustomPrevArrow = (props: CustomArrowProps) => {
+  const { style, onClick } = props;
   return (
     <div
       // className={className} // Removed to prevent default slick theme styles (duplicate arrows)
@@ -36,7 +67,7 @@ const CustomPrevArrow = (props: any) => {
   );
 };
 
-const CustomNextArrow = (props: any) => {
+const CustomNextArrow = (props: CustomArrowProps) => {
   const { style, onClick } = props;
   return (
     <div
@@ -65,7 +96,7 @@ const CustomNextArrow = (props: any) => {
 };
 
 const HomeBanner = () => {
-  const [banners, setBanners] = useState<any[]>([]);
+  const [banners, setBanners] = useState<BannerItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -87,13 +118,13 @@ const HomeBanner = () => {
 
   const settings = {
     dots: false,
-    infinite: true,
+    infinite: false,
     speed: 1500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: false,
     autoplaySpeed: 5000,
-    arrows: true,
+    arrows: false,
     fade: false,
     prevArrow: <CustomPrevArrow />,
     nextArrow: <CustomNextArrow />,
@@ -112,8 +143,20 @@ const HomeBanner = () => {
     );
   }
 
-  const desktopBanners = banners.filter((b) => b.image?.desktop);
-  const mobileBanners = banners.filter((b) => b.image?.mobile);
+  const desktopBanners = banners.filter(hasDesktopImage);
+  const mobileBanners = banners.filter(hasMobileImage);
+  const desktopSettings = {
+    ...settings,
+    infinite: desktopBanners.length > 1,
+    autoplay: desktopBanners.length > 1,
+    arrows: desktopBanners.length > 1,
+  };
+  const mobileSettings = {
+    ...settings,
+    infinite: mobileBanners.length > 1,
+    autoplay: mobileBanners.length > 1,
+    arrows: false,
+  };
 
   return (
     <div className="w-full p-0 relative home-banner">
@@ -121,7 +164,7 @@ const HomeBanner = () => {
       {desktopBanners.length > 0 && (
         <div className="hidden md:block relative group">
           <div className="overflow-hidden">
-            <Slider {...settings} className="header-carousel">
+            <Slider {...desktopSettings} className="header-carousel">
               {desktopBanners.map((banner, index) => (
                 <div
                   key={banner._id}
@@ -176,7 +219,7 @@ const HomeBanner = () => {
       {/* Mobile Banner */}
       {mobileBanners.length > 0 && (
         <div className="block md:hidden relative group">
-          <Slider {...settings} className="header-carousel" arrows={false}>
+          <Slider {...mobileSettings} className="header-carousel">
             {mobileBanners.map((banner, index) => (
               <div
                 key={banner._id}

@@ -1,4 +1,5 @@
 import React from "react";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import TopInfo from "../../components/TopInfo";
 import Navbar from "../../components/Navbar";
@@ -14,6 +15,75 @@ import {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
+
+  try {
+    const blogData = await getBlogBySlug(slug, { incrementView: false });
+
+    if (!blogData.success || !blogData.data) {
+      return {
+        title: "Blog Not Found | Studio By Sheetal",
+        description: "The requested blog post could not be found.",
+      };
+    }
+
+    const blog = blogData.data;
+    const title = blog.metaTitle || blog.title;
+    const description = blog.metaDescription || blog.excerpt;
+    const keywords = blog.metaKeywords || blog.tags?.join(", ") || "";
+    const canonical =
+      blog.canonicalUrl ||
+      `https://sheetalbensarees.com/blog/${blog.slug || slug}`;
+    const imageUrl = blog.ogImage?.url || getBlogImageUrl(blog);
+
+    return {
+      title,
+      description,
+      keywords,
+      alternates: {
+        canonical,
+      },
+      openGraph: {
+        title,
+        description,
+        url: canonical,
+        siteName: "Studio By Sheetal",
+        images: imageUrl
+          ? [
+              {
+                url: imageUrl,
+                width: 1200,
+                height: 630,
+                alt: blog.title,
+              },
+            ]
+          : [],
+        type: "article",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: imageUrl ? [imageUrl] : [],
+      },
+      robots: {
+        index: blog.status === "Active" && blog.isPublished,
+        follow: true,
+      },
+    };
+  } catch (error) {
+    console.error("Error generating blog metadata:", error);
+    return {
+      title: "Blog | Studio By Sheetal",
+      description: "Read the latest stories from Studio By Sheetal.",
+    };
+  }
 }
 
 const BlogDetail = async ({ params }: PageProps) => {
@@ -41,12 +111,10 @@ const BlogDetail = async ({ params }: PageProps) => {
 
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Main Content (Left) */}
           <div className="lg:col-span-8">
             <BlogContent blog={blog} />
           </div>
 
-          {/* Sidebar (Right) */}
           <div className="lg:col-span-4">
             <BlogSidebar recentPosts={recentPosts} />
           </div>

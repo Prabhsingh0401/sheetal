@@ -21,6 +21,8 @@ export interface Blog {
   relatedProducts: Product[];
   metaTitle?: string;
   metaDescription?: string;
+  metaKeywords?: string;
+  ogImage?: BlogImage;
   canonicalUrl?: string;
   status: "Active" | "Inactive";
   isPublished: boolean;
@@ -48,6 +50,10 @@ export interface BlogListParams {
   search?: string;
 }
 
+export interface BlogFetchOptions {
+  incrementView?: boolean;
+}
+
 export const getBlogs = async (
   params: BlogListParams = {},
 ): Promise<BlogListResponse> => {
@@ -61,8 +67,15 @@ export const getBlogs = async (
 
 export const getBlogBySlug = async (
   slug: string,
+  options: BlogFetchOptions = {},
 ): Promise<BlogDetailResponse> => {
-  return apiFetch(`/blogs/post/${slug}`);
+  const query = new URLSearchParams();
+  if (options.incrementView === false) {
+    query.append("incrementView", "false");
+  }
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return apiFetch(`/blogs/post/${slug}${suffix}`);
 };
 
 export const getBlogImageUrl = (
