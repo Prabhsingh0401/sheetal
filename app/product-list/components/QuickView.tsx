@@ -590,7 +590,8 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                                 <div className="absolute w-full h-px bg-gray-400 transform rotate-45" />
                               )}
                             </button>
-                            {isAvailableForSelectedColor &&
+                            {!(product.stock <= 0) &&
+                              isAvailableForSelectedColor &&
                               stock <= 5 &&
                               stock > 0 && (
                                 <span className="text-[9px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">

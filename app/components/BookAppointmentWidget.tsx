@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { bookAppointment } from "../services/appointmentServices";
 import toast from "react-hot-toast";
+import { X } from "lucide-react";
 
 interface AppointmentForm {
   name: string;
@@ -241,7 +242,7 @@ const BookAppointmentWidget: React.FC = () => {
               className="absolute top-4 right-5 text-[#ffa624] cursor-pointer text-xl font-light hover:text-[#ffa624] transition-colors"
               aria-label="Close"
             >
-              Ã—
+              <X/>
             </button>
 
             <h2 className="font-semibold text-[#5a3e10] mb-1 tracking-wide">
