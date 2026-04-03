@@ -17,6 +17,26 @@ type BannerItem = {
   };
 };
 
+type BannerWithDesktopImage = BannerItem & {
+  image: {
+    desktop: { url?: string };
+    mobile?: { url?: string };
+  };
+};
+
+type BannerWithMobileImage = BannerItem & {
+  image: {
+    desktop?: { url?: string };
+    mobile: { url?: string };
+  };
+};
+
+const hasDesktopImage = (banner: BannerItem): banner is BannerWithDesktopImage =>
+  Boolean(banner.image?.desktop);
+
+const hasMobileImage = (banner: BannerItem): banner is BannerWithMobileImage =>
+  Boolean(banner.image?.mobile);
+
 // Custom Arrow Components
 const CustomPrevArrow = (props: CustomArrowProps) => {
   const { style, onClick } = props;
@@ -123,8 +143,8 @@ const HomeBanner = () => {
     );
   }
 
-  const desktopBanners = banners.filter((b) => b.image?.desktop);
-  const mobileBanners = banners.filter((b) => b.image?.mobile);
+  const desktopBanners = banners.filter(hasDesktopImage);
+  const mobileBanners = banners.filter(hasMobileImage);
   const desktopSettings = {
     ...settings,
     infinite: desktopBanners.length > 1,
