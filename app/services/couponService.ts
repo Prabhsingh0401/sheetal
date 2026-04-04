@@ -8,6 +8,12 @@ interface GetAllCouponsParams {
   search?: string;
 }
 
+interface CouponResponse {
+  success?: boolean;
+  data?: unknown;
+  message?: string;
+}
+
 export const getAllCouponsClient = async (
   token?: string,
   params?: GetAllCouponsParams,
@@ -42,6 +48,28 @@ export const applyCouponClient = async (
         },
       },
     );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getHomepageCoupon = async (): Promise<CouponResponse> => {
+  try {
+    const response = await axios.get(`${API_URL}/homepage`, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getLoginCoupon = async (): Promise<CouponResponse> => {
+  try {
+    const response = await axios.get(`${API_URL}/login`, {
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     throw error;

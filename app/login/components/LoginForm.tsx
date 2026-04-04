@@ -13,7 +13,11 @@ import {
 import { auth, googleProvider, signInWithPopup } from "../../services/firebase";
 import { verifyIdToken, login } from "../../services/authService";
 import { mergeGuestCartOnLogin } from "../../hooks/useCart";
-import { consumeRedirectTarget, syncRedirectFromQuery } from "../../utils/authRedirect";
+import {
+  consumeRedirectTarget,
+  syncRedirectFromQuery,
+} from "../../utils/authRedirect";
+import { getLoginCoupon } from "../../services/couponService";
 import toast from "react-hot-toast";
 
 declare global {
@@ -27,18 +31,91 @@ const RECAPTCHA_CONTAINER_ID = "recaptcha-container";
 const RESEND_AVAILABLE_AT_KEY = "otp_resend_available_at";
 const RESEND_DELAY_MS = 20_000;
 
+interface LoginCoupon {
+  code?: string;
+  description?: string;
+  offerType?: string;
+  offerValue?: number;
+  couponType?: string;
+  endDate?: string;
+  isActive?: boolean;
+  scope?: "All" | "Category" | "Specific_Product";
+  applicableIds?: Array<{ name?: string; slug?: string } | string>;
+}
+
 // ✅ Inner component that safely uses useSearchParams
 const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
-  const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(null);
+  const [loadingType, setLoadingType] = useState<"phone" | "google" | null>(
+    null,
+  );
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [loginCoupon, setLoginCoupon] = useState<LoginCoupon | null>(null);
 
   useEffect(() => {
     syncRedirectFromQuery(searchParams.get("redirect"));
   }, [searchParams]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchLoginCoupon = async () => {
+      try {
+        const response = await getLoginCoupon();
+        const coupon = (response?.data || null) as LoginCoupon | null;
+
+        if (isMounted) {
+          setLoginCoupon(coupon);
+        }
+      } catch (error) {
+        console.error("Failed to fetch login coupon:", error);
+      }
+    };
+
+    fetchLoginCoupon();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const isExpired = loginCoupon?.endDate
+    ? new Date(loginCoupon.endDate) < new Date()
+    : false;
+  const isHidden = loginCoupon?.isActive === false || isExpired;
+  const   loginCouponText =
+    loginCoupon?.description ||
+    (loginCoupon?.offerType === "Percentage"
+      ? `Up to ${loginCoupon.offerValue}% off`
+      : loginCoupon?.offerType === "FixedAmount"
+        ? `Flat ₹${loginCoupon.offerValue} off`
+        : loginCoupon?.offerType === "BOGO"
+          ? "Buy One Get One Free"
+          : "Special login offer");
+  const loginCouponCode =
+    loginCoupon?.couponType === "CouponCode" ? loginCoupon.code || null : null;
+  const loginCouponTarget = (() => {
+    const applicableItem =
+      loginCoupon?.applicableIds && loginCoupon.applicableIds.length > 0
+        ? loginCoupon.applicableIds[loginCoupon.applicableIds.length - 1]
+        : null;
+    const applicableSlug =
+      applicableItem && typeof applicableItem === "object"
+        ? applicableItem.slug || null
+        : null;
+
+    if (!loginCoupon || isHidden) return "/product-list";
+    if (loginCoupon.scope === "Specific_Product" && applicableSlug) {
+      return `/product/${applicableSlug}`;
+    }
+    if (loginCoupon.scope === "Category" && applicableSlug) {
+      return `/${applicableSlug}`;
+    }
+    return "/product-list";
+  })();
 
   const setupRecaptcha = async () => {
     if (window.recaptchaVerifier) {
@@ -139,7 +216,9 @@ const LoginForm = () => {
     } catch (error: unknown) {
       const firebaseError = error as { code?: string; message?: string };
       console.error("Google Login Error:", error);
-      if (firebaseError.code === "auth/account-exists-with-different-credential") {
+      if (
+        firebaseError.code === "auth/account-exists-with-different-credential"
+      ) {
         toast.error(
           "An account already exists with this email but using a different sign-in method (like phone). Please sign in using your original method or link accounts in your profile.",
           { duration: 6000 },
@@ -158,14 +237,38 @@ const LoginForm = () => {
       <div className="w-full max-w-4xl bg-white shadow-xl overflow-hidden my-30">
         <div className="grid grid-cols-1 md:grid-cols-2 min-h-[570px]">
           {/* LEFT IMAGE */}
-          <div className="relative hidden md:block">
+          <div className="relative hidden md:block overflow-hidden">
             <Image
-              src="/assets/login-left.jpg"
+              src="/assets/updated-login-left.jpg"
               alt="Register Offer"
               fill
-              className="object-contain"
+              className="object-cover object-top"
               priority
             />
+            <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black via-black/50 to-transparent" />
+
+            {!isHidden && (
+              <div className="absolute inset-x-0 bottom-0 z-10 text-white text-center px-2 pb-8">
+                <p className="font-['Times_New_Roman'] text-[18px] md:text-[24px] leading-[1.5] tracking-[0.08em] uppercase font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+                  {loginCouponText}
+                </p>
+
+                {loginCouponCode ? (
+                  <div className="mt-5 inline-flex rounded items-center gap-3 border border-dashed border-white/80 bg-transparent px-6 py-2.5">
+                    <span className="text-[16px] font-bold tracking-[0.28em] text-white uppercase">
+                      Use Code :
+                    </span>
+                    <span className="text-[16px] font-bold tracking-[0.28em] text-white uppercase">
+                      {loginCouponCode}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="mt-5 inline-flex items-center border border-dashed border-white/80 bg-transparent px-6 py-2.5 text-[13px] font-semibold uppercase tracking-[0.28em]">
+                    Login offer available now
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* RIGHT FORM */}
@@ -198,11 +301,17 @@ const LoginForm = () => {
                 />
                 <p>
                   By continuing, I agree to the{" "}
-                  <Link href="/terms-of-use" className="underline text-[#6b4a1f]">
+                  <Link
+                    href="/terms-of-use"
+                    className="underline text-[#6b4a1f]"
+                  >
                     Terms of Use
                   </Link>{" "}
                   &{" "}
-                  <Link href="/privacy-policy" className="underline text-[#6b4a1f]">
+                  <Link
+                    href="/privacy-policy"
+                    className="underline text-[#6b4a1f]"
+                  >
                     Privacy Policy
                   </Link>{" "}
                   and I am above 18 years old.

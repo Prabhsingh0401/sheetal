@@ -20,6 +20,12 @@ export const createRazorpayPaymentLink = async (
   email: string,
   buyNowItems?: object[],
   cartItems?: object[],
+  recoveryAttribution?: {
+    recoverySource?: string;
+    recoveryStage?: number;
+    recoveryCartId?: string;
+    recoveryCycleId?: string;
+  },
 ) => {
   const callbackUrl = `${window.location.origin}/checkout/success`;
 
@@ -33,6 +39,7 @@ export const createRazorpayPaymentLink = async (
         callbackUrl,
         ...(buyNowItems ? { buyNowItems } : {}),
         ...(cartItems ? { cartItems } : {}),
+        ...(recoveryAttribution ? recoveryAttribution : {}),
       }),
   });
 };
