@@ -21,6 +21,12 @@ export const createCODOrder = async (
   },
   buyNowItems?: object[],
   cartItems?: object[],
+  recoveryAttribution?: {
+    recoverySource?: string;
+    recoveryStage?: number;
+    recoveryCartId?: string;
+    recoveryCycleId?: string;
+  },
 ) => {
   return apiFetch("/orders/create", {
     method: "POST",
@@ -35,6 +41,7 @@ export const createCODOrder = async (
       },
       ...(buyNowItems ? { buyNowItems } : {}),
       ...(cartItems ? { cartItems } : {}),
+      ...(recoveryAttribution ? recoveryAttribution : {}),
       ...pricing,
     }),
   });

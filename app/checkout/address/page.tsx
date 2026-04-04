@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
+import React, { useState, useEffect, Suspense, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,10 @@ import AddressForm from "../components/AddressForm";
 import MiniCartSummary from "../components/MiniCartSummary";
 import PriceDetails from "../../cart/components/PriceDetails";
 import { useCart } from "../../hooks/useCart";
-import { applyCoupon as applyCouponApi } from "../../services/cartService";
+import {
+  applyCoupon as applyCouponApi,
+  recordCartActivity,
+} from "../../services/cartService";
 import { getCurrentUser } from "../../services/userService";
 import { getSettings } from "../../services/settingsService";
 import toast from "react-hot-toast";
@@ -69,6 +72,33 @@ const AddressPageInner = () => {
 
   // ── Buy Now param ─────────────────────────────────────────────────────────
   const searchParams = useSearchParams();
+
+  const recoveryAttribution = useMemo(() => {
+    const recoverySource = searchParams.get("recoverySource")?.trim();
+    const recoveryStageValue = searchParams.get("recoveryStage");
+    const recoveryCartId = searchParams.get("cartId")?.trim();
+    const recoveryCycleId = searchParams.get("recoveryCycleId")?.trim();
+
+    if (!recoverySource || !recoveryStageValue) {
+      return null;
+    }
+
+    const recoveryStage = Number(recoveryStageValue);
+    if (!Number.isFinite(recoveryStage) || recoveryStage < 1) {
+      return null;
+    }
+
+    if (!["email", "whatsapp", "sms"].includes(recoverySource)) {
+      return null;
+    }
+
+    return {
+      recoverySource,
+      recoveryStage,
+      ...(recoveryCartId ? { recoveryCartId } : {}),
+      ...(recoveryCycleId ? { recoveryCycleId } : {}),
+    };
+  }, [searchParams]);
 
   const buyNowItem = (() => {
     const param = searchParams.get("buynow");
@@ -132,6 +162,15 @@ const AddressPageInner = () => {
 
     setCouponInput(peekRedirectField<string>("couponInput") || "");
   }, [isBuyNow]);
+  useEffect(() => {
+    if (isBuyNow || cart.length === 0) {
+      return;
+    }
+
+    void recordCartActivity({ source: "checkout_address" }).catch((error) => {
+      console.error("Failed to record cart activity", error);
+    });
+  }, [cart.length, isBuyNow]);
   // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -382,6 +421,7 @@ const AddressPageInner = () => {
         normalizedEmail,
         isBuyNow ? normalizedActiveItems : undefined,
         isBuyNow ? undefined : normalizedActiveItems,
+        recoveryAttribution || undefined,
       );
       toast.dismiss();
       const maybeOrderId =
@@ -485,6 +525,7 @@ const AddressPageInner = () => {
         },
         isBuyNow ? normalizedActiveItems : undefined,
         isBuyNow ? undefined : normalizedActiveItems,
+        recoveryAttribution || undefined,
       );
       toast.dismiss();
       if (response?.success) {

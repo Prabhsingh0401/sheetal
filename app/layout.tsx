@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { CSSProperties } from "react";
-import { Montserrat, Outfit } from "next/font/google";
+import { Montserrat, Outfit, Cinzel } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
@@ -36,6 +36,12 @@ const optima = localFont({
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+});
+
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-cinzel",
 });
 
 const outfit = Outfit({
