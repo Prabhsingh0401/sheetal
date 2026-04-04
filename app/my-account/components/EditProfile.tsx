@@ -524,7 +524,7 @@ const EditProfile: React.FC = () => {
                         <button
                           onClick={handleSendOtp}
                           disabled={phoneLoading || mobileNumber.length !== 10}
-                          className="bg-[#8b6b2f] text-white px-4 py-2 rounded text-xs font-bold tracking-wide hover:bg-[#7a5f29] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                          className="bg-[#8b6b2f] cursor-pointer  text-white px-4 py-2 rounded text-xs font-bold tracking-wide hover:bg-[#7a5f29] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                         >
                           {phoneLoading ? "SENDING..." : "VERIFY"}
                         </button>
@@ -561,7 +561,7 @@ const EditProfile: React.FC = () => {
                     <button
                       onClick={handleVerifyOtp}
                       disabled={phoneLoading}
-                      className="bg-green-600 text-white px-6 py-2 rounded text-sm font-bold hover:bg-green-700 transition-colors disabled:opacity-70"
+                      className="bg-green-600 cursor-pointer text-white px-6 py-2 rounded text-sm font-bold hover:bg-green-700 transition-colors disabled:opacity-70"
                     >
                       {phoneLoading ? "VERIFYING..." : "CONFIRM OTP"}
                     </button>
@@ -574,7 +574,7 @@ const EditProfile: React.FC = () => {
                     <button
                       onClick={handleSendOtp}
                       disabled={phoneLoading || resendCooldown > 0}
-                      className="ml-auto text-[#8b6b2f] text-sm font-medium hover:underline"
+                      className="ml-auto text-[#8b6b2f] text-sm font-medium cursor-pointer hover:underline"
                     >
                       {resendCooldown > 0
                         ? `Resend in ${resendCooldown}s`
@@ -608,7 +608,7 @@ const EditProfile: React.FC = () => {
                           setIsEmailVerified(false);
                           setShowEmailOtpInput(false);
                         }}
-                        className="ml-auto text-xs text-[#8b6b2f] underline hover:text-[#7a5f29] cursor-pointer"
+                        className="ml-auto text-xs text-[#8b6b2f] cursor-pointer underline hover:text-[#7a5f29] cursor-pointer"
                       >
                         CHANGE
                       </button>
@@ -629,7 +629,7 @@ const EditProfile: React.FC = () => {
                         <button
                           onClick={handleSendEmailOtp}
                           disabled={emailLoading || !email}
-                          className="bg-[#8b6b2f] text-white px-4 py-2 rounded text-xs font-bold tracking-wide hover:bg-[#7a5f29] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                          className="bg-[#8b6b2f] text-white cursor-pointer px-4 py-2 rounded text-xs font-bold tracking-wide hover:bg-[#7a5f29] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                         >
                           {emailLoading ? "SENDING..." : "VERIFY"}
                         </button>
@@ -668,19 +668,19 @@ const EditProfile: React.FC = () => {
                     <button
                       onClick={handleVerifyEmailOtp}
                       disabled={emailLoading}
-                      className="bg-green-600 text-white px-6 py-2 rounded text-sm font-bold hover:bg-green-700 transition-colors disabled:opacity-70"
+                      className="bg-green-600 cursor-pointer text-white px-6 py-2 rounded text-sm font-bold hover:bg-green-700 transition-colors disabled:opacity-70"
                     >
                       {emailLoading ? "VERIFYING..." : "CONFIRM OTP"}
                     </button>
                     <button
                       onClick={() => setShowEmailOtpInput(false)}
-                      className="text-gray-500 text-sm hover:text-gray-700 underline"
+                      className="text-gray-500 text-sm cursor-pointer hover:text-gray-700 underline"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSendEmailOtp}
-                      className="ml-auto text-[#8b6b2f] text-sm font-medium hover:underline"
+                      className="ml-auto text-[#8b6b2f] cursor-pointer text-sm font-medium hover:underline"
                     >
                       Resend Code
                     </button>

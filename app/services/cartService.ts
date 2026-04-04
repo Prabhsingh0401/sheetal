@@ -76,6 +76,25 @@ export const updateCartItemQuantity = async (
   });
 };
 
+export const recordCartActivity = async (
+  payload: {
+    source?: string;
+    email?: string;
+    phoneNumber?: string;
+  } = {},
+) => {
+  return apiFetch("/cart/activity", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+};
+
+export const checkoutExit = async () => {
+  return apiFetch("/cart/checkout-exit", {
+    method: "POST",
+  });
+};
+
 /**
  * Merges guest cart items into the authenticated user's server cart.
  * Called once after login.
