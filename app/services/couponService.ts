@@ -1,6 +1,8 @@
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api/v1/coupons";
+const ABANDONED_CART_API_URL =
+  process.env.NEXT_PUBLIC_API_URL + "/api/v1/abandoned-cart";
 
 interface GetAllCouponsParams {
   page?: number;
@@ -69,6 +71,24 @@ export const getLoginCoupon = async (): Promise<CouponResponse> => {
   try {
     const response = await axios.get(`${API_URL}/login`, {
       withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getValidAbandonedCartCoupon = async (
+  token?: string,
+): Promise<CouponResponse> => {
+  try {
+    const headers = token
+      ? {
+          Authorization: `Bearer ${token}`,
+        }
+      : undefined;
+    const response = await axios.get(`${ABANDONED_CART_API_URL}/coupon`, {
+      headers,
     });
     return response.data;
   } catch (error) {
