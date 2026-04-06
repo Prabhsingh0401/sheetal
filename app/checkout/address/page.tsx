@@ -32,6 +32,7 @@ const AddressPageInner = () => {
     totalDiscount,
     couponDiscount,
     finalAmount,
+    loading,
     couponCode,
     couponMeta,
     applyCoupon,
@@ -41,6 +42,7 @@ const AddressPageInner = () => {
     applicableCategories,
   } = useCart();
   const cartSnapshot = peekRedirectField<CartItem[]>("cartSnapshot") || [];
+  const searchParams = useSearchParams();
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
@@ -52,7 +54,12 @@ const AddressPageInner = () => {
   const [userEmail, setUserEmail] = useState<string>("");
   const [isEmailFromProfile, setIsEmailFromProfile] = useState(false);
   const [couponInput, setCouponInput] = useState(
-    () => couponCode || peekRedirectField<string>("couponInput") || "",
+    () =>
+      couponCode ||
+      searchParams.get("couponCode") ||
+      searchParams.get("couponInput") ||
+      peekRedirectField<string>("couponInput") ||
+      "",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedShippingAddressIdRef = useRef<string | null>(null);
@@ -73,43 +80,37 @@ const AddressPageInner = () => {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
   // ── Buy Now param ─────────────────────────────────────────────────────────
-  const searchParams = useSearchParams();
+  const recoverySource = searchParams.get("recoverySource")?.trim();
+  const recoveryStageValue = searchParams.get("recoveryStage");
+  const recoveryCartId = searchParams.get("cartId")?.trim();
+  const recoveryCycleId = searchParams.get("recoveryCycleId")?.trim();
+  const recoveryCouponCode = (
+    searchParams.get("couponCode") ||
+    searchParams.get("couponInput") ||
+    peekRedirectField<string>("couponInput") ||
+    ""
+  )
+    .trim()
+    .toUpperCase() || null;
 
-  const recoveryAttribution = useMemo(() => {
-    const recoverySource = searchParams.get("recoverySource")?.trim();
-    const recoveryStageValue = searchParams.get("recoveryStage");
-    const recoveryCartId = searchParams.get("cartId")?.trim();
-    const recoveryCycleId = searchParams.get("recoveryCycleId")?.trim();
+  const recoveryAttribution =
+    recoverySource &&
+    recoveryStageValue &&
+    ["email", "whatsapp", "sms"].includes(recoverySource)
+      ? (() => {
+          const recoveryStage = Number(recoveryStageValue);
+          if (!Number.isFinite(recoveryStage) || recoveryStage < 1) {
+            return null;
+          }
 
-    if (!recoverySource || !recoveryStageValue) {
-      return null;
-    }
-
-    const recoveryStage = Number(recoveryStageValue);
-    if (!Number.isFinite(recoveryStage) || recoveryStage < 1) {
-      return null;
-    }
-
-    if (!["email", "whatsapp", "sms"].includes(recoverySource)) {
-      return null;
-    }
-
-    return {
-      recoverySource,
-      recoveryStage,
-      ...(recoveryCartId ? { recoveryCartId } : {}),
-      ...(recoveryCycleId ? { recoveryCycleId } : {}),
-    };
-  }, [searchParams]);
-
-  const recoveryCouponCode = useMemo(() => {
-    const rawCoupon =
-      searchParams.get("couponCode") ||
-      searchParams.get("couponInput") ||
-      peekRedirectField<string>("couponInput");
-    const normalized = rawCoupon?.trim().toUpperCase() || "";
-    return normalized || null;
-  }, [searchParams]);
+          return {
+            recoverySource,
+            recoveryStage,
+            ...(recoveryCartId ? { recoveryCartId } : {}),
+            ...(recoveryCycleId ? { recoveryCycleId } : {}),
+          };
+        })()
+      : null;
 
   const buyNowItem = (() => {
     const param = searchParams.get("buynow");
@@ -173,8 +174,14 @@ const AddressPageInner = () => {
 
     setCouponInput(peekRedirectField<string>("couponInput") || "");
   }, [isBuyNow]);
+
   useEffect(() => {
-    if (isBuyNow || cart.length === 0) {
+    if (recoveryCouponCode && couponInput !== recoveryCouponCode) {
+      setCouponInput(recoveryCouponCode);
+    }
+  }, [couponInput, recoveryCouponCode]);
+  useEffect(() => {
+    if (isBuyNow || cart.length === 0 || recoveryCouponCode) {
       return;
     }
 
@@ -296,7 +303,13 @@ const AddressPageInner = () => {
     couponMeta?: unknown,
     overrideCode?: string,
   ) => {
-    const normalizedCode = (overrideCode || couponInput).trim().toUpperCase();
+    const normalizedCode = (
+      overrideCode ||
+      recoveryCouponCode ||
+      couponInput
+    )
+      .trim()
+      .toUpperCase();
     if (!normalizedCode) {
       toast.error("Please enter a coupon code.");
       return;
@@ -374,7 +387,13 @@ const AddressPageInner = () => {
       return;
     }
 
-    const normalizedCode = (overrideCode || couponInput).trim().toUpperCase();
+    const normalizedCode = (
+      overrideCode ||
+      recoveryCouponCode ||
+      couponInput
+    )
+      .trim()
+      .toUpperCase();
     if (!normalizedCode) {
       toast.error("Please enter a coupon code.");
       return;
