@@ -20,6 +20,11 @@ export const createRazorpayPaymentLink = async (
   email: string,
   buyNowItems?: object[],
   cartItems?: object[],
+  couponData?: {
+    couponId?: string;
+    couponCode?: string;
+    discountPrice?: number;
+  },
   recoveryAttribution?: {
     recoverySource?: string;
     recoveryStage?: number;
@@ -39,6 +44,7 @@ export const createRazorpayPaymentLink = async (
         callbackUrl,
         ...(buyNowItems ? { buyNowItems } : {}),
         ...(cartItems ? { cartItems } : {}),
+        ...(couponData ? couponData : {}),
         ...(recoveryAttribution ? recoveryAttribution : {}),
       }),
   });
