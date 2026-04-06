@@ -135,7 +135,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
       const fetchRecoveryCoupon = async () => {
         try {
           setRecoveryCouponState("loading");
-          const response = await getValidAbandonedCartCoupon(token);
+          const response: any = await getValidAbandonedCartCoupon(token);
           const coupon = response?.data?.data || response?.data || null;
           if (coupon?.code) {
             setRecoveryCoupon({
