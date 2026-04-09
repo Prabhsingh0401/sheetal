@@ -5,8 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { getToken, getUserDetails } from "@/app/services/authService";
-import { getAllCouponsClient } from "@/app/services/couponService";
-import { hasRedeemedCoupon, isSingleUseCoupon } from "@/app/utils/couponRedemption";
+import {
+  getAllCouponsClient,
+  getValidAbandonedCartCoupon,
+} from "@/app/services/couponService";
+import {
+  hasRedeemedCoupon,
+  isSingleUseCoupon,
+} from "@/app/utils/couponRedemption";
 import {
   consumeRedirectField,
   consumeRedirectModalState,
@@ -21,6 +27,7 @@ interface PriceDetailsProps {
   handleApplyCoupon: (
     userId: string | undefined,
     couponMeta?: unknown,
+    overrideCode?: string,
   ) => void;
   couponError: string | null;
   bogoMessage: string | null;
@@ -76,6 +83,12 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   const router = useRouter();
   const [openCouponModal, setOpenCouponModal] = useState(false);
   const [coupons, setCoupons] = useState<CouponOption[]>([]);
+  const [recoveryCoupon, setRecoveryCoupon] = useState<CouponOption | null>(
+    null,
+  );
+  const [recoveryCouponState, setRecoveryCouponState] = useState<
+    "idle" | "loading" | "found" | "missing"
+  >("idle");
   const [selectedCouponCode, setSelectedCouponCode] = useState<string | null>(
     () => peekRedirectField<string>("selectedCouponCode") || couponCode || null,
   );
@@ -85,6 +98,11 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   const [shouldRestoreCouponModal] = useState(() =>
     peekRedirectModalState("couponModalOpen"),
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [manualMsg, setManualMsg] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!shouldRestoreCouponModal) {
@@ -114,14 +132,56 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
           setCoupons([]);
         }
       };
+      const fetchRecoveryCoupon = async () => {
+        try {
+          setRecoveryCouponState("loading");
+          const response: any = await getValidAbandonedCartCoupon(token);
+          const coupon = response?.data?.data || response?.data || null;
+          if (coupon?.code) {
+            setRecoveryCoupon({
+              _id: coupon.couponRecordId || coupon._id,
+              code: coupon.code,
+              offerType: "Percentage",
+              offerValue: coupon.discountPercent,
+              description: `Your valid abandoned-cart coupon expires on ${new Date(
+                coupon.expiresAt,
+              ).toLocaleString()}`,
+            });
+            setRecoveryCouponState("found");
+          } else {
+            setRecoveryCoupon(null);
+            setRecoveryCouponState("missing");
+          }
+        } catch (error) {
+          console.error("Error fetching abandoned-cart coupon:", error);
+          setRecoveryCoupon(null);
+          setRecoveryCouponState("missing");
+        }
+      };
       fetchCoupons();
+      fetchRecoveryCoupon();
     }
   }, [openCouponModal, couponCode]);
 
+  const publicCoupons = coupons.filter(
+    (c) =>
+      !searchQuery ||
+      c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+  const visibleCoupons = recoveryCoupon
+    ? [
+        recoveryCoupon,
+        ...publicCoupons.filter((coupon) => coupon.code !== recoveryCoupon.code),
+      ]
+    : publicCoupons;
+
   const applyCouponAndClose = () => {
     const user = getUserDetails();
-    if (!couponInput.trim()) {
-      toast.error("Please select a coupon to apply.");
+    const enteredCode = couponInput.trim().toUpperCase();
+
+    if (!enteredCode) {
+      toast.error("Please enter a coupon code.");
       return;
     }
     if (!user?.id) {
@@ -129,21 +189,25 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
         modals: {
           couponModalOpen: true,
         },
-        couponInput: couponInput.trim(),
+        couponInput: enteredCode,
         selectedCouponCode:
-          selectedCouponCode || couponInput.trim() || undefined,
+          selectedCouponCode || enteredCode || undefined,
       });
       return;
     }
     if (
       (selectedCouponMeta || couponMeta) &&
       isSingleUseCoupon(selectedCouponMeta || couponMeta) &&
-      hasRedeemedCoupon(user.id, couponInput.trim())
+      hasRedeemedCoupon(user.id, enteredCode)
     ) {
       toast.error("You have already used this coupon.");
       return;
     }
-    handleApplyCoupon(user?.id, selectedCouponMeta || couponMeta);
+    handleApplyCoupon(
+      user?.id,
+      selectedCouponMeta || couponMeta,
+      enteredCode,
+    );
     setOpenCouponModal(false);
   };
 
@@ -159,7 +223,9 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
     <>
       <div className="mt-5 font-[family-name:var(--font-montserrat)]">
         <div className="p-4">
-          <h3 className="text-[15px] font-bold mb-4 uppercase transform scale-y-90 tracking-[1px] font-[family-name:var(--font-montserrat)]">Coupons</h3>
+          <h3 className="text-[15px] font-bold mb-4 uppercase transform scale-y-90 tracking-[1px] font-[family-name:var(--font-montserrat)]">
+            Coupons
+          </h3>
 
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3 flex-1">
@@ -190,13 +256,13 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
               </button>
             ) : null}
 
-              <button
-                onClick={() => {
-                  setSelectedCouponCode(couponCode || null);
-                  setCouponInput(couponCode || "");
-                  setSelectedCouponMeta(couponMeta || null);
-                  setOpenCouponModal(true);
-                }}
+            <button
+              onClick={() => {
+                setSelectedCouponCode(couponCode || null);
+                setCouponInput(couponCode || "");
+                setSelectedCouponMeta(couponMeta || null);
+                setOpenCouponModal(true);
+              }}
               className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded px-2.5 py-0.5 text-sm cursor-pointer"
             >
               {couponCode ? "CHANGE" : "APPLY"}
@@ -298,37 +364,105 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
       {openCouponModal && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <div className="bg-white w-full max-w-2xl h-[80vh] flex flex-col">
+            {/* Header */}
             <div className="flex justify-between items-center p-4 border-b border-gray-200">
               <h2 className="font-semibold">Apply Coupon</h2>
               <button
                 className="cursor-pointer text-2xl hover:text-gray-600"
-                onClick={() => setOpenCouponModal(false)}
+                onClick={() => {
+                  setOpenCouponModal(false);
+                  setManualMsg(null);
+                  setSearchQuery("");
+                }}
               >
                 ✕
               </button>
             </div>
 
+            {/* Search bar — only new addition */}
+            <div className="flex items-center w-full px-10 py-6">
+              <div className="border-slate-300 border-2 flex items-center w-full">
+                <input
+                  type="text"
+                  name="coupon"
+                  value={couponInput}
+                  onChange={(e) => {
+                    setCouponInput(e.target.value.toUpperCase());
+                    setSearchQuery(e.target.value.toUpperCase());
+                    setManualMsg(null);
+                  }}
+                  className="w-full h-15 px-4"
+                  placeholder="Enter coupon code"
+                />
+                <button
+                  className="text-center p-4"
+                  onClick={() => {
+                    const val = couponInput.trim().toUpperCase();
+                    const match = coupons.find((c) => c.code === val);
+                    if (match) {
+                      setSelectedCouponCode(match.code);
+                      setSelectedCouponMeta(match);
+                      setCouponInput(match.code);
+                      setManualMsg({
+                        type: "success",
+                        text: `"${match.code}" found and selected.`,
+                      });
+                    } else {
+                      setSelectedCouponCode(val || null);
+                      setSelectedCouponMeta(null);
+                      setManualMsg({
+                        type: "error",
+                        text: val
+                          ? `Coupon "${val}" is not in the public coupon list. If this is a recovery code, it will be validated on apply.`
+                          : "Please enter a coupon code.",
+                      });
+                    }
+                  }}
+                >
+                  Check
+                </button>
+              </div>
+            </div>
+            {manualMsg && (
+              <p
+                className={`text-xs px-10 -mt-4 mb-2 ${manualMsg.type === "error" ? "text-red-500" : "text-green-600"}`}
+              >
+                {manualMsg.text}
+              </p>
+            )}
+
+            {recoveryCouponState === "missing" && (
+              <p className="text-xs px-10 -mt-1 mb-2 text-gray-500">
+                No valid recovery coupon is available for your account. If you
+                were expecting one, it may have expired.
+              </p>
+            )}
+
+            {/* Coupon list */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-              {coupons.length > 0 ? (
-                coupons.map((coupon) => (
+              {visibleCoupons.length > 0 ? (
+                visibleCoupons.map((coupon, index) => (
                   <div
-                    key={coupon._id || coupon.id}
-                    className={`border border-dashed p-4 rounded-md cursor-pointer ${selectedCouponCode === coupon.code
+                    key={`${coupon._id || coupon.id || coupon.code}-${index}`}
+                    className={`border border-dashed p-4 rounded-md cursor-pointer ${
+                      selectedCouponCode === coupon.code
                         ? "border-[#6a3f07] border-2"
                         : "border-gray-500"
-                      }`}
+                    }`}
                     onClick={() => {
                       setSelectedCouponCode(coupon.code);
                       setCouponInput(coupon.code);
                       setSelectedCouponMeta(coupon);
+                      setSearchQuery(coupon.code);
+                      setManualMsg(null);
                     }}
                   >
                     <div className="font-bold border border-dashed border-gray-500 text-[#6b5639] mb-2 uppercase text-lg p-2 w-full">
-                      {coupon.code}
+                      {index === 0 && recoveryCoupon?.code === coupon.code
+                        ? `${coupon.code} - Your valid recovery coupon`
+                        : coupon.code}
                     </div>
                     <div className="flex flex-wrap justify-start gap-1 mt-2">
-                      {" "}
-                      {/* Changed justify-end to justify-start for better alignment */}
                       {coupon.offerType === "BOGO" && (
                         <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5">
                           Buy 1 Get 1
@@ -339,7 +473,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                         coupon.applicableIds.length > 0 && (
                           <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5">
                             {typeof coupon.applicableIds[0] === "object" &&
-                              coupon.applicableIds[0].name
+                            coupon.applicableIds[0].name
                               ? coupon.applicableIds[0].name
                               : "Category Offer"}
                           </span>
@@ -377,19 +511,20 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
               ) : (
                 <div className="flex flex-col items-center justify-center h-full">
                   <p className="text-center text-gray-500 mb-2">
-                    No coupons available at the moment.
+                    No coupons match your search.
                   </p>
                   <p className="text-sm text-gray-400">
-                    Check back later for exclusive offers!
+                    Check back later for exclusive offers or recovery emails.
                   </p>
                 </div>
               )}
             </div>
 
+            {/* Footer */}
             <div className="border-t border-gray-200">
               <button
                 onClick={applyCouponAndClose}
-                disabled={!selectedCouponCode}
+                disabled={!couponInput.trim()}
                 className="w-full bg-[#ff9900] cursor-pointer text-white py-3 font-bold uppercase transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-[#e68a00]"
               >
                 Apply Coupon

@@ -18,7 +18,8 @@ import toast from "react-hot-toast";
 import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
 import { useSearchParams } from "next/navigation";
-import { peekRedirectField } from "../../utils/authRedirect";
+import { peekRedirectField, redirectToLogin } from "../../utils/authRedirect";
+import { getUserDetails } from "../../services/authService";
 import { hasRedeemedCoupon, isSingleUseCoupon, markCouponRedeemed } from "../../utils/couponRedemption";
 import type { CartItem } from "../../hooks/useCart";
 
@@ -31,6 +32,7 @@ const AddressPageInner = () => {
     totalDiscount,
     couponDiscount,
     finalAmount,
+    loading,
     couponCode,
     couponMeta,
     applyCoupon,
@@ -40,6 +42,7 @@ const AddressPageInner = () => {
     applicableCategories,
   } = useCart();
   const cartSnapshot = peekRedirectField<CartItem[]>("cartSnapshot") || [];
+  const searchParams = useSearchParams();
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
@@ -51,7 +54,12 @@ const AddressPageInner = () => {
   const [userEmail, setUserEmail] = useState<string>("");
   const [isEmailFromProfile, setIsEmailFromProfile] = useState(false);
   const [couponInput, setCouponInput] = useState(
-    () => couponCode || peekRedirectField<string>("couponInput") || "",
+    () =>
+      couponCode ||
+      searchParams.get("couponCode") ||
+      searchParams.get("couponInput") ||
+      peekRedirectField<string>("couponInput") ||
+      "",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedShippingAddressIdRef = useRef<string | null>(null);
@@ -61,6 +69,7 @@ const AddressPageInner = () => {
   const [buyNowCouponError, setBuyNowCouponError] = useState<string | null>(null);
   const [buyNowBogoMessage, setBuyNowBogoMessage] = useState<string | null>(null);
   const [buyNowApplicableCategories, setBuyNowApplicableCategories] = useState<string[]>([]);
+  const autoRecoveryCouponAppliedRef = useRef<string | null>(null);
 
   const [platformFee, setPlatformFee] = useState(0);
   const [shippingCharges, setShippingCharges] = useState(0);
@@ -71,34 +80,37 @@ const AddressPageInner = () => {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
   // ── Buy Now param ─────────────────────────────────────────────────────────
-  const searchParams = useSearchParams();
+  const recoverySource = searchParams.get("recoverySource")?.trim();
+  const recoveryStageValue = searchParams.get("recoveryStage");
+  const recoveryCartId = searchParams.get("cartId")?.trim();
+  const recoveryCycleId = searchParams.get("recoveryCycleId")?.trim();
+  const recoveryCouponCode = (
+    searchParams.get("couponCode") ||
+    searchParams.get("couponInput") ||
+    peekRedirectField<string>("couponInput") ||
+    ""
+  )
+    .trim()
+    .toUpperCase() || null;
 
-  const recoveryAttribution = useMemo(() => {
-    const recoverySource = searchParams.get("recoverySource")?.trim();
-    const recoveryStageValue = searchParams.get("recoveryStage");
-    const recoveryCartId = searchParams.get("cartId")?.trim();
-    const recoveryCycleId = searchParams.get("recoveryCycleId")?.trim();
+  const recoveryAttribution =
+    recoverySource &&
+    recoveryStageValue &&
+    ["email", "whatsapp", "sms"].includes(recoverySource)
+      ? (() => {
+          const recoveryStage = Number(recoveryStageValue);
+          if (!Number.isFinite(recoveryStage) || recoveryStage < 1) {
+            return null;
+          }
 
-    if (!recoverySource || !recoveryStageValue) {
-      return null;
-    }
-
-    const recoveryStage = Number(recoveryStageValue);
-    if (!Number.isFinite(recoveryStage) || recoveryStage < 1) {
-      return null;
-    }
-
-    if (!["email", "whatsapp", "sms"].includes(recoverySource)) {
-      return null;
-    }
-
-    return {
-      recoverySource,
-      recoveryStage,
-      ...(recoveryCartId ? { recoveryCartId } : {}),
-      ...(recoveryCycleId ? { recoveryCycleId } : {}),
-    };
-  }, [searchParams]);
+          return {
+            recoverySource,
+            recoveryStage,
+            ...(recoveryCartId ? { recoveryCartId } : {}),
+            ...(recoveryCycleId ? { recoveryCycleId } : {}),
+          };
+        })()
+      : null;
 
   const buyNowItem = (() => {
     const param = searchParams.get("buynow");
@@ -162,8 +174,14 @@ const AddressPageInner = () => {
 
     setCouponInput(peekRedirectField<string>("couponInput") || "");
   }, [isBuyNow]);
+
   useEffect(() => {
-    if (isBuyNow || cart.length === 0) {
+    if (recoveryCouponCode && couponInput !== recoveryCouponCode) {
+      setCouponInput(recoveryCouponCode);
+    }
+  }, [couponInput, recoveryCouponCode]);
+  useEffect(() => {
+    if (isBuyNow || cart.length === 0 || recoveryCouponCode) {
       return;
     }
 
@@ -280,8 +298,18 @@ const AddressPageInner = () => {
     country: selectedAddress.country || "India",
   });
 
-  const applyBuyNowCoupon = async (userId: string, couponMeta?: unknown) => {
-    const normalizedCode = couponInput.trim().toUpperCase();
+  const applyBuyNowCoupon = async (
+    userId: string,
+    couponMeta?: unknown,
+    overrideCode?: string,
+  ) => {
+    const normalizedCode = (
+      overrideCode ||
+      recoveryCouponCode ||
+      couponInput
+    )
+      .trim()
+      .toUpperCase();
     if (!normalizedCode) {
       toast.error("Please enter a coupon code.");
       return;
@@ -344,24 +372,74 @@ const AddressPageInner = () => {
     }
   };
 
-  const handleApplyCoupon = (userId: string | undefined, couponMeta?: unknown) => {
+  const handleApplyCoupon = (
+    userId: string | undefined,
+    couponMeta?: unknown,
+    overrideCode?: string,
+  ) => {
     if (!userId) {
       toast.error("Please login to apply coupons.");
       return;
     }
 
     if (isBuyNow) {
-      void applyBuyNowCoupon(userId, couponMeta);
+      void applyBuyNowCoupon(userId, couponMeta, overrideCode);
       return;
     }
 
-    if (!couponInput.trim()) {
+    const normalizedCode = (
+      overrideCode ||
+      recoveryCouponCode ||
+      couponInput
+    )
+      .trim()
+      .toUpperCase();
+    if (!normalizedCode) {
       toast.error("Please enter a coupon code.");
       return;
     }
 
-    applyCoupon(couponInput.trim().toUpperCase(), userId, couponMeta || undefined);
+    applyCoupon(normalizedCode, userId, couponMeta || undefined);
   };
+
+  useEffect(() => {
+    if (
+      isBuyNow ||
+      !recoveryCouponCode ||
+      cart.length === 0 ||
+      loading ||
+      autoRecoveryCouponAppliedRef.current === recoveryCouponCode
+    ) {
+      return;
+    }
+
+    const currentUser = getUserDetails();
+    const userId = currentUser?.id;
+    if (!userId) {
+      redirectToLogin(
+        router,
+        `${window.location.pathname}${window.location.search}`,
+      );
+      return;
+    }
+
+    if (couponCode === recoveryCouponCode) {
+      autoRecoveryCouponAppliedRef.current = recoveryCouponCode;
+      return;
+    }
+
+    autoRecoveryCouponAppliedRef.current = recoveryCouponCode;
+    setCouponInput(recoveryCouponCode);
+    void handleApplyCoupon(userId, couponMeta || undefined, recoveryCouponCode);
+  }, [
+    cart.length,
+    couponCode,
+    couponMeta,
+    handleApplyCoupon,
+    isBuyNow,
+    loading,
+    recoveryCouponCode,
+  ]);
 
   const handleRemoveCoupon = () => {
     if (isBuyNow) {
@@ -421,6 +499,13 @@ const AddressPageInner = () => {
         normalizedEmail,
         isBuyNow ? normalizedActiveItems : undefined,
         isBuyNow ? undefined : normalizedActiveItems,
+        effectiveCouponCode
+          ? {
+              couponId: (couponMeta as { couponId?: string } | null)?.couponId,
+              couponCode: effectiveCouponCode,
+              discountPrice: effectiveCouponDiscount,
+            }
+          : undefined,
         recoveryAttribution || undefined,
       );
       toast.dismiss();
@@ -525,6 +610,13 @@ const AddressPageInner = () => {
         },
         isBuyNow ? normalizedActiveItems : undefined,
         isBuyNow ? undefined : normalizedActiveItems,
+        effectiveCouponCode
+          ? {
+              couponId: (couponMeta as { couponId?: string } | null)?.couponId,
+              couponCode: effectiveCouponCode,
+              discountPrice: effectiveCouponDiscount,
+            }
+          : undefined,
         recoveryAttribution || undefined,
       );
       toast.dismiss();

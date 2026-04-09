@@ -21,6 +21,11 @@ export const createCODOrder = async (
   },
   buyNowItems?: object[],
   cartItems?: object[],
+  couponData?: {
+    couponId?: string;
+    couponCode?: string;
+    discountPrice?: number;
+  },
   recoveryAttribution?: {
     recoverySource?: string;
     recoveryStage?: number;
@@ -41,6 +46,7 @@ export const createCODOrder = async (
       },
       ...(buyNowItems ? { buyNowItems } : {}),
       ...(cartItems ? { cartItems } : {}),
+      ...(couponData ? couponData : {}),
       ...(recoveryAttribution ? recoveryAttribution : {}),
       ...pricing,
     }),

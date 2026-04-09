@@ -64,7 +64,7 @@ export interface Product {
   shortDescription: string;
   description: string;
   materialCare: string;
-
+  isStarred?: boolean;
   gstPercent: number;
 
   mainImage: ProductImage;
