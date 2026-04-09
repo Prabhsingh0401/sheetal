@@ -1,4 +1,5 @@
 import { apiFetch, getApiImageUrl } from "./api";
+import type { SizeChartData } from "./sizeChartService";
 
 export const fetchWishlist = async (): Promise<{
   success: boolean;
@@ -82,8 +83,9 @@ export interface Product {
     _id: string;
     name: string;
     slug: string;
+    sizeChart?: SizeChartData | null;
   };
-  sizeChart?: string;
+  sizeChart?: SizeChartData | null;
 
   status: string;
   stock: number;
