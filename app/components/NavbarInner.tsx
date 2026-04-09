@@ -21,6 +21,11 @@ import toast from "react-hot-toast";
 import SearchModal from "./SearchModal";
 import useSWR from "swr";
 import { fetchAllCategories, Category } from "../services/categoryService";
+import { getSettings } from "../services/settingsService";
+import {
+  buildNavbarNavItems,
+  NavbarNavItem,
+} from "./navbarLayout";
 import {
   fetchProducts,
   getProductImageUrl,
@@ -262,15 +267,6 @@ const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
       />
     </Link>
   );
-};
-
-type NavbarNavItem = Partial<Category> & {
-  id: string;
-  label: string;
-  href?: string;
-  hidden?: boolean;
-  isCategory?: boolean;
-  children?: NavbarNavItem[];
 };
 
 // Recursive Desktop Menu Item
@@ -673,34 +669,13 @@ const NavbarInner = () => {
 
   // Fetch categories dynamically
   const { data: categories } = useSWR("/categories", fetchAllCategories);
+  const { data: settings } = useSWR("/settings", getSettings);
 
   const navItems = useMemo<NavbarNavItem[]>(() => {
     if (!categories) return [];
 
-    const topLevel = categories.filter((c) => !c.parentCategory);
-
-    const buildMenuTree = (cats: Category[]): NavbarNavItem[] => {
-      return cats.map((cat) => {
-        const childrenCats = categories.filter(
-          (c) =>
-            c.parentCategory &&
-            typeof c.parentCategory === "object" &&
-            (c.parentCategory as { _id?: string })._id === cat._id,
-        );
-
-        return {
-          ...cat,
-          label: cat.name,
-          href: `/${cat.slug}`,
-          id: cat._id,
-          isCategory: true,
-          children: buildMenuTree(childrenCats),
-        };
-      });
-    };
-
-    return [...buildMenuTree(topLevel), { label: "Our Story", href: "/about-us", id: "about" }];
-  }, [categories]);
+    return buildNavbarNavItems(categories, settings?.navbarLayout);
+  }, [categories, settings?.navbarLayout]);
   const wishlistHref = isAuthenticated() ? "/wishlist" : "/login?redirect=/wishlist";
 
   const pathname = usePathname();
