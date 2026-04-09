@@ -1,12 +1,7 @@
 import { apiFetch, getApiImageUrl } from "./api";
 
 export interface SizeChartEntry {
-  label: string;
-  bust: string;
-  waist: string;
-  hip: string;
-  shoulder: string;
-  length: string;
+  cells: string[];
 }
 
 export interface HowToMeasure {
@@ -17,6 +12,7 @@ export interface HowToMeasure {
 export interface SizeChartData {
   _id: string;
   name: string;
+  headers: string[];
   table: SizeChartEntry[];
   howToMeasureImage: string | { url: string; public_id?: string };
   unit: string;
