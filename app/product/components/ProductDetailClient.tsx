@@ -31,7 +31,7 @@ import {
   incrementProductView,
   fetchProductReviews,
 } from "../../services/productService";
-import { fetchSizeChart, SizeChartData } from "../../services/sizeChartService";
+import { SizeChartData } from "../../services/sizeChartService";
 import { getApiImageUrl } from "../../services/api";
 import { isAuthenticated } from "../../services/authService";
 import { useWishlist } from "../../hooks/useWishlist";
@@ -123,6 +123,11 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         const res = await fetchProductBySlug(slug);
         if (res.success && res.data) {
           setProduct(res.data);
+          setSizeChartData(
+            (res.data.sizeChart as SizeChartData | null) ||
+              (res.data.category?.sizeChart as SizeChartData | null) ||
+              null,
+          );
 
           const matchedVariant =
             selectedColor
@@ -378,23 +383,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [loadProduct]);
-
-  // Fetch Size Chart data
-  useEffect(() => {
-    const loadSizeChart = async () => {
-      try {
-        const res = await fetchSizeChart();
-        if (res.success && res.data && Object.keys(res.data).length > 0) {
-          setSizeChartData(res.data);
-        } else {
-          console.error("Failed to load size chart:", res);
-        }
-      } catch (e) {
-        console.error("Error fetching size chart:", e);
-      }
-    };
-    loadSizeChart();
-  }, []);
 
   const handleImageChange = (img: string) => {
     setSelectedImage(img);
@@ -830,6 +818,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               isOutOfStock={product.stock <= 0}
               selectedVariantData={selectedVariantData}
               selectedVariantSizes={currentSelectedVariant?.sizes || []}
+              hasSizeChart={Boolean(sizeChartData)}
             />
           </div>
         </div>

@@ -215,7 +215,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           <label className="block text-[17px] font-medium text-black">
             Select Size:
           </label>
-          {(hasSizeChart || product.allSizes.length > 1) && (
+          {hasSizeChart && (
             <button
               onClick={onSizeChartOpen}
               className="flex items-center text-sm text-red-500 font-semibold hover:underline cursor-pointer"
