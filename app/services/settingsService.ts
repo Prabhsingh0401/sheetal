@@ -5,7 +5,15 @@ interface Settings {
   shippingFee: number;
   freeShippingThreshold: number;
   taxPercentage: number;
-  navbarLayout?: any[]; // Recursive layout structure
+  navbarLayout?: {
+    id: string;
+    label: string;
+    href?: string;
+    hidden?: boolean;
+    itemType?: "category" | "static" | "custom" | "link";
+    categoryId?: string;
+    categorySlug?: string;
+  }[];
   footerLayout?: any[]; // Footer sections with links
 }
 

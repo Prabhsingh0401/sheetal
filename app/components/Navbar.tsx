@@ -23,6 +23,10 @@ import useSWR from "swr";
 import { fetchAllCategories, Category } from "../services/categoryService";
 import { getSettings } from "../services/settingsService";
 import {
+  buildNavbarNavItems,
+  NavbarNavItem,
+} from "./navbarLayout";
+import {
   fetchProducts,
   getProductImageUrl,
   getProductHoverImageUrl,
@@ -285,15 +289,6 @@ const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
       <User2Icon className="w-6 h-6 text-[#f4e9ab] font-extralight" strokeWidth={1} />
     </Link>
   );
-};
-
-type NavbarNavItem = Partial<Category> & {
-  id: string;
-  label: string;
-  href?: string;
-  hidden?: boolean;
-  isCategory?: boolean;
-  children?: NavbarNavItem[];
 };
 
 // Recursive Desktop Menu Item
@@ -707,38 +702,13 @@ const Navbar = () => {
 
   // Fetch categories dynamically
   const { data: categories } = useSWR("/categories", fetchAllCategories);
-  // const { data: settings } = useSWR("/settings", getSettings);
+  const { data: settings } = useSWR("/settings", getSettings);
 
   const navItems = useMemo<NavbarNavItem[]>(() => {
     if (!categories) return [];
 
-    const topLevel = categories.filter((c) => !c.parentCategory);
-
-    const buildMenuTree = (cats: Category[]): NavbarNavItem[] => {
-      return cats.map((cat) => {
-        const childrenCats = categories.filter(
-          (c) =>
-            c.parentCategory &&
-            typeof c.parentCategory === "object" &&
-            (c.parentCategory as { _id?: string })._id === cat._id,
-        );
-
-        return {
-          ...cat,
-          label: cat.name,
-          href: `/${cat.slug}`,
-          id: cat._id,
-          isCategory: true,
-          children: buildMenuTree(childrenCats),
-        };
-      });
-    };
-
-    return [
-      ...buildMenuTree(topLevel),
-      { label: "Our Story", href: "/about-us", id: "about" },
-    ];
-  }, [categories]);
+    return buildNavbarNavItems(categories, settings?.navbarLayout);
+  }, [categories, settings?.navbarLayout]);
   const wishlistHref = isClient && isAuthenticated()
     ? "/wishlist"
     : "/login?redirect=/wishlist";
