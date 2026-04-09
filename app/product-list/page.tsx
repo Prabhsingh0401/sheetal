@@ -302,6 +302,7 @@ const ProductListContent = ({
       rating: p.averageRating || 0,
       soldOut: p.stock <= 0,
       isWishlisted: isProductInWishlist(p._id),
+      isStarred: p.isStarred || false,
     };
   });
 
