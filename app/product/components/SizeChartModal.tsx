@@ -47,6 +47,11 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
   if (!shouldRender) return null;
   if (!sizeChartData) return null;
 
+  const headers =
+    Array.isArray(sizeChartData.headers) && sizeChartData.headers.length > 0
+      ? sizeChartData.headers
+      : ["Size", "Bust", "Waist"];
+
   const convertToCm = (inches: string | number) => {
     if (typeof inches === "string") {
       const parts = inches.split("-").map((s) => parseFloat(s.trim()));
@@ -158,17 +163,28 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
                     <thead>
                       <tr className="bg-white text-gray-800 font-bold border-b border-gray-200">
                         <th className="p-3"></th>
-                        <th className="p-3">Size</th>
-                        <th className="p-3">Bust ({unit})</th>
-                        <th className="p-3">Waist ({unit})</th>
-                        <th className="p-3">Hip ({unit})</th>
-                        <th className="p-3">Shoulder ({unit})</th>
-                        <th className="p-3">Length ({unit})</th>
+                        {headers.map((header, index) => (
+                          <th key={`${header}-${index}`} className="p-3">
+                            {header}
+                            {index > 0 ? ` (${unit})` : ""}
+                          </th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
                       {sizeChartData.table.map((row: any, idx: number) => {
-                        const isAvailable = availableSizesForSelectedColor.includes(row.label);
+                        const sizeLabel = String(row?.cells?.[0] || row?.label || "");
+                        const rowCells = Array.isArray(row?.cells)
+                          ? row.cells
+                          : [
+                              row?.label || "",
+                              row?.bust || "",
+                              row?.waist || "",
+                              row?.hip || "",
+                              row?.shoulder || "",
+                              row?.length || "",
+                            ];
+                        const isAvailable = availableSizesForSelectedColor.includes(sizeLabel);
                         return (
                           <tr
                             key={idx}
@@ -178,29 +194,25 @@ const SizeChartModal: React.FC<SizeChartModalProps> = ({
                               <input
                                 type="radio"
                                 name="size"
-                                value={row.label}
-                                checked={selectedSize === row.label}
-                                onChange={() => setSelectedSize(row.label)}
+                                value={sizeLabel}
+                                checked={selectedSize === sizeLabel}
+                                onChange={() => setSelectedSize(sizeLabel)}
                                 className="form-radio h-4 w-4 text-orange-600 cursor-pointer"
                                 disabled={!isAvailable}
                               />
                             </td>
-                            <td className="p-3 font-bold text-gray-700">{row.label}</td>
-                            <td className="p-3 text-gray-600">
-                              {unit === "in" ? row.bust : convertToCm(row.bust)}
-                            </td>
-                            <td className="p-3 text-gray-600">
-                              {unit === "in" ? row.waist : convertToCm(row.waist)}
-                            </td>
-                            <td className="p-3 text-gray-600">
-                              {unit === "in" ? row.hip : convertToCm(row.hip)}
-                            </td>
-                            <td className="p-3 text-gray-600">
-                              {unit === "in" ? row.shoulder : convertToCm(row.shoulder)}
-                            </td>
-                            <td className="p-3 text-gray-600">
-                              {unit === "in" ? row.length : convertToCm(row.length)}
-                            </td>
+                            {headers.map((header, cellIndex) => (
+                              <td
+                                key={`${header}-${cellIndex}`}
+                                className={`p-3 ${cellIndex === 0 ? "font-bold text-gray-700" : "text-gray-600"}`}
+                              >
+                                {cellIndex === 0
+                                  ? rowCells[cellIndex] || "-"
+                                  : unit === "in"
+                                    ? rowCells[cellIndex] || "-"
+                                    : convertToCm(rowCells[cellIndex] || "-")}
+                              </td>
+                            ))}
                           </tr>
                         );
                       })}
