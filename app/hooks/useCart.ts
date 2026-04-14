@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import {
   fetchCart,
@@ -182,6 +181,14 @@ const writePersistedCouponState = (state: PersistedCouponState | null) => {
 
 const normalizeCouponCode = (code: string) => code.trim().toUpperCase();
 
+const readSharedCartToken = (): string => {
+  if (typeof window === "undefined") return "";
+
+  return new URLSearchParams(window.location.search)
+    .get("sharedCartToken")
+    ?.trim() || "";
+};
+
 /** Converts guest cart items to CartItem shape for uniform UI rendering */
 const guestToCartItems = (guestItems: GuestCartItem[]): CartItem[] =>
   guestItems.map((g) => ({
@@ -260,8 +267,7 @@ export const mergeGuestCartOnLogin = async (): Promise<void> => {
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export const useCart = (): UseCartReturn => {
-  const searchParams = useSearchParams();
-  const sharedCartToken = searchParams.get("sharedCartToken")?.trim() || "";
+  const [sharedCartToken, setSharedCartToken] = useState(readSharedCartToken);
   const [cart, setCart] = useState<CartItem[]>(() =>
     sharedCartToken ? [] : getInitialCartSnapshot(),
   );
@@ -296,6 +302,19 @@ export const useCart = (): UseCartReturn => {
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
   const [autoApplyAttempted, setAutoApplyAttempted] = useState(false);
+
+  useEffect(() => {
+    const syncSharedCartToken = () => {
+      setSharedCartToken(readSharedCartToken());
+    };
+
+    syncSharedCartToken();
+    window.addEventListener("popstate", syncSharedCartToken);
+
+    return () => {
+      window.removeEventListener("popstate", syncSharedCartToken);
+    };
+  }, []);
 
   useEffect(() => {
     if (!couponCode) {

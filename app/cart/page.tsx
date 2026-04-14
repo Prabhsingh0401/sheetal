@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCart, CartItem } from "../hooks/useCart";
 import CartItemsList from "./components/CartItemsList";
@@ -13,10 +13,17 @@ import { peekRedirectField, redirectToLogin } from "../utils/authRedirect";
 import { createSharedCart } from "../services/cartService";
 import Footer from "../components/Footer";
 
+const readSharedCartToken = (): string => {
+  if (typeof window === "undefined") return "";
+
+  return new URLSearchParams(window.location.search)
+    .get("sharedCartToken")
+    ?.trim() || "";
+};
+
 const CartPage = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const sharedCartToken = searchParams.get("sharedCartToken")?.trim() || "";
+  const [sharedCartToken, setSharedCartToken] = useState(readSharedCartToken);
   const {
     cart: cartItems,
     loading,
@@ -55,6 +62,19 @@ const CartPage = () => {
   const [couponInput, setCouponInput] = useState(
     () => peekRedirectField<string>("couponInput") || couponCode || "",
   );
+
+  useEffect(() => {
+    const syncSharedCartToken = () => {
+      setSharedCartToken(readSharedCartToken());
+    };
+
+    syncSharedCartToken();
+    window.addEventListener("popstate", syncSharedCartToken);
+
+    return () => {
+      window.removeEventListener("popstate", syncSharedCartToken);
+    };
+  }, []);
 
   /* Selection Handlers */
   const handleSelectionChange = (itemId: string) => {
