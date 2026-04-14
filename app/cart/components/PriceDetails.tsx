@@ -58,6 +58,7 @@ interface CouponOption {
   applicableIds?: Array<{ name?: string } | string>;
   description?: string;
   minPurchase?: number;
+  isAbandonedCartCoupon?: boolean;
 }
 
 const PriceDetails: React.FC<PriceDetailsProps> = ({
@@ -83,9 +84,6 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
   const router = useRouter();
   const [openCouponModal, setOpenCouponModal] = useState(false);
   const [coupons, setCoupons] = useState<CouponOption[]>([]);
-  const [recoveryCoupon, setRecoveryCoupon] = useState<CouponOption | null>(
-    null,
-  );
   const [recoveryCouponState, setRecoveryCouponState] = useState<
     "idle" | "loading" | "found" | "missing"
   >("idle");
@@ -135,26 +133,22 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
       const fetchRecoveryCoupon = async () => {
         try {
           setRecoveryCouponState("loading");
-          const response: any = await getValidAbandonedCartCoupon(token);
-          const coupon = response?.data?.data || response?.data || null;
+          const response = await getValidAbandonedCartCoupon(token);
+          const responseData = response.data;
+          const coupon =
+            responseData &&
+            typeof responseData === "object" &&
+            "data" in responseData
+              ? ((responseData as { data?: { code?: string } | null }).data ||
+                  null)
+              : ((responseData as { code?: string } | null) || null);
           if (coupon?.code) {
-            setRecoveryCoupon({
-              _id: coupon.couponRecordId || coupon._id,
-              code: coupon.code,
-              offerType: "Percentage",
-              offerValue: coupon.discountPercent,
-              description: `Your valid abandoned-cart coupon expires on ${new Date(
-                coupon.expiresAt,
-              ).toLocaleString()}`,
-            });
             setRecoveryCouponState("found");
           } else {
-            setRecoveryCoupon(null);
             setRecoveryCouponState("missing");
           }
         } catch (error) {
           console.error("Error fetching abandoned-cart coupon:", error);
-          setRecoveryCoupon(null);
           setRecoveryCouponState("missing");
         }
       };
@@ -163,18 +157,23 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
     }
   }, [openCouponModal, couponCode]);
 
-  const publicCoupons = coupons.filter(
-    (c) =>
-      !searchQuery ||
-      c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-  const visibleCoupons = recoveryCoupon
-    ? [
-        recoveryCoupon,
-        ...publicCoupons.filter((coupon) => coupon.code !== recoveryCoupon.code),
-      ]
-    : publicCoupons;
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const publicCoupons = coupons.filter((c) => {
+    if (c.isAbandonedCartCoupon) {
+      return false;
+    }
+
+    if (!normalizedSearchQuery) {
+      return true;
+    }
+
+    return (
+      c.code.toLowerCase().includes(normalizedSearchQuery) ||
+      c.description?.toLowerCase().includes(normalizedSearchQuery) ||
+      false
+    );
+  });
+  const visibleCoupons = publicCoupons;
 
   const applyCouponAndClose = () => {
     const user = getUserDetails();
@@ -458,9 +457,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                     }}
                   >
                     <div className="font-bold border border-dashed border-gray-500 text-[#6b5639] mb-2 uppercase text-lg p-2 w-full">
-                      {index === 0 && recoveryCoupon?.code === coupon.code
-                        ? `${coupon.code} - Your valid recovery coupon`
-                        : coupon.code}
+                      {coupon.code}
                     </div>
                     <div className="flex flex-wrap justify-start gap-1 mt-2">
                       {coupon.offerType === "BOGO" && (
