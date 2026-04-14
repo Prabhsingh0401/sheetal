@@ -10,10 +10,20 @@ import PriceDetails from "./components/PriceDetails";
 import { getSettings } from "../services/settingsService";
 import { isAuthenticated } from "../services/authService";
 import { peekRedirectField, redirectToLogin } from "../utils/authRedirect";
+import { createSharedCart } from "../services/cartService";
 import Footer from "../components/Footer";
+
+const readSharedCartToken = (): string => {
+  if (typeof window === "undefined") return "";
+
+  return new URLSearchParams(window.location.search)
+    .get("sharedCartToken")
+    ?.trim() || "";
+};
 
 const CartPage = () => {
   const router = useRouter();
+  const [sharedCartToken, setSharedCartToken] = useState(readSharedCartToken);
   const {
     cart: cartItems,
     loading,
@@ -52,6 +62,19 @@ const CartPage = () => {
   const [couponInput, setCouponInput] = useState(
     () => peekRedirectField<string>("couponInput") || couponCode || "",
   );
+
+  useEffect(() => {
+    const syncSharedCartToken = () => {
+      setSharedCartToken(readSharedCartToken());
+    };
+
+    syncSharedCartToken();
+    window.addEventListener("popstate", syncSharedCartToken);
+
+    return () => {
+      window.removeEventListener("popstate", syncSharedCartToken);
+    };
+  }, []);
 
   /* Selection Handlers */
   const handleSelectionChange = (itemId: string) => {
@@ -174,14 +197,44 @@ const CartPage = () => {
     applyCoupon(couponInput.trim().toUpperCase(), userId, couponMeta || undefined);
   };
 
+  const handleShareCart = async () => {
+    if (cartItems.length === 0) {
+      toast.error("Add items to your cart before sharing.");
+      return;
+    }
+
+    try {
+      toast.loading("Creating share link...");
+      const response = await createSharedCart(cartItems);
+      toast.dismiss();
+
+      if (!response?.success || !response?.data?.token) {
+        toast.error(response?.message || "Could not create share link.");
+        return;
+      }
+
+      const shareUrl = `${window.location.origin}/shared-cart/${response.data.token}`;
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Share link copied to clipboard.");
+    } catch (error) {
+      toast.dismiss();
+      console.error("Failed to share cart:", error);
+      toast.error("Could not create share link.");
+    }
+  };
+
   const handleProceedToBuy = () => {
+    const checkoutTarget = sharedCartToken
+      ? `/checkout/address?sharedCartToken=${encodeURIComponent(sharedCartToken)}`
+      : "/checkout/address";
+
     if (!isAuthenticated()) {
-      redirectToLogin(router, "/checkout/address", {
+      redirectToLogin(router, checkoutTarget, {
         cartSnapshot: cartItems,
       });
       return;
     }
-    router.push("/checkout/address");
+    router.push(checkoutTarget);
   };
 
   /* Fetch Settings Once */
@@ -291,7 +344,7 @@ const CartPage = () => {
               Your cart is empty!
             </p>
             <p className="text-gray-500 mb-8">
-              Looks like you haven&apos;t added anything to your cart yet.
+              Looks like you haven't added anything to your cart yet.
             </p>
             <Link
               href="/"
@@ -309,6 +362,7 @@ const CartPage = () => {
                 itemWiseDiscount={itemWiseDiscount}
                 moveFromCartToWishlist={moveFromCartToWishlist}
                 updateCartItemQuantity={updateCartItemQuantity}
+                onShareCart={handleShareCart}
                 handleRemoveItem={handleRemoveItem}
                 isModalOpen={isModalOpen}
                 confirmRemoveItem={confirmRemoveItem}

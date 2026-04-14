@@ -10,6 +10,7 @@ import {
   updateCartItemQuantity as updateCartItemQuantityApi,
   clearCart as clearCartApi,
   mergeGuestCart as mergeGuestCartApi,
+  getSharedCart,
 } from "../services/cartService";
 import { getAllCouponsClient } from "../services/couponService";
 import {
@@ -180,6 +181,14 @@ const writePersistedCouponState = (state: PersistedCouponState | null) => {
 
 const normalizeCouponCode = (code: string) => code.trim().toUpperCase();
 
+const readSharedCartToken = (): string => {
+  if (typeof window === "undefined") return "";
+
+  return new URLSearchParams(window.location.search)
+    .get("sharedCartToken")
+    ?.trim() || "";
+};
+
 /** Converts guest cart items to CartItem shape for uniform UI rendering */
 const guestToCartItems = (guestItems: GuestCartItem[]): CartItem[] =>
   guestItems.map((g) => ({
@@ -258,7 +267,10 @@ export const mergeGuestCartOnLogin = async (): Promise<void> => {
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export const useCart = (): UseCartReturn => {
-  const [cart, setCart] = useState<CartItem[]>(() => getInitialCartSnapshot());
+  const [sharedCartToken, setSharedCartToken] = useState(readSharedCartToken);
+  const [cart, setCart] = useState<CartItem[]>(() =>
+    sharedCartToken ? [] : getInitialCartSnapshot(),
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const persistedCouponState = readPersistedCouponState();
@@ -290,6 +302,19 @@ export const useCart = (): UseCartReturn => {
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [finalAmount, setFinalAmount] = useState(0);
   const [autoApplyAttempted, setAutoApplyAttempted] = useState(false);
+
+  useEffect(() => {
+    const syncSharedCartToken = () => {
+      setSharedCartToken(readSharedCartToken());
+    };
+
+    syncSharedCartToken();
+    window.addEventListener("popstate", syncSharedCartToken);
+
+    return () => {
+      window.removeEventListener("popstate", syncSharedCartToken);
+    };
+  }, []);
 
   useEffect(() => {
     if (!couponCode) {
@@ -328,6 +353,20 @@ export const useCart = (): UseCartReturn => {
     setError(null);
 
     try {
+      if (sharedCartToken) {
+        const sharedResponse = await getSharedCart(sharedCartToken);
+        const sharedItems = sharedResponse?.data?.items || [];
+
+        if (sharedResponse?.success && Array.isArray(sharedItems)) {
+          setCart(commitCartSnapshot(sharedItems));
+          return;
+        }
+
+        setError(sharedResponse?.message || "Failed to fetch shared cart");
+        setCart(commitCartSnapshot([]));
+        return;
+      }
+
       if (isAuthenticated()) {
         // ── Authenticated: fetch from server ──
         const response: CartApiResponse = await fetchCart();
@@ -356,15 +395,19 @@ export const useCart = (): UseCartReturn => {
         const guestItems = readGuestCart();
         setCart(commitCartSnapshot(guestToCartItems(guestItems)));
       }
-    } catch (err: any) {
-      console.error("Error loading cart:", err);
-      setError(err.message || "An error occurred while fetching cart");
+    } catch (error: unknown) {
+      console.error("Error loading cart:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while fetching cart",
+      );
     } finally {
       if (showLoader) {
         setLoading(false);
       }
     }
-  }, []);
+  }, [sharedCartToken]);
 
 
   useEffect(() => {
@@ -462,13 +505,26 @@ export const useCart = (): UseCartReturn => {
           dispatchCartUpdated();
           toast.success("Added to cart!");
         }
-      } catch (err: any) {
-        console.error("Error adding to cart:", err);
+      } catch (error: unknown) {
+        console.error("Error adding to cart:", error);
         toast.error("Could not add to cart. Please try again.");
       }
     },
     [loadCart],
   );
+
+  /** Resets all coupon-related state */
+  const resetCoupon = useCallback(() => {
+    setCouponCode("");
+    setCouponDiscount(0);
+    setCouponError(null);
+    setCouponOfferType(null);
+    setBogoMessage(null);
+    setApplicableCategories([]);
+    setItemWiseDiscount(null);
+    setCouponMeta(null);
+    writePersistedCouponState(null);
+  }, []);
 
   /**
    * Removes an item from the cart (server or guest localStorage).
@@ -499,12 +555,12 @@ export const useCart = (): UseCartReturn => {
           }
           resetCoupon();
         }
-      } catch (err: any) {
-        console.error("Error removing from cart:", err);
+      } catch (error: unknown) {
+        console.error("Error removing from cart:", error);
         toast.error("Could not remove item from cart. Please try again.");
       }
     },
-    [loadCart],
+    [loadCart, resetCoupon],
   );
 
   const moveFromCartToWishlist = useCallback(
@@ -532,26 +588,13 @@ export const useCart = (): UseCartReturn => {
         } else {
           toast.error(removeResponse.message || "Failed to remove item from cart.");
         }
-      } catch (err: any) {
-        console.error("Error moving to wishlist:", err);
+      } catch (error: unknown) {
+        console.error("Error moving to wishlist:", error);
         toast.error("Could not move item to wishlist. Please try again.");
       }
     },
-    [loadCart],
+    [loadCart, resetCoupon],
   );
-
-  /** Resets all coupon-related state */
-  const resetCoupon = useCallback(() => {
-    setCouponCode("");
-    setCouponDiscount(0);
-    setCouponError(null);
-    setCouponOfferType(null);
-    setBogoMessage(null);
-    setApplicableCategories([]);
-    setItemWiseDiscount(null);
-    setCouponMeta(null);
-    writePersistedCouponState(null);
-  }, []);
 
   // Calculate totals whenever cart or coupon changes
   useEffect(() => {
@@ -671,8 +714,8 @@ export const useCart = (): UseCartReturn => {
           }
           return false;
         }
-      } catch (err: any) {
-        console.error("Error applying coupon:", err);
+      } catch (error: unknown) {
+        console.error("Error applying coupon:", error);
         if (!options?.silent) {
           setCouponError("Could not apply coupon. Please try again.");
         }
@@ -689,6 +732,10 @@ export const useCart = (): UseCartReturn => {
   useEffect(() => {
     if (!isAuthenticated()) {
       setAutoApplyAttempted(false);
+      return;
+    }
+
+    if (sharedCartToken) {
       return;
     }
 
@@ -761,7 +808,7 @@ export const useCart = (): UseCartReturn => {
     return () => {
       cancelled = true;
     };
-  }, [applyCoupon, autoApplyAttempted, cart, couponCode, loading]);
+  }, [applyCoupon, autoApplyAttempted, cart, couponCode, loading, sharedCartToken]);
 
   useEffect(() => {
     if (couponCode) {
@@ -807,8 +854,8 @@ export const useCart = (): UseCartReturn => {
           dispatchCartUpdated();
           resetCoupon();
         }
-      } catch (err: any) {
-        console.error("Error updating cart quantity:", err);
+      } catch (error: unknown) {
+        console.error("Error updating cart quantity:", error);
         toast.error("Could not update quantity. Please try again.");
       }
     },
@@ -851,9 +898,11 @@ export const useCart = (): UseCartReturn => {
         removeCoupon();
         toast.success("Cart cleared");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error clearing cart:", error);
-      toast.error(error.message || "Failed to clear cart");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to clear cart",
+      );
     }
   }, [removeCoupon]);
 
