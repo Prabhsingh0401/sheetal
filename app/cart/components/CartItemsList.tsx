@@ -12,6 +12,7 @@ interface CartItemsListProps {
   itemWiseDiscount: { [cartItemId: string]: number } | null;
   moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
   updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
+  onShareCart: () => void;
   handleRemoveItem: (item: CartItem) => void;
   isModalOpen: boolean;
   confirmRemoveItem: () => Promise<void>;
@@ -32,6 +33,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   itemWiseDiscount,
   moveFromCartToWishlist,
   updateCartItemQuantity,
+  onShareCart,
   handleRemoveItem,
   isModalOpen,
   confirmRemoveItem,
@@ -70,14 +72,19 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             </span>
           </div>
           <div className="flex gap-7 items-center">
-            <div className="cursor-pointer">
+            <button
+              type="button"
+              className="cursor-pointer hover:opacity-80"
+              onClick={onShareCart}
+              aria-label="Share cart"
+            >
               <Image
                 src="/assets/icons/share.svg"
                 alt="Share"
                 width={20}
                 height={20}
               />
-            </div>
+            </button>
             <button
               className="cursor-pointer hover:opacity-80"
               onClick={onBulkRemove}

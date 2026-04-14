@@ -115,3 +115,14 @@ export const mergeGuestCart = async (
     body: JSON.stringify({ guestItems }),
   });
 };
+
+export const createSharedCart = async (items: CartItem[]) => {
+  return apiFetch("/shared-cart", {
+    method: "POST",
+    body: JSON.stringify({ items }),
+  });
+};
+
+export const getSharedCart = async (token: string) => {
+  return apiFetch(`/shared-cart/${encodeURIComponent(token)}`);
+};
