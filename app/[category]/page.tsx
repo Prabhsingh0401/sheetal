@@ -3,6 +3,7 @@ import React from "react";
 import ProductList from "../product-list/page";
 import { Metadata } from "next";
 import { fetchCategoryBySlugServer } from "../services/categoryService";
+import { redirect } from "next/navigation";
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
@@ -61,5 +62,11 @@ export async function generateMetadata({
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
+  const cat = await fetchCategoryBySlugServer(category);
+  
+  if (!cat) {
+    redirect("/");
+  }
+
   return <ProductList categorySlug={category} />;
 }

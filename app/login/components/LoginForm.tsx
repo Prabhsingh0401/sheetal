@@ -6,11 +6,18 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  RecaptchaVerifier,
   signInWithPhoneNumber,
   ConfirmationResult,
 } from "firebase/auth";
-import { auth, googleProvider, signInWithPopup } from "../../services/firebase";
+import {
+  auth,
+  googleProvider,
+  signInWithPopup,
+  setupInvisibleRecaptcha,
+  resetRecaptcha,
+  isRecaptchaAlreadyRenderedError,
+  logAuthDebug,
+} from "../../services/firebase";
 import { verifyIdToken, login } from "../../services/authService";
 import { mergeGuestCartOnLogin } from "../../hooks/useCart";
 import {
@@ -22,7 +29,6 @@ import toast from "react-hot-toast";
 
 declare global {
   interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
     confirmationResult?: ConfirmationResult;
   }
 }
@@ -118,28 +124,7 @@ const LoginForm = () => {
   })();
 
   const setupRecaptcha = async () => {
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = undefined;
-    }
-
-    if (window.recaptchaVerifier) {
-      return window.recaptchaVerifier;
-    }
-
-    const recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      RECAPTCHA_CONTAINER_ID,
-      {
-        size: "invisible",
-        callback: () => {},
-        "expired-callback": () => {},
-      },
-    );
-
-    window.recaptchaVerifier = recaptchaVerifier;
-    await window.recaptchaVerifier.render();
-    return window.recaptchaVerifier;
+    return setupInvisibleRecaptcha(RECAPTCHA_CONTAINER_ID);
   };
 
   const handleContinue = async () => {
@@ -156,19 +141,35 @@ const LoginForm = () => {
     try {
       setLoading(true);
       setLoadingType("phone");
+      logAuthDebug("login-phone", "send-otp:start", {
+        phoneNumberLength: phoneNumber.length,
+      });
 
-      const appVerifier = await setupRecaptcha();
       window.confirmationResult = undefined;
       sessionStorage.setItem("otp_phone_number", phoneNumber);
       sessionStorage.setItem("login_phone_number", phoneNumber);
+      const sendOtp = async () => {
+        const appVerifier = await setupRecaptcha();
+        return signInWithPhoneNumber(auth, `+91${phoneNumber}`, appVerifier);
+      };
 
-      const confirmationResult = await signInWithPhoneNumber(
-        auth,
-        `+91${phoneNumber}`,
-        appVerifier,
-      );
+      let confirmationResult: ConfirmationResult;
+      try {
+        confirmationResult = await sendOtp();
+      } catch (error) {
+        if (!isRecaptchaAlreadyRenderedError(error)) {
+          throw error;
+        }
+
+        logAuthDebug("login-phone", "send-otp:auto-retry", {
+          reason: "duplicate-render",
+        });
+        resetRecaptcha(RECAPTCHA_CONTAINER_ID);
+        confirmationResult = await sendOtp();
+      }
 
       window.confirmationResult = confirmationResult;
+      logAuthDebug("login-phone", "send-otp:success");
       sessionStorage.setItem(
         RESEND_AVAILABLE_AT_KEY,
         String(Date.now() + RESEND_DELAY_MS),
@@ -178,7 +179,13 @@ const LoginForm = () => {
       const message =
         error instanceof Error ? error.message : "Failed to send OTP";
       console.error("OTP error:", error);
-      toast.error(message);
+      logAuthDebug("login-phone", "send-otp:error", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      resetRecaptcha(RECAPTCHA_CONTAINER_ID);
+      if (!isRecaptchaAlreadyRenderedError(error)) {
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
       setLoadingType(null);

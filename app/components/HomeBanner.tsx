@@ -190,17 +190,7 @@ const HomeBanner = () => {
             </Slider>
           </div>
 
-          <div className="z-1000 absolute inset-0">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/assets/icons/icon-1.png"
-                alt="Studio By Sheetal"
-                width={300}
-                height={100}
-                className="w-auto h-[50px]"
-              />
-            </Link>
-          </div>
+          
 
           <div className="absolute inset-0 z-1000 flex items-start py-28 justify-center pointer-events-none">
             <Link href="/" className="pointer-events-auto">

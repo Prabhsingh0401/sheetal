@@ -22,17 +22,13 @@ import SearchModal from "./SearchModal";
 import useSWR from "swr";
 import { fetchAllCategories, Category } from "../services/categoryService";
 import { getSettings } from "../services/settingsService";
-import {
-  buildNavbarNavItems,
-  NavbarNavItem,
-} from "./navbarLayout";
+import { buildNavbarNavItems, NavbarNavItem } from "./navbarLayout";
 import {
   fetchProducts,
   getProductImageUrl,
   Product,
 } from "../services/productService";
 
-// Helper to check if category has any tags
 const hasTags = (category: Partial<Category>) => {
   return (
     (category.occasion && category.occasion.length > 0) ||
@@ -44,8 +40,13 @@ const hasTags = (category: Partial<Category>) => {
   );
 };
 
-// Dynamic Mega Menu Component
-const DynamicMegaMenu = ({ category }: { category: Partial<Category> }) => {
+const DynamicMegaMenu = ({
+  category,
+  handleCloseMegaMenu,
+}: {
+  category: Partial<Category>;
+  handleCloseMegaMenu: () => void;
+}) => {
   if (!category._id) return null;
 
   const tagGroups = [
@@ -76,7 +77,6 @@ const DynamicMegaMenu = ({ category }: { category: Partial<Category> }) => {
           sort: "-createdAt",
           status: "Active",
         });
-
         if (res.success && res.products) {
           setLatestProducts(res.products);
         }
@@ -86,103 +86,91 @@ const DynamicMegaMenu = ({ category }: { category: Partial<Category> }) => {
         setLoadingProducts(false);
       }
     };
-
     loadLatestProducts();
   }, [category._id]);
 
   return (
-    <div
-      className={`
-        fixed left-0 right-0 w-full text-left 
-        opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-        transition-all duration-300 z-[1004]
-      `}
-      style={{ top: "calc(15px + 63px)" }}
-    >
-      <div className="bg-white/98 backdrop-blur-md border-t border-gray-200 shadow-2xl">
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-12 gap-6">
-            {/* Tag Groups Section */}
-            <div
-              className={`col-span-8 ${isGrid ? "grid grid-cols-3 gap-y-8" : "grid grid-cols-4 gap-4"}`}
-            >
-              {tagGroups.map((group, idx) => (
-                <div key={idx} className={isGrid ? "col-span-1" : "col-span-1"}>
-                  <h3 className="font-semibold text-sm mb-3 text-[#f4be40] uppercase tracking-wide">
-                    {group.title}
-                  </h3>
-                  <ul className="space-y-2 text-sm">
-                    {group.items?.map((tag) => (
-                      <li key={tag}>
-                        <Link
-                          href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
-                          className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors capitalize"
-                        >
-                          <span className="text-gray-900 text-[20px] leading-none">
-                            •
-                          </span>
-                          {tag}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            {/* Product Images Section */}
-            <div className="col-span-4 grid grid-cols-2 gap-4">
-              {loadingProducts ? (
-                <>
-                  <div className="animate-pulse bg-gray-200 h-[250px] rounded-lg"></div>
-                  <div className="animate-pulse bg-gray-200 h-[250px] rounded-lg"></div>
-                </>
-              ) : latestProducts.length > 0 ? (
-                latestProducts.map((product) => (
-                  <div key={product._id} className="text-center group/product">
-                    <div className="mb-2 overflow-hidden rounded-lg relative">
-                      <Link href={`/product/${product.slug}`}>
-                        <Image
-                          src={getProductImageUrl(product)}
-                          alt={product.name}
-                          width={250}
-                          height={300}
-                          className="w-full h-[250px] object-cover group-hover/product:scale-105 transition-transform duration-300"
-                        />
+    <div className="bg-white/98 backdrop-blur-md border-t border-gray-200 shadow-2xl">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-12 gap-6">
+          <div
+            className={`col-span-8 ${isGrid ? "grid grid-cols-3 gap-y-8" : "grid grid-cols-4 gap-4"}`}
+          >
+            {tagGroups.map((group, idx) => (
+              <div key={idx} className="col-span-1">
+                <h3 className="font-semibold text-sm mb-3 text-[#f4be40] uppercase tracking-wide">
+                  {group.title}
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  {group.items?.map((tag) => (
+                    <li key={tag}>
+                      <Link
+                        href={`/${category.slug}?type=${group.type}&value=${encodeURIComponent(tag)}`}
+                        className="flex items-center gap-1.5 text-gray-700 hover:text-gray-900 transition-colors capitalize"
+                        onClick={handleCloseMegaMenu}
+                      >
+                        <span className="text-gray-900 text-[20px] leading-none">•</span>
+                        {tag}
                       </Link>
-                    </div>
-                    <Link href={`/product/${product.slug}`}>
-                      <p className="font-semibold text-sm text-gray-800 mb-1 hover:text-[#b3a660] transition-colors line-clamp-1">
-                        {product.name}
-                      </p>
-                    </Link>
-                    <Link
-                      href={`/product/${product.slug}`}
-                      className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium"
-                    >
-                      Shop Now
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="col-span-4 grid grid-cols-2 gap-4">
+            {loadingProducts ? (
+              <>
+                <div className="animate-pulse bg-gray-200 h-[250px] rounded-lg"></div>
+                <div className="animate-pulse bg-gray-200 h-[250px] rounded-lg"></div>
+              </>
+            ) : latestProducts.length > 0 ? (
+              latestProducts.map((product) => (
+                <div key={product._id} className="text-center group/product">
+                  <div className="mb-2 overflow-hidden rounded-lg relative">
+                    <Link href={`/product/${product.slug}`} onClick={handleCloseMegaMenu}>
+                      <Image
+                        src={getProductImageUrl(product)}
+                        alt={product.name}
+                        width={250}
+                        height={300}
+                        className="w-full h-[250px] object-cover group-hover/product:scale-105 transition-transform duration-300"
+                      />
                     </Link>
                   </div>
-                ))
-              ) : (
-                // Fallback: centered logo on white background
-                <div className="col-span-2 flex items-center justify-center h-[250px] bg-white rounded-lg border border-gray-100">
-                  <Image
-                    src="/assets/625030871.png"
-                    alt="Sheetal"
-                    width={180}
-                    height={120}
-                    className="object-contain"
-                  />
+                  <Link href={`/product/${product.slug}`} onClick={handleCloseMegaMenu}>
+                    <p className="font-semibold text-sm text-gray-800 mb-1 hover:text-[#b3a660] transition-colors line-clamp-1">
+                      {product.name}
+                    </p>
+                  </Link>
+                  <Link
+                    href={`/product/${product.slug}`}
+                    onClick={handleCloseMegaMenu}
+                    className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium"
+                  >
+                    Shop Now
+                  </Link>
                 </div>
-              )}
-            </div>
+              ))
+            ) : (
+              <div className="col-span-2 flex items-center justify-center h-[250px] bg-white rounded-lg border border-gray-100">
+                <Image
+                  src="/assets/625030871.png"
+                  alt="Sheetal"
+                  width={180}
+                  height={120}
+                  className="object-contain"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 
 interface NavbarUserIconProps {
   isClient: boolean;
@@ -204,43 +192,22 @@ const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
   if (!isClient) {
     return (
       <Link href="/login" className="hover:opacity-80 transition-opacity">
-        <Image
-          src="/assets/icons/user.svg"
-          alt="User"
-          width={24}
-          height={24}
-          className="w-6 h-6"
-        />
+        <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
       </Link>
     );
   }
 
   if (isAuthenticated()) {
     return (
-      <div
-        className="relative group"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-      >
+      <div className="relative group" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
         <Link href="/my-account" className="hover:opacity-80 transition-opacity">
-          <Image
-            src="/assets/icons/user.svg"
-            alt="User"
-            width={24}
-            height={24}
-            className="w-6 h-6"
-          />
+          <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
         </Link>
         {isUserDropdownOpen && (
           <div className="absolute right-0 top-full pt-2 w-48 z-50">
             <div className="bg-[#153427]/95 backdrop-blur-md p-3 border border-[#f5de7e] text-[#b3a660] text-sm shadow-lg">
-              <p className="px-3 py-2 border-b border-white/20 truncate">
-                Hello, {getDisplayName()}
-              </p>
-              <Link
-                href="/my-account"
-                className="block px-3 py-2 hover:text-white transition-colors cursor-pointer"
-              >
+              <p className="px-3 py-2 border-b border-white/20 truncate">Hello, {getDisplayName()}</p>
+              <Link href="/my-account" className="block px-3 py-2 hover:text-white transition-colors cursor-pointer">
                 My Account
               </Link>
               <button
@@ -258,32 +225,34 @@ const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
 
   return (
     <Link href="/login" className="hover:opacity-80 transition-opacity">
-      <Image
-        src="/assets/icons/user.svg"
-        alt="User"
-        width={24}
-        height={24}
-        className="w-6 h-6"
-      />
+      <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
     </Link>
   );
 };
 
-// Recursive Desktop Menu Item
 const DesktopMenuItem = ({ item }: { item: NavbarNavItem }) => {
   if (item.hidden) return null;
 
   const hasChildren = item.children && item.children.length > 0;
   const isMegaMenu = item.isCategory && hasTags(item);
+  const [megaOpen, setMegaOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMegaMenu) return;
+    const handleScroll = () => setMegaOpen(false);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMegaMenu]);
 
   return (
-    <li className="relative group h-full flex items-center">
+    <li
+      className="relative group h-full flex items-center"
+      onMouseEnter={() => isMegaMenu && setMegaOpen(true)}
+      onMouseLeave={() => isMegaMenu && setMegaOpen(false)}
+    >
       <Link
         href={item.href || "#"}
-        className={`
-          px-[19px] !text-[#b3a660] 
-          tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-2
-        `}
+        className="px-[19px] !text-[#b3a660] tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-2"
       >
         {item.label}
         {(hasChildren || isMegaMenu) && (
@@ -293,28 +262,32 @@ const DesktopMenuItem = ({ item }: { item: NavbarNavItem }) => {
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         )}
       </Link>
 
-      {/* Dynamic Mega Menu */}
-      {isMegaMenu && <DynamicMegaMenu category={item} />}
+      {/* ✅ Invisible bridge: fills the gap between nav item and mega menu */}
+      {isMegaMenu && megaOpen && (
+        <div className="absolute left-0 right-0 h-[20px] top-full" />
+      )}
 
-      {/* Regular Dropdown Menu */}
-      {hasChildren && !isMegaMenu && (
+      {isMegaMenu && megaOpen && (
         <div
-          className={`
-            absolute left-0 top-full pt-4 w-[280px] text-left 
-            opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-            transition-all duration-300 z-[1005]
-          `}
+          className="fixed left-0 right-0 w-full text-left z-[1004]"
+          style={{ top: "calc(15px + 63px)" }}
+          onMouseEnter={() => setMegaOpen(true)}
+          onMouseLeave={() => setMegaOpen(false)}
         >
+          <DynamicMegaMenu
+            category={item}
+            handleCloseMegaMenu={() => setMegaOpen(false)}
+          />
+        </div>
+      )}
+
+      {hasChildren && !isMegaMenu && (
+        <div className="absolute left-0 top-full pt-4 w-[280px] text-left opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[1005]">
           <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
             {item.children?.map((child, idx: number) => (
               <DesktopSubMenuItem key={`${child.id}-${idx}`} item={child} />
@@ -326,7 +299,6 @@ const DesktopMenuItem = ({ item }: { item: NavbarNavItem }) => {
   );
 };
 
-// Helper for Recursive Submenus (Level 2+)
 const DesktopSubMenuItem = ({ item }: { item: NavbarNavItem }) => {
   if (item.hidden) return null;
   const hasChildren = item.children && item.children.length > 0;
@@ -344,7 +316,6 @@ const DesktopSubMenuItem = ({ item }: { item: NavbarNavItem }) => {
         {hasChildren && <span className="-rotate-90 text-[8px]">▼</span>}
       </Link>
 
-      {/* Recursive Children */}
       {hasChildren && (
         <div className="absolute right-full top-0 w-full hidden group-hover/sub:block z-[999] pr-1">
           <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e]">
@@ -358,7 +329,6 @@ const DesktopSubMenuItem = ({ item }: { item: NavbarNavItem }) => {
   );
 };
 
-// Mobile Submenu View
 const MobileSubMenuView = ({
   item,
   onBack,
@@ -388,64 +358,41 @@ const MobileSubMenuView = ({
       }
       try {
         setLoadingProducts(true);
-        // Fetch latest 2 products for this category
         const res = await fetchProducts({
-          category: item._id, // item is the category object
+          category: item._id,
           limit: 2,
           sort: "-createdAt",
           status: "Active",
         });
-
         if (res.success && res.products) {
           setLatestProducts(res.products);
         }
       } catch (err) {
-        // console.error("Failed to load mega menu products", err);
+        // silent
       } finally {
         setLoadingProducts(false);
       }
     };
-
     loadLatestProducts();
   }, [item._id, item.isCategory]);
 
   return (
     <div className="flex flex-col h-full w-full bg-[#f9f9f9]">
       <div className="bg-[#082722] p-4 flex items-center justify-between shadow-md shrink-0">
-        <button
-          onClick={onBack}
-          className="text-[#f2bf42] flex items-center gap-2 text-sm font-medium"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
+        <button onClick={onBack} className="text-[#f2bf42] flex items-center gap-2 text-sm font-medium">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           Back
         </button>
-        <h2 className="text-[#f2bf42] font-serif tracking-wide capitalize">
-          {item.label}
-        </h2>
-        <button onClick={onClose} className="text-[#f2bf42] text-xl">
-          ✕
-        </button>
+        <h2 className="text-[#f2bf42] font-serif tracking-wide capitalize">{item.label}</h2>
+        <button onClick={onClose} className="text-[#f2bf42] text-xl">✕</button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-[#f5f5f5]">
         {tagGroups.map((group, idx) => (
           <div key={idx} className="mb-6">
-            <h3 className="text-[#b3a660] font-medium text-lg mb-3 capitalize">
-              {group.title}
-            </h3>
+            <h3 className="text-[#b3a660] font-medium text-lg mb-3 capitalize">{group.title}</h3>
             <ul className="space-y-2 pl-1">
               {group.items?.map((tag: string) => (
                 <li key={tag}>
@@ -473,12 +420,9 @@ const MobileSubMenuView = ({
           </div>
         )}
 
-        {/* LATEST PRODUCTS SECTION (Mobile Mega Menu) */}
         {(loadingProducts || latestProducts.length > 0) && (
           <div className="mt-8 border-t border-gray-200 pt-8">
-            <h3 className="text-[#082722] font-serif text-xl mb-4 tracking-wide">
-              New Arrivals
-            </h3>
+            <h3 className="text-[#082722] font-serif text-xl mb-4 tracking-wide">New Arrivals</h3>
             <div className="grid grid-cols-2 gap-4">
               {loadingProducts ? (
                 <>
@@ -487,12 +431,7 @@ const MobileSubMenuView = ({
                 </>
               ) : (
                 latestProducts.map((product) => (
-                  <Link
-                    key={product._id}
-                    href={`/product/${product.slug}`}
-                    onClick={onClose}
-                    className="block group"
-                  >
+                  <Link key={product._id} href={`/product/${product.slug}`} onClick={onClose} className="block group">
                     <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-2 bg-gray-100">
                       <Image
                         src={getProductImageUrl(product)}
@@ -505,9 +444,7 @@ const MobileSubMenuView = ({
                     <p className="text-sm font-medium text-gray-800 line-clamp-1 group-hover:text-[#b3a660] transition-colors">
                       {product.name}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">
-                      Shop Now
-                    </p>
+                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Shop Now</p>
                   </Link>
                 ))
               )}
@@ -540,7 +477,6 @@ const MobileMenuOverlay = ({
     const hasSubMenu =
       (item.isCategory && hasTags(item)) ||
       (item.children && item.children.length > 0);
-
     if (hasSubMenu) {
       setActiveItem(item);
     } else {
@@ -550,29 +486,25 @@ const MobileMenuOverlay = ({
 
   return (
     <div
-      className={`fixed inset-0 z-[10000] bg-black/60 transition-opacity duration-300 md:hidden ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+      className={`fixed inset-0 z-[10000] bg-black/60 transition-opacity duration-300 md:hidden ${
+        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      }`}
     >
       <nav
         className={`
-          absolute right-0 top-0 h-full w-[85%] max-w-[320px] 
-          bg-[#082722] shadow-2xl 
-          transition-transform duration-300 transform 
+          absolute right-0 top-0 h-full w-[85%] max-w-[320px]
+          bg-[#082722] shadow-2xl
+          transition-transform duration-300 transform
           ${isOpen ? "translate-x-0" : "translate-x-full"}
           overflow-hidden
         `}
       >
         {activeItem ? (
-          <MobileSubMenuView
-            item={activeItem}
-            onBack={() => setActiveItem(null)}
-            onClose={onClose}
-          />
+          <MobileSubMenuView item={activeItem} onBack={() => setActiveItem(null)} onClose={onClose} />
         ) : (
           <div className="flex flex-col h-full">
             <div className="flex justify-end p-4 shrink-0">
-              <button onClick={onClose} className="text-[#f2bf42] text-2xl">
-                ✕
-              </button>
+              <button onClick={onClose} className="text-[#f2bf42] text-2xl">✕</button>
             </div>
 
             <div className="flex-1 overflow-y-auto px-6 py-2 space-y-6">
@@ -581,29 +513,15 @@ const MobileMenuOverlay = ({
                   (item.isCategory && hasTags(item)) ||
                   (item.children && item.children.length > 0);
                 return (
-                  <div
-                    key={`${item.id}-${idx}`}
-                    className="border-b border-[#f2bf42]/20 pb-4 last:border-0"
-                  >
+                  <div key={`${item.id}-${idx}`} className="border-b border-[#f2bf42]/20 pb-4 last:border-0">
                     {hasSubMenu ? (
                       <button
                         onClick={() => handleItemClick(item)}
                         className="w-full flex justify-between items-center text-[#f2bf42] text-lg font-medium tracking-wide"
                       >
                         {item.label}
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M9 5l7 7-7 7"
-                          />
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
                     ) : (
@@ -620,20 +538,12 @@ const MobileMenuOverlay = ({
               })}
 
               <div className="border-b border-[#f2bf42]/20 pb-4">
-                <Link
-                  href="/blog"
-                  onClick={onClose}
-                  className="block text-[#f2bf42] text-lg font-medium tracking-wide"
-                >
+                <Link href="/blog" onClick={onClose} className="block text-[#f2bf42] text-lg font-medium tracking-wide">
                   Blog
                 </Link>
               </div>
               <div className="border-b border-[#f2bf42]/20 pb-4">
-                <Link
-                  href="/contact-us"
-                  onClick={onClose}
-                  className="block text-[#f2bf42] text-lg font-medium tracking-wide"
-                >
+                <Link href="/contact-us" onClick={onClose} className="block text-[#f2bf42] text-lg font-medium tracking-wide">
                   Contact Us
                 </Link>
               </div>
@@ -647,8 +557,8 @@ const MobileMenuOverlay = ({
 
 const NavbarInner = () => {
   const router = useRouter();
-  const { wishlist, loading: wishlistLoading } = useWishlist();
-  const { cart, loading: cartLoading } = useCart();
+  const { wishlist } = useWishlist();
+  const { cart } = useCart();
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -667,28 +577,19 @@ const NavbarInner = () => {
   const [navbarBottom, setNavbarBottom] = useState(0);
   const headerRef = useRef<HTMLDivElement | null>(null);
 
-  // Fetch categories dynamically
   const { data: categories } = useSWR("/categories", fetchAllCategories);
   const { data: settings } = useSWR("/settings", getSettings);
 
   const navItems = useMemo<NavbarNavItem[]>(() => {
     if (!categories) return [];
-
     return buildNavbarNavItems(categories, settings?.navbarLayout);
   }, [categories, settings?.navbarLayout]);
-  const wishlistHref = isAuthenticated() ? "/wishlist" : "/login?redirect=/wishlist";
 
+  const wishlistHref = isAuthenticated() ? "/wishlist" : "/login?redirect=/wishlist";
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
 
     const syncAuthState = () => {
@@ -714,11 +615,9 @@ const NavbarInner = () => {
       if (!header) return;
       setNavbarBottom(Math.round(header.getBoundingClientRect().bottom));
     };
-
     updateNavbarBottom();
     window.addEventListener("resize", updateNavbarBottom);
     window.addEventListener("scroll", updateNavbarBottom, { passive: true });
-
     return () => {
       window.removeEventListener("resize", updateNavbarBottom);
       window.removeEventListener("scroll", updateNavbarBottom);
@@ -744,8 +643,7 @@ const NavbarInner = () => {
       return currentUser.name.trim().split(" ")[0];
     }
     if (currentUser.phoneNumber) return currentUser.phoneNumber;
-    if (currentUser.email)
-      return currentUser.email.split("@")[0] || currentUser.email;
+    if (currentUser.email) return currentUser.email.split("@")[0] || currentUser.email;
     return "User";
   };
 
@@ -757,40 +655,27 @@ const NavbarInner = () => {
           scrolled ? "top-0 shadow-lg" : "top-[27px]"
         }`}
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto">
           <div className="flex justify-between items-center w-full">
-            {/* Logo Left */}
             <Link href="/" className="inline-block flex-shrink-0">
               <Image
-                src="/assets/625030871.png"
+                src="/assets/335014072.png"
                 alt="Studio By Sheetal"
                 width={150}
                 height={50}
-                className="h-[50px] w-auto"
+                className="h-[55px] w-auto"
               />
             </Link>
 
-            {/* Right Side (Navigation) */}
             <div className="flex justify-end items-center flex-1 ml-8">
               <ul className="m-0 p-0 list-none inline-flex items-center gap-0">
-                {/* DYNAMIC DESKTOP NAVIGATION */}
                 {navItems.map((item, idx) => (
                   <DesktopMenuItem key={`${item.id}-${idx}`} item={item} />
                 ))}
 
-                {/* Icons */}
                 <li className="flex items-center gap-4 pl-5 ml-2">
-                  <button
-                    onClick={toggleSearch}
-                    className="hover:opacity-80 transition-opacity cursor-pointer"
-                  >
-                    <Image
-                      src="/assets/icons/search.svg"
-                      alt="Search"
-                      width={24}
-                      height={24}
-                      className="w-7 h-7"
-                    />
+                  <button onClick={toggleSearch} className="hover:opacity-80 transition-opacity cursor-pointer">
+                    <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-7 h-7" />
                   </button>
                   <NavbarUserIcon
                     isClient={isClient}
@@ -800,39 +685,21 @@ const NavbarInner = () => {
                     onLogout={handleLogout}
                     getDisplayName={getDisplayName}
                   />
-                  <Link
-                    href={wishlistHref}
-                    className="relative hover:opacity-80 transition-opacity"
-                  >
-                    <Image
-                      src="/assets/icons/heart.svg"
-                      alt="Wishlist"
-                      width={24}
-                      height={24}
-                      className="w-6 h-6"
-                    />
-                    {wishlist.length > 0 ? (
+                  <Link href={wishlistHref} className="relative hover:opacity-80 transition-opacity">
+                    <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
+                    {wishlist.length > 0 && (
                       <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                         {wishlist.length}
                       </span>
-                    ) : null}
+                    )}
                   </Link>
-                  <Link
-                    href="/cart"
-                    className="relative hover:opacity-80 transition-opacity"
-                  >
-                    <Image
-                      src="/assets/icons/shopping-bag.png"
-                      alt="Cart"
-                      width={24}
-                      height={24}
-                      className="w-7 h-7"
-                    />
-                    {cartItemCount > 0 ? (
+                  <Link href="/cart" className="relative hover:opacity-80 transition-opacity">
+                    <Image src="/assets/icons/shopping-bag.png" alt="Cart" width={24} height={24} className="w-7 h-7" />
+                    {cartItemCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                         {cartItemCount}
                       </span>
-                    ) : null}
+                    )}
                   </Link>
                 </li>
               </ul>
@@ -847,26 +714,13 @@ const NavbarInner = () => {
         }`}
       >
         <div className="container mx-auto px-4 flex justify-between items-center h-[50px]">
-          {/* Logo for Mobile */}
           <Link href="/" className="inline-block">
-            <Image
-              src="/assets/625030871.png"
-              alt="Studio By Sheetal"
-              width={120}
-              height={40}
-              className="h-[40px] w-auto"
-            />
+            <Image src="/assets/625030871.png" alt="Studio By Sheetal" width={120} height={40} className="h-[40px] w-auto" />
           </Link>
 
           <div className="flex items-center gap-4">
             <button onClick={toggleSearch}>
-              <Image
-                src="/assets/icons/search.svg"
-                alt="Search"
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
+              <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-6 h-6" />
             </button>
             <NavbarUserIcon
               isClient={isClient}
@@ -877,42 +731,22 @@ const NavbarInner = () => {
               getDisplayName={getDisplayName}
             />
             <Link href="/cart" className="relative">
-              <Image
-                src="/assets/icons/shopping-bag.svg"
-                alt="Cart"
-                width={24}
-                height={24}
-                className="w-6 h-6"
-              />
-              {cartItemCount > 0 ? (
+              <Image src="/assets/icons/shopping-bag.svg" alt="Cart" width={24} height={24} className="w-6 h-6" />
+              {cartItemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#955300] text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                   {cartItemCount}
                 </span>
-              ) : null}
+              )}
             </Link>
             <div className="cursor-pointer" onClick={toggleMobileMenu}>
-              <Image
-                src="/assets/icons/hambuger.svg"
-                width={24}
-                height={24}
-                alt="Menu"
-                className="w-6 h-6"
-              />
+              <Image src="/assets/icons/hambuger.svg" width={24} height={24} alt="Menu" className="w-6 h-6" />
             </div>
           </div>
         </div>
       </header>
 
-      <SearchModal
-        isOpen={searchOpen}
-        onClose={closeSearch}
-        navbarBottom={navbarBottom}
-      />
-      <MobileMenuOverlay
-        isOpen={isMobileMenuOpen}
-        onClose={toggleMobileMenu}
-        navItems={navItems}
-      />
+      <SearchModal isOpen={searchOpen} onClose={closeSearch} navbarBottom={navbarBottom} />
+      <MobileMenuOverlay isOpen={isMobileMenuOpen} onClose={toggleMobileMenu} navItems={navItems} />
     </>
   );
 };

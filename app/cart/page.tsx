@@ -197,29 +197,25 @@ const CartPage = () => {
     applyCoupon(couponInput.trim().toUpperCase(), userId, couponMeta || undefined);
   };
 
-  const handleShareCart = async () => {
+  const handleShareCart = async (): Promise<string | null> => {
     if (cartItems.length === 0) {
       toast.error("Add items to your cart before sharing.");
-      return;
+      return null;
     }
 
     try {
-      toast.loading("Creating share link...");
       const response = await createSharedCart(cartItems);
-      toast.dismiss();
 
       if (!response?.success || !response?.data?.token) {
         toast.error(response?.message || "Could not create share link.");
-        return;
+        return null;
       }
 
-      const shareUrl = `${window.location.origin}/shared-cart/${response.data.token}`;
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success("Share link copied to clipboard.");
+      return `${window.location.origin}/shared-cart/${response.data.token}`;
     } catch (error) {
-      toast.dismiss();
       console.error("Failed to share cart:", error);
       toast.error("Could not create share link.");
+      return null;
     }
   };
 

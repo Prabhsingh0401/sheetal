@@ -33,7 +33,12 @@ interface Order {
   itemsPrice: number;
   shippingPrice: number;
   taxPrice: number;
-  paymentInfo: { id?: string; status?: string; method: "COD" | "Online" };
+  paymentInfo: {
+    id?: string;
+    status?: string;
+    method: "COD" | "Online";
+    displayMethod?: string;
+  };
   shippingAddress: {
     fullName: string;
     phoneNumber: string;
@@ -85,6 +90,14 @@ const fmtDate = (iso: string) =>
   });
 
 const shortId = (id: string) => id.slice(-10).toUpperCase();
+
+const formatPaymentMode = (paymentInfo: Order["paymentInfo"]) => {
+  if (paymentInfo.displayMethod?.trim()) {
+    return paymentInfo.displayMethod.trim();
+  }
+
+  return paymentInfo.method === "COD" ? "Cash on Delivery" : "Online";
+};
 
 const formatAddressLines = (address: BasicInfoAddress) => {
   const lines = [
@@ -214,7 +227,7 @@ const InvoicePageInner = () => {
   const invoiceDate = fmtDate(order.createdAt);
   const orderDate = fmtDate(order.createdAt);
   const invoiceNumber = `I${shortId(order._id)}`;
-  const paymentMode = order.paymentInfo.method === "COD" ? "COD" : "Card / UPI";
+  const paymentMode = formatPaymentMode(order.paymentInfo);
   const shippingAddressLines = [
     order.shippingAddress.addressLine1,
     `${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.postalCode}`,
@@ -347,7 +360,33 @@ const InvoicePageInner = () => {
                                   {order.orderItems.map((item) => (
                                     <tr key={item._id}>
                                       <td className="border border-[#ccc] p-[13px] text-[16px] text-[#111111]">
-                                        {item.name}
+                                        <div>
+                                          <div>{item.name}</div>
+                                          {(item.variant?.size ||
+                                            item.variant?.color ||
+                                            item.variant?.v_sku) && (
+                                            <div className="mt-1 text-[13px] leading-[20px] text-[#555555]">
+                                              {item.variant?.size && (
+                                                <div>
+                                                  <strong>Variant:</strong>{" "}
+                                                  {item.variant.size}
+                                                </div>
+                                              )}
+                                              {item.variant?.color && (
+                                                <div>
+                                                  <strong>Color:</strong>{" "}
+                                                  {item.variant.color}
+                                                </div>
+                                              )}
+                                              {item.variant?.v_sku && (
+                                                <div>
+                                                  <strong>SKU:</strong>{" "}
+                                                  {item.variant.v_sku}
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
                                       </td>
                                       <td className="border border-[#ccc] p-[13px] text-[16px] text-[#111111]">
                                         {money(item.price)}
