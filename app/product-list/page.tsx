@@ -134,10 +134,12 @@ const ProductListContent = ({
         } else {
           console.warn("Category not found:", categorySlug);
           setCategoryId(undefined);
+          router.replace("/");
         }
       } catch (error) {
         console.error("Error resolving category:", error);
         setCategoryId(undefined);
+        router.replace("/");
       } finally {
         setIsResolvingCategory(false);
       }

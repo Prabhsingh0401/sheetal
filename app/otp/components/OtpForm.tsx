@@ -6,10 +6,15 @@ import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import {
   ConfirmationResult,
-  RecaptchaVerifier,
   signInWithPhoneNumber,
 } from "firebase/auth";
-import { auth } from "../../services/firebase";
+import {
+  auth,
+  setupInvisibleRecaptcha,
+  resetRecaptcha,
+  isRecaptchaAlreadyRenderedError,
+  logAuthDebug,
+} from "../../services/firebase";
 import { verifyIdToken, login } from "../../services/authService";
 import { mergeGuestCartOnLogin } from "../../hooks/useCart";
 import { consumeRedirectTarget, syncRedirectFromQuery } from "../../utils/authRedirect";
@@ -17,7 +22,6 @@ import toast from "react-hot-toast";
 
 declare global {
   interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
     confirmationResult?: ConfirmationResult;
   }
 }
@@ -94,28 +98,7 @@ const OtpForm = () => {
   };
 
   const setupRecaptcha = async () => {
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = undefined;
-    }
-
-    if (window.recaptchaVerifier) {
-      return window.recaptchaVerifier;
-    }
-
-    const recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "recaptcha-container",
-      {
-        size: "invisible",
-        callback: () => {},
-        "expired-callback": () => {},
-      },
-    );
-
-    window.recaptchaVerifier = recaptchaVerifier;
-    await window.recaptchaVerifier.render();
-    return window.recaptchaVerifier;
+    return setupInvisibleRecaptcha(RECAPTCHA_CONTAINER_ID);
   };
 
   const handleChange = (index: number, value: string) => {
@@ -199,6 +182,9 @@ const OtpForm = () => {
     try {
       const confirmationResult =
         window.confirmationResult as ConfirmationResult;
+      logAuthDebug("otp", "verify:start", {
+        hasConfirmationResult: Boolean(window.confirmationResult),
+      });
 
       const userCredential = await confirmationResult.confirm(otpString);
 
@@ -207,15 +193,13 @@ const OtpForm = () => {
       const data = await verifyIdToken(idToken);
 
       if (data.success && data.token) {
+        logAuthDebug("otp", "verify:success");
         login(data.token, data.user);
         sessionStorage.removeItem("otp_phone_number");
         sessionStorage.removeItem("login_phone_number");
         sessionStorage.removeItem(RESEND_AVAILABLE_AT_KEY);
         window.confirmationResult = undefined;
-        if (window.recaptchaVerifier) {
-          window.recaptchaVerifier.clear();
-          window.recaptchaVerifier = undefined;
-        }
+        resetRecaptcha(RECAPTCHA_CONTAINER_ID);
         // Merge any guest cart items into the user's server cart
         await mergeGuestCartOnLogin();
         toast.success("Logged in successfully!");
@@ -228,6 +212,9 @@ const OtpForm = () => {
       } else {
         toast.error(data.message || "Backend login failed.");
         console.error("Backend login failed:", data.message);
+        logAuthDebug("otp", "verify:backend-failed", {
+          message: data.message || "",
+        });
       }
     } catch (error: unknown) {
       const firebaseError = error as { constructor?: { name?: string }; message?: string; code?: string };
@@ -236,6 +223,11 @@ const OtpForm = () => {
       console.error("Error message:", firebaseError.message);
       console.error("Error code:", firebaseError.code);
       console.error("Full error:", error);
+      logAuthDebug("otp", "verify:error", {
+        message: firebaseError.message || "",
+        code: firebaseError.code || "",
+        type: firebaseError.constructor?.name || "Unknown",
+      });
       toast.error(firebaseError.message || "Failed to verify OTP. Please try again.");
     } finally {
       setLoading(false);
@@ -250,23 +242,46 @@ const OtpForm = () => {
     try {
       setResending(true);
       setOtp(["", "", "", "", "", ""]);
-      const appVerifier = await setupRecaptcha();
+      logAuthDebug("otp", "resend:start", {
+        hasPhoneNumber: Boolean(phoneNumber),
+      });
       window.confirmationResult = undefined;
-      const confirmationResult = await signInWithPhoneNumber(
-        auth,
-        `+91${phoneNumber}`,
-        appVerifier!,
-      );
+      const resendOtp = async () => {
+        const appVerifier = await setupRecaptcha();
+        return signInWithPhoneNumber(auth, `+91${phoneNumber}`, appVerifier);
+      };
+
+      let confirmationResult: ConfirmationResult;
+      try {
+        confirmationResult = await resendOtp();
+      } catch (error) {
+        if (!isRecaptchaAlreadyRenderedError(error)) {
+          throw error;
+        }
+
+        logAuthDebug("otp", "resend:auto-retry", {
+          reason: "duplicate-render",
+        });
+        resetRecaptcha(RECAPTCHA_CONTAINER_ID);
+        confirmationResult = await resendOtp();
+      }
 
       window.confirmationResult = confirmationResult;
       startResendCooldown();
+      logAuthDebug("otp", "resend:success");
       toast.success("OTP sent again.");
       inputRefs.current[0]?.focus();
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Failed to resend OTP.";
       console.error("Resend OTP error:", error);
-      toast.error(message);
+      logAuthDebug("otp", "resend:error", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+      resetRecaptcha(RECAPTCHA_CONTAINER_ID);
+      if (!isRecaptchaAlreadyRenderedError(error)) {
+        toast.error(message);
+      }
     } finally {
       setResending(false);
     }

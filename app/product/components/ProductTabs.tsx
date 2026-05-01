@@ -16,6 +16,7 @@ const ProductTabs: React.FC<ProductTabsProps> = ({
 }) => {
   const sanitizedDescription = sanitizeProductRichText(description);
   const sanitizedMaterialCare = sanitizeProductRichText(materialCare);
+  console.log(sanitizedMaterialCare)
 
   return (
     <div className="product-tabs border-[#fe5722] border-b mt-8">

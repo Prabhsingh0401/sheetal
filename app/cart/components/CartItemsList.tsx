@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CartItem } from "../../hooks/useCart";
 import { getApiImageUrl } from "../../services/api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import ShareMenu from "../../components/ShareMenu";
 
 interface CartItemsListProps {
   cartItems: CartItem[];
@@ -12,7 +13,7 @@ interface CartItemsListProps {
   itemWiseDiscount: { [cartItemId: string]: number } | null;
   moveFromCartToWishlist: (itemId: string, productId: string) => Promise<void>;
   updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
-  onShareCart: () => void;
+  onShareCart: () => Promise<string | null>;
   handleRemoveItem: (item: CartItem) => void;
   isModalOpen: boolean;
   confirmRemoveItem: () => Promise<void>;
@@ -72,19 +73,24 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
             </span>
           </div>
           <div className="flex gap-7 items-center">
-            <button
-              type="button"
-              className="cursor-pointer hover:opacity-80"
-              onClick={onShareCart}
-              aria-label="Share cart"
+            <ShareMenu
+              getUrl={onShareCart}
+              title="My Studio By Sheetal Cart"
+              text="I found some amazing outfits at Studio By Sheetal! Check them out."
             >
-              <Image
-                src="/assets/icons/share.svg"
-                alt="Share"
-                width={20}
-                height={20}
-              />
-            </button>
+              <button
+                type="button"
+                className="cursor-pointer hover:opacity-80 flex items-center justify-center"
+                aria-label="Share cart"
+              >
+                <Image
+                  src="/assets/icons/share.svg"
+                  alt="Share"
+                  width={20}
+                  height={20}
+                />
+              </button>
+            </ShareMenu>
             <button
               className="cursor-pointer hover:opacity-80"
               onClick={onBulkRemove}

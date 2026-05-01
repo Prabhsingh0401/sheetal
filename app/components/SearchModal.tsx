@@ -55,7 +55,7 @@ const addClickedItem = (item: PreviousSearchItem) => {
 
 const addSearchQuery = (queryText: string) => {
   const trimmed = queryText.trim();
-  if (!trimmed || trimmed.length < 2) return;
+  if (!trimmed) return;
   addClickedItem({ type: "query", name: trimmed });
 };
 
@@ -202,7 +202,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
 
   const handleSearchSubmit = useCallback(() => {
     const trimmedQuery = query.trim();
-    if (trimmedQuery.length <= 1) return;
+    if (!trimmedQuery) return;
     addSearchQuery(trimmedQuery);
     setPreviousSearches(getPreviousSearches());
     onClose();
@@ -595,6 +595,37 @@ const SearchModal: React.FC<SearchModalProps> = ({
     </div>
   );
 
+  const renderProductsLoader = (title: string) => (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-3 mb-4">
+        <h4 className="text-[16px] font-normal text-black tracking-wide whitespace-nowrap">
+          {title}
+        </h4>
+        <hr className="flex-1 border-gray-200" />
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="flex flex-col h-full animate-pulse">
+            <div className="relative aspect-[3/4] bg-gray-200 rounded-2xl overflow-hidden shrink-0" />
+            <div className="mt-2 px-0.5 flex flex-col flex-grow gap-2">
+              <div className="h-4 bg-gray-200 rounded w-4/5" />
+              <div className="h-4 bg-gray-200 rounded w-3/5" />
+              <div className="mt-auto flex flex-col items-start gap-2 pt-1">
+                <div className="h-4 bg-gray-200 rounded w-1/3" />
+                <div className="h-3 bg-gray-200 rounded w-1/2" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-gray-500 text-center pt-6 text-sm">
+        Loading matching products...
+      </p>
+    </div>
+  );
+
   if (!isOpen) return null;
 
   const showingQuery = query.length >= 1;
@@ -682,7 +713,9 @@ const SearchModal: React.FC<SearchModalProps> = ({
                 <div className="flex-1 min-w-0 min-h-0 overflow-y-auto custom-scrollbar">
                   {showingQuery ? (
                     <div className="flex flex-col gap-6">
-                      {matchedProducts.length > 0 ? (
+                      {isLoading ? (
+                        renderProductsLoader(productTitle)
+                      ) : matchedProducts.length > 0 ? (
                         renderProductGrid(matchedProducts, false, productTitle)
                       ) : !isLoading && matchedCategories.length === 0 ? (
                         <p className="text-gray-400 text-center py-8 text-sm italic">

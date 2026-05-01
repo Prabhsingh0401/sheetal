@@ -4,11 +4,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { updateUserProfile, getCurrentUser } from "../../services/userService";
 import { getApiImageUrl } from "../../services/api";
 import {
-  RecaptchaVerifier,
   signInWithPhoneNumber,
   ConfirmationResult,
 } from "firebase/auth";
-import { auth } from "../../services/firebase";
+import {
+  auth,
+  setupInvisibleRecaptcha,
+  resetRecaptcha,
+  isRecaptchaAlreadyRenderedError,
+  logAuthDebug,
+} from "../../services/firebase";
 import {
   verifyIdToken,
   login,
@@ -17,12 +22,6 @@ import {
   updateUserDetailsInLocalStorage,
 } from "../../services/authService";
 import toast from "react-hot-toast";
-
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-  }
-}
 
 const RESEND_AVAILABLE_AT_KEY = "otp_resend_available_at";
 const RESEND_DELAY_SECONDS = 20;
@@ -165,25 +164,7 @@ const EditProfile: React.FC = () => {
   }, [profilePicturePreview]);
 
   const setupRecaptcha = async () => {
-    if (window.recaptchaVerifier) {
-      window.recaptchaVerifier.clear();
-      window.recaptchaVerifier = undefined;
-    }
-
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(
-        auth,
-        "recaptcha-container",
-        {
-          size: "invisible",
-          callback: () => {},
-          "expired-callback": () => {},
-        },
-      );
-      await window.recaptchaVerifier.render();
-    }
-
-    return window.recaptchaVerifier;
+    return setupInvisibleRecaptcha("recaptcha-container");
   };
 
   const startResendCooldown = () => {
@@ -203,12 +184,16 @@ const EditProfile: React.FC = () => {
     try {
       setPhoneLoading(true);
       setConfirmationResult(null);
-      const appVerifier = await setupRecaptcha();
+      logAuthDebug("profile-phone", "send-otp:start", {
+        hasCurrentUserPhone: Boolean(auth.currentUser?.phoneNumber),
+        mobileNumberLength: mobileNumber.length,
+      });
 
       const formattedNumber = `+91${mobileNumber}`;
 
       // Check if ALREADY matched in our current Firebase session
       if (auth.currentUser?.phoneNumber === formattedNumber) {
+        logAuthDebug("profile-phone", "send-otp:already-verified");
         setIsPhoneVerified(true);
         setShowOtpInput(false);
         toast.success("Phone number verified successfully!");
@@ -219,19 +204,41 @@ const EditProfile: React.FC = () => {
       // We use signInWithPhoneNumber instead of linkWithPhoneNumber
       // to avoid 'account-exists-with-different-credential' errors.
       // The backend verifyIdToken call will handle the logical merging of accounts.
-      const result = await signInWithPhoneNumber(
-        auth,
-        formattedNumber,
-        appVerifier,
-      );
+      const sendOtp = async () => {
+        const appVerifier = await setupRecaptcha();
+        return signInWithPhoneNumber(auth, formattedNumber, appVerifier);
+      };
+
+      let result: ConfirmationResult;
+      try {
+        result = await sendOtp();
+      } catch (error) {
+        if (!isRecaptchaAlreadyRenderedError(error)) {
+          throw error;
+        }
+
+        logAuthDebug("profile-phone", "send-otp:auto-retry", {
+          reason: "duplicate-render",
+        });
+        resetRecaptcha("recaptcha-container");
+        result = await sendOtp();
+      }
 
       setConfirmationResult(result);
       setShowOtpInput(true);
       startResendCooldown();
+      logAuthDebug("profile-phone", "send-otp:success");
       toast.success("OTP sent successfully!");
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      toast.error(error.message || "Failed to send OTP");
+      logAuthDebug("profile-phone", "send-otp:error", {
+        message: error?.message || "",
+        code: error?.code || "",
+      });
+      resetRecaptcha("recaptcha-container");
+      if (!isRecaptchaAlreadyRenderedError(error)) {
+        toast.error(error.message || "Failed to send OTP");
+      }
     } finally {
       setPhoneLoading(false);
     }
@@ -246,6 +253,9 @@ const EditProfile: React.FC = () => {
 
     try {
       setPhoneLoading(true);
+      logAuthDebug("profile-phone", "verify-otp:start", {
+        hasConfirmationResult: Boolean(confirmationResult),
+      });
       // Attempt to confirm the OTP
       const userCredential = await confirmationResult?.confirm(otpString);
       const idToken = await userCredential?.user.getIdToken(true);
@@ -254,13 +264,11 @@ const EditProfile: React.FC = () => {
         const verifyRes = await verifyIdToken(idToken);
 
         if (verifyRes.success) {
+          logAuthDebug("profile-phone", "verify-otp:success");
           // If successful, the backend has linked/merged the accounts
           login(verifyRes.token, verifyRes.user);
           sessionStorage.removeItem(RESEND_AVAILABLE_AT_KEY);
-          if (window.recaptchaVerifier) {
-            window.recaptchaVerifier.clear();
-            window.recaptchaVerifier = undefined;
-          }
+          resetRecaptcha("recaptcha-container");
           setIsPhoneVerified(true);
           setShowOtpInput(false);
           toast.success(
@@ -272,11 +280,18 @@ const EditProfile: React.FC = () => {
             window.location.reload();
           }, 1500);
         } else {
+          logAuthDebug("profile-phone", "verify-otp:backend-failed", {
+            message: verifyRes.message || "",
+          });
           toast.error(verifyRes.message || "Backend synchronization failed.");
         }
       }
     } catch (error: any) {
       console.error("Error verifying OTP:", error);
+      logAuthDebug("profile-phone", "verify-otp:error", {
+        message: error?.message || "",
+        code: error?.code || "",
+      });
       if (
         error.code === "auth/credential-already-in-use" ||
         error.code === "auth/account-exists-with-different-credential"

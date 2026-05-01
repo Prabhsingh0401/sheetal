@@ -18,7 +18,7 @@ import { API_BASE_URL } from "./services/api";
 async function getHomepageSections() {
   try {
     const res = await fetch(`${API_BASE_URL}/homepage/sections`, {
-      next: { revalidate: 60 }, // revalidate every 60s
+      cache: "no-store",
     });
     const data = await res.json();
     return data.sections;
