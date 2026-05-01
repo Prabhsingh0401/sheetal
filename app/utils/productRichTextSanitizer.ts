@@ -68,13 +68,22 @@ const sanitizerConfig = {
   ALLOWED_ATTR: allowedAttributes,
   ALLOW_DATA_ATTR: true,
   ALLOW_ARIA_ATTR: true,
-  FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "form", "textarea", "select", "option"],
-  ALLOWED_URI_REGEXP:
-    /^(?:(?:https?|mailto|tel):|\/|#|data:image\/(?:png|jpe?g|gif|webp|bmp);base64,[a-z0-9+/=\s]+)$/i,
+  FORBID_TAGS: [
+    "script",
+    "style",
+    "iframe",
+    "object",
+    "embed",
+    "form",
+    "textarea",
+    "select",
+    "option",
+  ],
+  // DOMPurify's default safely blocks javascript:, vbscript:, and other dangerous schemes
+  // while allowing https://, http://, mailto:, tel:, relative paths, and anchor links
 };
 
 export const sanitizeProductRichText = (value: string) => {
   if (typeof value !== "string" || !value.trim()) return "";
   return DOMPurify.sanitize(value, sanitizerConfig);
 };
-

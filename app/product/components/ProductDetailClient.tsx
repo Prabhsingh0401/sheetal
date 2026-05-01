@@ -357,30 +357,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       void loadProduct();
     };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        void loadProduct();
-      }
-    };
-
-    const handlePageFocus = () => {
-      void loadProduct();
-    };
-
-    const handlePageShow = () => {
-      void loadProduct();
-    };
-
     window.addEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
-    window.addEventListener("focus", handlePageFocus);
-    window.addEventListener("pageshow", handlePageShow);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
-      window.removeEventListener("focus", handlePageFocus);
-      window.removeEventListener("pageshow", handlePageShow);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [loadProduct]);
 

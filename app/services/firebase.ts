@@ -10,6 +10,10 @@ import {
   type ConfirmationResult,
 } from "firebase/auth";
 
+const RECAPTCHA_ALREADY_RENDERED_MESSAGE =
+  "reCAPTCHA has already been rendered in this element";
+const AUTH_DEBUG_KEY = "__auth_recaptcha_debug__";
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -30,6 +34,154 @@ googleProvider.setCustomParameters({
 });
 googleProvider.addScope("email");
 googleProvider.addScope("profile");
+
+const clearRecaptchaContainer = (containerId: string) => {
+  if (typeof window === "undefined") return;
+
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.innerHTML = "";
+  }
+};
+
+const getErrorDetails = (error: unknown) => {
+  if (!error || typeof error !== "object") {
+    return {
+      message: String(error || ""),
+      code: "",
+      name: "",
+    };
+  }
+
+  const candidate = error as {
+    message?: string;
+    code?: string;
+    name?: string;
+  };
+
+  return {
+    message: candidate.message || "",
+    code: candidate.code || "",
+    name: candidate.name || "",
+  };
+};
+
+export const isRecaptchaAlreadyRenderedError = (error: unknown) =>
+  getErrorDetails(error).message.includes(RECAPTCHA_ALREADY_RENDERED_MESSAGE);
+
+export const logAuthDebug = (
+  scope: string,
+  step: string,
+  details?: Record<string, unknown>,
+) => {
+  const payload = {
+    scope,
+    step,
+    details: details || {},
+    timestamp: new Date().toISOString(),
+  };
+
+  console.info("[auth-debug]", payload);
+
+  if (typeof window === "undefined") return;
+
+  try {
+    const existing = JSON.parse(
+      sessionStorage.getItem(AUTH_DEBUG_KEY) || "[]",
+    ) as Array<Record<string, unknown>>;
+    existing.push(payload);
+    sessionStorage.setItem(
+      AUTH_DEBUG_KEY,
+      JSON.stringify(existing.slice(-40)),
+    );
+  } catch {
+    // Ignore sessionStorage failures in diagnostics.
+  }
+};
+
+export const resetRecaptcha = (containerId: string) => {
+  if (typeof window === "undefined") return;
+
+  logAuthDebug("recaptcha", "reset:start", { containerId });
+
+  const recaptchaWindow = window as Window & {
+    recaptchaVerifier?: RecaptchaVerifier;
+    recaptchaWidgetId?: number;
+    grecaptcha?: { reset: (widgetId?: number) => void };
+  };
+
+  try {
+    if (typeof recaptchaWindow.recaptchaWidgetId === "number") {
+      recaptchaWindow.grecaptcha?.reset(recaptchaWindow.recaptchaWidgetId);
+    } else {
+      recaptchaWindow.grecaptcha?.reset?.();
+    }
+  } catch {
+    // Ignore reset failures and continue with cleanup.
+  }
+
+  try {
+    recaptchaWindow.recaptchaVerifier?.clear();
+  } catch {
+    // Ignore clear failures and continue with cleanup.
+  }
+
+  recaptchaWindow.recaptchaVerifier = undefined;
+  recaptchaWindow.recaptchaWidgetId = undefined;
+  clearRecaptchaContainer(containerId);
+  logAuthDebug("recaptcha", "reset:done", { containerId });
+};
+
+export const setupInvisibleRecaptcha = async (containerId: string) => {
+  const recaptchaWindow = window as Window & {
+    recaptchaVerifier?: RecaptchaVerifier;
+    recaptchaWidgetId?: number;
+  };
+
+  const createVerifier = async () => {
+    logAuthDebug("recaptcha", "setup:create", { containerId });
+    resetRecaptcha(containerId);
+
+    const recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+      size: "invisible",
+      callback: () => {},
+      "expired-callback": () => {
+        resetRecaptcha(containerId);
+      },
+    });
+
+    recaptchaWindow.recaptchaVerifier = recaptchaVerifier;
+    recaptchaWindow.recaptchaWidgetId = await recaptchaVerifier.render();
+    logAuthDebug("recaptcha", "setup:rendered", {
+      containerId,
+      widgetId: recaptchaWindow.recaptchaWidgetId,
+    });
+
+    return recaptchaVerifier;
+  };
+
+  try {
+    return await createVerifier();
+  } catch (error) {
+    const { message, code, name } = getErrorDetails(error);
+    logAuthDebug("recaptcha", "setup:error", {
+      containerId,
+      message,
+      code,
+      name,
+    });
+
+    if (message.includes(RECAPTCHA_ALREADY_RENDERED_MESSAGE)) {
+      resetRecaptcha(containerId);
+      logAuthDebug("recaptcha", "setup:retry-after-duplicate-render", {
+        containerId,
+      });
+      return createVerifier();
+    }
+
+    throw error;
+  }
+};
 
 export {
   auth,
