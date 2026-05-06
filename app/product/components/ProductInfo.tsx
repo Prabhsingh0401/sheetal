@@ -40,6 +40,7 @@ interface ProductInfoProps {
   isOutOfStock: boolean;
   selectedVariantData?: ProductVariant | null;
   selectedVariantSizes?: ProductVariant["sizes"];
+  settings?: any;
 }
 
 function AccordionSection({
@@ -127,8 +128,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   isOutOfStock,
   selectedVariantData,
   selectedVariantSizes = [],
+  settings,
 }) => {
-  const priceToDisplay = product.selectedPrice || product.selectedOriginalPrice;
+  const priceToDisplay = product.selectedPrice;
   const originalPriceToDisplay = product.selectedOriginalPrice;
   const discountPercentageToDisplay = product.selectedDiscount
     ? Number(product.selectedDiscount)
@@ -158,9 +160,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           <span className="text-[22px] font-normal">
             ₹ {priceToDisplay.toFixed(2)}
           </span>
-          <span className="text-[18px] text-gray-400 line-through">
-            ₹ {originalPriceToDisplay.toFixed(2)}
-          </span>
+          {originalPriceToDisplay > 0 && (
+            <span className="text-[18px] text-gray-400 line-through">
+              ₹ {originalPriceToDisplay.toFixed(2)}
+            </span>
+          )}
           {discountPercentageToDisplay > 0 && (
             <span className="text-[16px] text-[#6a3f0e] font-medium">
               Save {discountPercentageToDisplay}%
@@ -270,7 +274,9 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                     {size.name}
                     {isDisabled && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className={`w-full h-px bg-gray-400 transform ${size.name === "One Size" || size.name === "Free Size" ? "rotate-25" : "rotate-45"}`} />
+                        <div
+                          className={`w-full h-px bg-gray-400 transform ${size.name === "One Size" || size.name === "Free Size" ? "rotate-25" : "rotate-45"}`}
+                        />
                       </div>
                     )}
                   </button>
@@ -279,10 +285,10 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                     actualStock !== undefined &&
                     actualStock <= 5 &&
                     actualStock > 0 && (
-                    <span className="text-[9px] -mt-2 z-2 md:text-[10px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">
-                      {actualStock} left
-                    </span>
-                  )}
+                      <span className="text-[9px] -mt-2 z-2 md:text-[10px] bg-[#f5a623] text-white px-1.5 py-0.5 rounded-sm font-semibold whitespace-nowrap">
+                        {actualStock} left
+                      </span>
+                    )}
                 </div>
               );
             })}
@@ -355,9 +361,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
           <span className="text-base font-bold leading-tight">
             ₹ {priceToDisplay.toFixed(2)}
           </span>
-          <span className="text-xs text-gray-400 line-through">
-            ₹ {originalPriceToDisplay.toFixed(2)}
-          </span>
+          {originalPriceToDisplay > 0 && (
+            <span className="text-xs text-gray-400 line-through">
+              ₹ {originalPriceToDisplay.toFixed(2)}
+            </span>
+          )}
         </div>
         <div className="flex gap-2 flex-1 justify-end">
           {isOutOfStock ? (
@@ -495,12 +503,12 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                 <tr className="border-b">
                   <td className="py-2 pr-4">Pre-Paid</td>
                   <td className="py-2 pr-4">All over India</td>
-                  <td className="py-2">Free Shipping</td>
+                  <td className="py-2">{settings?.prepaidShippingCharge || "Free Shipping"}</td>
                 </tr>
                 <tr className="border-b">
                   <td className="py-2 pr-4">COD Charges</td>
                   <td className="py-2 pr-4">All over India</td>
-                  <td className="py-2">Free Shipping</td>
+                  <td className="py-2">{settings?.codShippingCharge || "Free Shipping"}</td>
                 </tr>
               </tbody>
             </table>
@@ -519,9 +527,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             Return Policy
           </h3>
           <p className="text-xs leading-relaxed md:text-sm">
-            Your satisfaction is our top priority. If you&apos;re not
-            completely satisfied with the product, we offer a hassle-free, no
-            questions asked 7 days return and refund.
+            {settings?.returnPolicyContent || "Your satisfaction is our top priority. If you're not completely satisfied with the product, we offer a hassle-free, no questions asked 7 days return and refund."}
           </p>
           <p className="mt-2 text-xs md:text-sm">
             For more details please read{" "}
@@ -542,7 +548,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
         </h4>
         <div className="flex flex-col gap-3 text-sm">
           <a
-            href="mailto:info@studiobysheetal.com"
+            href={`mailto:${settings?.supportEmail || "info@studiobysheetal.com"}`}
             className="flex items-center hover:text-[#5f3c20] gap-2"
           >
             <Image
@@ -552,11 +558,11 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
               alt="email"
             />
             <span className="break-all text-[15px]">
-              Email us at info@studiobysheetal.com
+              Email us at {settings?.supportEmail || "info@studiobysheetal.com"}
             </span>
           </a>
           <a
-            href="https://wa.me/919958813913"
+            href={`https://wa.me/${settings?.supportWhatsapp || "919958813913"}`}
             className="flex items-center hover:text-[#5f3c20] border w-fit px-3 py-2 font-semibold gap-2"
           >
             <Image
