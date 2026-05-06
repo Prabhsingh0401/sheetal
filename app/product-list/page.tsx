@@ -215,7 +215,7 @@ const ProductListContent = ({
     const existing = activeFilters.find((f) => f.label === filterLabel);
 
     // Single-select filter types — new value replaces the old one
-    const singleSelectTypes = ["price"];
+    const singleSelectTypes = ["price", "category"];
 
     if (singleSelectTypes.includes(type)) {
       // If same value clicked again, remove it (deselect); otherwise replace
@@ -355,12 +355,20 @@ const ProductListContent = ({
           return false;
         });
       });
+    } else if (type === "category") {
+      filteredProducts = filteredProducts.filter((p) => {
+        const product = products.find((prod) => prod._id === p._id);
+        return values.includes(product?.category?.name || "");
+      });
     } else {
-      // wearType, occasion, tags, style, work, fabric, productType
+      // wearType, occasion, tags, style, work, fabric, productType, subCategory
       filteredProducts = filteredProducts.filter((p) => {
         const product = products.find((prod) => prod._id === p._id);
         const productFields = product as Record<string, unknown> | undefined;
         const fieldValue = productFields?.[type];
+        if (typeof fieldValue === "string") {
+          return values.includes(fieldValue);
+        }
         return (
           Array.isArray(fieldValue) &&
           values.some((val) => fieldValue.includes(val))

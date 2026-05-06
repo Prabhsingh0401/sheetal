@@ -130,8 +130,11 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
       name: "WhatsApp",
       icon: "/assets/icons/whatsapp.svg",
       onClick: async () => {
+        const win = window.open("about:blank", "_blank");
         const shareUrl = await fetchUrl();
-        window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + shareUrl)}`, "_blank");
+        if (win) {
+          win.location.href = `https://wa.me/?text=${encodeURIComponent(text + " " + shareUrl)}`;
+        }
         handleClose();
       },
     },
@@ -139,8 +142,12 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
       name: "Facebook",
       icon: "/assets/icons/facebook.svg",
       onClick: async () => {
+        // Open window immediately to prevent popup blockers
+        const win = window.open("about:blank", "_blank");
         const shareUrl = await fetchUrl();
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, "_blank");
+        if (win) {
+          win.location.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+        }
         handleClose();
       },
     },
@@ -207,7 +214,7 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
             animate="visible"
             exit="exit"
             onMouseLeave={() => !isMobile && setIsOpen(false)}
-            className={`absolute z-[100] bg-white/90 backdrop-blur-md border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl p-2 min-w-[190px]
+            className={`absolute z-100 bg-white/90 backdrop-blur-md border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl p-2 min-w-[190px]
               ${isMobile ? "bottom-full mb-3 right-0 origin-bottom-right" : "top-0 left-full ml-3 origin-top-left"}`}
           >
             <div className="flex flex-col gap-1">

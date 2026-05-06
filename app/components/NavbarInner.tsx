@@ -31,6 +31,7 @@ import {
 
 const hasTags = (category: Partial<Category>) => {
   return (
+    (category.subCategories && category.subCategories.length > 0) ||
     (category.occasion && category.occasion.length > 0) ||
     (category.fabric && category.fabric.length > 0) ||
     (category.style && category.style.length > 0) ||
@@ -50,6 +51,7 @@ const DynamicMegaMenu = ({
   if (!category._id) return null;
 
   const tagGroups = [
+    { title: "Sub Categories", items: category.subCategories, type: "subCategory" },
     { title: "By Occasion", items: category.occasion, type: "occasion" },
     { title: "By Fabric", items: category.fabric, type: "fabric" },
     { title: "By Style", items: category.style, type: "style" },
@@ -339,6 +341,7 @@ const MobileSubMenuView = ({
   onClose: () => void;
 }) => {
   const tagGroups = [
+    { title: "Sub Categories", items: item.subCategories, type: "subCategory" },
     { title: "By Occasion", items: item.occasion, type: "occasion" },
     { title: "By Fabric", items: item.fabric, type: "fabric" },
     { title: "By Style", items: item.style, type: "style" },

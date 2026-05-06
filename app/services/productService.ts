@@ -99,6 +99,7 @@ export interface Product {
   work?: string[];
   fabric?: string[];
   productType?: string[];
+  subCategory?: string;
 
   brandInfo?: string;
   warranty: string;

@@ -18,6 +18,8 @@ export interface FilterOptions {
   works: Array<{ label: string; count: number }>;
   fabrics: Array<{ label: string; count: number }>;
   productTypes: Array<{ label: string; count: number }>;
+  subCategories: Array<{ label: string; count: number }>;
+  categories: Array<{ label: string; count: number; slug: string; subCategories: string[] }>;
 }
 
 /**
@@ -35,6 +37,8 @@ export const useProductFilters = (products: Product[]): FilterOptions => {
     const workMap = new Map<string, number>();
     const fabricMap = new Map<string, number>();
     const productTypeMap = new Map<string, number>();
+    const subCategoryMap = new Map<string, number>();
+    const categoryMap = new Map<string, { count: number; slug: string; subCategories: Set<string> }>();
     const prices: number[] = [];
     let inStockCount = 0;
     let lowStockCount = 0;
@@ -129,6 +133,25 @@ export const useProductFilters = (products: Product[]): FilterOptions => {
         const count = productTypeMap.get(item) || 0;
         productTypeMap.set(item, count + 1);
       });
+
+      // Collect subCategory
+      if (product.subCategory) {
+        const count = subCategoryMap.get(product.subCategory) || 0;
+        subCategoryMap.set(product.subCategory, count + 1);
+      }
+
+      // Collect category
+      if (product.category) {
+        const catKey = product.category.name;
+        if (!categoryMap.has(catKey)) {
+          categoryMap.set(catKey, { count: 0, slug: product.category.slug, subCategories: new Set() });
+        }
+        const catInfo = categoryMap.get(catKey)!;
+        catInfo.count++;
+        if (product.subCategory) {
+          catInfo.subCategories.add(product.subCategory);
+        }
+      }
     });
 
     // Sort sizes intelligently (numeric first, then alphabetic)
@@ -188,6 +211,14 @@ export const useProductFilters = (products: Product[]): FilterOptions => {
       .map(([label, count]) => ({ label, count }))
       .sort((a, b) => b.count - a.count);
 
+    const subCategories = Array.from(subCategoryMap.entries())
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const categories = Array.from(categoryMap.entries())
+      .map(([label, data]) => ({ label, count: data.count, slug: data.slug, subCategories: Array.from(data.subCategories) }))
+      .sort((a, b) => b.count - a.count);
+
     // Generate price ranges based on actual price distribution
     const priceRanges = generatePriceRanges(prices);
 
@@ -209,6 +240,8 @@ export const useProductFilters = (products: Product[]): FilterOptions => {
       works,
       fabrics,
       productTypes,
+      subCategories,
+      categories,
     };
   }, [products]);
 };
