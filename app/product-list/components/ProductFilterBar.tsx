@@ -213,6 +213,129 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
           {/* Filter Categories Accordion */}
           <div className="space-y-3 sm:space-y-4 font-[family-name:var(--font-montserrat)]">
+            {/* Category Filter */}
+            {filterOptions.categories?.length > 1 && (
+              <div className="border-b border-gray-300 pb-2">
+                <button
+                  onClick={() => toggleSection("category")}
+                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
+                >
+                  Category
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("category") ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+                <div
+                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("category") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                >
+                  {filterOptions.categories.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`f-category-${idx}`}
+                        checked={isFilterSelected("category", item.label)}
+                        onChange={() => onFilterChange("category", item.label)}
+                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor={`f-category-${idx}`}
+                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
+                      >
+                        {toSentenceCase(item.label)}{" "}
+                        <span className="text-gray-400">({item.count})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sub Category Filter */}
+            {(() => {
+              const isCategoryPage = filterOptions.categories?.length <= 1;
+              const selectedCategoryFilter = activeFilters.find((f) => f.type === "category");
+
+              let showSubCategory = false;
+              let displayedSubCategories = filterOptions.subCategories || [];
+
+              if (isCategoryPage) {
+                showSubCategory = displayedSubCategories.length > 0;
+              } else if (selectedCategoryFilter) {
+                const catInfo = filterOptions.categories?.find(
+                  (c) => c.label === selectedCategoryFilter.value,
+                );
+                if (catInfo) {
+                  displayedSubCategories = displayedSubCategories.filter((sc) =>
+                    catInfo.subCategories.includes(sc.label),
+                  );
+                }
+                showSubCategory = displayedSubCategories.length > 0;
+              }
+
+              if (!showSubCategory) return null;
+
+              return (
+                <div className="border-b border-gray-300 pb-2">
+                  <button
+                    onClick={() => toggleSection("subCategory")}
+                    className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
+                  >
+                    Sub Category
+                    <svg
+                      className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("subCategory") ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  <div
+                    className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("subCategory") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
+                  >
+                    {displayedSubCategories.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-3 group cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          id={`f-subCategory-${idx}`}
+                          checked={isFilterSelected("subCategory", item.label)}
+                          onChange={() => onFilterChange("subCategory", item.label)}
+                          className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+                        />
+                        <label
+                          htmlFor={`f-subCategory-${idx}`}
+                          className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
+                        >
+                          {toSentenceCase(item.label)}{" "}
+                          <span className="text-gray-400">({item.count})</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
             {/* Size Filter */}
             {filterOptions.sizes.length > 0 && (
               <div className="border-b border-gray-300 pb-2">
@@ -767,6 +890,8 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                 </div>
               </div>
             )}
+
+            
           </div>
         </div>
       </div>

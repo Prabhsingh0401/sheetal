@@ -111,24 +111,40 @@ export const resetRecaptcha = (containerId: string) => {
   };
 
   try {
+    // 1. Try to reset the widget via grecaptcha
     if (typeof recaptchaWindow.recaptchaWidgetId === "number") {
       recaptchaWindow.grecaptcha?.reset(recaptchaWindow.recaptchaWidgetId);
     } else {
       recaptchaWindow.grecaptcha?.reset?.();
     }
-  } catch {
-    // Ignore reset failures and continue with cleanup.
+  } catch (err) {
+    console.warn("grecaptcha reset failed:", err);
   }
 
   try {
-    recaptchaWindow.recaptchaVerifier?.clear();
-  } catch {
-    // Ignore clear failures and continue with cleanup.
+    // 2. Clear the verifier instance
+    if (recaptchaWindow.recaptchaVerifier) {
+      recaptchaWindow.recaptchaVerifier.clear();
+    }
+  } catch (err) {
+    console.warn("verifier clear failed:", err);
   }
 
+  // 3. Nullify all references
   recaptchaWindow.recaptchaVerifier = undefined;
   recaptchaWindow.recaptchaWidgetId = undefined;
-  clearRecaptchaContainer(containerId);
+
+  // 4. Force clear the DOM element to prevent re-render errors
+  const container = document.getElementById(containerId);
+  if (container) {
+    // Remove all children
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+    // Also reset any attributes Firebase might have added
+    container.innerHTML = "";
+  }
+  
   logAuthDebug("recaptcha", "reset:done", { containerId });
 };
 

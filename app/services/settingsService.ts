@@ -15,6 +15,11 @@ interface Settings {
     categorySlug?: string;
   }[];
   footerLayout?: any[]; // Footer sections with links
+  prepaidShippingCharge: string;
+  codShippingCharge: string;
+  returnPolicyContent: string;
+  supportEmail: string;
+  supportWhatsapp: string;
 }
 
 export const getSettings = async (): Promise<Settings> => {
@@ -29,5 +34,10 @@ export const getSettings = async (): Promise<Settings> => {
     taxPercentage: 0,
     navbarLayout: [],
     footerLayout: [],
+    prepaidShippingCharge: "Free Shipping",
+    codShippingCharge: "Free Shipping",
+    returnPolicyContent: "Your satisfaction is our top priority. If you're not completely satisfied with the product, we offer a hassle-free, no questions asked 7 days return and refund.",
+    supportEmail: "info@studiobysheetal.com",
+    supportWhatsapp: "919958813913",
   };
 };

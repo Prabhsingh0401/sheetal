@@ -1,4 +1,3 @@
-// app/product/[id]/ProductDetailClient.tsx
 "use client";
 import React, {
   useState,
@@ -39,6 +38,8 @@ import { useCart } from "../../hooks/useCart";
 import { redirectToLogin } from "../../utils/authRedirect";
 import { ORDER_CONFIRMED_EVENT } from "../../hooks/shopEvents";
 import toast from "react-hot-toast";
+import useSWR from "swr";
+import { getSettings } from "../../services/settingsService";
 
 interface ColorOption {
   name: string;
@@ -80,6 +81,33 @@ interface RelatedProduct {
   soldOut: boolean;
 }
 
+// ─── Price helpers ────────────────────────────────────────────────────────────
+
+/**
+ * A real discount only exists when discountPrice is set (> 0) AND is less than price.
+ * discountPrice === 0 simply means "no discount configured".
+ */
+function sizeHasDiscount(size: {
+  price: number;
+  discountPrice: number;
+}): boolean {
+  return size.discountPrice > 0 && size.discountPrice < size.price;
+}
+
+/**
+ * Effective selling price:
+ * - Has real discount → discountPrice
+ * - No discount       → price
+ */
+function getEffectivePrice(size: {
+  price: number;
+  discountPrice: number;
+}): number {
+  return sizeHasDiscount(size) ? size.discountPrice : size.price;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const ProductDetailClient = ({ slug }: { slug: string }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -109,6 +137,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const [pincode, setPincode] = useState("");
   const [pincodeMessage, setPincodeCheckMessage] = useState("");
   const hasIncrementedViewRef = useRef(false);
+
   const {
     isProductInWishlist,
     toggleProductInWishlist,
@@ -117,52 +146,54 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     handleLoginRedirect,
   } = useWishlist();
 
+  const { data: settings } = useSWR("/settings", getSettings);
+
   const loadProduct = useCallback(async () => {
-      setLoading(true);
-      try {
-        const res = await fetchProductBySlug(slug);
-        if (res.success && res.data) {
-          setProduct(res.data);
-          setSizeChartData(
-            (res.data.sizeChart as SizeChartData | null) ||
-              (res.data.category?.sizeChart as SizeChartData | null) ||
-              null,
+    setLoading(true);
+    try {
+      const res = await fetchProductBySlug(slug);
+      if (res.success && res.data) {
+        setProduct(res.data);
+        setSizeChartData(
+          (res.data.sizeChart as SizeChartData | null) ||
+            (res.data.category?.sizeChart as SizeChartData | null) ||
+            null,
+        );
+
+        const matchedVariant = selectedColor
+          ? res.data.variants?.find(
+              (v: ProductVariant) => v.color?.name === selectedColor,
+            )
+          : null;
+        const matchedSize = selectedSize
+          ? matchedVariant?.sizes.find(
+              (s: ProductVariant["sizes"][number]) => s.name === selectedSize,
+            ) || null
+          : null;
+
+        if (matchedVariant) {
+          setSelectedVariantData(matchedVariant);
+          if (matchedVariant.color?.name) {
+            setSelectedColor(matchedVariant.color.name);
+          }
+          const refreshedGallery = getVariantGalleryUrls(
+            res.data,
+            matchedVariant,
           );
+          setSelectedImage(refreshedGallery[0] || getProductImageUrl(res.data));
 
-          const matchedVariant =
-            selectedColor
-              ? res.data.variants?.find(
-                  (v: ProductVariant) => v.color?.name === selectedColor,
-                )
-              : null;
-          const matchedSize = selectedSize
-            ? matchedVariant?.sizes.find(
-                (s: ProductVariant["sizes"][number]) => s.name === selectedSize,
-              ) || null
-            : null;
-
-          if (matchedVariant) {
-            setSelectedVariantData(matchedVariant);
-            if (matchedVariant.color?.name) {
-              setSelectedColor(matchedVariant.color.name);
-            }
-
-            const refreshedGallery = getVariantGalleryUrls(res.data, matchedVariant);
-            setSelectedImage(refreshedGallery[0] || getProductImageUrl(res.data));
-
-            if (matchedSize) {
-              setSelectedSize(matchedSize.name);
-              setSelectedSizeObject(matchedSize);
-            } else {
-              const nextAvailableSize =
-                matchedVariant.sizes.find(
-                  (s: ProductVariant["sizes"][number]) => s.stock > 0,
-                ) || null;
-              setSelectedSize(nextAvailableSize?.name || "");
-              setSelectedSizeObject(nextAvailableSize);
-            }
+          if (matchedSize) {
+            setSelectedSize(matchedSize.name);
+            setSelectedSizeObject(matchedSize);
           } else {
-          // Default size logic: find first available size
+            const nextAvailableSize =
+              matchedVariant.sizes.find(
+                (s: ProductVariant["sizes"][number]) => s.stock > 0,
+              ) || null;
+            setSelectedSize(nextAvailableSize?.name || "");
+            setSelectedSizeObject(nextAvailableSize);
+          }
+        } else {
           const firstAvailableVariant = res.data.variants?.find(
             (v: ProductVariant) =>
               Array.isArray(v.sizes) &&
@@ -193,180 +224,152 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               setSelectedSizeObject(firstAvailableSize);
             }
           } else {
-            const mainImg = getProductImageUrl(res.data);
-            setSelectedImage(mainImg);
+            setSelectedImage(getProductImageUrl(res.data));
             setSelectedVariantData(null);
             setSelectedSize("");
             setSelectedSizeObject(null);
           }
+        }
+
+        // ── Similar Products ───────────────────────────────────────────
+        const productFabrics: string[] = (res.data.fabric ?? [])
+          .map((f: string) => f?.trim().toLowerCase())
+          .filter(Boolean);
+
+        let currentMinPrice = 0;
+        res.data.variants?.forEach((v: ProductVariant) => {
+          v.sizes?.forEach((s) => {
+            const effective = getEffectivePrice(s);
+            if (
+              effective > 0 &&
+              (currentMinPrice === 0 || effective < currentMinPrice)
+            ) {
+              currentMinPrice = effective;
+            }
+          });
+        });
+
+        const selfId = res.data._id;
+        const categoryId = res.data.category?._id;
+
+        const [tier1Res, tier2Res] = await Promise.allSettled([
+          categoryId && productFabrics.length > 0 && currentMinPrice > 0
+            ? fetchProducts({
+                category: categoryId,
+                fabric: productFabrics[0],
+                minPrice: Math.max(0, currentMinPrice - 2000),
+                maxPrice: currentMinPrice + 2000,
+                limit: 10,
+                status: "Active",
+              })
+            : Promise.resolve(null),
+          categoryId && currentMinPrice > 0
+            ? fetchProducts({
+                category: categoryId,
+                minPrice: Math.max(0, currentMinPrice - 2000),
+                maxPrice: currentMinPrice + 2000,
+                limit: 10,
+                status: "Active",
+              })
+            : Promise.resolve(null),
+        ]);
+
+        const seen = new Set<string>();
+        const allFetched: Product[] = [];
+        for (const result of [tier1Res, tier2Res]) {
+          if (result.status === "fulfilled" && result.value?.success) {
+            for (const p of result.value.products ?? []) {
+              if (p._id !== selfId && !seen.has(p._id)) {
+                seen.add(p._id);
+                allFetched.push(p);
+              }
+            }
           }
+        }
+        setSimilarProducts(allFetched);
 
-          // ── Similar Products: always scoped to same category ──────────
-          const productFabrics: string[] = (res.data.fabric ?? [])
-            .map((f: string) => f?.trim().toLowerCase())
-            .filter(Boolean);
+        // ── Recently viewed ────────────────────────────────────────────
+        try {
+          const RV_KEY = "__rv__";
+          let minPrice = Infinity;
+          let minMRP = Infinity;
 
-          // Derive min effective price across all variants/sizes
-          let currentMinPrice = 0;
           res.data.variants?.forEach((v: ProductVariant) => {
-            v.sizes?.forEach((s) => {
-              const effective = s.discountPrice > 0 ? s.discountPrice : s.price;
-              if (
-                effective > 0 &&
-                (currentMinPrice === 0 || effective < currentMinPrice)
-              ) {
-                currentMinPrice = effective;
+            v.sizes?.forEach((s: { price: number; discountPrice: number }) => {
+              if (sizeHasDiscount(s)) {
+                if (s.price < minMRP) minMRP = s.price;
+                if (s.discountPrice < minPrice) minPrice = s.discountPrice;
+              } else {
+                if (s.price > 0 && s.price < minPrice) minPrice = s.price;
               }
             });
           });
 
-          const selfId = res.data._id;
-          const categoryId = res.data.category?._id;
+          if (minPrice === Infinity) minPrice = 0;
+          if (minMRP === Infinity) minMRP = 0;
 
-          const [tier1Res, tier2Res, tier3Res] = await Promise.allSettled([
-            // Tier 1: same category + same fabric + price ±₹2000
-            categoryId && productFabrics.length > 0 && currentMinPrice > 0
-              ? fetchProducts({
-                  category: categoryId,
-                  fabric: productFabrics[0],
-                  minPrice: Math.max(0, currentMinPrice - 2000),
-                  maxPrice: currentMinPrice + 2000,
-                  limit: 10,
-                  status: "Active",
-                })
-              : Promise.resolve(null),
+          const currentDiscount =
+            minMRP > 0 && minPrice < minMRP
+              ? `${Math.round(((minMRP - minPrice) / minMRP) * 100)}%`
+              : "0%";
 
-            // Tier 2: same category + price ±₹2000 (no fabric restriction)
-            categoryId && currentMinPrice > 0
-              ? fetchProducts({
-                  category: categoryId,
-                  minPrice: Math.max(0, currentMinPrice - 2000),
-                  maxPrice: currentMinPrice + 2000,
-                  limit: 10,
-                  status: "Active",
-                })
-              : Promise.resolve(null),
-
-            // Tier 3: same category + price ±₹2000 (broadest — no fabric)
-            categoryId && currentMinPrice > 0
-              ? fetchProducts({
-                  category: categoryId,
-                  minPrice: Math.max(0, currentMinPrice - 2000),
-                  maxPrice: currentMinPrice + 2000,
-                  limit: 15,
-                  status: "Active",
-                })
-              : Promise.resolve(null),
-          ]);
-
-          const seen = new Set<string>();
-          const allFetched: Product[] = [];
-
-          for (const result of [tier1Res, tier2Res]) {
-            if (result.status === "fulfilled" && result.value?.success) {
-              for (const p of result.value.products ?? []) {
-                if (p._id !== selfId && !seen.has(p._id)) {
-                  seen.add(p._id);
-                  allFetched.push(p);
-                }
-              }
-            }
-          }
-
-          setSimilarProducts(allFetched);
-
-          // ─────────────────────────────────────────────────────────────
-
-          // ── Persist to recently-viewed ────────────────────────────────
-          try {
-            const RV_KEY = "__rv__";
-            let minPrice = Infinity;
-            let minMRP = Infinity;
-
-            res.data.variants?.forEach((v: ProductVariant) => {
-              v.sizes?.forEach((s: { price: number; discountPrice: number }) => {
-                if (s.price > 0 && s.price < minMRP) {
-                  minMRP = s.price;
-                }
-
-                const eff = s.discountPrice > 0 ? s.discountPrice : s.price;
-                if (eff > 0 && eff < minPrice) {
-                  minPrice = eff;
-                }
-              });
-            });
-
-            if (minPrice === Infinity) minPrice = 0;
-            if (minMRP === Infinity) minMRP = 0;
-
-            const currentDiscount =
-              minMRP > 0 && minPrice < minMRP
-                ? `${Math.round(((minMRP - minPrice) / minMRP) * 100)}%`
-                : "0%";
-            const entry = {
-              id: res.data.slug,
-              name: res.data.name,
-              image: getProductImageUrl(res.data),
-              hoverImage: res.data.hoverImage?.url
-                ? getApiImageUrl(res.data.hoverImage.url)
-                : getProductImageUrl(res.data),
-              price: minPrice,
-              mrp: minMRP,
-              discount: currentDiscount,
-              soldOut: res.data.stock <= 0,
-            };
-            const prev = JSON.parse(
-              localStorage.getItem(RV_KEY) || "[]",
-            ) as (typeof entry)[];
-            const deduped = [
-              entry,
-              ...prev.filter((p) => p.id !== entry.id),
-            ].slice(0, 12);
-            localStorage.setItem(RV_KEY, JSON.stringify(deduped));
-          } catch {
-            // localStorage unavailable — safe to ignore
-          }
-
-          // Increment View Count
-          if (!hasIncrementedViewRef.current) {
-            hasIncrementedViewRef.current = true;
-            incrementProductView(slug).catch(console.error);
-          }
-
-          // Fetch Reviews
-          fetchProductReviews(res.data._id)
-            .then((revRes) => {
-              if (revRes.success) setReviews(revRes.data);
-            })
-            .catch(console.error);
-        } else {
-          setError("Product not found");
+          const entry = {
+            id: res.data.slug,
+            name: res.data.name,
+            image: getProductImageUrl(res.data),
+            hoverImage: res.data.hoverImage?.url
+              ? getApiImageUrl(res.data.hoverImage.url)
+              : getProductImageUrl(res.data),
+            price: minPrice,
+            mrp: minMRP,
+            discount: currentDiscount,
+            soldOut: res.data.stock <= 0,
+          };
+          const prev = JSON.parse(
+            localStorage.getItem(RV_KEY) || "[]",
+          ) as (typeof entry)[];
+          const deduped = [
+            entry,
+            ...prev.filter((p) => p.id !== entry.id),
+          ].slice(0, 12);
+          localStorage.setItem(RV_KEY, JSON.stringify(deduped));
+        } catch {
+          // localStorage unavailable
         }
-      } catch (e) {
-        console.error(e);
-        setError("Failed to load product");
-      } finally {
-        setLoading(false);
+
+        if (!hasIncrementedViewRef.current) {
+          hasIncrementedViewRef.current = true;
+          incrementProductView(slug).catch(console.error);
+        }
+
+        fetchProductReviews(res.data._id)
+          .then((revRes) => {
+            if (revRes.success) setReviews(revRes.data);
+          })
+          .catch(console.error);
+      } else {
+        setError("Product not found");
       }
-    }, [selectedColor, selectedSize, slug]);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load product");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedColor, selectedSize, slug]);
 
   useEffect(() => {
     void loadProduct();
-
     const handleOrderConfirmed = () => {
       void loadProduct();
     };
-
     window.addEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
-
     return () => {
       window.removeEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
     };
   }, [loadProduct]);
 
-  const handleImageChange = (img: string) => {
-    setSelectedImage(img);
-  };
+  const handleImageChange = (img: string) => setSelectedImage(img);
 
   const checkPincode = () => {
     if (pincode.length === 6) {
@@ -381,24 +384,20 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       toast.error("Please select a size to add to cart.");
       return;
     }
-
     const selectedVariant = product.variants.find(
       (variant: ProductVariant) => variant.color?.name === selectedColor,
     );
     const selectedSizeInfo = selectedVariant?.sizes.find(
       (size) => size.name === selectedSize,
     );
-
     if (!selectedVariant || !selectedSizeInfo) {
       toast.error("Selected variant not available.");
       return;
     }
-
     const variantImageUrl = getApiImageUrl(
       selectedVariant.v_image,
       product.mainImage?.url || "/assets/placeholder-product.jpg",
     );
-
     await addToCart(
       product._id,
       selectedVariant._id,
@@ -437,7 +436,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     const selectedSizeInfo = selectedVariant?.sizes.find(
       (size) => size.name === selectedSize,
     );
-
     if (!selectedVariant || !selectedSizeInfo) {
       toast.error("Selected variant not available");
       return;
@@ -470,12 +468,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
     const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
     const checkoutUrl = `/checkout/address?buynow=${encoded}`;
-
     if (!isAuthenticated()) {
       redirectToLogin(router, checkoutUrl);
       return;
     }
-
     router.push(checkoutUrl);
   };
 
@@ -483,19 +479,14 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     const target =
       document.getElementById("similar-products-section") ||
       document.getElementById("recently-viewed-section");
-
     target?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   useEffect(() => {
-    if (loading || searchParams.get("scroll") !== "similar") {
-      return;
-    }
-
+    if (loading || searchParams.get("scroll") !== "similar") return;
     const timeoutId = window.setTimeout(() => {
       scrollToSimilarProducts();
     }, 100);
-
     return () => window.clearTimeout(timeoutId);
   }, [loading, searchParams, scrollToSimilarProducts]);
 
@@ -511,24 +502,17 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     }
   }, [galleryImages, selectedImage]);
 
-  if (loading)
-    return <StorefrontLoadingShell message="Loading product..." />;
+  if (loading) return <StorefrontLoadingShell message="Loading product..." />;
   if (!product)
     return <StorefrontLoadingShell message={error || "Product not found"} />;
 
-  // Derive all unique colors, all unique sizes, and a map of color to available sizes
+  // ── Derive colors, sizes, colorToSizes map ────────────────────────────────
   const allUniqueColors: ColorOption[] = [];
   const allUniqueSizeNames = new Set<string>();
   const colorToAvailableSizesMap = new Map<string, Set<string>>();
-
-  // To store overall stock for each size for `allUniqueSizes`
-  const sizeOverallStockMap = new Map<
-    string,
-    { totalStock: number }
-  >();
+  const sizeOverallStockMap = new Map<string, { totalStock: number }>();
 
   product.variants?.forEach((v: ProductVariant) => {
-    // Collect unique colors
     if (
       v.color &&
       typeof v.color === "object" &&
@@ -543,19 +527,15 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         ),
       });
     }
-
     if (Array.isArray(v.sizes)) {
       v.sizes?.forEach((s: { name: string; stock: number }) => {
         if (s?.name) {
           allUniqueSizeNames.add(s.name);
-
           const currentStock = sizeOverallStockMap.get(s.name) || {
             totalStock: 0,
           };
           currentStock.totalStock += s.stock || 0;
           sizeOverallStockMap.set(s.name, currentStock);
-
-          // Populate colorToAvailableSizesMap
           if (
             v.color &&
             typeof v.color === "object" &&
@@ -585,7 +565,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
   const handleColorChange = (color: ColorOption) => {
     setSelectedColor(color.name);
-
     const newlySelectedVariant =
       product?.variants.find((v) => v.color?.name === color.name) || null;
     setSelectedVariantData(newlySelectedVariant);
@@ -632,20 +611,32 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     }
   };
 
-  // Transformed Product Object for ProductInfo
-  const fallbackSize = product.variants?.[0]?.sizes?.[0];
-  const resolvedSize = selectedSizeObject ?? fallbackSize;
+  // ── Price derivation ──────────────────────────────────────────────────────
+  //
+  // Resolve the size object to read price from.
+  // Prefer selectedSizeObject; fall back to the first size of the selected
+  // variant, then the very first size across all variants.
+  // This avoids reading a stale/mismatched fallback size.
+  //
+  const resolvedSize: { price: number; discountPrice: number } | null =
+    selectedSizeObject ??
+    selectedVariantData?.sizes?.[0] ??
+    product.variants?.[0]?.sizes?.[0] ??
+    null;
 
-  const currentSelectedPrice =
-    resolvedSize?.discountPrice > 0
-      ? resolvedSize.discountPrice
-      : resolvedSize?.price || 0;
-  const currentSelectedOriginalPrice = resolvedSize?.price || 0;
-  const currentSelectedDiscount =
-    currentSelectedOriginalPrice > 0 &&
-    currentSelectedPrice < currentSelectedOriginalPrice
-      ? `${Math.round(((currentSelectedOriginalPrice - currentSelectedPrice) / currentSelectedOriginalPrice) * 100)}`
+  // A discount only exists when discountPrice > 0 AND discountPrice < price
+  const hasDiscount = resolvedSize ? sizeHasDiscount(resolvedSize) : false;
+
+  // What the customer pays
+  const currentSelectedPrice: number = resolvedSize?.discountPrice ?? 0;
+
+  const currentSelectedOriginalPrice: number = resolvedSize?.price ?? 0;
+
+  const currentSelectedDiscount: string =
+    resolvedSize && resolvedSize.price > resolvedSize.discountPrice
+      ? `${Math.round(((resolvedSize.price - resolvedSize.discountPrice) / resolvedSize.price) * 100)}`
       : "0";
+  // ─────────────────────────────────────────────────────────────────────────
 
   const productInfoData: ProductInfoData = {
     title: product.name,
@@ -666,19 +657,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     specifications: product.specifications || [],
   };
 
-  // ── Related Products: map + score-sort ───────────────────────────────
-  const getMinPrice = (p: Product): number => {
-    let min = Infinity;
-    p.variants.forEach((v) => {
-      v.sizes.forEach((s) => {
-        const eff = s.discountPrice > 0 ? s.discountPrice : s.price;
-        if (eff > 0 && eff < min) min = eff;
-      });
-    });
-    return min === Infinity ? 0 : min;
-  };
-
-  const currentMinPrice = getMinPrice(product);
+  // ── Related Products ──────────────────────────────────────────────────────
   const productFabricSet = new Set(
     (product.fabric ?? []).map((f: string) => f.trim().toLowerCase()),
   );
@@ -688,16 +667,18 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
   const relatedProductsData: RelatedProduct[] = similarProducts
     .map((p: Product) => {
-      let minPrice: number = Infinity;
-      let minMRP: number = Infinity;
+      let minPrice = Infinity;
+      let minMRP = Infinity;
 
       p.variants.forEach((variant) => {
         variant.sizes.forEach((size) => {
-          if (size.price < minMRP) minMRP = size.price;
-          if (size.discountPrice > 0 && size.discountPrice < minPrice) {
-            minPrice = size.discountPrice;
-          } else if (size.discountPrice === 0 && size.price < minPrice) {
-            minPrice = size.price;
+          if (sizeHasDiscount(size)) {
+            // Has a real discount → track both MRP and selling price
+            if (size.price < minMRP) minMRP = size.price;
+            if (size.discountPrice < minPrice) minPrice = size.discountPrice;
+          } else {
+            // No discount → selling price is just price, no MRP to show
+            if (size.price > 0 && size.price < minPrice) minPrice = size.price;
           }
         });
       });
@@ -734,7 +715,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       return score(b) - score(a);
     })
     .map(({ _sameCategory, _sameFabric, ...rest }) => rest);
-  // ─────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="font-[family-name:var(--font-montserrat)] bg-[#f9f9f9]">
@@ -748,7 +729,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       />
 
       <div className="container mx-auto md:px-8 px-4">
-        {/* Mobile Title */}
         <div className="lg:hidden mb-4 mt-2">
           <h1 className="text-2xl font-medium text-[#683e14] mb-2 font-[family-name:var(--font-optima)]">
             {product.name}
@@ -773,7 +753,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
                     : undefined
               }
               videoMimeType={
-                selectedVariantData?.v_video?.mimeType || product.video?.mimeType
+                selectedVariantData?.v_video?.mimeType ||
+                product.video?.mimeType
               }
             />
           </div>
@@ -799,6 +780,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               selectedVariantData={selectedVariantData}
               selectedVariantSizes={currentSelectedVariant?.sizes || []}
               hasSizeChart={Boolean(sizeChartData)}
+              settings={settings}
             />
           </div>
         </div>
@@ -817,6 +799,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         overallRating={product.averageRating || 0}
         totalReviews={product.totalReviews || 0}
       />
+
       <RelatedProducts
         similarProducts={relatedProductsData}
         isProductInWishlist={isProductInWishlist}
