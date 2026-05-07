@@ -21,6 +21,7 @@ import WishlistLoginModal from "../../components/WishlistLoginModal";
 import { useCart } from "../../hooks/useCart";
 import { redirectToLogin } from "../../utils/authRedirect";
 import { ORDER_CONFIRMED_EVENT } from "../../hooks/shopEvents";
+import { buildProductHref } from "../../utils/productRoutes";
 
 interface QuickViewProps {
   productSlug: string | null;
@@ -433,7 +434,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
   const handleViewSimilar = () => {
     if (!product) return;
     onClose();
-    router.push(`/product/${product.slug}?scroll=similar`);
+    router.push(buildProductHref(product, { scroll: "similar" }));
   };
 
   return (

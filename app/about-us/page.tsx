@@ -43,6 +43,33 @@ const AboutUs = () => {
     fetchAbout();
   }, []);
 
+  useEffect(() => {
+    if (loading || typeof window === "undefined") return;
+
+    let frameId = 0;
+    let attempts = 0;
+
+    const scrollToStory = () => {
+      const element = document.getElementById("our-story");
+
+      if (!element) {
+        if (attempts < 10) {
+          attempts += 1;
+          frameId = window.requestAnimationFrame(scrollToStory);
+        }
+        return;
+      }
+
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    };
+
+    frameId = window.requestAnimationFrame(scrollToStory);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [loading]);
+
   // Helper for images
   const getImage = (path: string | undefined, fallback: string): string =>
     path || fallback;
@@ -63,11 +90,11 @@ const AboutUs = () => {
               alt="Our Story Banner"
               width={1920}
               height={600}
-              className="w-full h-[360px] object-cover"
+              className="w-full h-[480px] object-cover"
               priority
             />
           </div>
-          <div className="w-full border-b border-[#ffcf8c] pb-2 bg-white/80 md:bg-transparent py-5">
+          <div id="our-story" className="w-full scroll-mt-20 border-b border-[#ffcf8c] pb-2 bg-white/80 md:bg-transparent py-5">
             <h1 className="font-optima text-[30px] text-[#6a3f07] font-normal">
               {data?.banner?.title || "Our Story"}
             </h1>

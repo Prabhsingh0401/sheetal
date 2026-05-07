@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import StarRating from "./StarRating";
+import { buildProductHref } from "../../utils/productRoutes";
 
 interface ProductCardProps {
   product: any;
@@ -17,6 +18,7 @@ const ProductCard = ({
   onToggleWishlist,
 }: ProductCardProps) => {
   const wishlistProductId = product.productId || product._id;
+  const productHref = buildProductHref(product);
 
   return (
     <div className="p-2 group h-full flex flex-col">
@@ -54,7 +56,7 @@ const ProductCard = ({
           </button>
         </div>
 
-        <Link href={`/product/${product.id}`}>
+        <Link href={productHref}>
           <div className="relative aspect-[3/4]">
             <Image
               src={product.image || "/assets/placeholder-product.jpg"}
@@ -80,7 +82,7 @@ const ProductCard = ({
           style={{ minHeight: "2.5rem" }}
         >
           <Link
-            href={`/product/${product.id}`}
+            href={productHref}
             className="hover:text-[#bd9951] transition-colors"
           >
             {product.name}
@@ -114,7 +116,7 @@ const ProductCard = ({
 
           <div className="flex justify-start">
             <Link
-              href={`/product/${product.id}`}
+              href={productHref}
               className="inline-block border-b  border-black text-left text-black py-2 uppercase text-[12px] font-medium  hover:tracking-[2px] transition-all duration-500 hover:text-red-500 "
             >
               View Detail

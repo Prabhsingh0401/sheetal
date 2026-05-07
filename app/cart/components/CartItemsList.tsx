@@ -6,6 +6,7 @@ import { CartItem } from "../../hooks/useCart";
 import { getApiImageUrl } from "../../services/api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import ShareMenu from "../../components/ShareMenu";
+import { buildProductHref } from "../../utils/productRoutes";
 
 interface CartItemsListProps {
   cartItems: CartItem[];
@@ -130,7 +131,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       100,
                   )
                 : 0;
-            const productHref = `/product/${encodeURIComponent(item.product.slug)}`;
+            const productHref = buildProductHref(item.product);
             const showCouponBadge =
               applicableCategories.length > 0 &&
               itemWiseDiscount &&

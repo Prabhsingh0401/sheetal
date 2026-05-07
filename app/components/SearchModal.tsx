@@ -12,6 +12,7 @@ import {
 import { getCategoryImageUrl } from "../services/categoryService";
 import { useCategories } from "../hooks/useCategories";
 import Image from "next/image";
+import { buildProductHref } from "../utils/productRoutes";
 
 const PREVIOUS_SEARCHES_KEY = "previous_searches";
 const MAX_PREVIOUS_SEARCHES = 5;
@@ -21,6 +22,7 @@ interface PreviousSearchItem {
   name: string;
   slug?: string;
   categoryName?: string;
+  categorySlug?: string;
 }
 
 const getPreviousSearches = (): PreviousSearchItem[] => {
@@ -281,7 +283,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                   href={
                     item.type === "category"
                       ? `/${item.data.slug}`
-                      : `/product/${item.data.slug}`
+                      : buildProductHref(item.data)
                   }
                   onClick={() => {
                     addClickedItem(
@@ -295,6 +297,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
                             type: "product",
                             name: item.data.name,
                             slug: item.data.slug,
+                            categorySlug: item.data.category?.slug,
                           },
                     );
                     onClose();
@@ -418,7 +421,10 @@ const SearchModal: React.FC<SearchModalProps> = ({
                     key={i}
                     href={
                       item.type === "product"
-                        ? `/product/${item.slug}`
+                        ? buildProductHref({
+                            slug: item.slug,
+                            categorySlug: item.categorySlug,
+                          })
                         : `/product-list?category=${encodeURIComponent(item.categoryName || "")}`
                     }
                     onClick={() => {
@@ -542,13 +548,14 @@ const SearchModal: React.FC<SearchModalProps> = ({
           return (
             <Link
               key={product._id}
-              href={`/product/${product.slug}`}
+              href={buildProductHref(product)}
               className="group flex flex-col h-full cursor-pointer"
               onClick={() => {
                 addClickedItem({
                   type: "product",
                   name: product.name,
                   slug: product.slug,
+                  categorySlug: product.category?.slug,
                 });
                 onClose();
               }}

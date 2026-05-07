@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { CartItem } from "../../hooks/useCart";
 import { getApiImageUrl } from "../../services/api";
+import { buildProductHref } from "../../utils/productRoutes";
 
 // Looser type to support both cart items and buy-now items
 type DisplayItem = CartItem | {
@@ -38,7 +39,7 @@ const MiniCartSummary: React.FC<MiniCartSummaryProps> = ({ cartItems }) => {
             item.variantImage || item.product.mainImage?.url,
           );
           const price = (item.discountPrice || item.price || 0).toFixed(2);
-          const slug = item.product.slug;
+          const productHref = buildProductHref(item.product);
 
           return (
             <div key={item._id ?? idx} className="flex gap-3">
@@ -51,9 +52,9 @@ const MiniCartSummary: React.FC<MiniCartSummaryProps> = ({ cartItems }) => {
                 />
               </div>
               <div className="flex-1">
-                {slug ? (
+                {item.product.slug ? (
                   <Link
-                    href={`/product/${slug}`}
+                    href={productHref}
                     className="text-sm text-gray-800 hover:text-[#bd9951] line-clamp-2"
                   >
                     {item.product.name}

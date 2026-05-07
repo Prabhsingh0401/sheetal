@@ -10,6 +10,7 @@ import { getSharedCart } from "@/app/services/cartService";
 import { getSettings } from "@/app/services/settingsService";
 import { isAuthenticated } from "@/app/services/authService";
 import { redirectToLogin } from "@/app/utils/authRedirect";
+import { buildProductHref } from "@/app/utils/productRoutes";
 import type { CartItem } from "@/app/hooks/useCart";
 
 const SharedCartPage = () => {
@@ -209,7 +210,7 @@ const SharedCartPage = () => {
                         )
                       : 0;
 
-                  const productHref = `/product/${encodeURIComponent(item.product.slug)}`;
+                  const productHref = buildProductHref(item.product);
 
                   return (
                     <div key={item._id} className="flex items-start py-3 gap-3">

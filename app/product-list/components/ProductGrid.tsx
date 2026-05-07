@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { buildProductHref } from "../../utils/productRoutes";
 
 interface Product {
   _id: string;
@@ -43,6 +44,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({
     >
       {products.map((product) => (
         product.isStarred && (
+          (() => {
+            const productHref = buildProductHref(product);
+            return (
           <div
           key={product._id}
           className={`group flex transition-all rounded-xl p-1 md:p-2 h-full
@@ -63,7 +67,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             )}
 
             <Link
-              href={`/product/${product.slug}`}
+              href={productHref}
               className="block w-full h-full relative overflow-hidden rounded-lg"
             >
               <Image
@@ -128,7 +132,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               }`}
             >
               <Link
-                href={`/product/${product.slug}`}
+                href={productHref}
                 className="hover:text-[#bd9951] transition-colors tracking-tight"
               >
                 {product.name}
@@ -166,7 +170,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               </div>
 
               <Link
-                href={`/product/${product.slug}`}
+                href={productHref}
                 className="inline-block border-b border-black text-black py-1.5 md:py-2 hover:tracking-[2px] hover:text-red-500 uppercase text-[11px] md:text-[13px] transition-all duration-500"
               >
                 View Detail
@@ -174,10 +178,15 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </div>
           </div>
         </div>
+            );
+          })()
         )
       ))}
       {products.map((product) => (
         !product.isStarred && (
+          (() => {
+            const productHref = buildProductHref(product);
+            return (
           <div
           key={product._id}
           className={`group flex transition-all rounded-xl p-1 md:p-2 h-full
@@ -198,7 +207,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             )}
 
             <Link
-              href={`/product/${product.slug}`}
+              href={productHref}
               className="block w-full h-full relative overflow-hidden rounded-lg"
             >
               <Image
@@ -263,7 +272,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               }`}
             >
               <Link
-                href={`/product/${product.slug}`}
+                href={productHref}
                 className="hover:text-[#bd9951] transition-colors tracking-tight"
               >
                 {product.name}
@@ -301,7 +310,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
               </div>
 
               <Link
-                href={`/product/${product.slug}`}
+                href={productHref}
                 className="inline-block border-b border-black text-black py-1.5 md:py-2 hover:tracking-[2px] hover:text-red-500 uppercase text-[11px] md:text-[13px] transition-all duration-500"
               >
                 View Detail
@@ -309,6 +318,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({
             </div>
           </div>
         </div>
+            );
+          })()
         )
       ))}
     </div>

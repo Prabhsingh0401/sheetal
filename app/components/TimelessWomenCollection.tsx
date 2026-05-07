@@ -71,8 +71,8 @@ const TimelessWomenCollection = () => {
       : defaultImages.map((url) => ({ url }));
 
   return (
-    <div className="flex justify-center w-full py-4 px-6 bg-[#fbfbfb]">
-      <div className="container">
+    <div className="flex w-full justify-center bg-[#fbfbfb] px-4 py-6 sm:px-6">
+      <div className="container px-0">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch justify-items-center">
           {/* LEFT SLIDER */}
           <div className="w-full max-w-[400px] h-auto">
@@ -105,7 +105,7 @@ const TimelessWomenCollection = () => {
               href={centerContent.buttonLink || "#"}
               className="flex w-full h-full border border-[#FFC107] rounded-2xl items-center justify-center hover:shadow-xl transition-shadow duration-300"
             >
-              <div className="text-center px-8">
+              <div className="px-5 text-center md:px-8">
                 {centerContent.label && (
                   <p className="text-[14px] font-[family-name:var(--font-montserrat)]  mb-4 text-black">
                     {centerContent.label}

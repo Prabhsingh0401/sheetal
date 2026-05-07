@@ -10,6 +10,7 @@ import {
 } from "../services/productService";
 import { useWishlist } from "../hooks/useWishlist";
 import WishlistLoginModal from "./WishlistLoginModal";
+import { buildProductHref } from "../utils/productRoutes";
 
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
 const MIN_FOR_CAROUSEL_MOBILE = 2;
@@ -133,8 +134,8 @@ const Collections = () => {
   if (loading) return null;
 
   return (
-    <div className="container-fluid pb-12 px-20 home-page-product font-[family-name:var(--font-montserrat)]">
-      <div className="container mx-auto px-4">
+    <div className="container-fluid px-4 pb-10 sm:px-6 md:pb-12 lg:px-20 home-page-product font-[family-name:var(--font-montserrat)]">
+      <div className="container mx-auto px-0 md:px-4">
         {/* HEADING */}
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center justify-center gap-6 w-full">
@@ -154,7 +155,7 @@ const Collections = () => {
         {isCarousel ? (
           <div className="relative group/slider">
             <div ref={emblaRef} className="overflow-hidden">
-              <div className="flex gap-4 px-4">
+              <div className="flex gap-3 px-2 sm:px-3 md:gap-4 md:px-4">
                 {products.map((product) => (
                   <div
                     key={product._id}
@@ -223,7 +224,7 @@ function ProductCard({
   isWishlisted: boolean;
   onToggleWishlist: (productId: string) => void;
 }) {
-  const href = `/product/${product.slug}`;
+  const href = buildProductHref(product);
 
   return (
     <div className="rounded-xl overflow-hidden group h-full flex flex-col">
