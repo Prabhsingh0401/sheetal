@@ -3,6 +3,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "../../services/productService";
+import { buildProductHref } from "../../utils/productRoutes";
 
 interface WishlistItemCardProps {
   product: Product & {
@@ -21,6 +22,9 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
   onMoveToCart,
   isMovingToCart = false,
 }) => {
+  const productHref = buildProductHref(product);
+  const similarHref = buildProductHref(product, { scroll: "similar" });
+
   return (
     <div className="group p-2 flex flex-col">
       <div className="relative overflow-hidden bg-[#f7f7f7] rounded-lg">
@@ -40,7 +44,7 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
         </button>
 
         <Link
-          href={`/product/${product.slug}`}
+          href={productHref}
           className="block aspect-[3/4] relative"
         >
           <Image
@@ -68,7 +72,7 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
       <div className="flex flex-col flex-grow pt-4 text-left font-[family-name:var(--font-montserrat)]">
         <h6 className="text-[17px] line-clamp-2 pb-1">
           <Link
-            href={`/product/${product.slug}`}
+            href={productHref}
             className="hover:text-[#bd9951] transition-colors"
           >
             {product.name}
@@ -100,7 +104,7 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({
             </button>
           ) : (
             <Link
-              href={`/product/${product.slug}?scroll=similar`}
+              href={similarHref}
               className="cursor-pointer inline-block text-left text-[12px] border-b border-black text-black font-normal py-2 pr-6 uppercase transition-all duration-500 hover:text-red-600 hover:tracking-[1px]"
             >
               Show Similar

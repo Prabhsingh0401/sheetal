@@ -62,7 +62,7 @@ export const buildDefaultNavbarLayout = (
     {
       id: ABOUT_ITEM_ID,
       label: "Our Story",
-      href: "/about-us",
+      href: "/about-us#our-story",
       itemType: "static" as const,
       hidden: false,
     },
@@ -76,7 +76,7 @@ export const buildNavbarNavItems = (
   const categoryNavItems = buildMenuTree(null, categories);
   const categoryMap = new Map(categoryNavItems.map((item) => [item.id, item]));
   const staticItems = new Map<string, NavbarNavItem>([
-    [ABOUT_ITEM_ID, { id: ABOUT_ITEM_ID, label: "Our Story", href: "/about-us" }],
+    [ABOUT_ITEM_ID, { id: ABOUT_ITEM_ID, label: "Our Story", href: "/about-us#our-story" }],
   ]);
 
   const defaultLayout = buildDefaultNavbarLayout(categories);

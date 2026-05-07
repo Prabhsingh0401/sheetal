@@ -61,6 +61,16 @@ interface CouponOption {
   isAbandonedCartCoupon?: boolean;
 }
 
+const isRecoveryCoupon = (coupon: unknown): coupon is CouponOption => {
+  if (!coupon || typeof coupon !== "object") {
+    return false;
+  }
+
+  return Boolean(
+    (coupon as { isAbandonedCartCoupon?: boolean }).isAbandonedCartCoupon,
+  );
+};
+
 const PriceDetails: React.FC<PriceDetailsProps> = ({
   couponInput,
   setCouponInput,
@@ -159,7 +169,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
 
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
   const publicCoupons = coupons.filter((c) => {
-    if (c.isAbandonedCartCoupon) {
+    if (c.isAbandonedCartCoupon === true) {
       return false;
     }
 
@@ -174,6 +184,21 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
     );
   });
   const visibleCoupons = publicCoupons;
+
+  useEffect(() => {
+    if (!openCouponModal) {
+      return;
+    }
+
+    if (isRecoveryCoupon(selectedCouponMeta)) {
+      setSelectedCouponCode(null);
+      setSelectedCouponMeta(null);
+    }
+
+    if (isRecoveryCoupon(couponMeta)) {
+      setCouponInput("");
+    }
+  }, [couponMeta, openCouponModal, selectedCouponMeta, setCouponInput]);
 
   const applyCouponAndClose = () => {
     const user = getUserDetails();
@@ -257,9 +282,19 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
 
             <button
               onClick={() => {
-                setSelectedCouponCode(couponCode || null);
-                setCouponInput(couponCode || "");
-                setSelectedCouponMeta(couponMeta || null);
+                const shouldHideCurrentRecoveryCoupon = isRecoveryCoupon(
+                  couponMeta,
+                );
+
+                setSelectedCouponCode(
+                  shouldHideCurrentRecoveryCoupon ? null : (couponCode ?? null),
+                );
+                setCouponInput(
+                  shouldHideCurrentRecoveryCoupon ? "" : (couponCode ?? ""),
+                );
+                setSelectedCouponMeta(
+                  shouldHideCurrentRecoveryCoupon ? null : (couponMeta ?? null),
+                );
                 setOpenCouponModal(true);
               }}
               className="text-[#6a3f07] font-semibold border border-[#6a3f07] rounded px-2.5 py-0.5 text-sm cursor-pointer"
@@ -397,7 +432,7 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
                   className="text-center p-4"
                   onClick={() => {
                     const val = couponInput.trim().toUpperCase();
-                    const match = coupons.find((c) => c.code === val);
+                    const match = visibleCoupons.find((c) => c.code === val);
                     if (match) {
                       setSelectedCouponCode(match.code);
                       setSelectedCouponMeta(match);

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getNewArrivals, Product } from "@/app/services/productService";
 import { useWishlist } from "../hooks/useWishlist";
 import WishlistLoginModal from "./WishlistLoginModal";
+import { buildProductHref } from "@/app/utils/productRoutes";
 
 const MIN_FOR_CAROUSEL = 5;
 
@@ -80,6 +81,7 @@ const NewArrivals = () => {
   const ProductCard = ({ product }: { product: Product }) => {
     const displayPrice = getDisplayPrice(product);
     const isWishlisted = wishlist.some((p) => p._id === product._id);
+    const productHref = buildProductHref(product);
 
     return (
       <div className="rounded-xl overflow-hidden group h-full flex flex-col">
@@ -112,7 +114,7 @@ const NewArrivals = () => {
             </button>
           </div>
 
-          <Link href={`/product/${product.slug}`} className="block h-full w-full relative">
+          <Link href={productHref} className="block h-full w-full relative">
             <Image
               src={product.mainImage?.url || "/assets/placeholder-product.jpg"}
               alt={product.name}
@@ -133,7 +135,7 @@ const NewArrivals = () => {
         <div className="p-3 md:p-4 text-center flex flex-col flex-1">
           <h6 className="mb-2 h-[40px] overflow-hidden flex items-center justify-center">
             <Link
-              href={`/product/${product.slug}`}
+              href={productHref}
               className="text-[16px] md:text-[14px] text-black hover:text-[#B78D65] font-medium line-clamp-2"
             >
               {product.name}
@@ -171,7 +173,7 @@ const NewArrivals = () => {
             </div>
 
             <Link
-              href={`/product/${product.slug}`}
+              href={productHref}
               className="inline-block rounded border-y border-black text-black py-1.5 md:py-3 px-6 md:px-8 text-[10px] md:text-[16px] uppercase transition-all duration-500 hover:border-[#a2690f]"
             >
               View Product
@@ -193,8 +195,8 @@ const NewArrivals = () => {
   );
 
   return (
-    <div className="container-fluid py-12 px-20 md:py-16 font-[family-name:var(--font-montserrat)]">
-      <div className="container mx-auto px-4">
+    <div className="container-fluid px-4 py-10 sm:px-6 md:py-16 lg:px-20 font-[family-name:var(--font-montserrat)]">
+      <div className="container mx-auto px-0 md:px-4">
 
         {/* On mobile: heading + text stacked above carousel.
             On lg+: side-by-side grid. */}
@@ -205,7 +207,7 @@ const NewArrivals = () => {
             <h2 className="text-[#6a3f07] mb-3 font-[family-name:var(--font-optima)] leading-tight">
               New Arrivals
             </h2>
-            <p className="text-black text-[15px] font-[family-name:var(--font-montserrat)] px-8 md:p-0 md:text-[18px] mb-5 md:mb-8">
+            <p className="mb-5 px-2 text-[15px] text-black font-[family-name:var(--font-montserrat)] md:mb-8 md:p-0 md:text-[18px]">
               Pick your beauty products today. 50% OFF on the new brands. Order
               all classy products today!
             </p>
@@ -220,13 +222,13 @@ const NewArrivals = () => {
           {/* RIGHT – CAROUSEL or GRID */}
           <div className="lg:col-span-9 xl:col-span-8 w-full">
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 px-4">
+              <div className="grid grid-cols-2 gap-3 px-0 sm:px-2 md:grid-cols-3 md:gap-4 md:px-4">
                 {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : isCarousel ? (
               <div className="relative group/slider">
                 <div ref={emblaRef} className="overflow-hidden">
-                  <div className="flex gap-3 md:gap-4 md:px-4 px-3">
+                  <div className="flex gap-3 px-1 sm:px-2 md:gap-4 md:px-4">
                     {products.map((product) => (
                       <div
                         key={product._id}

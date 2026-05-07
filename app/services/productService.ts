@@ -61,12 +61,15 @@ export interface Product {
   _id: string;
   name: string;
   slug: string;
+  previousSlugs?: string[];
   sku: string;
   shortDescription: string;
   description: string;
   materialCare: string;
   isStarred?: boolean;
   gstPercent: number;
+  price?: number;
+  discountPrice?: number;
 
   mainImage: ProductImage;
   hoverImage?: ProductImage;
@@ -88,6 +91,7 @@ export interface Product {
   sizeChart?: SizeChartData | null;
 
   status: string;
+  isActive?: boolean;
   stock: number;
 
   displayCollections: string[];
@@ -181,7 +185,12 @@ export const fetchTrendingProducts = async (): Promise<{
 };
 
 export const fetchProductBySlug = async (slug: string) => {
-  return apiFetch(`/products/${slug}`);
+  return apiFetch(`/products/${slug}`) as Promise<{
+    success: boolean;
+    data?: Product;
+    redirectSlug?: string | null;
+    message?: string;
+  }>;
 };
 
 export const getProductImageUrl = (
