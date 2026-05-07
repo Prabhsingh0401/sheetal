@@ -5,6 +5,8 @@ import Link from "next/link";
 import { getSettings } from "../services/settingsService";
 import { usePathname } from "next/navigation";
 import { ArrowUp, ArrowUp01 } from "lucide-react";
+import { createSubscriber } from "../services/newsletterServices";
+import toast from "react-hot-toast";
 
 interface FooterLink {
   id: string;
@@ -65,7 +67,7 @@ const defaultLayout: FooterBlock[] = [
         id: "sub-1",
         hidden: false,
         links: [
-          { id: "1", label: "Our Story", href: "/about-us" },
+          { id: "1", label: "Our Story", href: "/about-us#our-story" },
           { id: "2", label: "Blog", href: "/blog" },
           { id: "3", label: "FAQ's", href: "/faq" },
           { id: "4", label: "Contact us", href: "/contact-us" },
@@ -145,6 +147,7 @@ const convertOldToNew = (old: RawFooterBlock[]): FooterBlock[] => {
 
 const Footer = () => {
   const [layout, setLayout] = useState<FooterBlock[]>(defaultLayout);
+  const [newsletterEmail, setNewsletterEmail] = useState<string>("");
   const pathname = usePathname();
   const showBackToTop = pathname !== "/";
 
@@ -174,6 +177,28 @@ const Footer = () => {
     fetchFooterLayout();
   }, []);
 
+const handleSubscribe = async () => {
+  if (!newsletterEmail.trim()) {
+    return toast.error("Please enter your email");
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(newsletterEmail)) {
+    return toast.error("Please enter a valid email address");
+  }
+
+  try {
+    const response = await createSubscriber(newsletterEmail);
+    if (!response.ok) {
+      return toast.error("Email already exists");
+    }
+    toast.success("You have subscribed to our newsletter");
+    setNewsletterEmail("");
+  } catch {
+    toast.error("Something went wrong, please try again");
+  }
+};
+
   return (
     <>
       {/* MAIN FOOTER */}
@@ -185,11 +210,11 @@ const Footer = () => {
           backgroundRepeat: "repeat",
         }}
       >
-        <div className="container mx-auto px-6 py-12">
+        <div className="container mx-auto px-4 py-12 sm:px-6">
           {/* TOP GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 text-left lg:pr-10">
             {/* LOGO + SOCIAL */}
-            <div className="text-center lg:text-left flex flex-col items-center md:border-r px-8">
+            <div className="flex flex-col items-center px-2 text-center md:border-r sm:px-4 lg:text-left">
               <Link href="/" className="mb-4">
                 <Image
                   src="/assets/625030871.png"
@@ -216,7 +241,7 @@ const Footer = () => {
             </div>
 
             {/* DYNAMIC FOOTER BLOCKS — spans 3 of the 5 grid cols */}
-            <div className="lg:col-span-3 px-4">
+            <div className="px-0 sm:px-2 lg:col-span-3 lg:px-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-left">
                 {layout
                   .filter((b) => !b.hidden)
@@ -288,13 +313,18 @@ const Footer = () => {
               <p className="mb-4 text-[#f8f0b6] font-light font-optima">
                 Subscribe to get special offers, new products and sales deals.
               </p>
-              <div className="relative border-b border-[#777] pb-2 w-3/4">
+              <div className="flex w-full max-w-sm flex-col gap-3 border-b border-[#777] pb-3 sm:w-3/4 sm:max-w-none sm:flex-row sm:items-end sm:gap-0">
                 <input
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
                   type="email"
                   placeholder="Your e-mail"
-                  className="bg-transparent w-full outline-none text-[#f8f0b6] placeholder-[#f8f0b4] font-light"
+                  className="w-full bg-transparent text-[#f8f0b6] placeholder-[#f8f0b4] font-light outline-none"
                 />
-                <button className="absolute -right-25 bottom-0 border border-[#f8f0b6] p-2 text-[#f8f0b6] uppercase text-sm hover:text-white transition-colors">
+                <button
+                  onClick={handleSubscribe}
+                  className="self-start border border-[#f8f0b6] px-3 py-2 text-sm uppercase text-[#f8f0b6] transition-colors hover:text-white sm:ml-4 sm:self-auto"
+                >
                   Subscribe
                 </button>
               </div>
@@ -336,7 +366,7 @@ const Footer = () => {
 
         {/* COPYRIGHT */}
         <div className="bg-[#faf8fc0d] border-t border-dashed border-[#2c2c2c] py-3">
-          <div className="container mx-auto px-6 text-[#f8f0b4] text-[13px] text-left">
+          <div className="container mx-auto px-4 text-left text-[13px] text-[#f8f0b4] sm:px-6">
             Copyright 2026 © Studio By Sheetal, All Rights Reserved.
           </div>
         </div>
@@ -349,7 +379,7 @@ const Footer = () => {
           className="fixed right-[30px] bottom-[90px] z-50 w-[40px] h-[40px] flex items-center justify-center
                      text-[#90c03e] rounded-full border border-[#90c03e] transition-colors"
         >
-         <ArrowUp/>
+          <ArrowUp />
         </a>
       )}
 

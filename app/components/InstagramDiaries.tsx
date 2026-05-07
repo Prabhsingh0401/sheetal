@@ -105,7 +105,7 @@ const InstagramDiaries = () => {
   );
 
   return (
-    <div className="relative w-full py-4 px-20 bg-[#f9f9f9] overflow-hidden">
+    <div className="relative w-full overflow-hidden bg-[#f9f9f9] px-4 py-8 sm:px-6 md:py-10 lg:px-20">
       {/* Background */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -117,7 +117,7 @@ const InstagramDiaries = () => {
         <div className="absolute inset-0 bg-white/60" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container relative z-10 mx-auto px-0 md:px-4">
         {/* Header */}
         <div className="text-center mb-10 md:mb-4">
           <div className="flex items-center justify-center gap-6 w-full">
@@ -139,7 +139,7 @@ const InstagramDiaries = () => {
         {isCarousel ? (
           <div className="relative group/slider">
             <div ref={emblaRef} className="overflow-hidden">
-              <div className="flex gap-4 px-4 md:gap-8">
+              <div className="flex gap-3 px-2 sm:px-3 md:gap-8 md:px-4">
                 {cards.map((card, index) => (
                   <div
                     key={index}

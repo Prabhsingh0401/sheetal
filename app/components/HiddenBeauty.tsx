@@ -81,7 +81,7 @@ const HiddenBeauty = () => {
   }
 
   return (
-    <div className="container mx-auto pb-12 px-15 text-center font-[family-name:var(--font-optima)]">
+    <div className="container mx-auto px-4 pb-10 sm:px-6 md:pb-12 lg:px-12 text-center font-[family-name:var(--font-optima)]">
       <div className="flex gap-8 items-center justify-center">
         <div className="hidden md:block h-[2px] bg-[#a2690f] w-15" />
         <h2 className="font-optima font-light text-[#6a3f07]">
@@ -89,7 +89,7 @@ const HiddenBeauty = () => {
         </h2>
         <div className="hidden md:block h-[2px] bg-[#a2690f] w-15" />
       </div>
-      <p className="max-w-3xl mx-auto text-[12px] lg:text-[15px] mb-16 text-black font-[family-name:var(--font-montserrat)]">
+      <p className="mx-auto mb-10 max-w-3xl text-[12px] text-black font-[family-name:var(--font-montserrat)] lg:mb-16 lg:text-[15px]">
         Designer pieces that blend traditional charm with modern silhouettes for
         every occasion.
       </p>
@@ -97,7 +97,7 @@ const HiddenBeauty = () => {
       {/* Embla Wrapper */}
       <div className="relative group/slider">
         <div ref={emblaRef} className="overflow-hidden">
-          <div className="flex gap-8 px-8">
+          <div className="flex gap-4 px-2 sm:gap-6 sm:px-4 md:gap-8 md:px-8">
             {categories.map((cat) => (
               <div
                 key={cat._id}

@@ -199,7 +199,7 @@ const Blogs = () => {
 
   return (
     <div className="w-full pb-16 pt-8 md:py-24 relative border-t border-[#6a3f07]">
-      <div className="container mx-auto px-10">
+      <div className="container mx-auto px-4 md:px-6 lg:px-10">
         <SectionHeader />
 
         {/* ── MOBILE: vertical stack ── */}

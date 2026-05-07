@@ -13,6 +13,7 @@ import { getApiImageUrl } from "../services/api";
 import { useWishlist } from "../hooks/useWishlist";
 import WishlistLoginModal from "./WishlistLoginModal";
 import { ArrowLeft } from "lucide-react";
+import { buildProductHref } from "../utils/productRoutes";
 
 const MIN_FOR_CAROUSEL_DESKTOP = 5;
 const MIN_FOR_CAROUSEL_MOBILE = 2;
@@ -20,6 +21,7 @@ const MIN_FOR_CAROUSEL_MOBILE = 2;
 interface TrendingProduct {
   id: string;
   productId: string;
+  categorySlug?: string;
   name: string;
   image: string;
   hoverImage: string;
@@ -38,7 +40,10 @@ function ProductCard({
   isWishlisted: boolean;
   onToggleWishlist: (productId: string) => void;
 }) {
-  const href = `/product/${product.id}`;
+  const href = buildProductHref({
+    slug: product.id,
+    categorySlug: product.categorySlug,
+  });
 
   return (
     <div className="rounded-xl overflow-hidden group h-full flex flex-col">
@@ -234,6 +239,7 @@ const TrendingThisWeek = () => {
             return {
               id:         p.slug,
               productId:  p._id,
+              categorySlug: p.category?.slug,
               name:       p.name,
               image:      getProductImageUrl(p),
               hoverImage: p.hoverImage?.url
@@ -263,10 +269,10 @@ const TrendingThisWeek = () => {
 
   return (
     <div
-      className="container-fluid py-12 px-20 home-page-product font-[family-name:var(--font-montserrat)]"
+      className="container-fluid px-4 py-10 sm:px-6 md:py-12 lg:px-20 home-page-product font-[family-name:var(--font-montserrat)]"
       style={{ backgroundImage: "url('/assets/650465765.png')", backgroundSize: "cover" }}
     >
-      <div className="container mx-auto px-4 py-10">
+      <div className="container mx-auto px-0 md:px-4 py-6 md:py-10">
         {/* Heading */}
         <div className="flex flex-col items-center mb-10">
           <div className="flex items-center justify-center gap-10 w-full">
@@ -276,7 +282,7 @@ const TrendingThisWeek = () => {
             </h2>
             <div className="h-[2px] w-15 bg-[#68400f] hidden md:block" />
           </div>
-          <p className="text-center text-[15px] mt-1 mb-6 font-[family-name:var(--font-montserrat)]">
+          <p className="mt-1 mb-6 px-2 text-center text-[15px] font-[family-name:var(--font-montserrat)] md:px-0">
             Best-Selling Gems: Signature sarees, ensembles, and Indo-Western
             pieces that define Studio By Sheetal.
           </p>
@@ -286,7 +292,7 @@ const TrendingThisWeek = () => {
         {isCarousel ? (
           <div className="relative group/slider">
             <div ref={emblaRef} className="overflow-hidden">
-              <div className="flex gap-4 px-4">
+              <div className="flex gap-3 px-2 sm:px-3 md:gap-4 md:px-4">
                 {products.map((product) => (
                   <div
                     key={product.id}

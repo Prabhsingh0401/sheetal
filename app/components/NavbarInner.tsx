@@ -21,6 +21,10 @@ import toast from "react-hot-toast";
 import SearchModal from "./SearchModal";
 import useSWR from "swr";
 import { fetchAllCategories, Category } from "../services/categoryService";
+import {
+  getHomepageSettings,
+  isTopInfoVisible,
+} from "../services/homepageService";
 import { getSettings } from "../services/settingsService";
 import { buildNavbarNavItems, NavbarNavItem } from "./navbarLayout";
 import {
@@ -28,6 +32,7 @@ import {
   getProductImageUrl,
   Product,
 } from "../services/productService";
+import { buildProductHref } from "../utils/productRoutes";
 
 const hasTags = (category: Partial<Category>) => {
   return (
@@ -131,7 +136,7 @@ const DynamicMegaMenu = ({
               latestProducts.map((product) => (
                 <div key={product._id} className="text-center group/product">
                   <div className="mb-2 overflow-hidden rounded-lg relative">
-                    <Link href={`/product/${product.slug}`} onClick={handleCloseMegaMenu}>
+                    <Link href={buildProductHref(product)} onClick={handleCloseMegaMenu}>
                       <Image
                         src={getProductImageUrl(product)}
                         alt={product.name}
@@ -141,13 +146,13 @@ const DynamicMegaMenu = ({
                       />
                     </Link>
                   </div>
-                  <Link href={`/product/${product.slug}`} onClick={handleCloseMegaMenu}>
+                  <Link href={buildProductHref(product)} onClick={handleCloseMegaMenu}>
                     <p className="font-semibold text-sm text-gray-800 mb-1 hover:text-[#b3a660] transition-colors line-clamp-1">
                       {product.name}
                     </p>
                   </Link>
                   <Link
-                    href={`/product/${product.slug}`}
+                    href={buildProductHref(product)}
                     onClick={handleCloseMegaMenu}
                     className="text-xs uppercase tracking-wider text-gray-600 hover:text-gray-900 font-medium"
                   >
@@ -232,25 +237,27 @@ const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
   );
 };
 
-const DesktopMenuItem = ({ item }: { item: NavbarNavItem }) => {
+const DesktopMenuItem = ({
+  item,
+  isMegaOpen,
+  onMegaOpen,
+  onMegaClose,
+}: {
+  item: NavbarNavItem;
+  isMegaOpen: boolean;
+  onMegaOpen: (item: NavbarNavItem) => void;
+  onMegaClose: () => void;
+}) => {
   if (item.hidden) return null;
 
   const hasChildren = item.children && item.children.length > 0;
   const isMegaMenu = item.isCategory && hasTags(item);
-  const [megaOpen, setMegaOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isMegaMenu) return;
-    const handleScroll = () => setMegaOpen(false);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isMegaMenu]);
 
   return (
     <li
       className="relative group h-full flex items-center"
-      onMouseEnter={() => isMegaMenu && setMegaOpen(true)}
-      onMouseLeave={() => isMegaMenu && setMegaOpen(false)}
+      onMouseEnter={() => isMegaMenu && onMegaOpen(item)}
+      onMouseLeave={() => isMegaMenu && onMegaClose()}
     >
       <Link
         href={item.href || "#"}
@@ -270,22 +277,8 @@ const DesktopMenuItem = ({ item }: { item: NavbarNavItem }) => {
       </Link>
 
       {/* ✅ Invisible bridge: fills the gap between nav item and mega menu */}
-      {isMegaMenu && megaOpen && (
+      {isMegaMenu && isMegaOpen && (
         <div className="absolute left-0 right-0 h-[20px] top-full" />
-      )}
-
-      {isMegaMenu && megaOpen && (
-        <div
-          className="fixed left-0 right-0 w-full text-left z-[1004]"
-          style={{ top: "calc(15px + 63px)" }}
-          onMouseEnter={() => setMegaOpen(true)}
-          onMouseLeave={() => setMegaOpen(false)}
-        >
-          <DynamicMegaMenu
-            category={item}
-            handleCloseMegaMenu={() => setMegaOpen(false)}
-          />
-        </div>
       )}
 
       {hasChildren && !isMegaMenu && (
@@ -434,7 +427,7 @@ const MobileSubMenuView = ({
                 </>
               ) : (
                 latestProducts.map((product) => (
-                  <Link key={product._id} href={`/product/${product.slug}`} onClick={onClose} className="block group">
+                  <Link key={product._id} href={buildProductHref(product)} onClick={onClose} className="block group">
                     <div className="aspect-[3/4] relative overflow-hidden rounded-lg mb-2 bg-gray-100">
                       <Image
                         src={getProductImageUrl(product)}
@@ -572,6 +565,8 @@ const NavbarInner = () => {
     phoneNumber?: string;
     email?: string;
   } | null>(null);
+  const [activeMegaMenuItem, setActiveMegaMenuItem] =
+    useState<NavbarNavItem | null>(null);
   const isClient = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -582,6 +577,15 @@ const NavbarInner = () => {
 
   const { data: categories } = useSWR("/categories", fetchAllCategories);
   const { data: settings } = useSWR("/settings", getSettings);
+  const { data: homepageSettings } = useSWR(
+    "/homepage/sections",
+    getHomepageSettings,
+  );
+
+  const topInfoEnabled = isTopInfoVisible(
+    homepageSettings?.sections,
+    homepageSettings?.topInfoConfig,
+  );
 
   const navItems = useMemo<NavbarNavItem[]>(() => {
     if (!categories) return [];
@@ -611,6 +615,13 @@ const NavbarInner = () => {
       window.removeEventListener(AUTH_UPDATED_EVENT, syncAuthState);
     };
   }, [pathname]);
+
+  useEffect(() => {
+    const handleMegaMenuClose = () => setActiveMegaMenuItem(null);
+    window.addEventListener("scroll", handleMegaMenuClose, { passive: true });
+    return () =>
+      window.removeEventListener("scroll", handleMegaMenuClose);
+  }, []);
 
   useEffect(() => {
     const updateNavbarBottom = () => {
@@ -655,7 +666,7 @@ const NavbarInner = () => {
       <div
         ref={headerRef}
         className={`hidden md:block fixed w-full z-[1003] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm py-4 font-[family-name:var(--font-montserrat)] ${
-          scrolled ? "top-0 shadow-lg" : "top-[27px]"
+          scrolled || !topInfoEnabled ? "top-0 shadow-lg" : "top-[27px]"
         }`}
       >
         <div className="container mx-auto">
@@ -673,7 +684,13 @@ const NavbarInner = () => {
             <div className="flex justify-end items-center flex-1 ml-8">
               <ul className="m-0 p-0 list-none inline-flex items-center gap-0">
                 {navItems.map((item, idx) => (
-                  <DesktopMenuItem key={`${item.id}-${idx}`} item={item} />
+                  <DesktopMenuItem
+                    key={`${item.id}-${idx}`}
+                    item={item}
+                    isMegaOpen={activeMegaMenuItem?.id === item.id}
+                    onMegaOpen={setActiveMegaMenuItem}
+                    onMegaClose={() => setActiveMegaMenuItem(null)}
+                  />
                 ))}
 
                 <li className="flex items-center gap-4 pl-5 ml-2">
@@ -709,11 +726,24 @@ const NavbarInner = () => {
             </div>
           </div>
         </div>
+
+        {activeMegaMenuItem && hasTags(activeMegaMenuItem) && (
+          <div
+            className="absolute left-0 right-0 top-full z-[1004] w-full"
+            onMouseEnter={() => setActiveMegaMenuItem(activeMegaMenuItem)}
+            onMouseLeave={() => setActiveMegaMenuItem(null)}
+          >
+            <DynamicMegaMenu
+              category={activeMegaMenuItem}
+              handleCloseMegaMenu={() => setActiveMegaMenuItem(null)}
+            />
+          </div>
+        )}
       </div>
 
       <header
         className={`md:hidden fixed w-full z-40 bg-[#112f23] backdrop-blur-sm shadow-sm py-2 transition-all duration-300 ${
-          scrolled ? "top-0" : "top-[27px]"
+          scrolled || !topInfoEnabled ? "top-0" : "top-[27px]"
         }`}
       >
         <div className="container mx-auto px-4 flex justify-between items-center h-[50px]">
