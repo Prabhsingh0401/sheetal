@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { updateUserProfile, getCurrentUser } from "../../services/userService";
 import { getApiImageUrl } from "../../services/api";
 import {
@@ -477,10 +478,12 @@ const EditProfile: React.FC = () => {
               <label className="w-56 text-gray-700">Profile Picture</label>
               <div className="flex items-center space-x-4">
                 {(profilePicturePreview || profilePictureUrl) && (
-                  <img
+                  <Image
                     src={profilePicturePreview || profilePictureUrl}
                     alt="Profile"
-                    className="w-20 h-20 rounded-full object-cover"
+                    width={80}
+                    height={80}
+                    className="h-20 w-20 rounded-full object-cover"
                   />
                 )}
                 <input

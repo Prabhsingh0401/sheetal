@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import { getCurrentUser } from "../../services/userService";
 import { getApiImageUrl } from "../../services/api";
 
@@ -76,10 +77,12 @@ const ProfileView: React.FC = () => {
               Profile Picture
             </label>
             <div className="flex items-center space-x-4">
-              <img
+              <Image
                 src={profilePictureUrl}
                 alt="Profile"
-                className="w-20 h-20 rounded-full object-cover"
+                width={80}
+                height={80}
+                className="h-20 w-20 rounded-full object-cover"
               />
             </div>
           </div>

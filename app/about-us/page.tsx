@@ -1,12 +1,9 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
 import TopInfo from "../components/TopInfo";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import StorefrontLoadingShell from "../components/StorefrontLoadingShell";
 import Image from "next/image";
 import Link from "next/link";
+
 import { API_BASE_URL } from "../services/api";
 
 interface SectionData {
@@ -22,66 +19,29 @@ interface AboutData {
   craft?: SectionData;
 }
 
-const AboutUs = () => {
-  const [data, setData] = useState<AboutData | null>(null);
-  const [loading, setLoading] = useState(true);
+async function getAboutPageData(): Promise<AboutData | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/pages/about`, {
+      next: { revalidate: 300 },
+    });
+    const json = await res.json();
+    return json.success && json.page ? json.page : null;
+  } catch {
+    return null;
+  }
+}
 
-  useEffect(() => {
-    const fetchAbout = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/pages/about`);
-        const json = await res.json();
-        if (json.success && json.page) {
-          setData(json.page);
-        }
-      } catch (error) {
-        console.error("Failed to load about page data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAbout();
-  }, []);
+const AboutUs = async () => {
+  const data = await getAboutPageData();
 
-  useEffect(() => {
-    if (loading || typeof window === "undefined") return;
-
-    let frameId = 0;
-    let attempts = 0;
-
-    const scrollToStory = () => {
-      const element = document.getElementById("our-story");
-
-      if (!element) {
-        if (attempts < 10) {
-          attempts += 1;
-          frameId = window.requestAnimationFrame(scrollToStory);
-        }
-        return;
-      }
-
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    };
-
-    frameId = window.requestAnimationFrame(scrollToStory);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [loading]);
-
-  // Helper for images
   const getImage = (path: string | undefined, fallback: string): string =>
     path || fallback;
-
-  if (loading) return <StorefrontLoadingShell message="Loading our story..." />;
 
   return (
     <>
       <TopInfo />
       <Navbar />
 
-      {/* Banner Section */}
       <div className="container-fluid p-0 relative overflow-hidden md:mt-[75px] mb-[65px] text-center">
         <div className="relative">
           <div className="w-full">
@@ -94,17 +54,17 @@ const AboutUs = () => {
               priority
             />
           </div>
-          <div id="our-story" className="w-full scroll-mt-20 border-b border-[#ffcf8c] pb-2 bg-white/80 md:bg-transparent py-5">
+          <div
+            id="our-story"
+            className="w-full scroll-mt-20 border-b border-[#ffcf8c] pb-2 bg-white/80 md:bg-transparent py-5"
+          >
             <h1 className="font-optima text-[30px] text-[#6a3f07] font-normal">
               {data?.banner?.title || "Our Story"}
             </h1>
             <div className="text-[#6a3f07]">
               <ul className="inline-block p-0 m-0">
                 <li className="inline-block mx-3 relative md:text-[15px]">
-                  <Link
-                    href="/"
-                    className="text-[#6a3f07] hover:text-[#9c6000]"
-                  >
+                  <Link href="/" className="text-[#6a3f07] hover:text-[#9c6000]">
                     Home
                   </Link>
                   <span className="absolute -right-[19px] top-0">/</span>
@@ -118,7 +78,6 @@ const AboutUs = () => {
         </div>
       </div>
 
-      {/* Journey Section */}
       <div className="container mx-auto px-4 pb-12 relative">
         <div className="flex flex-wrap items-center">
           <div className="w-full lg:w-1/3 mb-10 lg:mb-0">
@@ -151,13 +110,13 @@ const AboutUs = () => {
                 ) : (
                   <>
                     <p>
-                      Studio By Sheetal isn't just a name — it's a feeling woven
+                      Studio By Sheetal isn&apos;t just a name - it&apos;s a feeling woven
                       into every saree we create. SBS represents the joy of
                       draping tradition, the pride of cultural identity, and the
                       grace of timeless elegance.
                     </p>
                     <p>
-                      Founded in 2017 in Surat's vibrant Vankar Textile Market,
+                      Founded in 2017 in Surat&apos;s vibrant Vankar Textile Market,
                       Studio By Sheetal began as a humble 160 sq. ft. shop. This
                       powerful blend laid the foundation for a brand that would
                       soon change the ethnicwear landscape.
@@ -170,7 +129,6 @@ const AboutUs = () => {
         </div>
       </div>
 
-      {/* Mission / Growth Section */}
       <div className="container-fluid bg-[#f3f5ed] md:py-12 md:bg-white md:py-0">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap">
@@ -200,19 +158,19 @@ const AboutUs = () => {
                         stylish designs and smart pricing. Within 6 months, we
                         tripled our sales and expanded into a larger space,
                         setting the pace for rapid growth. By 2018, we supplied
-                        local resellers and dealers across India’s textile hubs.
+                        local resellers and dealers across India&apos;s textile hubs.
                         In just two years, Studio By Sheetal scaled 5X,
                         culminating in a significant breakthrough in 2019 by
-                        launching on India’s top fashion marketplaces including
+                        launching on India&apos;s top fashion marketplaces including
                         Myntra, Tata Cliq, Nykaa, and Ajio. This digital entry
                         rocketed our sales 10X.
                       </p>
                       <p>
                         Even during the challenging pandemic years, Studio By
                         Sheetal defied industry trends with continuous scaling,
-                        thanks to the founders’ combined experience and a focus
+                        thanks to the founders&apos; combined experience and a focus
                         on unique, exclusive products and organic lead
-                        generation in India’s offline textile markets
+                        generation in India&apos;s offline textile markets
                       </p>
                     </>
                   )}
@@ -223,7 +181,6 @@ const AboutUs = () => {
         </div>
       </div>
 
-      {/* Craftsmanship Section */}
       <div className="container-fluid bg-white">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center">
@@ -246,13 +203,13 @@ const AboutUs = () => {
                     <p>{data.craft.description}</p>
                   ) : (
                     <p>
-                      Our sarees are more than fabric — they are stories crafted
+                      Our sarees are more than fabric - they are stories crafted
                       by skilled artisans and weavers from all across India. We
                       honor and preserve their ancestral techniques, patience,
                       and passion, blending age-old craftsmanship with modern
                       aesthetics. Each saree carries the legacy of generations,
                       made lightweight, shrink-resistant, and finished to
-                      perfection — all at an affordable price point.
+                      perfection - all at an affordable price point.
                     </p>
                   )}
                 </div>

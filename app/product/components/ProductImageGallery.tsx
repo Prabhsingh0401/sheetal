@@ -12,7 +12,7 @@ import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 
 import ProductImageModal from "./ProductImageModal";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Share, Share2 } from "lucide-react";
 import ShareMenu from "../../components/ShareMenu";
 
 interface ProductImageGalleryProps {
@@ -369,13 +369,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 className="p-2.5 rounded-md cursor-pointer flex items-center justify-center"
                 aria-label="Share product"
               >
-                <Image
-                  src="/assets/icons/share.svg"
-                  width={30}
-                  height={30}
-                  alt="share"
-                  className="md:w-[26px] w-[20px]"
-                />
+                <Share2 color="#fc6b8d" size={25}/>
               </button>
             </ShareMenu>
           </div>
