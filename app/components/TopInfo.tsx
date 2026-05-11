@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { API_BASE_URL } from "../services/api";
 import {
@@ -101,7 +98,7 @@ const defaultSettings: HomepageSettings = {
 async function getTopInfoData() {
   try {
     const settingsResponse = await fetch(`${API_BASE_URL}/homepage/sections`, {
-      next: { revalidate: 300 },
+      cache: "no-store",
     });
     const settingsJson = await settingsResponse.json();
     const homepageSettings: HomepageSettings = {
@@ -121,30 +118,34 @@ async function getTopInfoData() {
     );
     const topInfoMode = homepageSettings.topInfoConfig?.mode || "coupon";
 
+    console.log(`[TopInfo Debug] Visible: ${topInfoVisible}, Mode: ${topInfoMode}, SectionEnabled: ${homepageSettings.sections?.topInfo}`);
+
     if (!topInfoVisible) {
       return null;
     }
 
     if (topInfoMode !== "coupon") {
-      return { homepageSettings, coupon: null as HomepageCoupon | null };
+      return { homepageSettings, coupon: null };
     }
 
     try {
       const couponResponse = await fetch(`${API_BASE_URL}/coupons/homepage`, {
-        next: { revalidate: 300 },
+        cache: "no-store",
       });
       const couponJson = await couponResponse.json();
+      console.log(`[TopInfo Debug] Coupon Found: ${!!couponJson.data || !!couponJson.coupon}`);
       return {
         homepageSettings,
         coupon: couponJson.data || couponJson.coupon || null,
       };
     } catch {
-      return { homepageSettings, coupon: null as HomepageCoupon | null };
+      return { homepageSettings, coupon: null };
     }
-  } catch {
+  } catch (error: any) {
+    console.error("[TopInfo Debug] Error fetching data:", error.message);
     return {
       homepageSettings: defaultSettings,
-      coupon: null as HomepageCoupon | null,
+      coupon: null,
     };
   }
 }
@@ -197,33 +198,11 @@ const buildTopInfoContent = (topInfoData: Awaited<ReturnType<typeof getTopInfoDa
   };
 };
 
-const TopInfo = () => {
-  const [content, setContent] = useState<{
-    text: string;
-    code: string | null;
-    href: string;
-    ctaLabel: string;
-  } | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+export default async function TopInfo() {
+  const topInfoData = await getTopInfoData();
+  const content = buildTopInfoContent(topInfoData);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadTopInfo = async () => {
-      const topInfoData = await getTopInfoData();
-      if (!isMounted) return;
-      setContent(buildTopInfoContent(topInfoData));
-      setIsLoaded(true);
-    };
-
-    void loadTopInfo();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  if (!isLoaded || !content) {
+  if (!content) {
     return null;
   }
 
@@ -245,6 +224,4 @@ const TopInfo = () => {
       </p>
     </div>
   );
-};
-
-export default TopInfo;
+}

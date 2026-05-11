@@ -29,13 +29,13 @@ async function getNavbarData() {
   const [categoriesResponse, settingsResponse, homepageResponse] =
     await Promise.all([
       fetch(`${API_BASE_URL}/categories`, {
-        next: { revalidate: 300 },
+        cache: "no-store",
       }),
       fetch(`${API_BASE_URL}/settings`, {
-        next: { revalidate: 300 },
+        cache: "no-store",
       }),
       fetch(`${API_BASE_URL}/homepage/sections`, {
-        next: { revalidate: 300 },
+        cache: "no-store",
       }),
     ]);
 

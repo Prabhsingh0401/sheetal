@@ -11,9 +11,9 @@ import { Suspense } from "react";
 async function getHomepageSections() {
   try {
     const res = await fetch(`${API_BASE_URL}/homepage/sections`, {
-      next: { revalidate: 300 },
+      cache: "no-store",
     });
-    const data = await res.json();
+    const data = await res.json();``
     return data.sections;
   } catch {
     // Return all visible as fallback
