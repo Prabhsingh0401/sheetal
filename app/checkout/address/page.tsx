@@ -19,7 +19,7 @@ import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
 import { useSearchParams } from "next/navigation";
 import { peekRedirectField, redirectToLogin } from "../../utils/authRedirect";
-import { getUserDetails } from "../../services/authService";
+import { getUserDetails, isAuthenticated } from "../../services/authService";
 import { hasRedeemedCoupon, isSingleUseCoupon, markCouponRedeemed } from "../../utils/couponRedemption";
 import type { CartItem } from "../../hooks/useCart";
 
@@ -377,8 +377,13 @@ const AddressPageInner = () => {
     couponMeta?: unknown,
     overrideCode?: string,
   ) => {
-    if (!userId) {
+    if (!userId && !isAuthenticated()) {
       toast.error("Please login to apply coupons.");
+      return;
+    }
+
+    if (!userId) {
+      toast.error("User session issue. Please try logging in again if this persists.");
       return;
     }
 

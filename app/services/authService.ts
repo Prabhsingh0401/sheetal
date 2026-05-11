@@ -114,7 +114,12 @@ export const getUserDetails = (): User | null => {
   }
 
   try {
-    return JSON.parse(userJson) as User;
+    const user = JSON.parse(userJson) as User;
+    // Safety mapping: Ensure id exists if _id was stored instead
+    if (!user.id && (user as any)._id) {
+      user.id = (user as any)._id;
+    }
+    return user;
   } catch {
     return null;
   }

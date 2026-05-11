@@ -186,14 +186,21 @@ const CartPage = () => {
     userId: string | undefined,
     couponMeta?: unknown,
   ) => {
-    if (!userId) {
+    if (!userId && !isAuthenticated()) {
       toast.error("Please login to apply coupons.");
       return;
     }
+    
     if (!couponInput.trim()) {
       toast.error("Please enter a coupon code.");
       return;
     }
+
+    if (!userId) {
+      toast.error("User session issue. Please try logging in again if this persists.");
+      return;
+    }
+
     applyCoupon(couponInput.trim().toUpperCase(), userId, couponMeta || undefined);
   };
 
