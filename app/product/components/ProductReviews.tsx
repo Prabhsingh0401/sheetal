@@ -58,7 +58,6 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
     const checkEligibility = async () => {
       try {
         const res = await checkCanReview(productId);
-        console.log("Review eligibility check result:", res);
         if (res.success) {
           setCanReview(res.data.canReview);
           setReviewReason(res.data.reason);
@@ -109,9 +108,8 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({
       } else {
         toast.error(res.message || "Failed to submit review");
       }
-    } catch (err) {
+    } catch {
       toast.error("Something went wrong. Please try again.");
-      console.error(err);
     } finally {
       setSubmitting(false);
     }

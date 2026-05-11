@@ -84,8 +84,6 @@ const ProductListContent = ({
         },
       ]);
     } else {
-      // Only clear if not using initial params, or handle appropriately.
-      // For now, if no query params, start empty.
       if (!activeType && !activeValue) {
         setActiveFilters([]);
       }
@@ -100,9 +98,8 @@ const ProductListContent = ({
       setSelectedProductSlug(restoredSlug);
     }
   }, []);
-  const [sortOption, setSortOption] = useState<string>("newest");
 
-  // ... rest of logic uses categorySlug variable which is now derived
+  const [sortOption, setSortOption] = useState<string>("newest");
 
   /* =======================
      Wishlist
@@ -214,11 +211,9 @@ const ProductListContent = ({
     const filterLabel = `${type}: ${value}`;
     const existing = activeFilters.find((f) => f.label === filterLabel);
 
-    // Single-select filter types — new value replaces the old one
     const singleSelectTypes = ["price", "category"];
 
     if (singleSelectTypes.includes(type)) {
-      // If same value clicked again, remove it (deselect); otherwise replace
       if (existing) {
         setActiveFilters(activeFilters.filter((f) => f.type !== type));
       } else {
@@ -228,7 +223,6 @@ const ProductListContent = ({
         ]);
       }
     } else {
-      // Multi-select — toggle behaviour unchanged
       if (existing) {
         setActiveFilters(activeFilters.filter((f) => f.label !== filterLabel));
       } else {
@@ -267,7 +261,7 @@ const ProductListContent = ({
             : size.price;
         if (currentPrice < lowestPrice) {
           lowestPrice = currentPrice;
-          lowestMrp = size.price; // The MRP corresponding to this lowest price
+          lowestMrp = size.price;
         }
       });
     });
@@ -277,7 +271,6 @@ const ProductListContent = ({
         ? Math.round(((lowestMrp - lowestPrice) / lowestMrp) * 100)
         : 0;
 
-    /* ---- Derive Sizes from variants[].sizes[] ---- */
     const allSizes = Array.from(
       new Set(p.variants?.flatMap((v) => v.sizes?.map((s) => s.name)) || []),
     );
@@ -289,10 +282,18 @@ const ProductListContent = ({
           ? allSizes[0]
           : `${allSizes[0]}–${allSizes[allSizes.length - 1]}`;
 
+    // ✅ derive categorySlug from the populated category object
+    const resolvedCategorySlug =
+      p.categorySlug ||
+      (typeof p.category === "object" ? p.category?.slug : undefined) ||
+      categorySlug ||
+      undefined;
+
     return {
       _id: p._id,
       slug: p.slug,
       name: p.name,
+      categorySlug: resolvedCategorySlug, // ✅ now passed through
       image: getProductImageUrl(p),
       hoverImage: p.hoverImage?.url
         ? getApiImageUrl(p.hoverImage.url)
@@ -313,7 +314,6 @@ const ProductListContent = ({
   ======================= */
   let filteredProducts = [...gridProducts];
 
-  // Apply filters - group by type and use OR within same type, AND across types
   const filtersByType = activeFilters.reduce(
     (acc, filter) => {
       if (!acc[filter.type]) acc[filter.type] = [];
@@ -361,7 +361,6 @@ const ProductListContent = ({
         return values.includes(product?.category?.name || "");
       });
     } else {
-      // wearType, occasion, tags, style, work, fabric, productType, subCategory
       filteredProducts = filteredProducts.filter((p) => {
         const product = products.find((prod) => prod._id === p._id);
         const productFields = product as Record<string, unknown> | undefined;
@@ -377,7 +376,6 @@ const ProductListContent = ({
     }
   });
 
-  // Apply sorting
   if (sortOption === "price_asc") {
     filteredProducts.sort((a, b) => a.price - b.price);
   } else if (sortOption === "price_desc") {
@@ -385,7 +383,6 @@ const ProductListContent = ({
   } else if (sortOption === "popularity") {
     filteredProducts.sort((a, b) => b.rating - a.rating);
   }
-  // newest is default (already sorted by createdAt from backend)
 
   /* =======================
      Render

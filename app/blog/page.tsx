@@ -1,44 +1,34 @@
-"use client";
-import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+
 import TopInfo from "../components/TopInfo";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { getBlogs, Blog } from "@/app/services/blogService";
+import { getBlogs, type Blog } from "@/app/services/blogService";
 import { getApiImageUrl } from "@/app/services/api";
 
-const BlogsPage = () => {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+type BlogsPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      setLoading(true);
-      try {
-        const response = await getBlogs({ page, limit: 9 });
-        if (response.success) {
-          setBlogs(response.blogs);
-          setTotalPages(response.pages);
-        }
-      } catch (error) {
-        console.error("Failed to fetch blogs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+const getPageNumber = (rawPage: string | string[] | undefined) => {
+  const value = Array.isArray(rawPage) ? rawPage[0] : rawPage;
+  const parsed = Number.parseInt(value || "1", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+};
 
-    fetchBlogs();
-  }, [page]);
+const BlogsPage = async ({ searchParams }: BlogsPageProps) => {
+  const resolvedSearchParams = (await searchParams) || {};
+  const page = getPageNumber(resolvedSearchParams.page);
+  const response = await getBlogs({ page, limit: 9 });
+  const blogs: Blog[] = response.success ? response.blogs : [];
+  const totalPages = response.success ? response.pages : 1;
 
   return (
     <div className="font-[family-name:var(--font-montserrat)] bg-white">
       <TopInfo />
       <Navbar />
 
-      {/* Banner */}
       <div className="relative w-full h-[300px] md:h-[400px] mt-[40px] md:mt-[75px] overflow-hidden">
         <Image
           src="/assets/690995222.jpg"
@@ -61,93 +51,80 @@ const BlogsPage = () => {
         </nav>
       </div>
 
-      {/* Blogs Listing */}
       <div className="container mx-auto px-20 py-16">
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="animate-pulse space-y-4">
-                <div className="bg-gray-200 h-52 rounded-lg"></div>
-                <div className="space-y-2">
-                  <div className="bg-gray-200 h-4 w-1/4 rounded"></div>
-                  <div className="bg-gray-200 h-6 w-full rounded"></div>
-                  <div className="bg-gray-200 h-12 w-full rounded"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogs.map((blog) => (
-              <div
-                key={blog._id}
-                className="group flex flex-col h-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {blogs.map((blog) => (
+            <div
+              key={blog._id}
+              className="group flex flex-col h-full bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            >
+              <Link
+                href={`/blog/${blog.slug}`}
+                className="relative w-full h-75 rounded-2xl aspect-video overflow-hidden"
               >
-                <Link
-                  href={`/blog/${blog.slug}`}
-                  className="relative w-full h-75 rounded-2xl aspect-video overflow-hidden"
-                >
-                  <Image
-                    src={getApiImageUrl(
-                      blog.contentImage || blog.bannerImage,
-                      "/assets/default-image.png",
-                    )}
-                    alt={blog.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                </Link>
+                <Image
+                  src={getApiImageUrl(
+                    blog.contentImage || blog.bannerImage,
+                    "/assets/default-image.png",
+                  )}
+                  alt={blog.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </Link>
 
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="text-[15px] font-[family-name:var(--font-montserrat)] text-gray-500 mb-3">
-                    {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </div>
+              <div className="p-6 flex flex-col flex-grow">
+                <div className="text-[15px] font-[family-name:var(--font-montserrat)] text-gray-500 mb-3">
+                  {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </div>
 
-                  <h3 className="text-[20px] mb-3 leading-snug font-[family-name:var(--font-montserrat)] line-clamp-2 hover:text-[#bd9951] transition-colors">
-                    <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
-                  </h3>
+                <h3 className="text-[20px] mb-3 leading-snug font-[family-name:var(--font-montserrat)] line-clamp-2 hover:text-[#bd9951] transition-colors">
+                  <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>
+                </h3>
 
-                  <p className="text-[16px] font-[family-name:var(--font-montserrat)] mb-6 line-clamp-3 leading-relaxed flex-grow">
-                    {blog.excerpt}
-                  </p>
+                <p className="text-[16px] font-[family-name:var(--font-montserrat)] mb-6 line-clamp-3 leading-relaxed flex-grow">
+                  {blog.excerpt}
+                </p>
 
-                  <div>
-                    <Link
-                      href={`/blog/${blog.slug}`}
-                      className="inline-block text-[16px] font-[family-name:var(--font-montserrat)] uppercase text-black border rounded-full py-1.5 px-6 border-black hover:bg-black hover:text-white duration-300 transition-all"
-                    >
-                      Read More
-                    </Link>
-                  </div>
+                <div>
+                  <Link
+                    href={`/blog/${blog.slug}`}
+                    className="inline-block text-[16px] font-[family-name:var(--font-montserrat)] uppercase text-black border rounded-full py-1.5 px-6 border-black hover:bg-black hover:text-white duration-300 transition-all"
+                  >
+                    Read More
+                  </Link>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
 
-        {/* Pagination */}
         <div className="mt-12 flex justify-center items-center gap-4">
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            disabled={page === 1}
-            className="px-4 py-2 bg-gray-100 rounded-md text-sm font-semibold disabled:opacity-50"
+          <Link
+            href={page > 1 ? `/blog?page=${page - 1}` : "/blog"}
+            aria-disabled={page === 1}
+            className={`px-4 py-2 bg-gray-100 rounded-md text-sm font-semibold ${
+              page === 1 ? "pointer-events-none opacity-50" : ""
+            }`}
           >
             Previous
-          </button>
+          </Link>
           <span className="text-sm font-semibold">
             Page {page} of {totalPages}
           </span>
-          <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-            disabled={page === totalPages}
-            className="px-4 py-2 bg-gray-100 rounded-md text-sm font-semibold disabled:opacity-50"
+          <Link
+            href={`/blog?page=${Math.min(page + 1, totalPages)}`}
+            aria-disabled={page === totalPages}
+            className={`px-4 py-2 bg-gray-100 rounded-md text-sm font-semibold ${
+              page === totalPages ? "pointer-events-none opacity-50" : ""
+            }`}
           >
             Next
-          </button>
+          </Link>
         </div>
       </div>
 

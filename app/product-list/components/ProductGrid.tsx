@@ -10,6 +10,7 @@ interface Product {
   name: string;
   image: string;
   hoverImage: string;
+  categorySlug?: string;
   price: number;
   mrp: number;
   discount: string;

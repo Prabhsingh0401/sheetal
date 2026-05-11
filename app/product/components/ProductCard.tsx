@@ -117,7 +117,7 @@ const ProductCard = ({
           <div className="flex justify-start">
             <Link
               href={productHref}
-              className="inline-block border-b  border-black text-left text-black py-2 uppercase text-[12px] font-medium  hover:tracking-[2px] transition-all duration-500 hover:text-red-500 "
+              className="inline-block border-b border-black text-black py-1.5 md:py-2 hover:tracking-[2px] hover:text-red-500 uppercase text-[11px] md:text-[13px] transition-all duration-500"
             >
               View Detail
             </Link>

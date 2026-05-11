@@ -4,8 +4,6 @@ import { Montserrat, Outfit, Cinzel } from "next/font/google";
 import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 
 const optima = localFont({
   src: [
@@ -36,17 +34,20 @@ const optima = localFont({
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+  display: "swap",
 });
 
 const cinzel = Cinzel({
   subsets: ["latin"],
   weight: ["700"],
   variable: "--font-cinzel",
+  display: "swap",
 });
 
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -71,16 +72,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css"
-          rel="stylesheet"
-        />
-        <link
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css"
-          rel="stylesheet"
-        />
-      </head>
       <body
         className={`${optima.variable} ${montserrat.variable} ${outfit.variable} antialiased`}
         style={

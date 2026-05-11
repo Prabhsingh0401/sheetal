@@ -74,14 +74,14 @@ export const logAuthDebug = (
   step: string,
   details?: Record<string, unknown>,
 ) => {
+  if (process.env.NODE_ENV !== "development") return;
+
   const payload = {
     scope,
     step,
     details: details || {},
     timestamp: new Date().toISOString(),
   };
-
-  console.info("[auth-debug]", payload);
 
   if (typeof window === "undefined") return;
 
@@ -118,7 +118,7 @@ export const resetRecaptcha = (containerId: string) => {
       recaptchaWindow.grecaptcha?.reset?.();
     }
   } catch (err) {
-    console.warn("grecaptcha reset failed:", err);
+    // Ignore reset failures; the widget will be recreated if needed.
   }
 
   try {
@@ -127,7 +127,7 @@ export const resetRecaptcha = (containerId: string) => {
       recaptchaWindow.recaptchaVerifier.clear();
     }
   } catch (err) {
-    console.warn("verifier clear failed:", err);
+    // Ignore verifier clear failures; references are nulled below.
   }
 
   // 3. Nullify all references

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Slider from "react-slick";
 import Link from "next/link";
+
 import { API_BASE_URL } from "../services/api";
 
 const DEFAULT_CENTER = {
@@ -16,10 +16,11 @@ const DEFAULT_CENTER = {
 };
 
 const TimelessWomenCollection = () => {
-  const [leftImages, setLeftImages] = useState([]);
-  const [rightImages, setRightImages] = useState([]);
+  const [leftImages, setLeftImages] = useState<{ url: string }[]>([]);
+  const [rightImages, setRightImages] = useState<{ url: string }[]>([]);
   const [centerContent, setCenterContent] = useState(DEFAULT_CENTER);
-  const [loading, setLoading] = useState(true);
+  const [leftIndex, setLeftIndex] = useState(0);
+  const [rightIndex, setRightIndex] = useState(0);
 
   useEffect(() => {
     const fetchLookbook = async () => {
@@ -27,8 +28,8 @@ const TimelessWomenCollection = () => {
         const res = await fetch(`${API_BASE_URL}/lookbooks/timeless-women`);
         const data = await res.json();
         if (data.success && data.lookbook) {
-          setLeftImages(data.lookbook.leftSliderImages);
-          setRightImages(data.lookbook.rightSliderImages);
+          setLeftImages(data.lookbook.leftSliderImages || []);
+          setRightImages(data.lookbook.rightSliderImages || []);
           if (data.lookbook.centerContent) {
             setCenterContent({
               ...DEFAULT_CENTER,
@@ -36,26 +37,13 @@ const TimelessWomenCollection = () => {
             });
           }
         }
-
-      } catch (error) {
-        console.error("Error fetching lookbook images", error);
-      } finally {
-        setLoading(false);
+      } catch {
+        // Keep fallback content.
       }
     };
 
     fetchLookbook();
   }, []);
-
-  const sliderSettings = {
-    dots: false,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    arrows: false,
-  };
 
   const defaultImages = [
     "/assets/deals1.jpg",
@@ -66,48 +54,61 @@ const TimelessWomenCollection = () => {
   const leftSliderData =
     leftImages.length > 0 ? leftImages : defaultImages.map((url) => ({ url }));
   const rightSliderData =
-    rightImages.length > 0
-      ? rightImages
-      : defaultImages.map((url) => ({ url }));
+    rightImages.length > 0 ? rightImages : defaultImages.map((url) => ({ url }));
+
+  useEffect(() => {
+    if (leftSliderData.length <= 1) return;
+    const intervalId = window.setInterval(() => {
+      setLeftIndex((current) => (current + 1) % leftSliderData.length);
+    }, 3000);
+    return () => window.clearInterval(intervalId);
+  }, [leftSliderData.length]);
+
+  useEffect(() => {
+    if (rightSliderData.length <= 1) return;
+    const intervalId = window.setInterval(() => {
+      setRightIndex((current) => (current + 1) % rightSliderData.length);
+    }, 3500);
+    return () => window.clearInterval(intervalId);
+  }, [rightSliderData.length]);
 
   return (
     <div className="flex w-full justify-center bg-[#fbfbfb] px-4 py-6 sm:px-6">
       <div className="container px-0">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch justify-items-center">
-          {/* LEFT SLIDER */}
           <div className="w-full max-w-[400px] h-auto">
-            <Slider
-              {...sliderSettings}
-              autoplaySpeed={3000}
-              className="timeless-slider h-full"
-            >
-              {leftSliderData.map((img, i) => (
-                <div key={i} className="cursor-pointer outline-none">
-                  <div className="relative w-full h-[310px]">
-                    <Image
-                      src={img.url}
-                      alt={`Deal ${i + 1}`}
-                      fill
-                      sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-                      className="object-cover rounded-lg"
-                    />
+            <div className="timeless-slider h-full overflow-hidden">
+              <div
+                className="flex transition-transform duration-500 ease-out"
+                style={{ transform: `translate3d(-${leftIndex * 100}%, 0, 0)` }}
+              >
+                {leftSliderData.map((img, i) => (
+                  <div key={i} className="min-w-full cursor-pointer outline-none">
+                    <div className="relative w-full h-[310px]">
+                      <Image
+                        src={img.url}
+                        alt={`Deal ${i + 1}`}
+                        fill
+                        sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </Slider>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* CENTER CONTENT */}
           <div className="w-full max-w-[400px] h-[320px] flex relative">
-            <div className="hidden md:block absolute top-20 -left-5 h-0.5 w-15 bg-[#a2690f]"></div>
-            <div className="hidden md:block absolute top-20 -right-5  h-0.5 w-15 bg-[#a2690f]"></div>
+            <div className="hidden md:block absolute top-20 -left-5 h-0.5 w-15 bg-[#a2690f]" />
+            <div className="hidden md:block absolute top-20 -right-5 h-0.5 w-15 bg-[#a2690f]" />
             <Link
               href={centerContent.buttonLink || "#"}
               className="flex w-full h-full border border-[#FFC107] rounded-2xl items-center justify-center hover:shadow-xl transition-shadow duration-300"
             >
               <div className="px-5 text-center md:px-8">
                 {centerContent.label && (
-                  <p className="text-[14px] font-[family-name:var(--font-montserrat)]  mb-4 text-black">
+                  <p className="text-[14px] font-[family-name:var(--font-montserrat)] mb-4 text-black">
                     {centerContent.label}
                   </p>
                 )}
@@ -116,7 +117,6 @@ const TimelessWomenCollection = () => {
                     {centerContent.heading}
                   </h2>
                 )}
-
                 {centerContent.description && (
                   <div
                     className="text-[15px] text-black font-[family-name:var(--font-montserrat)] mb-4 max-w-xs mx-auto"
@@ -134,27 +134,27 @@ const TimelessWomenCollection = () => {
             </Link>
           </div>
 
-          {/* RIGHT SLIDER */}
           <div className="w-full max-w-[400px] h-auto">
-            <Slider
-              {...sliderSettings}
-              autoplaySpeed={3500}
-              className="timeless-slider h-full"
-            >
-              {rightSliderData.map((img, i) => (
-                <div key={i} className="cursor-pointer outline-none">
-                  <div className="relative w-full h-[310px]">
-                    <Image
-                      src={img.url}
-                      alt={`Deal ${i + 1}`}
-                      fill
-                      sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
-                      className="object-cover rounded-lg"
-                    />
+            <div className="timeless-slider h-full overflow-hidden">
+              <div
+                className="flex transition-transform duration-500 ease-out"
+                style={{ transform: `translate3d(-${rightIndex * 100}%, 0, 0)` }}
+              >
+                {rightSliderData.map((img, i) => (
+                  <div key={i} className="min-w-full cursor-pointer outline-none">
+                    <div className="relative w-full h-[310px]">
+                      <Image
+                        src={img.url}
+                        alt={`Deal ${i + 1}`}
+                        fill
+                        sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </Slider>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

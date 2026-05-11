@@ -1,4 +1,5 @@
 import { permanentRedirect, redirect } from "next/navigation";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { fetchProductBySlug } from "../../services/productService";
 import { buildProductHref } from "../../utils/productRoutes";
 
@@ -19,6 +20,7 @@ export default async function LegacyProductPage({
       permanentRedirect(buildProductHref(res.data));
     }
   } catch (error) {
+    if (isRedirectError(error)) throw error;
     console.error("Error resolving legacy product URL:", error);
   }
 
