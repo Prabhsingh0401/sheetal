@@ -68,5 +68,5 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     redirect("/");
   }
 
-  return <ProductList />;
+  return <ProductList categorySlug={category} />;
 }
