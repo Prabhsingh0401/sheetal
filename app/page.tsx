@@ -3,22 +3,15 @@ import Navbar from "./components/Navbar";
 import HomeBanner from "./components/HomeBanner";
 import AboutSBS from "./components/AboutSBS";
 import HiddenBeauty from "./components/HiddenBeauty";
-import TrendingThisWeek from "./components/TrendingThisWeek";
-import NewArrivals from "./components/NewArrivals";
-import Collections from "./components/Collections";
-import TimelessWomenCollection from "./components/TimelessWomenCollection";
-import InstagramDiaries from "./components/InstagramDiaries";
-import Testimonials from "./components/Testimonials";
-import Blogs from "./components/Blogs";
-import Footer from "./components/Footer";
-import BookAppointmentWidget from "./components/BookAppointmentWidget";
-
 import { API_BASE_URL } from "./services/api";
+import HomeDeferredSections from "./components/HomeDeferredSections";
+import Footer from "./components/Footer";
+import { Suspense } from "react";
 
 async function getHomepageSections() {
   try {
     const res = await fetch(`${API_BASE_URL}/homepage/sections`, {
-      cache: "no-store",
+      next: { revalidate: 300 },
     });
     const data = await res.json();
     return data.sections;
@@ -32,20 +25,15 @@ export default async function Home() {
   const s = await getHomepageSections();
   return (
     <>
-      <TopInfo />
-      <Navbar />
-      {(s?.homeBanner) && <HomeBanner />}
-      {(s?.aboutSBS) && <AboutSBS />}
-      {(s?.hiddenBeauty) && <HiddenBeauty />}
-      {(s?.trendingThisWeek) && <TrendingThisWeek />}
-      {(s?.newArrivals) && <NewArrivals />}
-      {(s?.collections) && <Collections />}
-      {(s?.timelessWomenCollection) && <TimelessWomenCollection />}
-      {(s?.instagramDiaries) && <InstagramDiaries />}
-      {(s?.testimonials) && <Testimonials />}
-      {(s?.bookAppointmentWidget) && <BookAppointmentWidget />}
-      {(s?.blogs) && <Blogs />}
-      <Footer />
+      <Suspense>
+        <TopInfo />
+        <Navbar />
+        {s?.homeBanner && <HomeBanner />}
+        {s?.aboutSBS && <AboutSBS />}
+        {s?.hiddenBeauty && <HiddenBeauty />}
+        <HomeDeferredSections sections={s} />
+        <Footer />
+      </Suspense>
     </>
   );
 }

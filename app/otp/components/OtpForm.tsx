@@ -53,7 +53,6 @@ const OtpForm = () => {
     }
 
     if (!storedPhone) {
-      console.warn("No phone number found, redirecting to login.");
       toast.error("Please sign in again to continue.");
       router.replace("/login");
       return;
@@ -211,18 +210,12 @@ const OtpForm = () => {
         }
       } else {
         toast.error(data.message || "Backend login failed.");
-        console.error("Backend login failed:", data.message);
         logAuthDebug("otp", "verify:backend-failed", {
           message: data.message || "",
         });
       }
     } catch (error: unknown) {
       const firebaseError = error as { constructor?: { name?: string }; message?: string; code?: string };
-      console.error("=== ERROR DETAILS ===");
-      console.error("Error type:", firebaseError.constructor?.name || "Unknown");
-      console.error("Error message:", firebaseError.message);
-      console.error("Error code:", firebaseError.code);
-      console.error("Full error:", error);
       logAuthDebug("otp", "verify:error", {
         message: firebaseError.message || "",
         code: firebaseError.code || "",
@@ -274,7 +267,6 @@ const OtpForm = () => {
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Failed to resend OTP.";
-      console.error("Resend OTP error:", error);
       logAuthDebug("otp", "resend:error", {
         message: error instanceof Error ? error.message : String(error),
       });

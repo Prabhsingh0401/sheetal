@@ -1,15 +1,15 @@
 import Footer from "../components/Footer";
 import StorefrontHeader from "../components/StorefrontHeader";
-import WishlistPageClient from "./WishlistPageClient";
+import ProductListClient from "./ProductListClient";
 
-const WishlistPage = () => {
+const ProductListPage = () => {
   return (
     <>
       <StorefrontHeader />
-      <WishlistPageClient />
+      <ProductListClient />
       <Footer />
     </>
   );
 };
 
-export default WishlistPage;
+export default ProductListPage;

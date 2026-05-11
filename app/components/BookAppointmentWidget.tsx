@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { bookAppointment } from "../services/appointmentServices";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
@@ -34,33 +34,11 @@ const Label = ({ text }: { text: string }) => (
   </span>
 );
 
-const parseRgb = (value: string) => {
-  const match = value.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/i);
-  if (!match) return null;
-
-  return {
-    r: Number(match[1]),
-    g: Number(match[2]),
-    b: Number(match[3]),
-    a: match[4] === undefined ? 1 : Number(match[4]),
-  };
-};
-
-const getLuminance = (color: string) => {
-  const parsed = parseRgb(color);
-  if (!parsed || parsed.a === 0) return null;
-
-  const { r, g, b } = parsed;
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-};
-
 const BookAppointmentWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState<AppointmentForm>(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const [isTriggerOnDarkBg, setIsTriggerOnDarkBg] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -143,55 +121,6 @@ const BookAppointmentWidget: React.FC = () => {
     setSubmitted(false);
   };
 
-  useEffect(() => {
-    const updateTriggerContrast = () => {
-      const trigger = triggerRef.current;
-      if (!trigger) return;
-
-      const rect = trigger.getBoundingClientRect();
-      const points = [
-        [rect.left - 12, rect.top + rect.height / 2],
-        [rect.right + 12, rect.top + rect.height / 2],
-        [rect.left + rect.width / 2, rect.top - 12],
-        [rect.left + rect.width / 2, rect.bottom + 12],
-        [rect.left - 12, rect.bottom + 12],
-        [rect.right + 12, rect.bottom + 12],
-      ];
-
-      const luminances = points
-        .map(([x, y]) => document.elementFromPoint(x, y) as HTMLElement | null)
-        .filter((element): element is HTMLElement => Boolean(element))
-        .map((element) => {
-          let node: HTMLElement | null = element;
-          while (node) {
-            const luminance = getLuminance(getComputedStyle(node).backgroundColor);
-            if (luminance !== null) return luminance;
-            node = node.parentElement;
-          }
-          return null;
-        })
-        .filter((value): value is number => value !== null);
-
-      if (!luminances.length) {
-        setIsTriggerOnDarkBg(false);
-        return;
-      }
-
-      const average =
-        luminances.reduce((sum, value) => sum + value, 0) / luminances.length;
-      setIsTriggerOnDarkBg(average < 150);
-    };
-
-    updateTriggerContrast();
-    window.addEventListener("scroll", updateTriggerContrast, { passive: true });
-    window.addEventListener("resize", updateTriggerContrast);
-
-    return () => {
-      window.removeEventListener("scroll", updateTriggerContrast);
-      window.removeEventListener("resize", updateTriggerContrast);
-    };
-  }, []);
-
   return (
     <>
       {/* Floating trigger */}
@@ -204,14 +133,13 @@ const BookAppointmentWidget: React.FC = () => {
             For Customization
           </span>
           <button
-            ref={triggerRef}
             onClick={() => setIsOpen(true)}
             className="border border-black shadow-lg px-4 py-2.5 text-[12px] font-[family-name:var(--font-montserrat)] font-bold transition-colors tracking-wide whitespace-nowrap cursor-pointer"
             style={{
               background: "rgba(189, 153, 81, 0.15)",
               backdropFilter: "blur(80px)",
               WebkitBackdropFilter: "blur(80px)",
-              color: isTriggerOnDarkBg ? "#ffffff" : "#000000",
+              color: "#000000",
             }}
           >
             Book Appointment

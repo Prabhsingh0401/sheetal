@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
+import { Instagram } from "lucide-react";
 import {
   fetchProducts,
   getProductImageUrl,
@@ -95,10 +96,12 @@ const InstagramDiaries = () => {
           alt={card.alt || `Instagram Post ${index + 1}`}
           fill
           className="object-cover transform group-hover:scale-105 transition-transform duration-500 ease-in-out"
+          sizes="(max-width: 640px) 85vw, (max-width: 1024px) 45vw, 20vw"
+          quality={76}
         />
         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/60 transition-colors duration-300" />
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <i className="fab fa-instagram text-white text-3xl drop-shadow-lg" />
+          <Instagram className="h-8 w-8 text-white drop-shadow-lg" />
         </div>
       </div>
     </a>
@@ -113,6 +116,8 @@ const InstagramDiaries = () => {
           alt="Background"
           fill
           className="object-cover opacity-20"
+          sizes="100vw"
+          quality={70}
         />
         <div className="absolute inset-0 bg-white/60" />
       </div>
@@ -156,14 +161,14 @@ const InstagramDiaries = () => {
               aria-label="Previous product"
               className="absolute left-[-50px] cursor-pointer bottom-[20%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
-              <img src="/assets/left-image.png" alt="" className="w-full" />
+              <Image src="/assets/left-image.png" alt="" width={48} height={48} className="w-full h-auto" />
             </button>
             <button
               onClick={scrollNext}
               aria-label="Next product"
               className="absolute right-[-50px] cursor-pointer bottom-[20%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
-              <img src="/assets/right-image.png" alt="" className="w-full" />
+              <Image src="/assets/right-image.png" alt="" width={48} height={48} className="w-full h-auto" />
             </button>
           </div>
         ) : (

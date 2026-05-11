@@ -5,9 +5,6 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 import FilterSortMobile from "./components/FilterSortMobile";
 import MobileSortSheet from "./components/MobileSortSheet";
-import TopInfo from "../components/TopInfo";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import WishlistLoginModal from "../components/WishlistLoginModal";
 import ProductListBanner from "./components/ProductListBanner";
 import ProductFilterBar from "./components/ProductFilterBar";
@@ -84,8 +81,6 @@ const ProductListContent = ({
         },
       ]);
     } else {
-      // Only clear if not using initial params, or handle appropriately.
-      // For now, if no query params, start empty.
       if (!activeType && !activeValue) {
         setActiveFilters([]);
       }
@@ -100,9 +95,8 @@ const ProductListContent = ({
       setSelectedProductSlug(restoredSlug);
     }
   }, []);
-  const [sortOption, setSortOption] = useState<string>("newest");
 
-  // ... rest of logic uses categorySlug variable which is now derived
+  const [sortOption, setSortOption] = useState<string>("newest");
 
   /* =======================
      Wishlist
@@ -156,13 +150,16 @@ const ProductListContent = ({
     loading: productsLoading,
     error,
     refetch,
-  } = useProducts({
-    category: categoryId,
-    subCategory: subCategory || undefined,
-    search: searchQuery || undefined,
-    sort: sortOption,
-    limit: 50,
-  }, !categorySlug || !!categoryId);
+  } = useProducts(
+    {
+      category: categoryId,
+      subCategory: subCategory || undefined,
+      search: searchQuery || undefined,
+      sort: sortOption,
+      limit: 50,
+    },
+    !categorySlug || !!categoryId,
+  );
 
   /* =======================
      Extract Filter Options
@@ -192,7 +189,6 @@ const ProductListContent = ({
     };
 
     window.addEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
-
     return () => {
       window.removeEventListener(ORDER_CONFIRMED_EVENT, handleOrderConfirmed);
     };
@@ -214,21 +210,18 @@ const ProductListContent = ({
     const filterLabel = `${type}: ${value}`;
     const existing = activeFilters.find((f) => f.label === filterLabel);
 
-    // Single-select filter types — new value replaces the old one
-    const singleSelectTypes = ["price", "category"];
-
-    if (singleSelectTypes.includes(type)) {
-      // If same value clicked again, remove it (deselect); otherwise replace
+    // Price is the only single-select filter (one range at a time)
+    // All other types including category support multiple selections
+    if (type === "price") {
       if (existing) {
-        setActiveFilters(activeFilters.filter((f) => f.type !== type));
+        setActiveFilters(activeFilters.filter((f) => f.type !== "price"));
       } else {
         setActiveFilters([
-          ...activeFilters.filter((f) => f.type !== type),
+          ...activeFilters.filter((f) => f.type !== "price"),
           { label: filterLabel, type, value },
         ]);
       }
     } else {
-      // Multi-select — toggle behaviour unchanged
       if (existing) {
         setActiveFilters(activeFilters.filter((f) => f.label !== filterLabel));
       } else {
@@ -267,7 +260,7 @@ const ProductListContent = ({
             : size.price;
         if (currentPrice < lowestPrice) {
           lowestPrice = currentPrice;
-          lowestMrp = size.price; // The MRP corresponding to this lowest price
+          lowestMrp = size.price;
         }
       });
     });
@@ -277,7 +270,6 @@ const ProductListContent = ({
         ? Math.round(((lowestMrp - lowestPrice) / lowestMrp) * 100)
         : 0;
 
-    /* ---- Derive Sizes from variants[].sizes[] ---- */
     const allSizes = Array.from(
       new Set(p.variants?.flatMap((v) => v.sizes?.map((s) => s.name)) || []),
     );
@@ -289,10 +281,14 @@ const ProductListContent = ({
           ? allSizes[0]
           : `${allSizes[0]}–${allSizes[allSizes.length - 1]}`;
 
+    const resolvedCategorySlug =
+      p.categorySlug || p.category?.slug || categorySlug || undefined;
+
     return {
       _id: p._id,
       slug: p.slug,
       name: p.name,
+      categorySlug: resolvedCategorySlug,
       image: getProductImageUrl(p),
       hoverImage: p.hoverImage?.url
         ? getApiImageUrl(p.hoverImage.url)
@@ -313,7 +309,6 @@ const ProductListContent = ({
   ======================= */
   let filteredProducts = [...gridProducts];
 
-  // Apply filters - group by type and use OR within same type, AND across types
   const filtersByType = activeFilters.reduce(
     (acc, filter) => {
       if (!acc[filter.type]) acc[filter.type] = [];
@@ -323,61 +318,62 @@ const ProductListContent = ({
     {} as Record<string, string[]>,
   );
 
-  Object.entries(filtersByType).forEach(([type, values]) => {
-    if (type === "size") {
-      filteredProducts = filteredProducts.filter((p) =>
-        products
-          .find((prod) => prod._id === p._id)
-          ?.variants?.some((v) =>
-            v.sizes?.some((s) => values.includes(s.name)),
-          ),
-      );
-    } else if (type === "color") {
-      filteredProducts = filteredProducts.filter((p) =>
-        products
-          .find((prod) => prod._id === p._id)
-          ?.variants?.some((v) => values.includes(v.color?.name ?? "")),
-      );
-    } else if (type === "price") {
-      filteredProducts = filteredProducts.filter((p) =>
-        values.some((val) => {
-          const [min, max] = val.split("-").map(Number);
-          return p.price >= min && (isNaN(max) || p.price <= max);
-        }),
-      );
-    } else if (type === "availability") {
-      filteredProducts = filteredProducts.filter((p) => {
-        const product = products.find((prod) => prod._id === p._id);
-        return values.some((val) => {
-          if (val === "In Stock") return product && product.stock > 10;
-          if (val === "Low Stock (≤10)")
-            return product && product.stock > 0 && product.stock <= 10;
-          return false;
-        });
-      });
-    } else if (type === "category") {
-      filteredProducts = filteredProducts.filter((p) => {
-        const product = products.find((prod) => prod._id === p._id);
-        return values.includes(product?.category?.name || "");
-      });
-    } else {
-      // wearType, occasion, tags, style, work, fabric, productType, subCategory
-      filteredProducts = filteredProducts.filter((p) => {
-        const product = products.find((prod) => prod._id === p._id);
-        const productFields = product as Record<string, unknown> | undefined;
-        const fieldValue = productFields?.[type];
-        if (typeof fieldValue === "string") {
-          return values.includes(fieldValue);
-        }
-        return (
-          Array.isArray(fieldValue) &&
-          values.some((val) => fieldValue.includes(val))
+  (Object.entries(filtersByType) as [string, string[]][]).forEach(
+    ([type, values]) => {
+      if (type === "size") {
+        filteredProducts = filteredProducts.filter((p) =>
+          products
+            .find((prod) => prod._id === p._id)
+            ?.variants?.some((v) =>
+              v.sizes?.some((s) => values.includes(s.name)),
+            ),
         );
-      });
-    }
-  });
+      } else if (type === "color") {
+        filteredProducts = filteredProducts.filter((p) =>
+          products
+            .find((prod) => prod._id === p._id)
+            ?.variants?.some((v) => values.includes(v.color?.name ?? "")),
+        );
+      } else if (type === "price") {
+        filteredProducts = filteredProducts.filter((p) =>
+          values.some((val) => {
+            const [min, max] = val.split("-").map(Number);
+            return p.price >= min && (isNaN(max) || p.price <= max);
+          }),
+        );
+      } else if (type === "availability") {
+        filteredProducts = filteredProducts.filter((p) => {
+          const product = products.find((prod) => prod._id === p._id);
+          return values.some((val) => {
+            if (val === "In Stock") return product && product.stock > 10;
+            if (val === "Low Stock (≤10)")
+              return product && product.stock > 0 && product.stock <= 10;
+            return false;
+          });
+        });
+      } else if (type === "category") {
+        // Multi-select: keep products matching ANY of the selected categories
+        filteredProducts = filteredProducts.filter((p) => {
+          const product = products.find((prod) => prod._id === p._id);
+          return values.includes(product?.category?.name ?? "");
+        });
+      } else {
+        filteredProducts = filteredProducts.filter((p) => {
+          const product = products.find((prod) => prod._id === p._id);
+          const productFields = product as Record<string, unknown> | undefined;
+          const fieldValue = productFields?.[type];
+          if (typeof fieldValue === "string") {
+            return values.includes(fieldValue);
+          }
+          return (
+            Array.isArray(fieldValue) &&
+            values.some((val) => fieldValue.includes(val))
+          );
+        });
+      }
+    },
+  );
 
-  // Apply sorting
   if (sortOption === "price_asc") {
     filteredProducts.sort((a, b) => a.price - b.price);
   } else if (sortOption === "price_desc") {
@@ -385,16 +381,12 @@ const ProductListContent = ({
   } else if (sortOption === "popularity") {
     filteredProducts.sort((a, b) => b.rating - a.rating);
   }
-  // newest is default (already sorted by createdAt from backend)
 
   /* =======================
      Render
   ======================= */
   return (
     <>
-      <TopInfo />
-      <Navbar />
-
       <ProductListBanner
         categorySlug={categorySlug || undefined}
         searchQuery={searchQuery}
@@ -451,8 +443,6 @@ const ProductListContent = ({
         </div>
       </div>
 
-      <Footer />
-
       <div className="md:hidden">
         <FilterSortMobile
           onFilterClick={() => setFiltersOpen(true)}
@@ -490,9 +480,7 @@ const ProductListContent = ({
 const ProductList = (props: ProductListProps) => {
   return (
     <Suspense
-      fallback={
-        <StorefrontLoadingShell message="Loading products..." />
-      }
+      fallback={<StorefrontLoadingShell message="Loading products..." />}
     >
       <ProductListContent {...props} />
     </Suspense>

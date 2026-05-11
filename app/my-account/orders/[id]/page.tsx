@@ -566,12 +566,11 @@ const OrderDetailPage = () => {
 
                     {/* Person row */}
                     <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-3 py-2.5 mb-2">
-                        <img
+                        <Image
                             src="/assets/icons/person-1.svg"
                             alt="Person"
                             width={18}
                             height={18}
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                         />
                         <span className="text-sm font-semibold text-gray-900">
                             {order.shippingAddress.fullName}
@@ -583,12 +582,11 @@ const OrderDetailPage = () => {
 
                     {/* Home / address row */}
                     <div className="flex items-center gap-3 bg-gray-100 rounded-lg px-3 py-2.5">
-                        <img
+                        <Image
                             src="/assets/icons/home-button.svg"
                             alt="Home"
                             width={18}
                             height={18}
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                         />
                         <span className="text-sm font-semibold text-gray-900 shrink-0">Home</span>
                         <span className="text-sm text-gray-500 truncate">

@@ -69,6 +69,7 @@ export interface Product {
   isStarred?: boolean;
   gstPercent: number;
   price?: number;
+  categorySlug?: string;
   discountPrice?: number;
 
   mainImage: ProductImage;

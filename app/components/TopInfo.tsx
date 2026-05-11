@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import useSWR from "swr";
 import { API_BASE_URL } from "../services/api";
 import {
-  getHomepageSettings,
   isExternalHref,
   isTopInfoVisible,
+  defaultTopInfoConfig,
+  type HomepageSettings,
 } from "../services/homepageService";
 
 interface HomepageCoupon {
@@ -80,12 +80,81 @@ const TopInfoLink = ({
   );
 };
 
-const TopInfo = () => {
-  const { data: homepageSettings } = useSWR(
-    "/homepage/sections",
-    getHomepageSettings,
-  );
-  const [coupon, setCoupon] = useState<HomepageCoupon | null>(null);
+const defaultSettings: HomepageSettings = {
+  sections: {
+    topInfo: true,
+    homeBanner: true,
+    aboutSBS: true,
+    hiddenBeauty: true,
+    trendingThisWeek: true,
+    newArrivals: true,
+    collections: true,
+    timelessWomenCollection: true,
+    instagramDiaries: true,
+    testimonials: true,
+    blogs: true,
+    bookAppointmentWidget: true,
+  },
+  topInfoConfig: defaultTopInfoConfig,
+};
+
+async function getTopInfoData() {
+  try {
+    const settingsResponse = await fetch(`${API_BASE_URL}/homepage/sections`, {
+      next: { revalidate: 300 },
+    });
+    const settingsJson = await settingsResponse.json();
+    const homepageSettings: HomepageSettings = {
+      sections: {
+        ...defaultSettings.sections,
+        ...(settingsJson?.sections || {}),
+      },
+      topInfoConfig: {
+        ...defaultSettings.topInfoConfig,
+        ...(settingsJson?.topInfoConfig || {}),
+      },
+    };
+
+    const topInfoVisible = isTopInfoVisible(
+      homepageSettings.sections,
+      homepageSettings.topInfoConfig,
+    );
+    const topInfoMode = homepageSettings.topInfoConfig?.mode || "coupon";
+
+    if (!topInfoVisible) {
+      return null;
+    }
+
+    if (topInfoMode !== "coupon") {
+      return { homepageSettings, coupon: null as HomepageCoupon | null };
+    }
+
+    try {
+      const couponResponse = await fetch(`${API_BASE_URL}/coupons/homepage`, {
+        next: { revalidate: 300 },
+      });
+      const couponJson = await couponResponse.json();
+      return {
+        homepageSettings,
+        coupon: couponJson.data || couponJson.coupon || null,
+      };
+    } catch {
+      return { homepageSettings, coupon: null as HomepageCoupon | null };
+    }
+  } catch {
+    return {
+      homepageSettings: defaultSettings,
+      coupon: null as HomepageCoupon | null,
+    };
+  }
+}
+
+const buildTopInfoContent = (topInfoData: Awaited<ReturnType<typeof getTopInfoData>>) => {
+  if (!topInfoData) {
+    return null;
+  }
+
+  const { homepageSettings, coupon } = topInfoData;
 
   const topInfoVisible = isTopInfoVisible(
     homepageSettings?.sections,
@@ -93,72 +162,68 @@ const TopInfo = () => {
   );
   const topInfoMode = homepageSettings?.topInfoConfig?.mode || "coupon";
 
-  useEffect(() => {
-    if (!topInfoVisible || topInfoMode !== "coupon") {
-      setCoupon(null);
-      return;
-    }
+  if (!topInfoVisible) {
+    return null;
+  }
 
+  if (topInfoMode === "custom") {
+    return {
+      text:
+        homepageSettings?.topInfoConfig?.customText?.trim() || defaultText,
+      code: null,
+      href:
+        homepageSettings?.topInfoConfig?.customCtaHref?.trim() ||
+        "/product-list",
+      ctaLabel:
+        homepageSettings?.topInfoConfig?.customCtaLabel?.trim() ||
+        "Shop Now",
+    };
+  }
+
+  const isExpired = coupon?.endDate
+    ? new Date(coupon.endDate) < new Date()
+    : false;
+  const hasValidCoupon = Boolean(coupon && !isExpired);
+  const validCoupon = hasValidCoupon ? coupon : null;
+  const displayText = validCoupon
+    ? validCoupon.description || getOfferText(validCoupon)
+    : defaultText;
+
+  return {
+    text: displayText,
+    code: validCoupon?.couponType === "CouponCode" ? validCoupon.code : null,
+    href: validCoupon ? getCouponHref(validCoupon) : "/product-list",
+    ctaLabel: "Shop Now",
+  };
+};
+
+const TopInfo = () => {
+  const [content, setContent] = useState<{
+    text: string;
+    code: string | null;
+    href: string;
+    ctaLabel: string;
+  } | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
     let isMounted = true;
 
-    const fetchHomepageCoupon = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/coupons/homepage`, {
-          cache: "no-store",
-        });
-        const data = await res.json();
-        if (!isMounted) return;
-        setCoupon(data.data || data.coupon || null);
-      } catch (err) {
-        if (isMounted) {
-          setCoupon(null);
-        }
-        console.error("Failed to fetch homepage coupon:", err);
-      }
+    const loadTopInfo = async () => {
+      const topInfoData = await getTopInfoData();
+      if (!isMounted) return;
+      setContent(buildTopInfoContent(topInfoData));
+      setIsLoaded(true);
     };
 
-    fetchHomepageCoupon();
+    void loadTopInfo();
 
     return () => {
       isMounted = false;
     };
-  }, [topInfoMode, topInfoVisible]);
+  }, []);
 
-  const content = useMemo(() => {
-    if (!topInfoVisible) {
-      return null;
-    }
-
-    if (topInfoMode === "custom") {
-      return {
-        text: homepageSettings?.topInfoConfig?.customText?.trim() || defaultText,
-        code: null,
-        href:
-          homepageSettings?.topInfoConfig?.customCtaHref?.trim() ||
-          "/product-list",
-        ctaLabel:
-          homepageSettings?.topInfoConfig?.customCtaLabel?.trim() || "Shop Now",
-      };
-    }
-
-    const isExpired = coupon?.endDate
-      ? new Date(coupon.endDate) < new Date()
-      : false;
-    const hasValidCoupon = Boolean(coupon && !isExpired);
-    const validCoupon = hasValidCoupon ? coupon : null;
-    const displayText = validCoupon
-      ? validCoupon.description || getOfferText(validCoupon)
-      : defaultText;
-
-    return {
-      text: displayText,
-      code: validCoupon?.couponType === "CouponCode" ? validCoupon.code : null,
-      href: validCoupon ? getCouponHref(validCoupon) : "/product-list",
-      ctaLabel: "Shop Now",
-    };
-  }, [coupon, homepageSettings?.topInfoConfig, topInfoMode, topInfoVisible]);
-
-  if (!content) {
+  if (!isLoaded || !content) {
     return null;
   }
 

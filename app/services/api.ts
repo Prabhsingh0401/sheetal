@@ -1,5 +1,3 @@
-import Cookies from "js-cookie";
-
 /**
  * Central API configuration and base fetcher
  */
@@ -22,9 +20,13 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     ? endpoint
     : `${API_BASE_URL}${endpoint}`;
   const token =
-    Cookies.get("token") ||
-    (typeof window !== "undefined" ? localStorage.getItem("token") : null) ||
-    undefined;
+    typeof window !== "undefined"
+      ? window.localStorage.getItem("token") ||
+        document.cookie
+          .split("; ")
+          .find((part) => part.startsWith("token="))
+          ?.split("=")[1]
+      : undefined;
 
   const requestHeaders: Record<string, string> = {};
 
@@ -74,6 +76,9 @@ export const getApiImageUrl = (
   fallback: string = "/assets/default-image.png",
 ): string => {
   if (!path) return fallback;
-  if (typeof path === "string") return path || fallback;
-  return path.url || fallback;
+  const value = typeof path === "string" ? path : path.url;
+  if (!value) return fallback;
+  if (/^https?:\/\//i.test(value)) return value;
+  if (value.startsWith("/")) return `${BASE_URL}${value}`;
+  return `${BASE_URL}/${value.replace(/^\/+/, "")}`;
 };

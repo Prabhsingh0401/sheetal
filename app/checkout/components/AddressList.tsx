@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import toast from "react-hot-toast";
 import { deleteAddress } from "../../services/userService";
 import { CircleCheckBig } from "lucide-react";
@@ -109,7 +110,13 @@ const   AddressList: React.FC<AddressListProps> = ({
       )}
       {isSelected && (
         <div className="absolute -top-1 -right-1 bg-white">
-          <img src="/assets/tick-green.png" alt="" className="h-5" />
+          <Image
+            src="/assets/tick-green.png"
+            alt=""
+            width={20}
+            height={20}
+            className="h-5 w-5"
+          />
         </div>
       )}
 

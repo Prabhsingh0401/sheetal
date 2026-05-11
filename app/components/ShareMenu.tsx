@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Copy, MoreHorizontal, Mail, X as CloseIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -28,19 +27,19 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
   const [cachedUrl, setCachedUrl] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Detect mobile and Web Share API support
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
     setIsShareSupported(!!navigator.share);
 
     const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("resize", handleResize, { passive: true });
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const fetchUrl = useCallback(async () => {
     if (cachedUrl) return cachedUrl;
     if (url) return url;
+
     if (getUrl) {
       setIsLoading(true);
       try {
@@ -49,51 +48,48 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
           setCachedUrl(result);
           return result;
         }
-      } catch (err) {
-        console.error("Failed to get URL:", err);
       } finally {
         setIsLoading(false);
       }
     }
-    return typeof window !== "undefined" ? window.location.href : "";
-  }, [url, getUrl, cachedUrl]);
 
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsOpen(!isOpen);
-  };
+    return typeof window !== "undefined" ? window.location.href : "";
+  }, [cachedUrl, getUrl, url]);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
   }, []);
 
-  // Handle click outside
+  const handleToggle = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setIsOpen((previous) => !previous);
+  };
+
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         handleClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, handleClose]);
+  }, [handleClose, isOpen]);
 
-  // Handle Escape key
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         handleClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener("keydown", handleEsc);
-    }
+    document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
-  }, [isOpen, handleClose]);
+  }, [handleClose, isOpen]);
 
   const handleCopyLink = async () => {
     const shareUrl = await fetchUrl();
@@ -101,26 +97,21 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
       await navigator.clipboard.writeText(shareUrl);
       toast.success("Link copied to clipboard!");
       handleClose();
-    } catch (err) {
-      console.error("Failed to copy:", err);
+    } catch {
       toast.error("Failed to copy link.");
     }
   };
 
   const handleNativeShare = async () => {
     const shareUrl = await fetchUrl();
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title,
-          text,
-          url: shareUrl,
-        });
-        handleClose();
-      } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          console.error("Share failed:", err);
-        }
+    if (!navigator.share) return;
+
+    try {
+      await navigator.share({ title, text, url: shareUrl });
+      handleClose();
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") {
+        toast.error("Share failed.");
       }
     }
   };
@@ -142,7 +133,6 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
       name: "Facebook",
       icon: "/assets/icons/facebook.svg",
       onClick: async () => {
-        // Open window immediately to prevent popup blockers
         const win = window.open("about:blank", "_blank");
         const shareUrl = await fetchUrl();
         if (win) {
@@ -175,27 +165,6 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
     });
   }
 
-  const menuVariants: Variants = {
-    hidden: { opacity: 0, scale: 0.8, y: isMobile ? 20 : -10 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 25,
-        staggerChildren: 0.05,
-      },
-    },
-    exit: { opacity: 0, scale: 0.8, y: isMobile ? 20 : -10, transition: { duration: 0.2 } },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: { opacity: 1, x: 0 },
-  };
-
   return (
     <div className="relative inline-block" ref={menuRef}>
       <div
@@ -206,64 +175,68 @@ const ShareMenu: React.FC<ShareMenuProps> = ({
         {children}
       </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            variants={menuVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            onMouseLeave={() => !isMobile && setIsOpen(false)}
-            className={`absolute z-100 bg-white/90 backdrop-blur-md border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl p-2 min-w-[190px]
-              ${isMobile ? "bottom-full mb-3 right-0 origin-bottom-right" : "top-0 left-full ml-3 origin-top-left"}`}
-          >
-            <div className="flex flex-col gap-1">
-              <div className="flex justify-between items-center px-3 py-2 mb-1 border-b border-gray-100/50 md:hidden">
-                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.1em]">Share via</span>
-                <CloseIcon size={16} className="text-gray-400 cursor-pointer hover:text-gray-600" onClick={handleClose} />
-              </div>
-              
-              {isLoading && (
-                <div className="flex flex-col items-center justify-center py-8 px-4 gap-3">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                    className="w-6 h-6 border-2 border-gray-100 border-t-[#bd9951] rounded-full"
-                  />
-                  <span className="text-[11px] font-medium text-gray-500 animate-pulse">Generating secure link...</span>
-                </div>
-              )}
+      {isOpen && (
+        <div
+          onMouseLeave={() => !isMobile && setIsOpen(false)}
+          className={`absolute z-100 min-w-[190px] rounded-2xl border border-white/20 bg-white/90 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.15)] backdrop-blur-md transition-all duration-200 ${
+            isMobile
+              ? "bottom-full right-0 mb-3 origin-bottom-right"
+              : "left-full top-0 ml-3 origin-top-left"
+          }`}
+        >
+          <div className="flex flex-col gap-1">
+            <div className="mb-1 flex items-center justify-between border-b border-gray-100/50 px-3 py-2 md:hidden">
+              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-gray-500">
+                Share via
+              </span>
+              <CloseIcon
+                size={16}
+                className="cursor-pointer text-gray-400 hover:text-gray-600"
+                onClick={handleClose}
+              />
+            </div>
 
-              {!isLoading && shareOptions.map((option) => (
-                <motion.button
+            {isLoading && (
+              <div className="flex flex-col items-center justify-center gap-3 px-4 py-8">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-100 border-t-[#bd9951]" />
+                <span className="animate-pulse text-[11px] font-medium text-gray-500">
+                  Generating secure link...
+                </span>
+              </div>
+            )}
+
+            {!isLoading &&
+              shareOptions.map((option, index) => (
+                <button
                   key={option.name}
-                  variants={itemVariants}
-                  whileHover={{ x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={(event) => {
+                    event.stopPropagation();
                     option.onClick();
                   }}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-[#bd9951]/10 rounded-xl transition-all text-left group"
+                  className="flex w-full translate-x-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-[#bd9951]/10 hover:translate-x-1"
+                  style={{ transitionDelay: `${index * 20}ms` }}
                 >
-                  <div className="w-9 h-9 flex items-center justify-center bg-gray-50 rounded-full group-hover:bg-white transition-colors shadow-sm ring-1 ring-gray-100 group-hover:ring-[#bd9951]/20">
-                    {option.icon ? (
-                      <Image src={option.icon} alt={option.name} width={20} height={20} className="object-contain" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 shadow-sm ring-1 ring-gray-100 transition-colors group-hover:bg-white">
+                    {"icon" in option && option.icon ? (
+                      <Image
+                        src={option.icon}
+                        alt={option.name}
+                        width={20}
+                        height={20}
+                        className="object-contain"
+                      />
                     ) : (
-                      <div className="text-gray-600 group-hover:text-[#bd9951] transition-colors">
-                        {option.component}
-                      </div>
+                      option.component
                     )}
                   </div>
-                  <span className="text-sm font-semibold text-gray-700 group-hover:text-[#6a3f07] transition-colors">
+                  <span className="text-sm font-semibold text-gray-700 transition-colors hover:text-[#6a3f07]">
                     {option.name}
                   </span>
-                </motion.button>
+                </button>
               ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

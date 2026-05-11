@@ -1,16 +1,15 @@
 "use client";
+import dynamic from "next/dynamic";
 import React, {
   useState,
   useEffect,
   useRef,
   useMemo,
-  useSyncExternalStore,
+  useCallback,
 } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { useWishlist } from "../hooks/useWishlist";
-import { useCart } from "../hooks/useCart";
 import {
   isAuthenticated,
   logout,
@@ -18,21 +17,55 @@ import {
   AUTH_UPDATED_EVENT,
 } from "../services/authService";
 import toast from "react-hot-toast";
-import SearchModal from "./SearchModal";
-import useSWR from "swr";
-import { fetchAllCategories, Category } from "../services/categoryService";
-import {
-  getHomepageSettings,
-  isTopInfoVisible,
-} from "../services/homepageService";
-import { getSettings } from "../services/settingsService";
-import { buildNavbarNavItems, NavbarNavItem } from "./navbarLayout";
+import type { Category } from "../services/categoryService";
+import { NavbarNavItem } from "./navbarLayout";
 import {
   fetchProducts,
+  fetchWishlist,
   getProductImageUrl,
   Product,
 } from "../services/productService";
+import { fetchCart } from "../services/cartService";
 import { buildProductHref } from "../utils/productRoutes";
+import {
+  CART_UPDATED_EVENT,
+  WISHLIST_UPDATED_EVENT,
+} from "../hooks/shopEvents";
+
+const SearchModal = dynamic(() => import("./SearchModal"), {
+  ssr: false,
+});
+
+const GUEST_CART_KEY = "guest_cart";
+
+const readGuestCartCount = () => {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = localStorage.getItem(GUEST_CART_KEY);
+    if (!raw) return 0;
+    const items = JSON.parse(raw) as Array<{ quantity?: number }>;
+    return items.reduce((total, item) => total + (item.quantity || 0), 0);
+  } catch {
+    return 0;
+  }
+};
+
+const scheduleIdleTask = (callback: () => void) => {
+  if (typeof window === "undefined") return () => {};
+
+  if ("requestIdleCallback" in window) {
+    const requestIdle = window.requestIdleCallback as (
+      cb: IdleRequestCallback,
+      options?: IdleRequestOptions,
+    ) => number;
+    const cancelIdle = window.cancelIdleCallback as (id: number) => void;
+    const id = requestIdle(() => callback(), { timeout: 1000 });
+    return () => cancelIdle(id);
+  }
+
+  const id = globalThis.setTimeout(callback, 250);
+  return () => globalThis.clearTimeout(id);
+};
 
 const hasTags = (category: Partial<Category>) => {
   return (
@@ -46,6 +79,49 @@ const hasTags = (category: Partial<Category>) => {
   );
 };
 
+const megaMenuProductsCache = new Map<string, Product[]>();
+const megaMenuProductsRequestCache = new Map<string, Promise<Product[]>>();
+
+const preloadImage = (src: string) => {
+  if (typeof window === "undefined" || !src) return;
+  const image = new window.Image();
+  image.src = src;
+};
+
+const fetchLatestMegaMenuProducts = async (categoryId: string) => {
+  if (!categoryId) return [];
+
+  const cachedProducts = megaMenuProductsCache.get(categoryId);
+  if (cachedProducts) {
+    return cachedProducts;
+  }
+
+  const pendingRequest = megaMenuProductsRequestCache.get(categoryId);
+  if (pendingRequest) {
+    return pendingRequest;
+  }
+
+  const request = fetchProducts({
+    category: categoryId,
+    limit: 2,
+    sort: "-createdAt",
+    status: "Active",
+  })
+    .then((res) => {
+      const products = res.success && res.products ? res.products : [];
+      megaMenuProductsCache.set(categoryId, products);
+      products.forEach((product) => preloadImage(getProductImageUrl(product)));
+      return products;
+    })
+    .catch(() => [])
+    .finally(() => {
+      megaMenuProductsRequestCache.delete(categoryId);
+    });
+
+  megaMenuProductsRequestCache.set(categoryId, request);
+  return request;
+};
+
 const DynamicMegaMenu = ({
   category,
   handleCloseMegaMenu,
@@ -53,8 +129,6 @@ const DynamicMegaMenu = ({
   category: Partial<Category>;
   handleCloseMegaMenu: () => void;
 }) => {
-  if (!category._id) return null;
-
   const tagGroups = [
     { title: "Sub Categories", items: category.subCategories, type: "subCategory" },
     { title: "By Occasion", items: category.occasion, type: "occasion" },
@@ -72,29 +146,32 @@ const DynamicMegaMenu = ({
   const isGrid = tagGroups.length > 3;
 
   const [latestProducts, setLatestProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(() =>
+    category._id ? !megaMenuProductsCache.has(category._id) : false,
+  );
 
   useEffect(() => {
     const loadLatestProducts = async () => {
+      if (!category._id) {
+        setLatestProducts([]);
+        setLoadingProducts(false);
+        return;
+      }
+
       try {
         setLoadingProducts(true);
-        const res = await fetchProducts({
-          category: category._id,
-          limit: 2,
-          sort: "-createdAt",
-          status: "Active",
-        });
-        if (res.success && res.products) {
-          setLatestProducts(res.products);
-        }
-      } catch (err) {
-        console.error("Failed to load mega menu products", err);
+        const products = await fetchLatestMegaMenuProducts(category._id);
+        setLatestProducts(products);
+      } catch {
+        setLatestProducts([]);
       } finally {
         setLoadingProducts(false);
       }
     };
     loadLatestProducts();
   }, [category._id]);
+
+  if (!category._id) return null;
 
   return (
     <div className="bg-white/98 backdrop-blur-md border-t border-gray-200 shadow-2xl">
@@ -142,6 +219,8 @@ const DynamicMegaMenu = ({
                         alt={product.name}
                         width={250}
                         height={300}
+                        priority
+                        sizes="(min-width: 768px) 250px, 50vw"
                         className="w-full h-[250px] object-cover group-hover/product:scale-105 transition-transform duration-300"
                       />
                     </Link>
@@ -176,11 +255,13 @@ const DynamicMegaMenu = ({
       </div>
     </div>
   );
+
 };
 
 
 interface NavbarUserIconProps {
-  isClient: boolean;
+  isClientMounted: boolean;
+  isAuthenticatedUser: boolean;
   isUserDropdownOpen: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
@@ -189,14 +270,15 @@ interface NavbarUserIconProps {
 }
 
 const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
-  isClient,
+  isClientMounted,
+  isAuthenticatedUser,
   isUserDropdownOpen,
   onMouseEnter,
   onMouseLeave,
   onLogout,
   getDisplayName,
 }) => {
-  if (!isClient) {
+  if (!isClientMounted) {
     return (
       <Link href="/login" className="hover:opacity-80 transition-opacity">
         <Image src="/assets/icons/user.svg" alt="User" width={24} height={24} className="w-6 h-6" />
@@ -204,7 +286,7 @@ const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
     );
   }
 
-  if (isAuthenticated()) {
+  if (isAuthenticatedUser) {
     return (
       <div className="relative group" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
         <Link href="/my-account" className="hover:opacity-80 transition-opacity">
@@ -256,7 +338,13 @@ const DesktopMenuItem = ({
   return (
     <li
       className="relative group h-full flex items-center"
-      onMouseEnter={() => isMegaMenu && onMegaOpen(item)}
+      onMouseEnter={() => {
+        if (!isMegaMenu) return;
+        if (item._id) {
+          void fetchLatestMegaMenuProducts(item._id);
+        }
+        onMegaOpen(item);
+      }}
       onMouseLeave={() => isMegaMenu && onMegaClose()}
     >
       <Link
@@ -344,27 +432,23 @@ const MobileSubMenuView = ({
   ].filter((g) => g.items && g.items.length > 0);
 
   const [latestProducts, setLatestProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(() =>
+    item._id ? !megaMenuProductsCache.has(item._id) : false,
+  );
 
   useEffect(() => {
     const loadLatestProducts = async () => {
       if (!item.isCategory && !item._id) {
+        setLatestProducts([]);
         setLoadingProducts(false);
         return;
       }
       try {
         setLoadingProducts(true);
-        const res = await fetchProducts({
-          category: item._id,
-          limit: 2,
-          sort: "-createdAt",
-          status: "Active",
-        });
-        if (res.success && res.products) {
-          setLatestProducts(res.products);
-        }
-      } catch (err) {
-        // silent
+        const products = await fetchLatestMegaMenuProducts(item._id || "");
+        setLatestProducts(products);
+      } catch {
+        setLatestProducts([]);
       } finally {
         setLoadingProducts(false);
       }
@@ -433,6 +517,7 @@ const MobileSubMenuView = ({
                         src={getProductImageUrl(product)}
                         alt={product.name}
                         fill
+                        priority
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                         sizes="(max-width: 768px) 50vw, 33vw"
                       />
@@ -551,11 +636,14 @@ const MobileMenuOverlay = ({
   );
 };
 
-const NavbarInner = () => {
+const NavbarInner = ({
+  initialNavItems,
+  topInfoEnabled,
+}: {
+  initialNavItems: NavbarNavItem[];
+  topInfoEnabled: boolean;
+}) => {
   const router = useRouter();
-  const { wishlist } = useWishlist();
-  const { cart } = useCart();
-  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -567,76 +655,124 @@ const NavbarInner = () => {
   } | null>(null);
   const [activeMegaMenuItem, setActiveMegaMenuItem] =
     useState<NavbarNavItem | null>(null);
-  const isClient = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+  const [isClientMounted, setIsClientMounted] = useState(false);
+  const [isAuthenticatedUser, setIsAuthenticatedUser] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [cartItemCount, setCartItemCount] = useState(0);
   const [navbarBottom, setNavbarBottom] = useState(0);
   const headerRef = useRef<HTMLDivElement | null>(null);
-
-  const { data: categories } = useSWR("/categories", fetchAllCategories);
-  const { data: settings } = useSWR("/settings", getSettings);
-  const { data: homepageSettings } = useSWR(
-    "/homepage/sections",
-    getHomepageSettings,
-  );
-
-  const topInfoEnabled = isTopInfoVisible(
-    homepageSettings?.sections,
-    homepageSettings?.topInfoConfig,
-  );
-
-  const navItems = useMemo<NavbarNavItem[]>(() => {
-    if (!categories) return [];
-    return buildNavbarNavItems(categories, settings?.navbarLayout);
-  }, [categories, settings?.navbarLayout]);
-
-  const wishlistHref = isAuthenticated() ? "/wishlist" : "/login?redirect=/wishlist";
+  const navItems = useMemo(() => initialNavItems, [initialNavItems]);
   const pathname = usePathname();
+  const wishlistHref = isAuthenticatedUser ? "/wishlist" : "/login?redirect=/wishlist";
+
+  const syncNavCounts = useCallback(async () => {
+    const authenticated = isAuthenticated();
+    setIsAuthenticatedUser(authenticated);
+
+    if (!authenticated) {
+      setWishlistCount(0);
+      setCartItemCount(readGuestCartCount());
+      return;
+    }
+
+    try {
+      const [wishlistResponse, cartResponse] = await Promise.all([
+        fetchWishlist(),
+        fetchCart(),
+      ]);
+
+      setWishlistCount(
+        wishlistResponse.success && Array.isArray(wishlistResponse.data)
+          ? wishlistResponse.data.length
+          : 0,
+      );
+
+      setCartItemCount(
+        cartResponse.success && Array.isArray(cartResponse.data?.items)
+          ? cartResponse.data.items.reduce(
+              (total, item) => total + item.quantity,
+              0,
+            )
+          : 0,
+      );
+    } catch {
+      setWishlistCount(0);
+      setCartItemCount(readGuestCartCount());
+    }
+  }, []);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
+    setIsClientMounted(true);
+    setIsAuthenticatedUser(isAuthenticated());
+    const cancelIdle = scheduleIdleTask(() => {
+      void syncNavCounts();
+    });
 
     const syncAuthState = () => {
-      if (isAuthenticated()) {
+      const authenticated = isAuthenticated();
+      setIsAuthenticatedUser(authenticated);
+      if (authenticated) {
         setCurrentUser(getUserDetails());
       } else {
         setCurrentUser(null);
+        setWishlistCount(0);
+        setCartItemCount(readGuestCartCount());
       }
+
+      void syncNavCounts();
     };
 
     window.addEventListener(AUTH_UPDATED_EVENT, syncAuthState);
     syncAuthState();
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      cancelIdle();
       window.removeEventListener(AUTH_UPDATED_EVENT, syncAuthState);
     };
-  }, [pathname]);
+  }, [pathname, syncNavCounts]);
 
   useEffect(() => {
-    const handleMegaMenuClose = () => setActiveMegaMenuItem(null);
-    window.addEventListener("scroll", handleMegaMenuClose, { passive: true });
-    return () =>
-      window.removeEventListener("scroll", handleMegaMenuClose);
-  }, []);
-
-  useEffect(() => {
-    const updateNavbarBottom = () => {
-      const header = headerRef.current;
-      if (!header) return;
-      setNavbarBottom(Math.round(header.getBoundingClientRect().bottom));
+    const handleShopStateUpdate = () => {
+      void syncNavCounts();
     };
-    updateNavbarBottom();
-    window.addEventListener("resize", updateNavbarBottom);
-    window.addEventListener("scroll", updateNavbarBottom, { passive: true });
+
+    window.addEventListener(CART_UPDATED_EVENT, handleShopStateUpdate);
+    window.addEventListener(WISHLIST_UPDATED_EVENT, handleShopStateUpdate);
+
     return () => {
-      window.removeEventListener("resize", updateNavbarBottom);
-      window.removeEventListener("scroll", updateNavbarBottom);
+      window.removeEventListener(CART_UPDATED_EVENT, handleShopStateUpdate);
+      window.removeEventListener(WISHLIST_UPDATED_EVENT, handleShopStateUpdate);
     };
-  }, [scrolled]);
+  }, [syncNavCounts]);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const updateLayoutState = () => {
+      const header = headerRef.current;
+      setScrolled(window.scrollY > 50);
+      setActiveMegaMenuItem(null);
+      if (header) {
+        setNavbarBottom(Math.round(header.getBoundingClientRect().bottom));
+      }
+      ticking = false;
+    };
+
+    const requestUpdate = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(updateLayoutState);
+    };
+
+    requestUpdate();
+    window.addEventListener("resize", requestUpdate);
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", requestUpdate);
+      window.removeEventListener("scroll", requestUpdate);
+    };
+  }, []);
 
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
   const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
@@ -698,7 +834,8 @@ const NavbarInner = () => {
                     <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-7 h-7" />
                   </button>
                   <NavbarUserIcon
-                    isClient={isClient}
+                    isClientMounted={isClientMounted}
+                    isAuthenticatedUser={isAuthenticatedUser}
                     isUserDropdownOpen={isUserDropdownOpen}
                     onMouseEnter={handleMouseEnterUser}
                     onMouseLeave={handleMouseLeaveUser}
@@ -707,9 +844,9 @@ const NavbarInner = () => {
                   />
                   <Link href={wishlistHref} className="relative hover:opacity-80 transition-opacity">
                     <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
-                    {wishlist.length > 0 && (
+                    {wishlistCount > 0 && (
                       <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                        {wishlist.length}
+                        {wishlistCount}
                       </span>
                     )}
                   </Link>
@@ -756,7 +893,8 @@ const NavbarInner = () => {
               <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-6 h-6" />
             </button>
             <NavbarUserIcon
-              isClient={isClient}
+              isClientMounted={isClientMounted}
+              isAuthenticatedUser={isAuthenticatedUser}
               isUserDropdownOpen={isUserDropdownOpen}
               onMouseEnter={handleMouseEnterUser}
               onMouseLeave={handleMouseLeaveUser}
@@ -778,8 +916,18 @@ const NavbarInner = () => {
         </div>
       </header>
 
-      <SearchModal isOpen={searchOpen} onClose={closeSearch} navbarBottom={navbarBottom} />
-      <MobileMenuOverlay isOpen={isMobileMenuOpen} onClose={toggleMobileMenu} navItems={navItems} />
+      {searchOpen && (
+        <SearchModal
+          isOpen={searchOpen}
+          onClose={closeSearch}
+          navbarBottom={navbarBottom}
+        />
+      )}
+      <MobileMenuOverlay
+        isOpen={isMobileMenuOpen}
+        onClose={toggleMobileMenu}
+        navItems={navItems}
+      />
     </>
   );
 };

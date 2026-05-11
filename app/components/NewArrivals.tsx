@@ -245,14 +245,14 @@ const NewArrivals = () => {
               aria-label="Previous product"
               className="absolute left-[-50px] cursor-pointer bottom-[50%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
-              <img src="/assets/left-image.png" alt="" className="w-full" />
+              <Image src="/assets/left-image.png" alt="" width={48} height={48} className="w-full h-auto" />
             </button>
             <button
               onClick={scrollNext}
               aria-label="Next product"
               className="absolute right-[-50px] cursor-pointer bottom-[50%] -translate-y-1/2 w-12 h-12 flex items-center justify-center opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 z-10"
             >
-              <img src="/assets/right-image.png" alt="" className="w-full" />
+              <Image src="/assets/right-image.png" alt="" width={48} height={48} className="w-full h-auto" />
             </button>
               </div>
             ) : (
