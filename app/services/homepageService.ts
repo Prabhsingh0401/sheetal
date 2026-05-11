@@ -51,6 +51,7 @@ const defaultSections: HomepageSections = {
 
 export const getHomepageSettings = async (): Promise<HomepageSettings> => {
   const result = await apiFetch("/homepage/sections");
+  console.log(result)
 
   return {
     sections: {

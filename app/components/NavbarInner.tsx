@@ -796,12 +796,13 @@ const NavbarInner = ({
     if (currentUser.email) return currentUser.email.split("@")[0] || currentUser.email;
     return "User";
   };
+  console.log(topInfoEnabled)
 
   return (
     <>
       <div
         ref={headerRef}
-        className={`hidden md:block fixed w-full z-[1003] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm py-4 font-[family-name:var(--font-montserrat)] ${
+        className={`hidden md:flex md:items-center fixed w-full z-[1003] transition-all duration-300 bg-[#082722]/95 backdrop-blur-sm h-20 font-[family-name:var(--font-montserrat)] ${
           scrolled || !topInfoEnabled ? "top-0 shadow-lg" : "top-[27px]"
         }`}
       >

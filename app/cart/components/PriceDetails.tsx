@@ -208,7 +208,16 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
       toast.error("Please enter a coupon code.");
       return;
     }
-    if (!user?.id) {
+
+    // Use id or _id as a fallback
+    const user = getUserDetails();
+    const userId = user?.id || (user as any)?._id;
+    const isAuth = isAuthenticated();
+
+    if (!userId && !isAuth) {
+      // ONLY redirect if the user is truly NOT authenticated.
+      // If they ARE authenticated but userId is missing, we try to proceed 
+      // or at least don't force a login redirect which causes the "logged in but redirected" bug.
       redirectToLogin(router, undefined, {
         modals: {
           couponModalOpen: true,
@@ -219,16 +228,19 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
       });
       return;
     }
+
     if (
       (selectedCouponMeta || couponMeta) &&
       isSingleUseCoupon(selectedCouponMeta || couponMeta) &&
-      hasRedeemedCoupon(user.id, enteredCode)
+      userId &&
+      hasRedeemedCoupon(userId, enteredCode)
     ) {
       toast.error("You have already used this coupon.");
       return;
     }
+
     handleApplyCoupon(
-      user?.id,
+      userId,
       selectedCouponMeta || couponMeta,
       enteredCode,
     );

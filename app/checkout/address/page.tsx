@@ -377,8 +377,13 @@ const AddressPageInner = () => {
     couponMeta?: unknown,
     overrideCode?: string,
   ) => {
-    if (!userId) {
+    if (!userId && !isAuthenticated()) {
       toast.error("Please login to apply coupons.");
+      return;
+    }
+
+    if (!userId) {
+      toast.error("User session issue. Please try logging in again if this persists.");
       return;
     }
 
