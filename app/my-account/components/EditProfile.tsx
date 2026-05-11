@@ -414,7 +414,9 @@ const EditProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!isPhoneVerified) {
+    const hasEnteredMobile = mobileNumber.trim().length > 0;
+
+    if (hasEnteredMobile && !isPhoneVerified) {
       toast.error("Please verify your mobile number before saving.");
       return;
     }
@@ -431,7 +433,9 @@ const EditProfile: React.FC = () => {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("email", email);
-      formData.append("phoneNumber", mobileNumber); // Ensure phone is sent
+      if (hasEnteredMobile) {
+        formData.append("phoneNumber", mobileNumber);
+      }
       formData.append("alternativeMobileNumber", alternativeMobileNumber);
       formData.append("dateOfBirth", dateOfBirth);
       formData.append("gender", gender);
@@ -500,7 +504,7 @@ const EditProfile: React.FC = () => {
               <div className="flex items-center justify-between w-full">
                 <div className="flex flex-col w-full">
                   <label className="w-56 text-gray-700 font-medium mb-1">
-                    Mobile Number*
+                    Mobile Number* 
                   </label>
                   {isPhoneVerified && !showOtpInput ? (
                     <div className="flex items-center">
@@ -541,7 +545,11 @@ const EditProfile: React.FC = () => {
                       {!showOtpInput && (
                         <button
                           onClick={handleSendOtp}
-                          disabled={phoneLoading || mobileNumber.length !== 10}
+                          disabled={
+                            phoneLoading ||
+                            mobileNumber.length !== 10 ||
+                            isPhoneVerified
+                          }
                           className="bg-[#8b6b2f] cursor-pointer  text-white px-4 py-2 rounded text-xs font-bold tracking-wide hover:bg-[#7a5f29] disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                         >
                           {phoneLoading ? "SENDING..." : "VERIFY"}

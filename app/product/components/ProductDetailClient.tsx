@@ -7,9 +7,6 @@ import React, {
   useRef,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import TopInfo from "../../components/TopInfo";
-import Footer from "../../components/Footer";
-import Navbar from "../../components/Navbar";
 import WishlistLoginModal from "../../components/WishlistLoginModal";
 import StorefrontLoadingShell from "../../components/StorefrontLoadingShell";
 import Breadcrumb from "../components/Breadcrumb";
@@ -719,9 +716,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
   return (
     <div className="font-[family-name:var(--font-montserrat)] bg-[#f9f9f9]">
-      <TopInfo />
-      <Navbar />
-
       <Breadcrumb
         title={product.name}
         categoryName={product.category?.name}
@@ -806,9 +800,6 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         onToggleWishlist={toggleProductInWishlist}
         currentSlug={slug}
       />
-
-      <Footer />
-
       <EnquireModal
         isOpen={enquireModalOpen}
         onClose={() => setEnquireModalOpen(false)}

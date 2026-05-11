@@ -10,6 +10,10 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
+  image?: {
+    url: string;
+    public_id?: string;
+  } | string;
   mainImage?: {
     url: string;
     public_id?: string;
@@ -77,7 +81,7 @@ export const fetchCategoryBySlug = async (
     try {
       const all: Category[] = await fetchAllCategories();
       return all.find((c) => c.slug === slug) || null;
-    } catch (e) {
+    } catch {
       throw error;
     }
   }
@@ -92,8 +96,8 @@ export const getCategoryImageUrl = (
 ): string => {
   if (!category) return fallback;
 
-  // Prioritize mainImage for general category listings
-  return getApiImageUrl(category.mainImage, fallback);
+  const imageSource = category.mainImage || category.image;
+  return getApiImageUrl(imageSource, fallback);
 };
 
 /**

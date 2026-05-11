@@ -6,6 +6,7 @@ import HiddenBeauty from "./components/HiddenBeauty";
 import { API_BASE_URL } from "./services/api";
 import HomeDeferredSections from "./components/HomeDeferredSections";
 import Footer from "./components/Footer";
+import { Suspense } from "react";
 
 async function getHomepageSections() {
   try {
@@ -24,13 +25,15 @@ export default async function Home() {
   const s = await getHomepageSections();
   return (
     <>
-      <TopInfo />
-      <Navbar />
-      {(s?.homeBanner) && <HomeBanner />}
-      {(s?.aboutSBS) && <AboutSBS />}
-      {(s?.hiddenBeauty) && <HiddenBeauty />}
-      <HomeDeferredSections sections={s} />
-      <Footer />
+      <Suspense>
+        <TopInfo />
+        <Navbar />
+        {s?.homeBanner && <HomeBanner />}
+        {s?.aboutSBS && <AboutSBS />}
+        {s?.hiddenBeauty && <HiddenBeauty />}
+        <HomeDeferredSections sections={s} />
+        <Footer />
+      </Suspense>
     </>
   );
 }

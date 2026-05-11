@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import { permanentRedirect, redirect } from "next/navigation";
+import Footer from "../../components/Footer";
+import StorefrontHeader from "../../components/StorefrontHeader";
 import ProductDetailClient from "../../product/components/ProductDetailClient";
 import { fetchProductBySlug } from "../../services/productService";
 import { getApiImageUrl } from "../../services/api";
@@ -14,7 +16,7 @@ interface ProductPageProps {
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
-  const { category, productId } = await params;
+  const { productId } = await params;
 
   try {
     const res = await fetchProductBySlug(productId);
@@ -131,6 +133,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product?.discountPrice && product.discountPrice > 0
       ? product.discountPrice
       : product?.price;
+  const priceValidUntil = "2099-12-31";
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -152,9 +155,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
       url: `https://yourdomain.com${buildProductHref(product)}`,
-      priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
+      priceValidUntil,
     },
     aggregateRating:
       product.totalReviews > 0
@@ -168,11 +169,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <>
+      <StorefrontHeader />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <ProductDetailClient slug={productId} />
+      <Footer />
     </>
   );
 }

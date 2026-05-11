@@ -99,6 +99,33 @@ const SearchModal: React.FC<SearchModalProps> = ({
   const trendingCategories = allCategories
     .filter((c) => !c.parentCategory)
     .slice(0, 8);
+  const normalizeCategoryResult = useCallback(
+    (result: any) => {
+      if (result?.type !== "category" || !result?.data) return result;
+
+      const matchedCategory = allCategories.find(
+        (category) =>
+          category._id === result.data._id ||
+          category.slug === result.data.slug ||
+          category.name.toLowerCase() === result.data.name?.toLowerCase(),
+      );
+
+      if (!matchedCategory) {
+        return result;
+      }
+
+      return {
+        ...result,
+        data: {
+          ...matchedCategory,
+          ...result.data,
+          mainImage: result.data.mainImage || matchedCategory.mainImage,
+          image: result.data.image || matchedCategory.image,
+        },
+      };
+    },
+    [allCategories],
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -139,9 +166,9 @@ const SearchModal: React.FC<SearchModalProps> = ({
         searchService(query)
           .then(async (res) => {
             const rawResults: any[] = res.results;
-            const categoryResults = rawResults.filter(
-              (r) => r.type === "category",
-            );
+            const categoryResults = rawResults
+              .filter((r) => r.type === "category")
+              .map(normalizeCategoryResult);
             const productResults = rawResults.filter(
               (r) => r.type === "product",
             );
@@ -197,7 +224,7 @@ const SearchModal: React.FC<SearchModalProps> = ({
     } else {
       setResults([]);
     }
-  }, [query]);
+  }, [normalizeCategoryResult, query]);
 
   const matchedCategories = results.filter((r) => r.type === "category");
   const matchedProducts = results.filter((r) => r.type === "product");

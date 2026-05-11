@@ -18,7 +18,7 @@ import {
 } from "../services/authService";
 import toast from "react-hot-toast";
 import type { Category } from "../services/categoryService";
-import { buildNavbarNavItems, NavbarNavItem } from "./navbarLayout";
+import { NavbarNavItem } from "./navbarLayout";
 import {
   fetchProducts,
   fetchWishlist,
@@ -79,6 +79,49 @@ const hasTags = (category: Partial<Category>) => {
   );
 };
 
+const megaMenuProductsCache = new Map<string, Product[]>();
+const megaMenuProductsRequestCache = new Map<string, Promise<Product[]>>();
+
+const preloadImage = (src: string) => {
+  if (typeof window === "undefined" || !src) return;
+  const image = new window.Image();
+  image.src = src;
+};
+
+const fetchLatestMegaMenuProducts = async (categoryId: string) => {
+  if (!categoryId) return [];
+
+  const cachedProducts = megaMenuProductsCache.get(categoryId);
+  if (cachedProducts) {
+    return cachedProducts;
+  }
+
+  const pendingRequest = megaMenuProductsRequestCache.get(categoryId);
+  if (pendingRequest) {
+    return pendingRequest;
+  }
+
+  const request = fetchProducts({
+    category: categoryId,
+    limit: 2,
+    sort: "-createdAt",
+    status: "Active",
+  })
+    .then((res) => {
+      const products = res.success && res.products ? res.products : [];
+      megaMenuProductsCache.set(categoryId, products);
+      products.forEach((product) => preloadImage(getProductImageUrl(product)));
+      return products;
+    })
+    .catch(() => [])
+    .finally(() => {
+      megaMenuProductsRequestCache.delete(categoryId);
+    });
+
+  megaMenuProductsRequestCache.set(categoryId, request);
+  return request;
+};
+
 const DynamicMegaMenu = ({
   category,
   handleCloseMegaMenu,
@@ -86,8 +129,6 @@ const DynamicMegaMenu = ({
   category: Partial<Category>;
   handleCloseMegaMenu: () => void;
 }) => {
-  if (!category._id) return null;
-
   const tagGroups = [
     { title: "Sub Categories", items: category.subCategories, type: "subCategory" },
     { title: "By Occasion", items: category.occasion, type: "occasion" },
@@ -105,21 +146,22 @@ const DynamicMegaMenu = ({
   const isGrid = tagGroups.length > 3;
 
   const [latestProducts, setLatestProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(() =>
+    category._id ? !megaMenuProductsCache.has(category._id) : false,
+  );
 
   useEffect(() => {
     const loadLatestProducts = async () => {
+      if (!category._id) {
+        setLatestProducts([]);
+        setLoadingProducts(false);
+        return;
+      }
+
       try {
         setLoadingProducts(true);
-        const res = await fetchProducts({
-          category: category._id,
-          limit: 2,
-          sort: "-createdAt",
-          status: "Active",
-        });
-        if (res.success && res.products) {
-          setLatestProducts(res.products);
-        }
+        const products = await fetchLatestMegaMenuProducts(category._id);
+        setLatestProducts(products);
       } catch {
         setLatestProducts([]);
       } finally {
@@ -128,6 +170,8 @@ const DynamicMegaMenu = ({
     };
     loadLatestProducts();
   }, [category._id]);
+
+  if (!category._id) return null;
 
   return (
     <div className="bg-white/98 backdrop-blur-md border-t border-gray-200 shadow-2xl">
@@ -175,6 +219,8 @@ const DynamicMegaMenu = ({
                         alt={product.name}
                         width={250}
                         height={300}
+                        priority
+                        sizes="(min-width: 768px) 250px, 50vw"
                         className="w-full h-[250px] object-cover group-hover/product:scale-105 transition-transform duration-300"
                       />
                     </Link>
@@ -209,6 +255,7 @@ const DynamicMegaMenu = ({
       </div>
     </div>
   );
+
 };
 
 
@@ -291,7 +338,13 @@ const DesktopMenuItem = ({
   return (
     <li
       className="relative group h-full flex items-center"
-      onMouseEnter={() => isMegaMenu && onMegaOpen(item)}
+      onMouseEnter={() => {
+        if (!isMegaMenu) return;
+        if (item._id) {
+          void fetchLatestMegaMenuProducts(item._id);
+        }
+        onMegaOpen(item);
+      }}
       onMouseLeave={() => isMegaMenu && onMegaClose()}
     >
       <Link
@@ -379,27 +432,23 @@ const MobileSubMenuView = ({
   ].filter((g) => g.items && g.items.length > 0);
 
   const [latestProducts, setLatestProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(() =>
+    item._id ? !megaMenuProductsCache.has(item._id) : false,
+  );
 
   useEffect(() => {
     const loadLatestProducts = async () => {
       if (!item.isCategory && !item._id) {
+        setLatestProducts([]);
         setLoadingProducts(false);
         return;
       }
       try {
         setLoadingProducts(true);
-        const res = await fetchProducts({
-          category: item._id,
-          limit: 2,
-          sort: "-createdAt",
-          status: "Active",
-        });
-        if (res.success && res.products) {
-          setLatestProducts(res.products);
-        }
-      } catch (err) {
-        // silent
+        const products = await fetchLatestMegaMenuProducts(item._id || "");
+        setLatestProducts(products);
+      } catch {
+        setLatestProducts([]);
       } finally {
         setLoadingProducts(false);
       }
@@ -468,6 +517,7 @@ const MobileSubMenuView = ({
                         src={getProductImageUrl(product)}
                         alt={product.name}
                         fill
+                        priority
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                         sizes="(max-width: 768px) 50vw, 33vw"
                       />
