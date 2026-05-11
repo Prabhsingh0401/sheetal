@@ -1,6 +1,6 @@
 // app/[category]/page.tsx
 import React from "react";
-import ProductList from "../product-list/page";
+import ProductList from "../product-list/ProductListPage";
 import { Metadata } from "next";
 import { fetchCategoryBySlugServer } from "../services/categoryService";
 import { redirect } from "next/navigation";
@@ -68,5 +68,5 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     redirect("/");
   }
 
-  return <ProductList categorySlug={category} />;
+  return <ProductList />;
 }
