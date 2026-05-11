@@ -19,7 +19,7 @@ import { createRazorpayPaymentLink } from "../../services/paymentService";
 import { createCODOrder } from "../../services/orderService";
 import { useSearchParams } from "next/navigation";
 import { peekRedirectField, redirectToLogin } from "../../utils/authRedirect";
-import { getUserDetails } from "../../services/authService";
+import { getUserDetails, isAuthenticated } from "../../services/authService";
 import { hasRedeemedCoupon, isSingleUseCoupon, markCouponRedeemed } from "../../utils/couponRedemption";
 import type { CartItem } from "../../hooks/useCart";
 

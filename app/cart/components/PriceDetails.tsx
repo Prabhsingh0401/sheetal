@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { getToken, getUserDetails } from "@/app/services/authService";
+import { getToken, getUserDetails, isAuthenticated } from "@/app/services/authService";
 import {
   getAllCouponsClient,
   getValidAbandonedCartCoupon,
@@ -210,7 +210,6 @@ const PriceDetails: React.FC<PriceDetailsProps> = ({
     }
 
     // Use id or _id as a fallback
-    const user = getUserDetails();
     const userId = user?.id || (user as any)?._id;
     const isAuth = isAuthenticated();
 
