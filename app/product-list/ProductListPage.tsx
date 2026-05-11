@@ -2,11 +2,15 @@ import Footer from "../components/Footer";
 import StorefrontHeader from "../components/StorefrontHeader";
 import ProductListClient from "./ProductListClient";
 
-const ProductListPage = () => {
+interface ProductListPageProps {
+  categorySlug?: string;
+}
+
+const ProductListPage = ({ categorySlug }: ProductListPageProps) => {
   return (
     <>
       <StorefrontHeader />
-      <ProductListClient />
+      <ProductListClient categorySlug={categorySlug} />
       <Footer />
     </>
   );
