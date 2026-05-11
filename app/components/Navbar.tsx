@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { API_BASE_URL } from "../services/api";
 import {
   isTopInfoVisible,
@@ -61,33 +58,18 @@ async function getNavbarData() {
   return { categories, settings, homepageSettings };
 }
 
-const Navbar = () => {
-  const [navbarData, setNavbarData] = useState<{
+const Navbar = async () => {
+  let navbarData: {
     categories: Category[];
     settings: NavbarSettings;
     homepageSettings: HomepageSettings;
-  } | null>(null);
+  } | null = null;
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadNavbar = async () => {
-      try {
-        const data = await getNavbarData();
-        if (!isMounted) return;
-        setNavbarData(data);
-      } catch {
-        if (!isMounted) return;
-        setNavbarData(null);
-      }
-    };
-
-    void loadNavbar();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  try {
+    navbarData = await getNavbarData();
+  } catch {
+    navbarData = null;
+  }
 
   if (!navbarData) {
     return <NavbarFallback />;

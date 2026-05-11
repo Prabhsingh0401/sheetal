@@ -22,7 +22,6 @@ interface ProductFilterBarProps {
   currentSort?: string;
 }
 
-// Helper function to convert text to sentence case
 const toSentenceCase = (text: string): string => {
   if (!text) return text;
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
@@ -62,31 +61,128 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
     toggleSortBy();
   };
 
+  // Compute subcategories to display based on ALL selected categories
+  const computedSubCategories = (() => {
+    const isCategoryPage = filterOptions.categories?.length <= 1;
+    const selectedCategoryFilters = activeFilters.filter((f) => f.type === "category");
+    let displayedSubCategories = filterOptions.subCategories || [];
+
+    if (isCategoryPage) {
+      return displayedSubCategories;
+    } else if (selectedCategoryFilters.length > 0) {
+      const allowedSubCategories = new Set<string>();
+      selectedCategoryFilters.forEach((selectedFilter) => {
+        const catInfo = filterOptions.categories?.find(
+          (c) => c.label === selectedFilter.value,
+        );
+        if (catInfo) {
+          catInfo.subCategories.forEach((sc) => allowedSubCategories.add(sc));
+        }
+      });
+      return displayedSubCategories.filter((sc) =>
+        allowedSubCategories.has(sc.label),
+      );
+    }
+    return [];
+  })();
+
+  const showSubCategory =
+    filterOptions.categories?.length <= 1
+      ? computedSubCategories.length > 0
+      : activeFilters.some((f) => f.type === "category") && computedSubCategories.length > 0;
+
+  const AccordionChevron = ({ section }: { section: string }) => (
+    <svg
+      className={`w-4 h-4 transition-transform duration-200 ${openSections.includes(section) ? "rotate-180" : ""}`}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+
+  const CheckboxRow = ({
+    id,
+    checked,
+    onChange,
+    label,
+    count,
+    colorCode,
+  }: {
+    id: string;
+    checked: boolean;
+    onChange: () => void;
+    label: string;
+    count?: number;
+    colorCode?: string;
+  }) => (
+    <div className="flex items-center gap-3 group cursor-pointer">
+      <input
+        type="checkbox"
+        id={id}
+        checked={checked}
+        onChange={onChange}
+        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
+      />
+      <label
+        htmlFor={id}
+        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
+      >
+        {colorCode && (
+          <span
+            className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
+            style={{ backgroundColor: colorCode }}
+          />
+        )}
+        {label}
+        {count !== undefined && <span className="text-gray-400">({count})</span>}
+      </label>
+    </div>
+  );
+
+  const FilterSection = ({
+    id,
+    title,
+    children,
+  }: {
+    id: string;
+    title: string;
+    children: React.ReactNode;
+  }) => (
+    <div className="border-b border-gray-300 pb-2 last:border-0">
+      <button
+        onClick={() => toggleSection(id)}
+        className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
+      >
+        {title}
+        <AccordionChevron section={id} />
+      </button>
+      <div
+        className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${
+          openSections.includes(id) ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+
   return (
     <>
-      {/* Top Filter Bar
-          - Uses a flex row with justify-between so Filters / Sort / ViewMode
-            stay in their correct positions at every lg+ breakpoint.
-          - Removed the fragile absolute-positioned left/right buttons so the
-            bar scales naturally without overflow or clipping.
-      */}
+      {/* Top Filter Bar */}
       <div className="border-t border-b border-[#e7b96bb8] py-3 sm:py-4 md:py-5 mb-4 sm:mb-5 md:mb-6 hidden lg:block">
         <div className="flex items-center justify-between w-full">
-          {/* ── Left: Filters button ── */}
+          {/* Left: Filters button */}
           <button
             onClick={toggleFilters}
             className="flex items-center gap-2 text-md font-[family-name:var(--font-montserrat)] font-normal tracking-wider hover:text-[#bd9951] transition-colors cursor-pointer shrink-0"
           >
-            <Image
-              src="/assets/icons/filter.svg"
-              alt="Filter"
-              width={20}
-              height={20}
-            />
+            <Image src="/assets/icons/filter.svg" alt="Filter" width={20} height={20} />
             Filters
           </button>
 
-          {/* ── Center: Sort By ── */}
+          {/* Center: Sort By */}
           <div className="relative">
             <button
               onClick={toggleSortBy}
@@ -103,9 +199,10 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               <ChevronDown className="w-6 h-6" />
             </button>
 
-            {/* Sort Dropdown */}
             <div
-              className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white shadow-xl border border-gray-100 z-50 py-2 transition-all duration-300 ${sortByOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+              className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white shadow-xl border border-gray-100 z-50 py-2 transition-all duration-300 ${
+                sortByOpen ? "opacity-100 visible" : "opacity-0 invisible"
+              }`}
             >
               <ul>
                 {[
@@ -125,9 +222,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                     >
                       <div className="flex items-center justify-between">
                         <span>{label}</span>
-                        {currentSort === key && (
-                          <span className="text-[#bd9951]">✓</span>
-                        )}
+                        {currentSort === key && <span className="text-[#bd9951]">✓</span>}
                       </div>
                     </button>
                   </li>
@@ -136,29 +231,19 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
             </div>
           </div>
 
-          {/* ── Right: View Mode toggles ── */}
+          {/* Right: View Mode toggles */}
           <div className="flex items-center gap-3 border-l border-gray-200 pl-6 shrink-0">
             <button
               onClick={() => setViewMode("grid")}
               className={`transition-opacity cursor-pointer ${viewMode === "grid" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
             >
-              <Image
-                src="/assets/icons/grid.svg"
-                alt="Grid"
-                width={18}
-                height={18}
-              />
+              <Image src="/assets/icons/grid.svg" alt="Grid" width={18} height={18} />
             </button>
             <button
               onClick={() => setViewMode("list")}
               className={`transition-opacity cursor-pointer ${viewMode === "list" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
             >
-              <Image
-                src="/assets/icons/list.svg"
-                alt="List"
-                width={18}
-                height={18}
-              />
+              <Image src="/assets/icons/list.svg" alt="List" width={18} height={18} />
             </button>
           </div>
         </div>
@@ -166,28 +251,29 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
 
       {/* Sidebar Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 z-[9998] transition-opacity duration-300 ${filtersOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+        className={`fixed inset-0 bg-black/50 z-[9998] transition-opacity duration-300 ${
+          filtersOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
         onClick={toggleFilters}
-      ></div>
+      />
 
       {/* Sidebar Panel */}
       <div
-        className={`fixed top-0 left-0 h-full w-full md:w-[300px] bg-white z-[9999] shadow-2xl transform transition-transform duration-300 overflow-y-auto ${filtersOpen ? "translate-x-0" : "-translate-x-full"} 
+        className={`fixed top-0 left-0 h-full w-full md:w-[300px] bg-white z-[9999] shadow-2xl transform transition-transform duration-300 overflow-y-auto ${
+          filtersOpen ? "translate-x-0" : "-translate-x-full"
+        }
          [scrollbar-width:thin]
          [scrollbar-color:#bd9951_transparent]
          [&::-webkit-scrollbar]:w-1.5
          [&::-webkit-scrollbar-track]:bg-transparent
          [&::-webkit-scrollbar-thumb]:bg-[#bd9951]/30
          [&::-webkit-scrollbar-thumb]:rounded-full
-         hover:[&::-webkit-scrollbar-thumb]:bg-[#bd9951]/60
-       `}
+         hover:[&::-webkit-scrollbar-thumb]:bg-[#bd9951]/60`}
       >
         <div className="p-4 sm:p-5 md:p-6">
           {/* Sidebar Header */}
           <div className="flex justify-between items-center pb-3 sm:pb-4">
-            <h4 className="text-xl font-medium uppercase tracking-wide">
-              Filters
-            </h4>
+            <h4 className="text-xl font-medium uppercase tracking-wide">Filters</h4>
             <button
               onClick={toggleFilters}
               className="text-gray-400 hover:text-black transition-colors cursor-pointer"
@@ -196,7 +282,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
             </button>
           </div>
 
-          {/* Clear Filters (Top) */}
+          {/* Clear Filters */}
           <div className="mb-3 sm:mb-4 flex justify-between items-center pb-3 sm:pb-4 border-b border-gray-700">
             <span className="text-sm text-gray-500">
               {totalProducts} Product{totalProducts !== 1 ? "s" : ""}
@@ -211,235 +297,74 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
             )}
           </div>
 
-          {/* Filter Categories Accordion */}
+          {/* Filter Sections */}
           <div className="space-y-3 sm:space-y-4 font-[family-name:var(--font-montserrat)]">
-            {/* Category Filter */}
+
+            {/* Category */}
             {filterOptions.categories?.length > 1 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("category")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Category
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("category") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("category") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.categories.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-category-${idx}`}
-                        checked={isFilterSelected("category", item.label)}
-                        onChange={() => onFilterChange("category", item.label)}
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-category-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {toSentenceCase(item.label)}{" "}
-                        <span className="text-gray-400">({item.count})</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="category" title="Category">
+                {filterOptions.categories.map((item, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-category-${idx}`}
+                    checked={isFilterSelected("category", item.label)}
+                    onChange={() => onFilterChange("category", item.label)}
+                    label={toSentenceCase(item.label)}
+                    count={item.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Sub Category Filter */}
-            {(() => {
-              const isCategoryPage = filterOptions.categories?.length <= 1;
-              const selectedCategoryFilter = activeFilters.find((f) => f.type === "category");
+            {/* Sub Category — shown when ≥1 category selected; merges all their subcategories */}
+            {showSubCategory && (
+              <FilterSection id="subCategory" title="Sub Category">
+                {computedSubCategories.map((item, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-subCategory-${idx}`}
+                    checked={isFilterSelected("subCategory", item.label)}
+                    onChange={() => onFilterChange("subCategory", item.label)}
+                    label={toSentenceCase(item.label)}
+                    count={item.count}
+                  />
+                ))}
+              </FilterSection>
+            )}
 
-              let showSubCategory = false;
-              let displayedSubCategories = filterOptions.subCategories || [];
-
-              if (isCategoryPage) {
-                showSubCategory = displayedSubCategories.length > 0;
-              } else if (selectedCategoryFilter) {
-                const catInfo = filterOptions.categories?.find(
-                  (c) => c.label === selectedCategoryFilter.value,
-                );
-                if (catInfo) {
-                  displayedSubCategories = displayedSubCategories.filter((sc) =>
-                    catInfo.subCategories.includes(sc.label),
-                  );
-                }
-                showSubCategory = displayedSubCategories.length > 0;
-              }
-
-              if (!showSubCategory) return null;
-
-              return (
-                <div className="border-b border-gray-300 pb-2">
-                  <button
-                    onClick={() => toggleSection("subCategory")}
-                    className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                  >
-                    Sub Category
-                    <svg
-                      className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("subCategory") ? "rotate-180" : ""}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </button>
-                  <div
-                    className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("subCategory") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                  >
-                    {displayedSubCategories.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-3 group cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          id={`f-subCategory-${idx}`}
-                          checked={isFilterSelected("subCategory", item.label)}
-                          onChange={() => onFilterChange("subCategory", item.label)}
-                          className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                        />
-                        <label
-                          htmlFor={`f-subCategory-${idx}`}
-                          className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                        >
-                          {toSentenceCase(item.label)}{" "}
-                          <span className="text-gray-400">({item.count})</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-            {/* Size Filter */}
+            {/* Size */}
             {filterOptions.sizes.length > 0 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("size")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Size
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("size") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("size") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.sizes.map((size, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-size-${idx}`}
-                        checked={isFilterSelected("size", size)}
-                        onChange={() => onFilterChange("size", size)}
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-size-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {size}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="size" title="Size">
+                {filterOptions.sizes.map((size, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-size-${idx}`}
+                    checked={isFilterSelected("size", size)}
+                    onChange={() => onFilterChange("size", size)}
+                    label={size}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Color Filter */}
+            {/* Color */}
             {filterOptions.colors.length > 0 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("color")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Color
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("color") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("color") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.colors.map((color, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-color-${idx}`}
-                        checked={isFilterSelected("color", color.name)}
-                        onChange={() => onFilterChange("color", color.name)}
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-color-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        <span
-                          className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
-                          style={{ backgroundColor: color.code }}
-                        ></span>
-                        {color.name}{" "}
-                        <span className="text-gray-400">({color.count})</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="color" title="Color">
+                {filterOptions.colors.map((color, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-color-${idx}`}
+                    checked={isFilterSelected("color", color.name)}
+                    onChange={() => onFilterChange("color", color.name)}
+                    label={color.name}
+                    count={color.count}
+                    colorCode={color.code}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Price Filter */}
+            {/* Price */}
             {filterOptions.priceRanges.length > 0 && (
               <div className="border-b border-gray-300 pb-2">
                 <button
@@ -447,30 +372,18 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
                 >
                   Price
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("price") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
+                  <AccordionChevron section="price" />
                 </button>
                 <div
-                  className={`transition-all duration-300 overflow-hidden ${openSections.includes("price") ? "max-h-[200px] opacity-100 pt-4" : "max-h-0 opacity-0 pt-2"}`}
+                  className={`transition-all duration-300 overflow-hidden ${
+                    openSections.includes("price")
+                      ? "max-h-[200px] opacity-100 pt-4"
+                      : "max-h-0 opacity-0 pt-2"
+                  }`}
                 >
                   <PriceRangeSlider
                     min={filterOptions.priceRanges[0]?.min ?? 0}
-                    max={
-                      filterOptions.priceRanges[
-                        filterOptions.priceRanges.length - 1
-                      ]?.max ?? 10000
-                    }
+                    max={filterOptions.priceRanges[filterOptions.priceRanges.length - 1]?.max ?? 10000}
                     onChange={(min: number, max: number) =>
                       onFilterChange("price", `${min}-${max}`)
                     }
@@ -479,424 +392,139 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
               </div>
             )}
 
-            {/* Availability Filter */}
+            {/* Availability */}
             {filterOptions.availability.length > 0 && (
-              <div className="border-b border-gray-300 pb-2 last:border-0">
-                <button
-                  onClick={() => toggleSection("availability")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Availability
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("availability") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("availability") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.availability.map((avail, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-availability-${idx}`}
-                        checked={isFilterSelected("availability", avail.label)}
-                        onChange={() =>
-                          onFilterChange("availability", avail.label)
-                        }
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-availability-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {avail.label}{" "}
-                        <span className="text-gray-400">({avail.count})</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="availability" title="Availability">
+                {filterOptions.availability.map((avail, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-availability-${idx}`}
+                    checked={isFilterSelected("availability", avail.label)}
+                    onChange={() => onFilterChange("availability", avail.label)}
+                    label={avail.label}
+                    count={avail.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Wear Type Filter */}
+            {/* Wear Type */}
             {filterOptions.wearTypes.length > 0 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("wearType")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Wear Type
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("wearType") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("wearType") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.wearTypes.map((wearType, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-wearType-${idx}`}
-                        checked={isFilterSelected("wearType", wearType.label)}
-                        onChange={() =>
-                          onFilterChange("wearType", wearType.label)
-                        }
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-wearType-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {toSentenceCase(wearType.label)}{" "}
-                        <span className="text-gray-400">
-                          ({wearType.count})
-                        </span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="wearType" title="Wear Type">
+                {filterOptions.wearTypes.map((wearType, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-wearType-${idx}`}
+                    checked={isFilterSelected("wearType", wearType.label)}
+                    onChange={() => onFilterChange("wearType", wearType.label)}
+                    label={toSentenceCase(wearType.label)}
+                    count={wearType.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Occasion Filter */}
+            {/* Occasion */}
             {filterOptions.occasions.length > 0 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("occasion")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Occasion
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("occasion") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("occasion") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.occasions.map((occasion, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-occasion-${idx}`}
-                        checked={isFilterSelected("occasion", occasion.label)}
-                        onChange={() =>
-                          onFilterChange("occasion", occasion.label)
-                        }
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-occasion-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {toSentenceCase(occasion.label)}{" "}
-                        <span className="text-gray-400">
-                          ({occasion.count})
-                        </span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="occasion" title="Occasion">
+                {filterOptions.occasions.map((occasion, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-occasion-${idx}`}
+                    checked={isFilterSelected("occasion", occasion.label)}
+                    onChange={() => onFilterChange("occasion", occasion.label)}
+                    label={toSentenceCase(occasion.label)}
+                    count={occasion.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Tags Filter */}
+            {/* Tags */}
             {filterOptions.tags.length > 0 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("tags")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Tags
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("tags") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("tags") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.tags.map((tag, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-tag-${idx}`}
-                        checked={isFilterSelected("tags", tag.label)}
-                        onChange={() => onFilterChange("tags", tag.label)}
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-tag-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {toSentenceCase(tag.label)}{" "}
-                        <span className="text-gray-400">({tag.count})</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="tags" title="Tags">
+                {filterOptions.tags.map((tag, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-tag-${idx}`}
+                    checked={isFilterSelected("tags", tag.label)}
+                    onChange={() => onFilterChange("tags", tag.label)}
+                    label={toSentenceCase(tag.label)}
+                    count={tag.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Style Filter */}
+            {/* Style */}
             {filterOptions.styles.length > 0 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("style")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Style
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("style") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("style") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.styles.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-style-${idx}`}
-                        checked={isFilterSelected("style", item.label)}
-                        onChange={() => onFilterChange("style", item.label)}
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-style-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {toSentenceCase(item.label)}{" "}
-                        <span className="text-gray-400">({item.count})</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="style" title="Style">
+                {filterOptions.styles.map((item, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-style-${idx}`}
+                    checked={isFilterSelected("style", item.label)}
+                    onChange={() => onFilterChange("style", item.label)}
+                    label={toSentenceCase(item.label)}
+                    count={item.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Work Filter */}
+            {/* Work */}
             {filterOptions.works.length > 0 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("work")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Work
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("work") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("work") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.works.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-work-${idx}`}
-                        checked={isFilterSelected("work", item.label)}
-                        onChange={() => onFilterChange("work", item.label)}
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-work-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {toSentenceCase(item.label)}{" "}
-                        <span className="text-gray-400">({item.count})</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="work" title="Work">
+                {filterOptions.works.map((item, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-work-${idx}`}
+                    checked={isFilterSelected("work", item.label)}
+                    onChange={() => onFilterChange("work", item.label)}
+                    label={toSentenceCase(item.label)}
+                    count={item.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Fabric Filter */}
+            {/* Fabric */}
             {filterOptions.fabrics.length > 0 && (
-              <div className="border-b border-gray-300 pb-2">
-                <button
-                  onClick={() => toggleSection("fabric")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Fabric
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("fabric") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("fabric") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.fabrics.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-fabric-${idx}`}
-                        checked={isFilterSelected("fabric", item.label)}
-                        onChange={() => onFilterChange("fabric", item.label)}
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-fabric-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {toSentenceCase(item.label)}{" "}
-                        <span className="text-gray-400">({item.count})</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="fabric" title="Fabric">
+                {filterOptions.fabrics.map((item, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-fabric-${idx}`}
+                    checked={isFilterSelected("fabric", item.label)}
+                    onChange={() => onFilterChange("fabric", item.label)}
+                    label={toSentenceCase(item.label)}
+                    count={item.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            {/* Product Type Filter */}
+            {/* Product Type */}
             {filterOptions.productTypes.length > 0 && (
-              <div className="border-b border-gray-300 pb-2 last:border-0">
-                <button
-                  onClick={() => toggleSection("productType")}
-                  className="w-full cursor-pointer flex justify-between items-center font-[family-name:var(--font-optima)] font-medium text-base transition-colors text-[15px]"
-                >
-                  Product Type
-                  <svg
-                    className={`w-4 h-4 transition-transform duration-200 ${openSections.includes("productType") ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div
-                  className={`space-y-2 pt-2 transition-all duration-300 overflow-hidden ${openSections.includes("productType") ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}
-                >
-                  {filterOptions.productTypes.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-3 group cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`f-productType-${idx}`}
-                        checked={isFilterSelected("productType", item.label)}
-                        onChange={() =>
-                          onFilterChange("productType", item.label)
-                        }
-                        className="w-4 h-4 accent-[#bd9951] border-gray-300 rounded cursor-pointer"
-                      />
-                      <label
-                        htmlFor={`f-productType-${idx}`}
-                        className="text-sm cursor-pointer flex items-center gap-2 group-hover:text-black transition-colors font-[family-name:var(--font-montserrat)]"
-                      >
-                        {toSentenceCase(item.label)}{" "}
-                        <span className="text-gray-400">({item.count})</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <FilterSection id="productType" title="Product Type">
+                {filterOptions.productTypes.map((item, idx) => (
+                  <CheckboxRow
+                    key={idx}
+                    id={`f-productType-${idx}`}
+                    checked={isFilterSelected("productType", item.label)}
+                    onChange={() => onFilterChange("productType", item.label)}
+                    label={toSentenceCase(item.label)}
+                    count={item.count}
+                  />
+                ))}
+              </FilterSection>
             )}
 
-            
           </div>
         </div>
       </div>
 
-      {/* Active Filters List (Desktop/External) - Pill Style */}
+      {/* Active Filter Pills */}
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap items-center justify-center gap-2 mb-6 py-3">
           {activeFilters.map((filter, index) => (
@@ -914,11 +542,7 @@ const ProductFilterBar: React.FC<ProductFilterBarProps> = ({
                   viewBox="0 0 24 24"
                   strokeWidth={3}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </span>
             </button>
