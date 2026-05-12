@@ -45,14 +45,11 @@ const StatusShell = ({
   children?: React.ReactNode;
 }) => (
   <div className="relative overflow-hidden rounded-[28px] border border-[#e7dcc8] bg-[#fffaf3] shadow-[0_30px_80px_rgba(63,44,13,0.08)]">
-    <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,#f3e0b5_0%,rgba(243,224,181,0.22)_42%,transparent_78%)]" />
     <div className="relative px-6 py-8 sm:px-10 sm:py-10">
       <div className="mb-6 inline-flex items-center rounded-full border border-[#dcc597] bg-white/90 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#8d6b2f]">
         {eyebrow}
       </div>
-      <div className="mb-6 flex justify-center">
-        {children}
-      </div>
+      <div className="mb-6 flex justify-center">{children}</div>
       <div className="text-center">
         <h1 className="font-[family-name:var(--font-optima)] text-[34px] leading-tight text-[#3f2c0d] sm:text-[42px]">
           {title}
@@ -254,7 +251,9 @@ const SuccessContent = () => {
                   Order Snapshot
                 </p>
                 <h2 className="mt-2 font-[family-name:var(--font-optima)] text-[30px] text-[#3f2c0d]">
-                  {isCOD ? "Your order is in place" : "Your payment went through"}
+                  {isCOD
+                    ? "Your order is in place"
+                    : "Your payment went through"}
                 </h2>
               </div>
 
@@ -272,7 +271,8 @@ const SuccessContent = () => {
 
                 {isCOD && !verifying && !verifyError && (
                   <div className="rounded-2xl border border-[#ecd8a3] bg-[#fff7df] px-4 py-3 text-[14px] leading-6 text-[#71561f]">
-                    Cash will be collected when the order arrives at your doorstep.
+                    Cash will be collected when the order arrives at your
+                    doorstep.
                   </div>
                 )}
 
@@ -318,7 +318,8 @@ const SuccessContent = () => {
                   Studio By Sheetal
                 </p>
                 <p className="mt-1 text-[15px] leading-6 text-[#685b47]">
-                  Elegant festive wear, crafted details, and a smoother post-checkout experience.
+                  Elegant festive wear, crafted details, and a smoother
+                  post-checkout experience.
                 </p>
               </div>
             </div>
