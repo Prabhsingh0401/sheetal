@@ -337,7 +337,7 @@ const DesktopMenuItem = ({
 
   return (
     <li
-      className="relative group h-full flex items-center"
+      className="relative group h-full self-stretch flex"
       onMouseEnter={() => {
         if (!isMegaMenu) return;
         if (item._id) {
@@ -349,7 +349,7 @@ const DesktopMenuItem = ({
     >
       <Link
         href={item.href || "#"}
-        className="px-[19px] !text-[#b3a660] tracking-[1px] text-[16px] hover:text-white transition-colors flex items-center gap-2"
+        className="h-full px-[19px] !text-[#b3a660] tracking-[1px] text-[16px] hover:text-white transition-colors inline-flex items-center gap-2"
       >
         {item.label}
         {(hasChildren || isMegaMenu) && (
@@ -366,7 +366,7 @@ const DesktopMenuItem = ({
 
       {/* ✅ Invisible bridge: fills the gap between nav item and mega menu */}
       {isMegaMenu && isMegaOpen && (
-        <div className="absolute left-0 right-0 h-[20px] top-full" />
+        <div className="absolute left-0 right-0 top-full h-[28px]" />
       )}
 
       {hasChildren && !isMegaMenu && (
@@ -807,7 +807,7 @@ const NavbarInner = ({
         }`}
       >
         <div className="container mx-auto">
-          <div className="flex justify-between items-center w-full">
+          <div className="flex justify-between items-center w-full h-full">
             <Link href="/" className="inline-block flex-shrink-0">
               <Image
                 src="/assets/335014072.png"
@@ -819,7 +819,7 @@ const NavbarInner = ({
             </Link>
 
             <div className="flex justify-end items-center flex-1 ml-8">
-              <ul className="m-0 p-0 list-none inline-flex items-center gap-0">
+              <ul className="m-0 p-0 list-none inline-flex items-stretch self-stretch gap-0">
                 {navItems.map((item, idx) => (
                   <DesktopMenuItem
                     key={`${item.id}-${idx}`}
@@ -867,7 +867,7 @@ const NavbarInner = ({
 
         {activeMegaMenuItem && hasTags(activeMegaMenuItem) && (
           <div
-            className="absolute left-0 right-0 top-full z-[1004] w-full"
+            className="absolute left-0 right-0 top-[calc(100%-1px)] z-[1004] w-full"
             onMouseEnter={() => setActiveMegaMenuItem(activeMegaMenuItem)}
             onMouseLeave={() => setActiveMegaMenuItem(null)}
           >

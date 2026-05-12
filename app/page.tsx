@@ -31,7 +31,7 @@ export default async function Home() {
         {s?.homeBanner && <HomeBanner />}
         {s?.aboutSBS && <AboutSBS />}
         {s?.hiddenBeauty && <HiddenBeauty />}
-        <HomeDeferredSections sections={s} />
+        <HomeDeferredSections sections={s} /> 
         <Footer />
       </Suspense>
     </>
