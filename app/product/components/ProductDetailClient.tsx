@@ -134,6 +134,8 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   const [pincode, setPincode] = useState("");
   const [pincodeMessage, setPincodeCheckMessage] = useState("");
   const hasIncrementedViewRef = useRef(false);
+  const selectedColorRef = useRef("");
+  const selectedSizeRef = useRef("");
 
   const {
     isProductInWishlist,
@@ -144,6 +146,14 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
   } = useWishlist();
 
   const { data: settings } = useSWR("/settings", getSettings);
+
+  useEffect(() => {
+    selectedColorRef.current = selectedColor;
+  }, [selectedColor]);
+
+  useEffect(() => {
+    selectedSizeRef.current = selectedSize;
+  }, [selectedSize]);
 
   const loadProduct = useCallback(async () => {
     setLoading(true);
@@ -157,14 +167,18 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
             null,
         );
 
-        const matchedVariant = selectedColor
+        const currentSelectedColor = selectedColorRef.current;
+        const currentSelectedSize = selectedSizeRef.current;
+
+        const matchedVariant = currentSelectedColor
           ? res.data.variants?.find(
-              (v: ProductVariant) => v.color?.name === selectedColor,
+              (v: ProductVariant) => v.color?.name === currentSelectedColor,
             )
           : null;
-        const matchedSize = selectedSize
+        const matchedSize = currentSelectedSize
           ? matchedVariant?.sizes.find(
-              (s: ProductVariant["sizes"][number]) => s.name === selectedSize,
+              (s: ProductVariant["sizes"][number]) =>
+                s.name === currentSelectedSize,
             ) || null
           : null;
 
@@ -353,7 +367,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     } finally {
       setLoading(false);
     }
-  }, [selectedColor, selectedSize, slug]);
+  }, [slug]);
 
   useEffect(() => {
     void loadProduct();
