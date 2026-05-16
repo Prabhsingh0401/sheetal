@@ -319,6 +319,32 @@ const NavbarUserIcon: React.FC<NavbarUserIconProps> = ({
   );
 };
 
+const DesktopMeasureNavItem = ({ item }: { item: NavbarNavItem }) => {
+  const hasChildren = item.children && item.children.length > 0;
+  const hasDropdownIndicator = hasChildren || (item.isCategory && hasTags(item));
+
+  return (
+    <span className="h-full px-[19px] !text-[#b3a660] tracking-[1px] text-[16px] inline-flex items-center gap-2 whitespace-nowrap">
+      {item.label}
+      {hasDropdownIndicator && (
+        <svg
+          className="w-3 h-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      )}
+    </span>
+  );
+};
+
 const DesktopMenuItem = ({
   item,
   isMegaOpen,
@@ -404,6 +430,62 @@ const DesktopSubMenuItem = ({ item }: { item: NavbarNavItem }) => {
           <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e]">
             {item.children?.map((child, idx: number) => (
               <DesktopSubMenuItem key={`${child.id}-${idx}`} item={child} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </li>
+  );
+};
+
+const DesktopMoreMenu = ({
+  items,
+  isOpen,
+  onOpen,
+  onClose,
+}: {
+  items: NavbarNavItem[];
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+}) => {
+  if (!items.length) return null;
+
+  return (
+    <li
+      className="relative group h-full self-stretch flex"
+      onMouseEnter={onOpen}
+      onMouseLeave={onClose}
+    >
+      <button
+        type="button"
+        className="h-full px-[19px] !text-[#b3a660] tracking-[1px] text-[16px] hover:text-white transition-colors inline-flex items-center gap-2"
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+      >
+        More
+        <svg
+          className="w-3 h-3 transition-transform duration-200 group-hover:rotate-180"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {isOpen && <div className="absolute left-0 right-0 top-full h-[28px]" />}
+
+      {isOpen && (
+        <div className="absolute right-0 top-full pt-4 w-[280px] text-left z-[1005]">
+          <ul className="bg-[#153427]/95 backdrop-blur-md p-5 border !border-[#f5de7e] list-none m-0">
+            {items.map((item, idx) => (
+              <DesktopSubMenuItem key={`${item.id}-${idx}`} item={item} />
             ))}
           </ul>
         </div>
@@ -660,7 +742,17 @@ const NavbarInner = ({
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [navbarBottom, setNavbarBottom] = useState(0);
+  const [desktopVisibleItems, setDesktopVisibleItems] = useState<NavbarNavItem[]>(
+    () => initialNavItems,
+  );
+  const [desktopOverflowItems, setDesktopOverflowItems] = useState<NavbarNavItem[]>(
+    [],
+  );
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const headerRef = useRef<HTMLDivElement | null>(null);
+  const desktopNavRef = useRef<HTMLDivElement | null>(null);
+  const itemMeasureRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const moreMeasureRef = useRef<HTMLLIElement | null>(null);
   const navItems = useMemo(() => initialNavItems, [initialNavItems]);
   const pathname = usePathname();
   const wishlistHref = isAuthenticatedUser ? "/wishlist" : "/login?redirect=/wishlist";
@@ -745,6 +837,61 @@ const NavbarInner = ({
     };
   }, [syncNavCounts]);
 
+  const recalculateDesktopOverflow = useCallback(() => {
+    const navContainerWidth = desktopNavRef.current?.clientWidth || 0;
+
+    if (!navContainerWidth || navItems.length === 0) {
+      setDesktopVisibleItems(navItems);
+      setDesktopOverflowItems([]);
+      return;
+    }
+
+    const itemWidths = navItems.map(
+      (item) => itemMeasureRefs.current[item.id]?.offsetWidth || 0,
+    );
+    const allItemsWidth = itemWidths.reduce((sum, width) => sum + width, 0);
+
+    if (allItemsWidth <= navContainerWidth) {
+      setDesktopVisibleItems(navItems);
+      setDesktopOverflowItems([]);
+      return;
+    }
+
+    const moreWidth = moreMeasureRef.current?.offsetWidth || 0;
+    const availableWidth = Math.max(navContainerWidth - moreWidth, 0);
+    let consumedWidth = 0;
+    let lastVisibleIndex = -1;
+
+    for (let index = 0; index < navItems.length; index += 1) {
+      const nextWidth = itemWidths[index];
+      if (consumedWidth + nextWidth > availableWidth) {
+        break;
+      }
+
+      consumedWidth += nextWidth;
+      lastVisibleIndex = index;
+    }
+
+    if (lastVisibleIndex < 0) {
+      setDesktopVisibleItems([]);
+      setDesktopOverflowItems(navItems);
+      setActiveMegaMenuItem(null);
+      return;
+    }
+
+    const visibleItems = navItems.slice(0, lastVisibleIndex + 1);
+    const overflowItems = navItems.slice(lastVisibleIndex + 1);
+
+    setDesktopVisibleItems(visibleItems);
+    setDesktopOverflowItems(overflowItems);
+    setActiveMegaMenuItem((currentItem) => {
+      if (!currentItem) return null;
+      return visibleItems.some((item) => item.id === currentItem.id)
+        ? currentItem
+        : null;
+    });
+  }, [navItems]);
+
   useEffect(() => {
     let ticking = false;
 
@@ -774,6 +921,21 @@ const NavbarInner = ({
     };
   }, []);
 
+  useEffect(() => {
+    recalculateDesktopOverflow();
+    window.addEventListener("resize", recalculateDesktopOverflow);
+
+    return () => {
+      window.removeEventListener("resize", recalculateDesktopOverflow);
+    };
+  }, [recalculateDesktopOverflow]);
+
+  useEffect(() => {
+    if (desktopOverflowItems.length === 0) {
+      setIsMoreMenuOpen(false);
+    }
+  }, [desktopOverflowItems]);
+
   const handleMouseEnterUser = () => setIsUserDropdownOpen(true);
   const handleMouseLeaveUser = () => setIsUserDropdownOpen(false);
   const handleLogout = () => {
@@ -796,7 +958,6 @@ const NavbarInner = ({
     if (currentUser.email) return currentUser.email.split("@")[0] || currentUser.email;
     return "User";
   };
-  console.log(topInfoEnabled)
 
   return (
     <>
@@ -806,9 +967,9 @@ const NavbarInner = ({
           scrolled || !topInfoEnabled ? "top-0 shadow-lg" : "top-[27px]"
         }`}
       >
-        <div className="container mx-auto">
-          <div className="flex justify-between items-center w-full h-full">
-            <Link href="/" className="inline-block flex-shrink-0">
+        <div className="w-full px-6 lg:px-8 xl:px-10">
+          <div className="flex justify-between items-center w-full h-full gap-6">
+            <Link href="/" className="inline-block shrink-0">
               <Image
                 src="/assets/335014072.png"
                 alt="Studio By Sheetal"
@@ -818,9 +979,12 @@ const NavbarInner = ({
               />
             </Link>
 
-            <div className="flex justify-end items-center flex-1 ml-8">
-              <ul className="m-0 p-0 list-none inline-flex items-stretch self-stretch gap-0">
-                {navItems.map((item, idx) => (
+            <div
+              ref={desktopNavRef}
+              className="flex justify-center items-stretch self-stretch flex-1 min-w-0 mx-4 lg:mx-8 overflow-visible"
+            >
+              <ul className="m-0 p-0 list-none inline-flex items-stretch self-stretch gap-0 min-w-0">
+                {desktopVisibleItems.map((item, idx) => (
                   <DesktopMenuItem
                     key={`${item.id}-${idx}`}
                     item={item}
@@ -829,40 +993,66 @@ const NavbarInner = ({
                     onMegaClose={() => setActiveMegaMenuItem(null)}
                   />
                 ))}
-
-                <li className="flex items-center gap-4 pl-5 ml-2">
-                  <button onClick={toggleSearch} className="hover:opacity-80 transition-opacity cursor-pointer">
-                    <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-7 h-7" />
-                  </button>
-                  <NavbarUserIcon
-                    isClientMounted={isClientMounted}
-                    isAuthenticatedUser={isAuthenticatedUser}
-                    isUserDropdownOpen={isUserDropdownOpen}
-                    onMouseEnter={handleMouseEnterUser}
-                    onMouseLeave={handleMouseLeaveUser}
-                    onLogout={handleLogout}
-                    getDisplayName={getDisplayName}
-                  />
-                  <Link href={wishlistHref} className="relative hover:opacity-80 transition-opacity">
-                    <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
-                    {wishlistCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                        {wishlistCount}
-                      </span>
-                    )}
-                  </Link>
-                  <Link href="/cart" className="relative hover:opacity-80 transition-opacity">
-                    <Image src="/assets/icons/shopping-bag.png" alt="Cart" width={24} height={24} className="w-7 h-7" />
-                    {cartItemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-                        {cartItemCount}
-                      </span>
-                    )}
-                  </Link>
-                </li>
+                <DesktopMoreMenu
+                  items={desktopOverflowItems}
+                  isOpen={isMoreMenuOpen}
+                  onOpen={() => setIsMoreMenuOpen(true)}
+                  onClose={() => setIsMoreMenuOpen(false)}
+                />
               </ul>
             </div>
+
+            <div className="flex items-center gap-4 shrink-0 self-stretch">
+              <button onClick={toggleSearch} className="hover:opacity-80 transition-opacity cursor-pointer">
+                <Image src="/assets/icons/search.svg" alt="Search" width={24} height={24} className="w-7 h-7" />
+              </button>
+              <NavbarUserIcon
+                isClientMounted={isClientMounted}
+                isAuthenticatedUser={isAuthenticatedUser}
+                isUserDropdownOpen={isUserDropdownOpen}
+                onMouseEnter={handleMouseEnterUser}
+                onMouseLeave={handleMouseLeaveUser}
+                onLogout={handleLogout}
+                getDisplayName={getDisplayName}
+              />
+              <Link href={wishlistHref} className="relative hover:opacity-80 transition-opacity">
+                <Image src="/assets/icons/heart.svg" alt="Wishlist" width={24} height={24} className="w-6 h-6" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
+              <Link href="/cart" className="relative hover:opacity-80 transition-opacity">
+                <Image src="/assets/icons/shopping-bag.png" alt="Cart" width={24} height={24} className="w-7 h-7" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#1f3c38] border border-[#f1bf42] text-[#f1bf42] text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+            </div>
           </div>
+        </div>
+
+        <div className="absolute left-0 top-0 -z-10 opacity-0 pointer-events-none">
+          <ul className="m-0 p-0 list-none inline-flex items-stretch gap-0">
+            {navItems.map((item) => (
+              <li
+                key={`measure-${item.id}`}
+                ref={(node) => {
+                  itemMeasureRefs.current[item.id] = node;
+                }}
+              >
+                <DesktopMeasureNavItem item={item} />
+              </li>
+            ))}
+            <li ref={moreMeasureRef}>
+              <DesktopMeasureNavItem
+                item={{ id: "more", label: "More", children: [{ id: "child", label: "child" }] }}
+              />
+            </li>
+          </ul>
         </div>
 
         {activeMegaMenuItem && hasTags(activeMegaMenuItem) && (
