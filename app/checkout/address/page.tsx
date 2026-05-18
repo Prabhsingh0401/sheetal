@@ -587,6 +587,7 @@ const AddressPageInner = () => {
       image: item.product.mainImage?.url || item.variantImage || "",
       price: item.discountPrice || item.price,
       quantity: item.quantity,
+      gstPercent: item.product?.gstPercent || 0,
       variant: {
         size: item.size,
         color: item.color,

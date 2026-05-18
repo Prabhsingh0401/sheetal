@@ -13,6 +13,8 @@ import {
   auth,
   googleProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   setupInvisibleRecaptcha,
   resetRecaptcha,
   isRecaptchaAlreadyRenderedError,
@@ -64,6 +66,8 @@ const LoginForm = () => {
   useEffect(() => {
     syncRedirectFromQuery(searchParams.get("redirect"));
   }, [searchParams]);
+
+
 
   useEffect(() => {
     let isMounted = true;

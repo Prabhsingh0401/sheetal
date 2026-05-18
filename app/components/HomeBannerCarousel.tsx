@@ -142,20 +142,6 @@ const HomeBannerCarousel = ({ banners }: { banners: BannerItem[] }) => {
             </>
           )}
         </div>
-
-        <div className="pointer-events-none absolute inset-0 flex items-start justify-center py-28">
-          <Link href="/" className="pointer-events-auto">
-            <Image
-              src="/assets/625030871.png"
-              alt="Studio By Sheetal"
-              width={300}
-              height={230}
-              className="h-[230px] w-auto"
-              priority
-              quality={75}
-            />
-          </Link>
-        </div>
       </div>
 
       <div className="relative block md:hidden">
