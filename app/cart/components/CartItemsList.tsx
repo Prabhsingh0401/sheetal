@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { CartItem } from "../../hooks/useCart";
 import { getApiImageUrl } from "../../services/api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
@@ -49,6 +50,45 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
   isBulkAction,
   modalAction,
 }) => {
+  const getStockLimitMessage = (count: number) =>
+    `This item only has ${count} left.`;
+
+  const getItemAvailableStock = (item: CartItem) => {
+    if (typeof item.availableStock === "number" && item.availableStock >= 0) {
+      return item.availableStock;
+    }
+
+    const variants = item.product?.variants;
+    if (Array.isArray(variants) && variants.length > 0) {
+      const selectedVariant =
+        variants.find(
+          (variant) =>
+            String(variant?.color?.name || "").trim().toLowerCase() ===
+            String(item.color || "").trim().toLowerCase(),
+        ) ||
+        variants.find((variant) =>
+          Array.isArray(variant?.sizes) &&
+          variant.sizes.some(
+            (size) =>
+              String(size?.name || "").trim().toLowerCase() ===
+              String(item.size || "").trim().toLowerCase(),
+          ),
+        );
+
+      const selectedSize = selectedVariant?.sizes?.find(
+        (size) =>
+          String(size?.name || "").trim().toLowerCase() ===
+          String(item.size || "").trim().toLowerCase(),
+      );
+
+      if (selectedSize) {
+        return Number(selectedSize.stock) || 0;
+      }
+    }
+
+    return Number(item.product?.stock) || 0;
+  };
+
   return (
     <>
       {isModalOpen && (
@@ -120,6 +160,7 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
         {/* Cart List */}
         <div className="divide-y divide-gray-100">
           {cartItems.map((item) => {
+            const availableStock = getItemAvailableStock(item);
             const displayOriginalPrice = item.price ?? 0;
             const displayDiscountPrice =
               item.discountPrice ?? displayOriginalPrice;
@@ -261,9 +302,14 @@ const CartItemsList: React.FC<CartItemsListProps> = ({
                       <span className="w-4 text-center">{item.quantity}</span>
                       <button
                         className="rounded-full cursor-pointer w-6 h-6 flex items-center justify-center"
-                        onClick={() =>
-                          updateCartItemQuantity(item._id, item.quantity + 1)
-                        }
+                        onClick={() => {
+                          if (item.quantity >= availableStock) {
+                            toast.error(getStockLimitMessage(availableStock));
+                            return;
+                          }
+
+                          updateCartItemQuantity(item._id, item.quantity + 1);
+                        }}
                       >
                         +
                       </button>

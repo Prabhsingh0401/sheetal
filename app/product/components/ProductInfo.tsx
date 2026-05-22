@@ -3,6 +3,7 @@ import React from "react";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import StarRating from "./StarRating";
 import { ProductVariant } from "../../services/productService";
 import { getApiImageUrl } from "../../services/api";
@@ -29,6 +30,8 @@ interface ProductInfoProps {
   onColorChange: (color: { name: string; image: string }) => void;
   quantity: number;
   setQuantity: (qty: number) => void;
+  maxQuantity: number;
+  onQuantityLimitReached?: (count: number) => void;
   onEnquire: () => void;
   onSizeChartOpen: () => void;
   onAddToCart: () => void;
@@ -116,6 +119,8 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   onColorChange,
   quantity,
   setQuantity,
+  maxQuantity,
+  onQuantityLimitReached,
   onEnquire,
   onSizeChartOpen,
   onAddToCart,
@@ -135,6 +140,25 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
   const discountPercentageToDisplay = product.selectedDiscount
     ? Number(product.selectedDiscount)
     : 0;
+  const showStockLimitToast = (count: number) => {
+    if (onQuantityLimitReached) {
+      onQuantityLimitReached(count);
+      return;
+    }
+
+    toast.error(`This item only has ${count} left.`);
+  };
+
+  const handleQuantityChange = (rawValue: string) => {
+    const parsedQuantity = Math.max(1, parseInt(rawValue, 10) || 1);
+    const normalizedMaxQuantity = Math.max(1, maxQuantity);
+
+    if (parsedQuantity > normalizedMaxQuantity) {
+      showStockLimitToast(normalizedMaxQuantity);
+    }
+
+    setQuantity(Math.min(parsedQuantity, normalizedMaxQuantity));
+  };
 
   return (
     <div className="px-0">
@@ -308,9 +332,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
             type="number"
             min="1"
             value={quantity}
-            onChange={(e) =>
-              setQuantity(Math.max(1, parseInt(e.target.value) || 1))
-            }
+            onChange={(e) => handleQuantityChange(e.target.value)}
             className="w-full h-10 border border-gray-300 px-3 text-sm focus:outline-none focus:border-[#bd9951]"
           />
         )}
@@ -331,9 +353,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({
                 type="number"
                 min="1"
                 value={quantity}
-                onChange={(e) =>
-                  setQuantity(Math.max(1, parseInt(e.target.value) || 1))
-                }
+                onChange={(e) => handleQuantityChange(e.target.value)}
                 className="w-full h-10 border border-gray-300 text-left px-4 focus:outline-none focus:border-[#bd9951]"
               />
             </div>
