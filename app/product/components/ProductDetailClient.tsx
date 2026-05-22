@@ -39,6 +39,9 @@ import toast from "react-hot-toast";
 import useSWR from "swr";
 import { getSettings } from "../../services/settingsService";
 
+const getStockLimitMessage = (count: number) =>
+  `This item only has ${count} left.`;
+
 interface ColorOption {
   name: string;
   image: string;
@@ -383,6 +386,17 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
 
   const handleImageChange = (img: string) => setSelectedImage(img);
 
+  const selectedAvailableStock = selectedSizeObject?.stock ?? 0;
+
+  useEffect(() => {
+    if (selectedAvailableStock <= 0) {
+      setQuantity(1);
+      return;
+    }
+
+    setQuantity((current) => Math.min(Math.max(1, current), selectedAvailableStock));
+  }, [selectedAvailableStock]);
+
   const checkPincode = () => {
     if (pincode.length === 6) {
       setPincodeCheckMessage("Delivery by Tue, Jan 06");
@@ -406,6 +420,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
       toast.error("Selected variant not available.");
       return;
     }
+    if (quantity > selectedSizeInfo.stock) {
+      toast.error(getStockLimitMessage(selectedSizeInfo.stock));
+      return;
+    }
     const variantImageUrl = getApiImageUrl(
       selectedVariant.v_image,
       product.mainImage?.url || "/assets/placeholder-product.jpg",
@@ -425,6 +443,7 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
         slug: product.slug,
         mainImage: product.mainImage,
       },
+      selectedSizeInfo.stock,
     );
   };
 
@@ -454,6 +473,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
     }
 
     const resolvedQuantity = Math.max(1, Number(quantity) || 1);
+    if (resolvedQuantity > selectedSizeInfo.stock) {
+      toast.error(getStockLimitMessage(selectedSizeInfo.stock));
+      return;
+    }
     const variantImageUrl = getApiImageUrl(
       selectedVariant.v_image,
       product.mainImage?.url || "/assets/placeholder-product.jpg",
@@ -778,6 +801,10 @@ const ProductDetailClient = ({ slug }: { slug: string }) => {
               onColorChange={handleColorChange}
               quantity={quantity}
               setQuantity={setQuantity}
+              maxQuantity={selectedAvailableStock}
+              onQuantityLimitReached={(count) =>
+                toast.error(getStockLimitMessage(count))
+              }
               onEnquire={() => setEnquireModalOpen(true)}
               onSizeChartOpen={() => setSizeChartOpen(true)}
               onAddToCart={handleAddToCart}

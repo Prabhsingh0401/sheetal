@@ -12,6 +12,25 @@ interface PageData {
   content: string;
 }
 
+const pageDefaults: Record<string, { title: string; content: string }> = {
+  "terms-and-conditions": {
+    title: "Terms & Conditions",
+    content: "<p>Page content is being updated. Please check back later.</p>",
+  },
+  "privacy-policy": {
+    title: "Privacy Policy",
+    content: "<p>Page content is being updated. Please check back later.</p>",
+  },
+  "shipping-policy": {
+    title: "Shipping Policy",
+    content: "<p>Page content is being updated. Please check back later.</p>",
+  },
+  "return-exchange-policy": {
+    title: "Return & Exchange Policy",
+    content: "<p>Page content is being updated. Please check back later.</p>",
+  },
+};
+
 async function getPageData(slug: string): Promise<PageData | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/pages/slug/${slug}`, {
@@ -26,8 +45,16 @@ async function getPageData(slug: string): Promise<PageData | null> {
 
 const PolicyPage = async ({ slug }: PolicyPageProps) => {
   const data = await getPageData(slug);
-  const title = data?.title || (slug === "terms-and-conditions" ? "Terms & Conditions" : "Privacy Policy");
-  const htmlContent = data?.content || "<p>Page content is being updated. Please check back later.</p>";
+  const fallback =
+    pageDefaults[slug] || {
+      title: slug
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" "),
+      content: "<p>Page content is being updated. Please check back later.</p>",
+    };
+  const title = data?.title || fallback.title;
+  const htmlContent = data?.content || fallback.content;
 
   return (
     <>
