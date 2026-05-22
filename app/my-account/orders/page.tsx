@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getMyOrders } from "../../services/orderService";
 import { getApiImageUrl } from "../../services/api";
+import { buildProductHref } from "../../utils/productRoutes";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,6 +79,7 @@ interface UIOrder {
 
 interface UIOrderItem {
   id: string;
+  productId: string | null;
   name: string;
   image: string;
   color: string;
@@ -102,6 +104,7 @@ const normaliseOrder = (raw: RawOrder): UIOrder => ({
   deliveredAt: raw.deliveredAt,
   items: raw.orderItems.map((item) => ({
     id: item._id,
+    productId: item.product,
     name: item.name,
     image: getApiImageUrl(item.image),
     color: item.variant?.color || "—",
@@ -555,6 +558,13 @@ const OrderCard = ({ order, onTrack, onCancel, onReview }: OrderCardProps) => (
         key={item.id}
         className={`pt-3 pb-2 ${idx < order.items.length - 1 ? "border-b border-gray-100 mb-3" : ""}`}
       >
+        {(() => {
+          const productHref = item.productId
+            ? buildProductHref({ _id: item.productId })
+            : null;
+
+          return (
+            <>
         {/* Delivery status line */}
         <DeliveryLine order={order} />
 
@@ -564,23 +574,47 @@ const OrderCard = ({ order, onTrack, onCancel, onReview }: OrderCardProps) => (
           <div className="flex items-center gap-3 p-3 relative">
             {/* Thumbnail — soft pink bg matching reference */}
             <div className="w-[68px] h-[80px] shrink-0 relative overflow-hidden rounded-lg bg-[#fce4ec]">
-              <Image
-                src={item.image}
-                alt={item.name}
-                fill
-                className="object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    "/assets/images/product-placeholder.webp";
-                }}
-              />
+              {productHref ? (
+                <Link href={productHref} className="block h-full w-full">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "/assets/images/product-placeholder.webp";
+                    }}
+                  />
+                </Link>
+              ) : (
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/assets/images/product-placeholder.webp";
+                  }}
+                />
+              )}
             </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0 pr-6">
-              <p className="text-sm text-gray-900 line-clamp-2 leading-snug">
-                {item.name}
-              </p>
+              {productHref ? (
+                <Link
+                  href={productHref}
+                  className="text-sm text-gray-900 line-clamp-2 leading-snug hover:text-[#bd9951] transition-colors"
+                >
+                  {item.name}
+                </Link>
+              ) : (
+                <p className="text-sm text-gray-900 line-clamp-2 leading-snug">
+                  {item.name}
+                </p>
+              )}
               <p className="text-xs text-gray-600 mt-1">
                 <span className="font-semibold text-gray-900">Color:</span>{" "}
                 {item.color}
@@ -653,6 +687,9 @@ const OrderCard = ({ order, onTrack, onCancel, onReview }: OrderCardProps) => (
             </div>
           )}
         </div>
+            </>
+          );
+        })()}
 
       </div>
     ))}

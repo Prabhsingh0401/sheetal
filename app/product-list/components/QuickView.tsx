@@ -23,6 +23,9 @@ import { redirectToLogin } from "../../utils/authRedirect";
 import { ORDER_CONFIRMED_EVENT } from "../../hooks/shopEvents";
 import { buildProductHref } from "../../utils/productRoutes";
 
+const getStockLimitMessage = (count: number) =>
+  `This item only has ${count} left.`;
+
 interface QuickViewProps {
   productSlug: string | null;
   onClose: () => void;
@@ -256,6 +259,10 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     }
 
     const resolvedQuantity = Math.max(1, Number(quantity) || 1);
+    if (resolvedQuantity > selectedSizeObject.stock) {
+      toast.error(getStockLimitMessage(selectedSizeObject.stock));
+      return;
+    }
     const variantImageUrl = getApiImageUrl(
       selectedVariant.v_image,
       product.mainImage?.url || "/assets/placeholder-product.jpg",
@@ -313,6 +320,10 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
           (s) => s.name === selectedSize,
         );
         if (selectedSizeInfo) {
+          if (quantity > selectedSizeInfo.stock) {
+            toast.error(getStockLimitMessage(selectedSizeInfo.stock));
+            return;
+          }
           const variantImageUrl = getApiImageUrl(
             selectedVariant.v_image,
             product.mainImage?.url || "/assets/default-image.png",
@@ -332,6 +343,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
               slug: product.slug,
               mainImage: product.mainImage,
             },
+            selectedSizeInfo.stock,
           );
           onClose();
         } else {
@@ -350,7 +362,29 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
     product?.variants.find((variant) => variant._id === selectedVariantId) ||
     product?.variants.find((variant) => variant.color?.name === selectedColor) ||
     null;
+  const selectedSizeInfo =
+    selectedVariant?.sizes.find((size) => size.name === selectedSize) || null;
+  const selectedAvailableStock = selectedSizeInfo?.stock ?? 0;
   const galleryImages = getVariantGalleryUrls(product, selectedVariant);
+  const handleQuantityChange = (rawValue: string) => {
+    const parsedQuantity = Math.max(1, parseInt(rawValue, 10) || 1);
+    const normalizedMaxQuantity = Math.max(1, selectedAvailableStock);
+
+    if (parsedQuantity > normalizedMaxQuantity) {
+      toast.error(getStockLimitMessage(normalizedMaxQuantity));
+    }
+
+    setQuantity(Math.min(parsedQuantity, normalizedMaxQuantity));
+  };
+
+  useEffect(() => {
+    if (selectedAvailableStock <= 0) {
+      setQuantity(1);
+      return;
+    }
+
+    setQuantity((current) => Math.min(Math.max(1, current), selectedAvailableStock));
+  }, [selectedAvailableStock]);
 
   useEffect(() => {
     if (!galleryImages.length) return;
@@ -613,9 +647,7 @@ const QuickView: React.FC<QuickViewProps> = ({ productSlug, onClose }) => {
                       type="number"
                       min="1"
                       value={quantity}
-                      onChange={(e) =>
-                        setQuantity(Math.max(1, parseInt(e.target.value) || 1))
-                      }
+                      onChange={(e) => handleQuantityChange(e.target.value)}
                       className="w-16 h-11 border border-gray-300 text-center focus:outline-none focus:border-[#bd9951]"
                     />
                     <button

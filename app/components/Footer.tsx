@@ -43,7 +43,7 @@ const defaultLayout: FooterBlock[] = [
     hidden: false,
     links: [
       { id: "9", label: "Privacy Policy", href: "/privacy-policy" },
-      { id: "10", label: "Return & Exchange Policy", href: "/returne-policy" },
+      { id: "10", label: "Return & Exchange Policy", href: "/return-exchange-policy" },
       { id: "11", label: "Shipping Policy", href: "/shipping-policy" },
       { id: "12", label: "Terms of Use", href: "/terms-and-conditions" },
     ],

@@ -46,6 +46,7 @@ export interface GuestCartItem {
   productId: string;
   variantId?: string;
   quantity: number;
+  availableStock?: number;
   size: string;
   color: string;
   price: number;
@@ -65,6 +66,7 @@ export interface CartItem {
   product: Product;
   variantId?: string;
   quantity: number;
+  availableStock?: number;
   color: string;
   size: string;
   variantImage?: string;
@@ -119,6 +121,7 @@ interface UseCartReturn {
     variantImage: string,
     color: string,
     productMeta?: { _id: string; name: string; slug: string; mainImage?: { url: string } },
+    availableStock?: number,
   ) => Promise<void>;
   removeFromCart: (
     itemId: string,
@@ -197,6 +200,7 @@ const guestToCartItems = (guestItems: GuestCartItem[]): CartItem[] =>
     product: g.product as unknown as Product,
     variantId: g.variantId,
     quantity: g.quantity,
+    availableStock: g.availableStock,
     color: g.color,
     size: g.size,
     variantImage: g.variantImage,
@@ -220,6 +224,47 @@ const commitCartSnapshot = (items: CartItem[]): CartItem[] => {
   cachedCartSnapshot = items;
   return items;
 };
+
+const getItemAvailableStock = (
+  item: Pick<CartItem, "availableStock" | "product" | "size" | "color">,
+) => {
+  if (typeof item.availableStock === "number" && item.availableStock >= 0) {
+    return item.availableStock;
+  }
+
+  const variants = item.product?.variants;
+  if (Array.isArray(variants) && variants.length > 0) {
+    const selectedVariant =
+      variants.find(
+        (variant) =>
+          String(variant?.color?.name || "").trim().toLowerCase() ===
+          String(item.color || "").trim().toLowerCase(),
+      ) ||
+      variants.find((variant) =>
+        Array.isArray(variant?.sizes) &&
+        variant.sizes.some(
+          (size) =>
+            String(size?.name || "").trim().toLowerCase() ===
+            String(item.size || "").trim().toLowerCase(),
+        ),
+      );
+
+    const selectedSize = selectedVariant?.sizes?.find(
+      (size) =>
+        String(size?.name || "").trim().toLowerCase() ===
+        String(item.size || "").trim().toLowerCase(),
+    );
+
+    if (selectedSize) {
+      return Number(selectedSize.stock) || 0;
+    }
+  }
+
+  return Number(item.product?.stock) || 0;
+};
+
+const getStockLimitMessage = (count: number) =>
+  `This item only has ${count} left.`;
 
 /** Clears guest cart from localStorage */
 export const clearGuestCart = () => {
@@ -455,8 +500,22 @@ export const useCart = (): UseCartReturn => {
       variantImage: string,
       color: string,
       productMeta?: { _id: string; name: string; slug: string; mainImage?: { url: string } },
+      availableStock?: number,
     ) => {
       try {
+        const normalizedAvailableStock =
+          typeof availableStock === "number" && availableStock >= 0
+            ? availableStock
+            : undefined;
+
+        if (
+          normalizedAvailableStock !== undefined &&
+          quantity > normalizedAvailableStock
+        ) {
+          toast.error(getStockLimitMessage(normalizedAvailableStock));
+          return;
+        }
+
         if (isAuthenticated()) {
           // ── Authenticated: call API ──
           const response = await addToCartApi(
@@ -479,15 +538,28 @@ export const useCart = (): UseCartReturn => {
           );
 
           if (existingIndex > -1) {
-            guestItems[existingIndex].quantity += quantity;
+            const desiredQuantity = guestItems[existingIndex].quantity + quantity;
+            const maxAllowed =
+              normalizedAvailableStock ?? guestItems[existingIndex].availableStock;
+
+            if (typeof maxAllowed === "number" && desiredQuantity > maxAllowed) {
+              toast.error(getStockLimitMessage(maxAllowed));
+              return;
+            }
+
+            guestItems[existingIndex].quantity = desiredQuantity;
             guestItems[existingIndex].price = price;
             guestItems[existingIndex].discountPrice = discountPrice;
+            if (typeof normalizedAvailableStock === "number") {
+              guestItems[existingIndex].availableStock = normalizedAvailableStock;
+            }
           } else {
             const newItem: GuestCartItem = {
               _id: `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`,
               productId,
               variantId,
               quantity,
+              availableStock: normalizedAvailableStock,
               size,
               color,
               price,
@@ -830,6 +902,14 @@ export const useCart = (): UseCartReturn => {
   const updateCartItemQuantity = useCallback(
     async (itemId: string, quantity: number) => {
       try {
+        const existingItem = cart.find((item) => item._id === itemId);
+        const availableStock = existingItem ? getItemAvailableStock(existingItem) : 0;
+
+        if (quantity > 0 && existingItem && quantity > availableStock) {
+          toast.error(getStockLimitMessage(availableStock));
+          return;
+        }
+
         if (isAuthenticated()) {
           const response = await updateCartItemQuantityApi(itemId, quantity);
           if (response.success) {
@@ -864,7 +944,7 @@ export const useCart = (): UseCartReturn => {
         toast.error("Could not update quantity. Please try again.");
       }
     },
-    [resetCoupon],
+    [cart, resetCoupon],
   );
 
   const removeCoupon = useCallback((options?: { silent?: boolean }) => {

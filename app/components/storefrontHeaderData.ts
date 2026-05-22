@@ -59,6 +59,13 @@ const fetchJson = async (path: string) => {
   return response.json();
 };
 
+const fetchJsonNoStore = async (path: string) => {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    cache: "no-store",
+  });
+  return response.json();
+};
+
 const getCachedHomepageSettings = unstable_cache(
   async (): Promise<HomepageSettings> => {
     try {
@@ -81,36 +88,32 @@ const getCachedHomepageSettings = unstable_cache(
   { revalidate: STOREFRONT_HEADER_REVALIDATE_SECONDS },
 );
 
-const getCachedNavbarData = unstable_cache(
-  async (): Promise<{
-    categories: Category[];
-    settings: NavbarSettings;
-    homepageSettings: HomepageSettings;
-  }> => {
-    try {
-      const [categoriesJson, settingsJson, homepageSettings] =
-        await Promise.all([
-          fetchJson("/categories"),
-          fetchJson("/settings"),
-          getCachedHomepageSettings(),
-        ]);
+const getNavbarData = async (): Promise<{
+  categories: Category[];
+  settings: NavbarSettings;
+  homepageSettings: HomepageSettings;
+}> => {
+  try {
+    const [categoriesJson, settingsJson, homepageSettings] =
+      await Promise.all([
+        fetchJsonNoStore("/categories"),
+        fetchJsonNoStore("/settings"),
+        getCachedHomepageSettings(),
+      ]);
 
-      return {
-        categories: (categoriesJson?.data || []) as Category[],
-        settings: (settingsJson?.data || {}) as NavbarSettings,
-        homepageSettings,
-      };
-    } catch {
-      return {
-        categories: [],
-        settings: {},
-        homepageSettings: defaultHomepageSettings,
-      };
-    }
-  },
-  ["storefront-navbar-data"],
-  { revalidate: STOREFRONT_HEADER_REVALIDATE_SECONDS },
-);
+    return {
+      categories: (categoriesJson?.data || []) as Category[],
+      settings: (settingsJson?.data || {}) as NavbarSettings,
+      homepageSettings,
+    };
+  } catch {
+    return {
+      categories: [],
+      settings: {},
+      homepageSettings: defaultHomepageSettings,
+    };
+  }
+};
 
 const getCachedHomepageCoupon = unstable_cache(
   async (): Promise<HomepageCoupon | null> => {
@@ -127,6 +130,6 @@ const getCachedHomepageCoupon = unstable_cache(
 
 export const getStorefrontHomepageSettings = () => getCachedHomepageSettings();
 
-export const getStorefrontNavbarData = () => getCachedNavbarData();
+export const getStorefrontNavbarData = () => getNavbarData();
 
 export const getStorefrontHomepageCoupon = () => getCachedHomepageCoupon();
