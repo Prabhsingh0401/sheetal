@@ -276,7 +276,7 @@ const HomeBannerCarousel = ({ banners }: { banners: BannerItem[] }) => {
 
       <Image
         src="/assets/shape-bt.png"
-        alt=""
+        alt="Banner Decorative Shape"
         width={1920}
         height={160}
         className="absolute bottom-0 left-0 z-20 h-auto w-full"

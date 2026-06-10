@@ -379,7 +379,18 @@ const ProductListContent = ({
   } else if (sortOption === "price_desc") {
     filteredProducts.sort((a, b) => b.price - a.price);
   } else if (sortOption === "popularity") {
-    filteredProducts.sort((a, b) => b.rating - a.rating);
+    filteredProducts.sort((a, b) => {
+      if (a.isStarred && !b.isStarred) return -1;
+      if (!a.isStarred && b.isStarred) return 1;
+      return b.rating - a.rating;
+    });
+  } else {
+    // Default sorting (e.g., "newest"): Star priority first
+    filteredProducts.sort((a, b) => {
+      if (a.isStarred && !b.isStarred) return -1;
+      if (!a.isStarred && b.isStarred) return 1;
+      return 0;
+    });
   }
 
   /* =======================

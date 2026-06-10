@@ -26,6 +26,7 @@ interface OrderItem {
     category?: {
       name?: string;
       hsnCode?: string;
+      gstPercent?: number;
     } | null;
   } | null;
   name: string;
@@ -385,10 +386,9 @@ const InvoicePageInner = () => {
                                   {order.orderItems.map((item) => {
                                     const hsn = item.product?.category?.hsnCode || globalHsnCode || "—";
                                     const gstRate =
-                                      item.gstPercent ||
-                                      item.product?.gstPercent ||
-                                      globalTax ||
-                                      0;
+                                      item.product?.category?.gstPercent !== undefined
+                                        ? item.product.category.gstPercent
+                                        : globalTax || 0;
                                     const totalAmount = item.price * item.quantity;
 
                                     return (
