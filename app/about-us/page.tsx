@@ -1,7 +1,14 @@
+import { Metadata } from "next";
 import Footer from "../components/Footer";
 import Image from "next/image";
 import Link from "next/link";
 import { API_BASE_URL } from "../services/api";
+
+export const metadata: Metadata = {
+  title: "About Us | Studio By Sheetal",
+  description: "Learn more about Studio By Sheetal, our journey since 2017, our mission to provide quality ethnic wear, and the craftsmanship behind our sarees.",
+  keywords: "about studio by sheetal, sheetal by studio story, ethnic wear brand surat, craftsmanship, saree legacy",
+};
 
 interface SectionData {
   image?: string;

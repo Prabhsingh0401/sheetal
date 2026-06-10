@@ -5,7 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { getOrderById } from "../../../services/orderService";
+import { addReview } from "../../../services/productService";
 import { getApiImageUrl } from "../../../services/api";
+import toast from "react-hot-toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,11 +22,17 @@ type OrderStatus =
 
 interface OrderItem {
     _id: string;
-    product: string | null;
+    product: string | { _id: string } | null;
     name: string;
     image: string;
     price: number;
     quantity: number;
+    isReviewed?: boolean;
+    review?: {
+        rating: number;
+        comment: string;
+        createdAt: string;
+    };
     variant?: { size?: string; color?: string; v_sku?: string };
 }
 
@@ -302,6 +310,144 @@ const TrackingTimeline = ({ order }: { order: RawOrder }) => {
     );
 };
 
+// ─── Modals ───────────────────────────────────────────────────────────────────
+
+interface ModalShellProps {
+    title: string;
+    onClose: () => void;
+    children: React.ReactNode;
+}
+const ModalShell = ({ title, onClose, children }: ModalShellProps) => (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
+                <button
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-gray-700 text-2xl font-bold leading-none transition-colors cursor-pointer"
+                    aria-label="Close"
+                >
+                    ×
+                </button>
+            </div>
+            <div className="px-6 py-5">{children}</div>
+        </div>
+    </div>
+);
+
+/** Write Review modal */
+const ReviewModal = ({
+    item,
+    onClose,
+    onSuccess,
+}: {
+    item: OrderItem;
+    onClose: () => void;
+    onSuccess?: () => void;
+}) => {
+    const [hovered, setHovered] = useState(0);
+    const [selected, setSelected] = useState(0);
+    const [text, setText] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async () => {
+        if (!item.product) return;
+        if (selected === 0) {
+            toast.error("Please select a rating");
+            return;
+        }
+
+        const productId = typeof item.product === "object" ? item.product._id : item.product;
+
+        setSubmitting(true);
+        try {
+            const res = await addReview(productId, selected, text);
+            if (res.success) {
+                toast.success("Review submitted successfully!");
+                onSuccess?.();
+                onClose();
+            } else {
+                toast.error(res.message || "Failed to submit review");
+            }
+        } catch {
+            toast.error("Something went wrong. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <ModalShell title="Write a Review" onClose={onClose}>
+            <div className="flex gap-3 mb-5 pb-4 border-b border-gray-100">
+                <div className="w-16 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0 relative">
+                    <Image
+                        src={getApiImageUrl(item.image)}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                    />
+                </div>
+                <div>
+                    <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2">
+                        {item.name}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                        {item.variant?.color} · Size {item.variant?.size}
+                    </p>
+                    <div className="flex gap-0.5 mt-2">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                            <button
+                                key={n}
+                                type="button"
+                                onMouseEnter={() => setHovered(n)}
+                                onMouseLeave={() => setHovered(0)}
+                                onClick={() => setSelected(n)}
+                                disabled={submitting}
+                                className={`transition-transform ${submitting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-110"}`}
+                            >
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill={n <= (hovered || selected) ? "#FACC15" : "#D1D5DB"}
+                                >
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Share your experience with this product…"
+                rows={4}
+                disabled={submitting}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-1 focus:ring-[#a97f0f] focus:border-[#a97f0f] placeholder-gray-400 disabled:bg-gray-50 disabled:text-gray-400"
+            />
+            <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
+                By submitting you agree to our{" "}
+                <Link href="/terms-conditions" className="underline">
+                    Terms of Use
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy-policy" className="underline">
+                    Privacy Policy
+                </Link>
+                .
+            </p>
+            <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="mt-4 w-full py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-black transition cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+                {submitting ? "Submitting..." : "Submit Review"}
+            </button>
+        </ModalShell>
+    );
+};
+
 // ─── Section heading (matches HTML .head style) ───────────────────────────────
 
 const SectionHead = ({ children }: { children: React.ReactNode }) => (
@@ -345,27 +491,49 @@ const OrderDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showTracking, setShowTracking] = useState(false);
+    const [reviewItem, setReviewItem] = useState<OrderItem | null>(null);
+
+    const fetchOrder = async () => {
+        if (!orderId) return;
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await getOrderById(orderId);
+            if (res.success && res.data) {
+                setOrder(res.data as RawOrder);
+            } else {
+                setError(res.message || "Order not found.");
+            }
+        } catch {
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        if (!orderId) return;
-        const fetch = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const res = await getOrderById(orderId);
-                if (res.success && res.data) {
-                    setOrder(res.data as RawOrder);
-                } else {
-                    setError(res.message || "Order not found.");
-                }
-            } catch {
-                setError("Something went wrong. Please try again.");
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetch();
+        fetchOrder();
     }, [orderId]);
+
+    const handleBuyAgain = (item: OrderItem) => {
+        const prod = typeof item.product === "object" ? item.product : { _id: item.product };
+        const buyNowItem = {
+            product: {
+                _id: prod?._id,
+                name: item.name,
+                mainImage: { url: item.image },
+            },
+            size: item.variant?.size || "—",
+            color: item.variant?.color || "—",
+            quantity: 1,
+            price: item.price,
+            discountPrice: item.price,
+            variantImage: getApiImageUrl(item.image),
+        };
+
+        const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
+        router.push(`/checkout/address?buynow=${encoded}`);
+    };
 
     if (loading) return <Skeleton />;
 
@@ -577,6 +745,59 @@ const OrderDetailPage = () => {
                             Chat with us
                         </a>
                     </div>
+
+                    {/* Action buttons row */}
+                    {normalizedStatus === "Delivered" && (
+                        <div className="flex items-center gap-3 mt-4">
+                            <button
+                                onClick={() => !item.isReviewed && setReviewItem(item)}
+                                disabled={item.isReviewed}
+                                className={`flex-1 py-2 rounded border border-gray-300 text-xs font-semibold transition ${item.isReviewed
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    : "bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                                    }`}
+                            >
+                                {item.isReviewed ? "Review Submitted" : "Write Review"}
+                            </button>
+                            <button className="flex-1 py-2 rounded border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 transition cursor-pointer">
+                                Return
+                            </button>
+                            <button
+                                onClick={() => handleBuyAgain(item)}
+                                className="flex-1 py-2 rounded border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 transition text-center cursor-pointer"
+                            >
+                                Buy Again
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Review display section */}
+                    {item.isReviewed && item.review && (
+                        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                            <p className="text-xs font-bold text-gray-900 mb-2 uppercase tracking-tight">Your Review</p>
+                            <div className="flex gap-0.5 mb-1.5">
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                    <svg
+                                        key={n}
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 24 24"
+                                        fill={n <= (item.review?.rating || 0) ? "#FACC15" : "#D1D5DB"}
+                                    >
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    </svg>
+                                ))}
+                            </div>
+                            {item.review.comment && (
+                                <p className="text-sm text-gray-700 leading-relaxed italic">
+                                    "{item.review.comment}"
+                                </p>
+                            )}
+                            <p className="text-[10px] text-gray-400 mt-2">
+                                Submitted on {fmtDate(item.review.createdAt)}
+                            </p>
+                        </div>
+                    )}
                 </div>
             ))}
 
@@ -691,6 +912,14 @@ const OrderDetailPage = () => {
             >
                 Shop more from SBS →
             </Link>
+
+            {reviewItem && (
+                <ReviewModal
+                    item={reviewItem}
+                    onClose={() => setReviewItem(null)}
+                    onSuccess={() => fetchOrder()}
+                />
+            )}
         </div>
     );
 };

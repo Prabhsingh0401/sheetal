@@ -3,9 +3,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getMyOrders } from "../../services/orderService";
+import { addReview } from "../../services/productService";
 import { getApiImageUrl } from "../../services/api";
 import { buildProductHref } from "../../utils/productRoutes";
+import toast from "react-hot-toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,6 +29,7 @@ interface RawOrderItem {
   image: string;
   price: number;
   quantity: number;
+  isReviewed?: boolean;
   variant?: {
     size?: string;
     color?: string;
@@ -102,6 +106,7 @@ interface UIOrderItem {
   size: string;
   price: number;
   quantity: number;
+  isReviewed: boolean;
 }
 
 // ─── Backend → UI normaliser ─────────────────────────────────────────────────
@@ -127,6 +132,7 @@ const normaliseOrder = (raw: RawOrder): UIOrder => ({
     size: item.variant?.size || "—",
     price: item.price,
     quantity: item.quantity,
+    isReviewed: !!item.isReviewed,
   })),
 });
 
@@ -423,13 +429,40 @@ const CancelModal = ({
 const ReviewModal = ({
   item,
   onClose,
+  onSuccess,
 }: {
   item: UIOrderItem;
   onClose: () => void;
+  onSuccess?: () => void;
 }) => {
   const [hovered, setHovered] = useState(0);
   const [selected, setSelected] = useState(0);
   const [text, setText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!item.productId) return;
+    if (selected === 0) {
+      toast.error("Please select a rating");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await addReview(item.productId, selected, text);
+      if (res.success) {
+        toast.success("Review submitted successfully!");
+        onSuccess?.();
+        onClose();
+      } else {
+        toast.error(res.message || "Failed to submit review");
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <ModalShell title="Write a Review" onClose={onClose}>
@@ -457,7 +490,8 @@ const ReviewModal = ({
                 onMouseEnter={() => setHovered(n)}
                 onMouseLeave={() => setHovered(0)}
                 onClick={() => setSelected(n)}
-                className="cursor-pointer hover:scale-110 transition-transform"
+                disabled={submitting}
+                className={`transition-transform ${submitting ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:scale-110"}`}
               >
                 <svg
                   width="20"
@@ -477,7 +511,8 @@ const ReviewModal = ({
         onChange={(e) => setText(e.target.value)}
         placeholder="Share your experience with this product…"
         rows={4}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-1 focus:ring-[#a97f0f] focus:border-[#a97f0f] placeholder-gray-400"
+        disabled={submitting}
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-1 focus:ring-[#a97f0f] focus:border-[#a97f0f] placeholder-gray-400 disabled:bg-gray-50 disabled:text-gray-400"
       />
       <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
         By submitting you agree to our{" "}
@@ -491,10 +526,11 @@ const ReviewModal = ({
         .
       </p>
       <button
-        onClick={onClose}
-        className="mt-4 w-full py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-black transition cursor-pointer"
+        onClick={handleSubmit}
+        disabled={submitting}
+        className="mt-4 w-full py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-black transition cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
-        Submit Review
+        {submitting ? "Submitting..." : "Submit Review"}
       </button>
     </ModalShell>
   );
@@ -507,6 +543,7 @@ interface OrderCardProps {
   onTrack: () => void;
   onCancel: () => void;
   onReview: (item: UIOrderItem) => void;
+  onBuyAgain: (item: UIOrderItem) => void;
 }
 
 /** Inline delivery status line shown per item, matching the reference image */
@@ -569,7 +606,7 @@ const DeliveryLine = ({ order }: { order: UIOrder }) => {
   );
 };
 
-const OrderCard = ({ order, onTrack, onCancel, onReview }: OrderCardProps) => (
+const OrderCard = ({ order, onTrack, onCancel, onReview, onBuyAgain }: OrderCardProps) => (
   <div className="border border-gray-400 bg-transparent mb-6 overflow-hidden rounded-md p-6">
     {/* ── Order ID strip ── */}
     <div className="flex justify-end items-center px-0 py-1.5 mb-1">
@@ -697,20 +734,24 @@ const OrderCard = ({ order, onTrack, onCancel, onReview }: OrderCardProps) => (
           {order.status === "Delivered" && (
             <div className="flex items-center gap-3 px-3 pb-3">
               <button
-                onClick={() => onReview(item)}
-                className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                onClick={() => !item.isReviewed && onReview(item)}
+                disabled={item.isReviewed}
+                className={`flex-1 py-1.5 rounded border border-gray-300 text-xs font-medium transition ${item.isReviewed
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+                  }`}
               >
-                Write Review
+                {item.isReviewed ? "Review Submitted" : "Write Review"}
               </button>
               <button className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer">
                 Return
               </button>
-              <Link
-                href="/shop"
-                className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition text-center"
+              <button
+                onClick={() => onBuyAgain(item)}
+                className="flex-1 py-1.5 rounded border border-gray-300 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 transition text-center cursor-pointer"
               >
                 Buy Again
-              </Link>
+              </button>
             </div>
           )}
         </div>
@@ -745,6 +786,7 @@ const OrderSkeleton = () => (
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const OrdersPage = () => {
+  const router = useRouter();
   // ── UI state ──────────────────────────────────────────────────────────────
   const [orders, setOrders] = useState<UIOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -792,6 +834,25 @@ const OrdersPage = () => {
   useEffect(() => {
     fetchOrders(currentPage, statusFilter);
   }, [currentPage, statusFilter, fetchOrders]);
+
+  const handleBuyAgain = (item: UIOrderItem) => {
+    const buyNowItem = {
+      product: {
+        _id: item.productId,
+        name: item.name,
+        mainImage: { url: item.image },
+      },
+      size: item.size,
+      color: item.color,
+      quantity: 1,
+      price: item.price,
+      discountPrice: item.price,
+      variantImage: item.image,
+    };
+
+    const encoded = encodeURIComponent(JSON.stringify(buyNowItem));
+    router.push(`/checkout/address?buynow=${encoded}`);
+  };
 
   // Reset to page 1 when status filter changes
   const handleStatusChange = (val: string) => {
@@ -957,6 +1018,7 @@ const OrdersPage = () => {
                 onTrack={() => setTrackOrder(order)}
                 onCancel={() => setCancelOrder(order)}
                 onReview={(item) => setReviewItem(item)}
+                onBuyAgain={handleBuyAgain}
               />
             ))}
           </div>
@@ -1003,7 +1065,11 @@ const OrdersPage = () => {
         <CancelModal order={cancelOrder} onClose={() => setCancelOrder(null)} />
       )}
       {reviewItem && (
-        <ReviewModal item={reviewItem} onClose={() => setReviewItem(null)} />
+        <ReviewModal
+          item={reviewItem}
+          onClose={() => setReviewItem(null)}
+          onSuccess={() => fetchOrders(currentPage, statusFilter)}
+        />
       )}
     </>
   );

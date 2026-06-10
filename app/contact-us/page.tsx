@@ -1,9 +1,16 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
 
 import Footer from "../components/Footer";
 import ContactUsForm from "./ContactUsForm";
+
+export const metadata: Metadata = {
+  title: "Contact Us | Studio By Sheetal",
+  description: "Get in touch with Studio By Sheetal. We are here to help you with your questions and concerns about our ethnic wear collections.",
+  keywords: "contact studio by sheetal, customer support, saree inquiry, ethnic wear contact",
+};
 
 const ContactUs = () => {
   return (

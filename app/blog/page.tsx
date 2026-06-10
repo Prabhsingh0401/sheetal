@@ -1,8 +1,15 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import Footer from "../components/Footer";
 import { getBlogs, type Blog } from "@/app/services/blogService";
 import { getApiImageUrl } from "@/app/services/api";
+
+export const metadata: Metadata = {
+  title: "Blogs | Studio By Sheetal",
+  description: "Read our latest blogs about ethnic wear, styling tips, saree trends, and the stories behind our collections.",
+  keywords: "saree blogs, ethnic wear trends, styling tips, Studio By Sheetal blog",
+};
 
 type BlogsPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;

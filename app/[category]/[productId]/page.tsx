@@ -36,7 +36,7 @@ export async function generateMetadata({
         ? product.discountPrice
         : product.price;
 
-    const title = product.metaTitle;
+    const title = product.metaTitle || `${product.name} | Studio By Sheetal`;
     const description =
       product.metaDescription ||
       product.shortDescription ||
