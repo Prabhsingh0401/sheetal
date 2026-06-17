@@ -81,6 +81,7 @@ export interface Product {
     size: number;
   };
   ogImage?: string;
+  schema?: string;
 
   variants: ProductVariant[];
   category: {
@@ -116,6 +117,7 @@ export interface Product {
   metaDescription?: string;
   metaKeywords?: string;
   canonicalUrl?: string;
+  schema?: string;
 
   averageRating: number;
   totalReviews: number;
